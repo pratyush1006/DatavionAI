@@ -1,0 +1,13 @@
+-r base.txt
+
+black
+
+ruff
+
+ipython
+
+pytest
+
+pytest-django
+
+coverage
