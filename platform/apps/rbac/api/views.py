@@ -156,3 +156,95 @@ class RoleRetrieveUpdateDestroyAPIView(
         return Response(
             status=status.HTTP_204_NO_CONTENT
         )
+    
+from rest_framework.views import APIView
+
+from apps.rbac.selectors import (
+    get_user_by_id,
+    get_role_by_id,
+)
+
+from apps.rbac.serializers import (
+    UserRoleSerializer,
+    UserRoleDetailSerializer,
+)
+
+from apps.rbac.services import (
+    assign_role_to_user,
+    remove_role_from_user,
+)
+
+class UserRoleAPIView(APIView):
+    """
+    GET  -> List roles assigned to a user
+    POST -> Assign role to a user
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(tags=["RBAC"])
+    def get(self, request, user_id):
+        user = get_user_by_id(user_id)
+
+        return Response(
+            UserRoleDetailSerializer(user).data
+        )
+
+    @extend_schema(
+        tags=["RBAC"],
+        request=UserRoleSerializer,
+    )
+    def post(self, request, user_id):
+
+        user = get_user_by_id(user_id)
+
+        serializer = UserRoleSerializer(
+            data=request.data
+        )
+
+        serializer.is_valid(
+            raise_exception=True
+        )
+
+        role = get_role_by_id(
+            serializer.validated_data["role_id"]
+        )
+
+        assign_role_to_user(
+            user,
+            role,
+        )
+
+        return Response(
+            UserRoleDetailSerializer(user).data,
+            status=status.HTTP_200_OK,
+        )
+
+
+class UserRoleDeleteAPIView(APIView):
+    """
+    DELETE -> Remove role from user
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(tags=["RBAC"])
+    def delete(
+        self,
+        request,
+        user_id,
+        role_id,
+    ):
+
+        user = get_user_by_id(user_id)
+
+        role = get_role_by_id(role_id)
+
+        remove_role_from_user(
+            user,
+            role,
+        )
+
+        return Response(
+            status=status.HTTP_204_NO_CONTENT
+        )

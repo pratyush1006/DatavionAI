@@ -1,6 +1,6 @@
 from django.contrib.auth.models import Group, Permission
 from rest_framework import serializers
-
+from apps.accounts.models import User
 
 class PermissionSerializer(serializers.ModelSerializer):
     class Meta:
@@ -63,4 +63,34 @@ class RoleUpdateSerializer(serializers.ModelSerializer):
         fields = (
             "name",
             "permissions",
+        )
+
+
+
+class UserRoleSerializer(serializers.Serializer):
+    role_id = serializers.IntegerField()
+
+
+class UserRoleListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Group
+        fields = (
+            "id",
+            "name",
+        )
+
+
+class UserRoleDetailSerializer(serializers.ModelSerializer):
+    roles = UserRoleListSerializer(
+        source="groups",
+        many=True,
+        read_only=True,
+    )
+
+    class Meta:
+        model = User
+        fields = (
+            "id",
+            "username",
+            "roles",
         )
