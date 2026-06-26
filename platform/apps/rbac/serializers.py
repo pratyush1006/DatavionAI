@@ -94,3 +94,34 @@ class UserRoleDetailSerializer(serializers.ModelSerializer):
             "username",
             "roles",
         )
+
+
+
+
+class PermissionListSerializer(serializers.ModelSerializer):
+    app = serializers.CharField(
+        source="content_type.app_label",
+        read_only=True,
+    )
+
+    model = serializers.CharField(
+        source="content_type.model",
+        read_only=True,
+    )
+
+    class Meta:
+        model = Permission
+        fields = (
+            "id",
+            "name",
+            "codename",
+            "app",
+            "model",
+        )
+
+
+class RolePermissionSerializer(serializers.Serializer):
+    permission_ids = serializers.ListField(
+        child=serializers.IntegerField(),
+        allow_empty=False,
+    )

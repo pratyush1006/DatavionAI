@@ -1,6 +1,10 @@
 from django.contrib.auth.models import Group
 
 
+# ======================================================
+# Role Services
+# ======================================================
+
 def create_role(validated_data):
     """
     Create a new role.
@@ -32,11 +36,7 @@ def update_role(role, validated_data):
     )
 
     for field, value in validated_data.items():
-        setattr(
-            role,
-            field,
-            value,
-        )
+        setattr(role, field, value)
 
     role.save()
 
@@ -56,7 +56,7 @@ def delete_role(role):
 
 
 # ======================================================
-# User Role Management
+# User Role Services
 # ======================================================
 
 def assign_role_to_user(user, role):
@@ -83,4 +83,38 @@ def get_user_roles(user):
         user.groups
         .all()
         .order_by("name")
+    )
+
+
+# ======================================================
+# Role Permission Services
+# ======================================================
+
+def assign_permissions_to_role(role, permissions):
+    """
+    Assign multiple permissions to a role.
+    """
+    role.permissions.add(*permissions)
+    return role
+
+
+def remove_permission_from_role(role, permission):
+    """
+    Remove a permission from a role.
+    """
+    role.permissions.remove(permission)
+    return role
+
+
+def get_role_permissions(role):
+    """
+    Return permissions assigned to a role.
+    """
+    return (
+        role.permissions
+        .select_related("content_type")
+        .order_by(
+            "content_type__app_label",
+            "codename",
+        )
     )

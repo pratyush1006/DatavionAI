@@ -1,36 +1,70 @@
+from django.contrib.auth.models import Permission
+from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
+from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.generics import (
     ListCreateAPIView,
     RetrieveUpdateDestroyAPIView,
+    ListAPIView,
 )
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from apps.rbac.selectors import (
+    get_permissions,
+    get_permission_by_id,
+    get_permissions_by_ids,
     get_role_by_id,
     get_roles,
+    get_user_by_id,
 )
+
 from apps.rbac.serializers import (
+    PermissionListSerializer,
     RoleCreateSerializer,
     RoleDetailSerializer,
     RoleListSerializer,
+    RolePermissionSerializer,
     RoleUpdateSerializer,
+    UserRoleDetailSerializer,
+    UserRoleSerializer,
 )
+
 from apps.rbac.services import (
+    assign_permissions_to_role,
+    assign_role_to_user,
     create_role,
     delete_role,
+    get_role_permissions,
+    remove_permission_from_role,
+    remove_role_from_user,
     update_role,
 )
 
 
+# =====================================================
+# ROLE CRUD
+# =====================================================
+
 class RoleListCreateAPIView(ListCreateAPIView):
-    """
-    GET  -> List Roles
-    POST -> Create Role
-    """
 
     permission_classes = [IsAuthenticated]
+
+    filter_backends = (
+        DjangoFilterBackend,
+        SearchFilter,
+        OrderingFilter,
+    )
+
+    search_fields = (
+        "name",
+    )
+
+    ordering = (
+        "name",
+    )
 
     def get_queryset(self):
         return get_roles()
@@ -47,6 +81,7 @@ class RoleListCreateAPIView(ListCreateAPIView):
 
     @extend_schema(tags=["RBAC"])
     def post(self, request, *args, **kwargs):
+
         serializer = self.get_serializer(
             data=request.data
         )
@@ -68,12 +103,6 @@ class RoleListCreateAPIView(ListCreateAPIView):
 class RoleRetrieveUpdateDestroyAPIView(
     RetrieveUpdateDestroyAPIView
 ):
-    """
-    GET
-    PATCH
-    PUT
-    DELETE
-    """
 
     permission_classes = [IsAuthenticated]
 
@@ -85,6 +114,7 @@ class RoleRetrieveUpdateDestroyAPIView(
         )
 
     def get_serializer_class(self):
+
         if self.request.method in (
             "PUT",
             "PATCH",
@@ -95,14 +125,11 @@ class RoleRetrieveUpdateDestroyAPIView(
 
     @extend_schema(tags=["RBAC"])
     def get(self, request, *args, **kwargs):
-        return self.retrieve(
-            request,
-            *args,
-            **kwargs,
-        )
+        return self.retrieve(request, *args, **kwargs)
 
     @extend_schema(tags=["RBAC"])
     def patch(self, request, *args, **kwargs):
+
         role = self.get_object()
 
         serializer = self.get_serializer(
@@ -126,29 +153,11 @@ class RoleRetrieveUpdateDestroyAPIView(
 
     @extend_schema(tags=["RBAC"])
     def put(self, request, *args, **kwargs):
-        role = self.get_object()
-
-        serializer = self.get_serializer(
-            role,
-            data=request.data,
-            partial=False,
-        )
-
-        serializer.is_valid(
-            raise_exception=True
-        )
-
-        role = update_role(
-            role,
-            serializer.validated_data.copy(),
-        )
-
-        return Response(
-            RoleDetailSerializer(role).data
-        )
+        return self.patch(request, *args, **kwargs)
 
     @extend_schema(tags=["RBAC"])
     def delete(self, request, *args, **kwargs):
+
         role = self.get_object()
 
         delete_role(role)
@@ -156,34 +165,19 @@ class RoleRetrieveUpdateDestroyAPIView(
         return Response(
             status=status.HTTP_204_NO_CONTENT
         )
-    
-from rest_framework.views import APIView
 
-from apps.rbac.selectors import (
-    get_user_by_id,
-    get_role_by_id,
-)
 
-from apps.rbac.serializers import (
-    UserRoleSerializer,
-    UserRoleDetailSerializer,
-)
-
-from apps.rbac.services import (
-    assign_role_to_user,
-    remove_role_from_user,
-)
+# =====================================================
+# USER ROLE
+# =====================================================
 
 class UserRoleAPIView(APIView):
-    """
-    GET  -> List roles assigned to a user
-    POST -> Assign role to a user
-    """
 
     permission_classes = [IsAuthenticated]
 
     @extend_schema(tags=["RBAC"])
     def get(self, request, user_id):
+
         user = get_user_by_id(user_id)
 
         return Response(
@@ -216,15 +210,11 @@ class UserRoleAPIView(APIView):
         )
 
         return Response(
-            UserRoleDetailSerializer(user).data,
-            status=status.HTTP_200_OK,
+            UserRoleDetailSerializer(user).data
         )
 
 
 class UserRoleDeleteAPIView(APIView):
-    """
-    DELETE -> Remove role from user
-    """
 
     permission_classes = [IsAuthenticated]
 
@@ -243,6 +233,95 @@ class UserRoleDeleteAPIView(APIView):
         remove_role_from_user(
             user,
             role,
+        )
+
+        return Response(
+            status=status.HTTP_204_NO_CONTENT
+        )
+
+
+# =====================================================
+# PERMISSIONS
+# =====================================================
+
+class PermissionListAPIView(ListAPIView):
+
+    permission_classes = [IsAuthenticated]
+    serializer_class = PermissionListSerializer
+
+    def get_queryset(self):
+        return get_permissions()
+
+
+class RolePermissionAPIView(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(tags=["RBAC"])
+    def get(self, request, role_id):
+
+        role = get_role_by_id(role_id)
+
+        return Response(
+            PermissionListSerializer(
+                get_role_permissions(role),
+                many=True,
+            ).data
+        )
+
+    @extend_schema(
+        tags=["RBAC"],
+        request=RolePermissionSerializer,
+    )
+    def post(self, request, role_id):
+
+        role = get_role_by_id(role_id)
+
+        serializer = RolePermissionSerializer(
+            data=request.data
+        )
+
+        serializer.is_valid(
+            raise_exception=True
+        )
+
+        permissions = get_permissions_by_ids(
+            serializer.validated_data[
+                "permission_ids"
+            ]
+        )
+
+        assign_permissions_to_role(
+            role,
+            permissions,
+        )
+
+        return Response(
+            RoleDetailSerializer(role).data
+        )
+
+
+class RolePermissionDeleteAPIView(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(tags=["RBAC"])
+    def delete(
+        self,
+        request,
+        role_id,
+        permission_id,
+    ):
+
+        role = get_role_by_id(role_id)
+
+        permission = get_permission_by_id(
+            permission_id
+        )
+
+        remove_permission_from_role(
+            role,
+            permission,
         )
 
         return Response(
