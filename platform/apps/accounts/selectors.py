@@ -3,22 +3,46 @@ from django.shortcuts import get_object_or_404
 from apps.accounts.models import User
 
 
-def get_users():
+def get_users(user):
     """
-    Return all users.
+    Return users visible to the current user.
+
+    Superusers can see every user.
+    Other users can only see users in their organization.
     """
-    return (
+
+    queryset = (
         User.objects
         .select_related("organization")
         .order_by("username")
     )
 
+    if user.is_superuser:
+        return queryset
 
-def get_user_by_id(user_id):
+    return queryset.filter(
+        organization=user.organization
+    )
+
+
+def get_user_by_id(user_id, user):
     """
-    Return a single user by id.
+    Return a single user visible to the current user.
     """
+
+    queryset = (
+        User.objects
+        .select_related("organization")
+    )
+
+    if user.is_superuser:
+        return get_object_or_404(
+            queryset,
+            id=user_id,
+        )
+
     return get_object_or_404(
-        User.objects.select_related("organization"),
+        queryset,
         id=user_id,
+        organization=user.organization,
     )
