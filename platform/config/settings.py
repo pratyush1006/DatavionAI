@@ -52,6 +52,8 @@ INSTALLED_APPS = [
     "apps.organizations.apps.OrganizationsConfig",
     "apps.rbac.apps.RbacConfig",
     "apps.departments.apps.DepartmentsConfig",
+    "apps.teams.apps.TeamsConfig",
+    "apps.employees.apps.EmployeesConfig",
 ]
 
 MIDDLEWARE = [

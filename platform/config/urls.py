@@ -33,4 +33,12 @@ urlpatterns = [
         "api/departments/",
         include("apps.departments.urls"),
     ),
+    path(
+        "api/teams/",
+        include("apps.teams.urls"),
+    ),
+    path(
+        "api/employees/",
+        include("apps.employees.urls"),
+    ),
 ]

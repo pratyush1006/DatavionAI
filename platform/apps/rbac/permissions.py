@@ -77,6 +77,11 @@ class CanManagePermissions(HasPermission):
     permission_codename = "auth.change_permission"
 
 
+# =====================================================
+# Department Permissions
+# =====================================================
+
+
 class CanViewDepartments(BasePermission):
     """
     Permission to view departments.
@@ -111,3 +116,45 @@ class CanDeleteDepartments(BasePermission):
 
     def has_permission(self, request, view):
         return request.user.has_perm("departments.delete_department")
+
+
+# =====================================================
+# Team Permissions
+# =====================================================
+
+
+class CanViewTeams(HasPermission):
+    permission_codename = "teams.view_team"
+
+
+class CanAddTeams(HasPermission):
+    permission_codename = "teams.add_team"
+
+
+class CanChangeTeams(HasPermission):
+    permission_codename = "teams.change_team"
+
+
+class CanDeleteTeams(HasPermission):
+    permission_codename = "teams.delete_team"
+
+
+# =====================================================
+# Employee Permissions
+# =====================================================
+
+
+class CanViewEmployees(HasPermission):
+    permission_codename = "employees.view_employee"
+
+
+class CanAddEmployees(HasPermission):
+    permission_codename = "employees.add_employee"
+
+
+class CanChangeEmployees(HasPermission):
+    permission_codename = "employees.change_employee"
+
+
+class CanDeleteEmployees(HasPermission):
+    permission_codename = "employees.delete_employee"
