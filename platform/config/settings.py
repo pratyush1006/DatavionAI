@@ -9,8 +9,10 @@ https://docs.djangoproject.com/en/6.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
+
 from datetime import timedelta
 from pathlib import Path
+
 from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -32,21 +34,18 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-
     # Third Party
     "rest_framework",
     "rest_framework_simplejwt",
     "django_filters",
     "drf_spectacular",
-
-   # Local Apps
+    # Local Apps
     "apps.core.apps.CoreConfig",
     "apps.common.apps.CommonConfig",
     "apps.accounts.apps.AccountsConfig",
@@ -138,28 +137,15 @@ AUTH_USER_MODEL = "accounts.User"
 STATIC_URL = "static/"
 
 REST_FRAMEWORK = {
-    "DEFAULT_SCHEMA_CLASS":
-        "drf_spectacular.openapi.AutoSchema",
-
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
-
-    "DEFAULT_PERMISSION_CLASSES": (
-        "rest_framework.permissions.IsAuthenticated",
-    ),
-
-    "DEFAULT_FILTER_BACKENDS": (
-        "django_filters.rest_framework.DjangoFilterBackend",
-    ),
-
-    "DEFAULT_PAGINATION_CLASS":
-        "apps.common.pagination.StandardResultsSetPagination",
-
+    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
+    "DEFAULT_FILTER_BACKENDS": ("django_filters.rest_framework.DjangoFilterBackend",),
+    "DEFAULT_PAGINATION_CLASS": "apps.common.pagination.StandardResultsSetPagination",
     "PAGE_SIZE": 20,
-
-    "EXCEPTION_HANDLER":
-        "apps.common.exceptions.custom_exception_handler",
+    "EXCEPTION_HANDLER": "apps.common.exceptions.custom_exception_handler",
 }
 
 
@@ -174,15 +160,12 @@ SPECTACULAR_SETTINGS = {
     "DESCRIPTION": "AI Powered Revenue Cycle Management Platform",
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
-
     "SECURITY": [
         {
             "BearerAuth": [],
         }
     ],
-
     "COMPONENT_SPLIT_REQUEST": True,
-
     "SWAGGER_UI_SETTINGS": {
         "persistAuthorization": True,
     },

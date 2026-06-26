@@ -1,0 +1,48 @@
+[tool.black]
+line-length = 88
+target-version = ["py312"]
+include = '\.pyi?$'
+exclude = '''
+/(
+    migrations
+  | __pycache__
+  | venv
+  | .venv
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 88
+skip_gitignore = true
+skip = [
+    "migrations",
+]
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+exclude = [
+    "migrations",
+    "__pycache__",
+    "venv",
+    ".venv",
+]
+
+[tool.ruff.lint]
+select = [
+    "E",
+    "F",
+    "I",
+    "UP",
+]
+ignore = [
+    "E501",
+]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings"
+python_files = [
+    "test_*.py",
+    "*_tests.py",
+]

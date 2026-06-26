@@ -8,11 +8,7 @@ def get_departments():
     Return all departments ordered by name.
     """
 
-    return (
-        Department.objects
-        .select_related("organization")
-        .order_by("name")
-    )
+    return Department.objects.select_related("organization").order_by("name")
 
 
 def get_department_by_id(
@@ -23,8 +19,6 @@ def get_department_by_id(
     """
 
     return get_object_or_404(
-        Department.objects.select_related(
-            "organization"
-        ),
+        Department.objects.select_related("organization"),
         id=department_id,
     )

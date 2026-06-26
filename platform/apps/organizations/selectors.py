@@ -7,10 +7,7 @@ def get_organizations():
     """
     Return all organizations.
     """
-    return (
-        Organization.objects
-        .order_by("name")
-    )
+    return Organization.objects.order_by("name")
 
 
 def get_organization_by_id(organization_id):

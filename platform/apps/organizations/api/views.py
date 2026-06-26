@@ -52,9 +52,7 @@ class OrganizationListCreateAPIView(ListCreateAPIView):
         "country",
     )
 
-    ordering = (
-        "name",
-    )
+    ordering = ("name",)
 
     ordering_fields = (
         "name",
@@ -82,10 +80,7 @@ class OrganizationListCreateAPIView(ListCreateAPIView):
                 CanAddOrganizations,
             ]
 
-        return [
-            permission()
-            for permission in permission_classes
-        ]
+        return [permission() for permission in permission_classes]
 
     def get_queryset(self):
         return get_organizations()
@@ -108,29 +103,19 @@ class OrganizationListCreateAPIView(ListCreateAPIView):
     @extend_schema(tags=["Organizations"])
     def post(self, request, *args, **kwargs):
 
-        serializer = self.get_serializer(
-            data=request.data
-        )
+        serializer = self.get_serializer(data=request.data)
 
-        serializer.is_valid(
-            raise_exception=True
-        )
+        serializer.is_valid(raise_exception=True)
 
-        organization = create_organization(
-            serializer.validated_data.copy()
-        )
+        organization = create_organization(serializer.validated_data.copy())
 
         return Response(
-            OrganizationDetailSerializer(
-                organization
-            ).data,
+            OrganizationDetailSerializer(organization).data,
             status=status.HTTP_201_CREATED,
         )
 
 
-class OrganizationRetrieveUpdateDestroyAPIView(
-    RetrieveUpdateDestroyAPIView
-):
+class OrganizationRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     """
     GET
     PUT
@@ -163,15 +148,10 @@ class OrganizationRetrieveUpdateDestroyAPIView(
                 CanDeleteOrganizations,
             ]
 
-        return [
-            permission()
-            for permission in permission_classes
-        ]
+        return [permission() for permission in permission_classes]
 
     def get_object(self):
-        return get_organization_by_id(
-            self.kwargs["organization_id"]
-        )
+        return get_organization_by_id(self.kwargs["organization_id"])
 
     def get_serializer_class(self):
 
@@ -202,20 +182,14 @@ class OrganizationRetrieveUpdateDestroyAPIView(
             partial=True,
         )
 
-        serializer.is_valid(
-            raise_exception=True
-        )
+        serializer.is_valid(raise_exception=True)
 
         organization = update_organization(
             organization,
             serializer.validated_data.copy(),
         )
 
-        return Response(
-            OrganizationDetailSerializer(
-                organization
-            ).data
-        )
+        return Response(OrganizationDetailSerializer(organization).data)
 
     @extend_schema(tags=["Organizations"])
     def put(self, request, *args, **kwargs):
@@ -228,30 +202,20 @@ class OrganizationRetrieveUpdateDestroyAPIView(
             partial=False,
         )
 
-        serializer.is_valid(
-            raise_exception=True
-        )
+        serializer.is_valid(raise_exception=True)
 
         organization = update_organization(
             organization,
             serializer.validated_data.copy(),
         )
 
-        return Response(
-            OrganizationDetailSerializer(
-                organization
-            ).data
-        )
+        return Response(OrganizationDetailSerializer(organization).data)
 
     @extend_schema(tags=["Organizations"])
     def delete(self, request, *args, **kwargs):
 
         organization = self.get_object()
 
-        delete_organization(
-            organization
-        )
+        delete_organization(organization)
 
-        return Response(
-            status=status.HTTP_204_NO_CONTENT
-        )
+        return Response(status=status.HTTP_204_NO_CONTENT)

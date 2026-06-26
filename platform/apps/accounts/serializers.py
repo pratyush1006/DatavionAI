@@ -15,9 +15,7 @@ class LoginSerializer(serializers.Serializer):
         )
 
         if not user:
-            raise serializers.ValidationError(
-                "Invalid username or password."
-            )
+            raise serializers.ValidationError("Invalid username or password.")
 
         attrs["user"] = user
         return attrs
@@ -78,6 +76,7 @@ class UserListSerializer(serializers.ModelSerializer):
             "organization",
         ]
 
+
 class UserDetailSerializer(serializers.ModelSerializer):
     organization = serializers.SerializerMethodField()
     roles = serializers.SerializerMethodField()
@@ -110,6 +109,8 @@ class UserDetailSerializer(serializers.ModelSerializer):
                 flat=True,
             )
         )
+
+
 class UserCreateSerializer(serializers.ModelSerializer):
     password = serializers.CharField(
         write_only=True,
@@ -129,6 +130,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
             "designation",
             "organization",
         ]
+
 
 class UserUpdateSerializer(serializers.ModelSerializer):
     password = serializers.CharField(

@@ -19,14 +19,13 @@ class HasPermission(BasePermission):
         if request.user.is_superuser:
             return True
 
-        return request.user.has_perm(
-            self.permission_codename
-        )
+        return request.user.has_perm(self.permission_codename)
 
 
 # =====================================================
 # User Permissions
 # =====================================================
+
 
 class CanViewUsers(HasPermission):
     permission_codename = "accounts.view_user"
@@ -48,6 +47,7 @@ class CanDeleteUsers(HasPermission):
 # Organization Permissions
 # =====================================================
 
+
 class CanViewOrganizations(HasPermission):
     permission_codename = "organizations.view_organization"
 
@@ -68,6 +68,7 @@ class CanDeleteOrganizations(HasPermission):
 # RBAC Permissions
 # =====================================================
 
+
 class CanManageRoles(HasPermission):
     permission_codename = "auth.change_group"
 
@@ -75,15 +76,14 @@ class CanManageRoles(HasPermission):
 class CanManagePermissions(HasPermission):
     permission_codename = "auth.change_permission"
 
+
 class CanViewDepartments(BasePermission):
     """
     Permission to view departments.
     """
 
     def has_permission(self, request, view):
-        return request.user.has_perm(
-            "departments.view_department"
-        )
+        return request.user.has_perm("departments.view_department")
 
 
 class CanAddDepartments(BasePermission):
@@ -92,9 +92,7 @@ class CanAddDepartments(BasePermission):
     """
 
     def has_permission(self, request, view):
-        return request.user.has_perm(
-            "departments.add_department"
-        )
+        return request.user.has_perm("departments.add_department")
 
 
 class CanChangeDepartments(BasePermission):
@@ -103,9 +101,7 @@ class CanChangeDepartments(BasePermission):
     """
 
     def has_permission(self, request, view):
-        return request.user.has_perm(
-            "departments.change_department"
-        )
+        return request.user.has_perm("departments.change_department")
 
 
 class CanDeleteDepartments(BasePermission):
@@ -114,6 +110,4 @@ class CanDeleteDepartments(BasePermission):
     """
 
     def has_permission(self, request, view):
-        return request.user.has_perm(
-            "departments.delete_department"
-        )
+        return request.user.has_perm("departments.delete_department")

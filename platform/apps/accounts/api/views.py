@@ -27,7 +27,6 @@ from apps.accounts.services import (
     generate_tokens,
     update_user,
 )
-
 from apps.rbac.permissions import (
     CanAddUsers,
     CanChangeUsers,
@@ -67,9 +66,7 @@ class MeAPIView(APIView):
 
     @extend_schema(tags=["Authentication"])
     def get(self, request):
-        return Response(
-            MeSerializer(request.user).data
-        )
+        return Response(MeSerializer(request.user).data)
 
 
 class UserListCreateAPIView(ListCreateAPIView):
@@ -91,9 +88,7 @@ class UserListCreateAPIView(ListCreateAPIView):
         "email",
     )
 
-    ordering = (
-        "username",
-    )
+    ordering = ("username",)
 
     ordering_fields = (
         "username",
@@ -101,9 +96,7 @@ class UserListCreateAPIView(ListCreateAPIView):
         "created_at",
     )
 
-    filterset_fields = (
-        "organization",
-    )
+    filterset_fields = ("organization",)
 
     def get_permissions(self):
 
@@ -118,15 +111,10 @@ class UserListCreateAPIView(ListCreateAPIView):
                 CanAddUsers,
             ]
 
-        return [
-            permission()
-            for permission in permission_classes
-        ]
+        return [permission() for permission in permission_classes]
 
     def get_queryset(self):
-        return get_users(
-            self.request.user
-        )
+        return get_users(self.request.user)
 
     def get_serializer_class(self):
         if self.request.method == "POST":
@@ -145,17 +133,11 @@ class UserListCreateAPIView(ListCreateAPIView):
     @extend_schema(tags=["Users"])
     def post(self, request, *args, **kwargs):
 
-        serializer = self.get_serializer(
-            data=request.data
-        )
+        serializer = self.get_serializer(data=request.data)
 
-        serializer.is_valid(
-            raise_exception=True
-        )
+        serializer.is_valid(raise_exception=True)
 
-        user = create_user(
-            serializer.validated_data.copy()
-        )
+        user = create_user(serializer.validated_data.copy())
 
         return Response(
             UserDetailSerializer(user).data,
@@ -163,9 +145,7 @@ class UserListCreateAPIView(ListCreateAPIView):
         )
 
 
-class UserRetrieveUpdateDestroyAPIView(
-    RetrieveUpdateDestroyAPIView
-):
+class UserRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     """
     GET
     PUT
@@ -198,10 +178,7 @@ class UserRetrieveUpdateDestroyAPIView(
                 CanDeleteUsers,
             ]
 
-        return [
-            permission()
-            for permission in permission_classes
-        ]
+        return [permission() for permission in permission_classes]
 
     def get_object(self):
         return get_user_by_id(
@@ -238,18 +215,14 @@ class UserRetrieveUpdateDestroyAPIView(
             partial=True,
         )
 
-        serializer.is_valid(
-            raise_exception=True
-        )
+        serializer.is_valid(raise_exception=True)
 
         user = update_user(
             user,
             serializer.validated_data.copy(),
         )
 
-        return Response(
-            UserDetailSerializer(user).data
-        )
+        return Response(UserDetailSerializer(user).data)
 
     @extend_schema(tags=["Users"])
     def put(self, request, *args, **kwargs):
@@ -262,18 +235,14 @@ class UserRetrieveUpdateDestroyAPIView(
             partial=False,
         )
 
-        serializer.is_valid(
-            raise_exception=True
-        )
+        serializer.is_valid(raise_exception=True)
 
         user = update_user(
             user,
             serializer.validated_data.copy(),
         )
 
-        return Response(
-            UserDetailSerializer(user).data
-        )
+        return Response(UserDetailSerializer(user).data)
 
     @extend_schema(tags=["Users"])
     def delete(self, request, *args, **kwargs):
@@ -282,6 +251,4 @@ class UserRetrieveUpdateDestroyAPIView(
 
         user.delete()
 
-        return Response(
-            status=status.HTTP_204_NO_CONTENT
-        )
+        return Response(status=status.HTTP_204_NO_CONTENT)

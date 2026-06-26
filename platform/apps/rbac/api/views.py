@@ -1,26 +1,24 @@
-from django.contrib.auth.models import Permission
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.generics import (
+    ListAPIView,
     ListCreateAPIView,
     RetrieveUpdateDestroyAPIView,
-    ListAPIView,
 )
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.rbac.selectors import (
-    get_permissions,
     get_permission_by_id,
+    get_permissions,
     get_permissions_by_ids,
     get_role_by_id,
     get_roles,
     get_user_by_id,
 )
-
 from apps.rbac.serializers import (
     PermissionListSerializer,
     RoleCreateSerializer,
@@ -31,7 +29,6 @@ from apps.rbac.serializers import (
     UserRoleDetailSerializer,
     UserRoleSerializer,
 )
-
 from apps.rbac.services import (
     assign_permissions_to_role,
     assign_role_to_user,
@@ -43,10 +40,10 @@ from apps.rbac.services import (
     update_role,
 )
 
-
 # =====================================================
 # ROLE CRUD
 # =====================================================
+
 
 class RoleListCreateAPIView(ListCreateAPIView):
 
@@ -58,13 +55,9 @@ class RoleListCreateAPIView(ListCreateAPIView):
         OrderingFilter,
     )
 
-    search_fields = (
-        "name",
-    )
+    search_fields = ("name",)
 
-    ordering = (
-        "name",
-    )
+    ordering = ("name",)
 
     def get_queryset(self):
         return get_roles()
@@ -82,17 +75,11 @@ class RoleListCreateAPIView(ListCreateAPIView):
     @extend_schema(tags=["RBAC"])
     def post(self, request, *args, **kwargs):
 
-        serializer = self.get_serializer(
-            data=request.data
-        )
+        serializer = self.get_serializer(data=request.data)
 
-        serializer.is_valid(
-            raise_exception=True
-        )
+        serializer.is_valid(raise_exception=True)
 
-        role = create_role(
-            serializer.validated_data.copy()
-        )
+        role = create_role(serializer.validated_data.copy())
 
         return Response(
             RoleDetailSerializer(role).data,
@@ -100,18 +87,14 @@ class RoleListCreateAPIView(ListCreateAPIView):
         )
 
 
-class RoleRetrieveUpdateDestroyAPIView(
-    RetrieveUpdateDestroyAPIView
-):
+class RoleRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
 
     permission_classes = [IsAuthenticated]
 
     lookup_url_kwarg = "role_id"
 
     def get_object(self):
-        return get_role_by_id(
-            self.kwargs["role_id"]
-        )
+        return get_role_by_id(self.kwargs["role_id"])
 
     def get_serializer_class(self):
 
@@ -138,18 +121,14 @@ class RoleRetrieveUpdateDestroyAPIView(
             partial=True,
         )
 
-        serializer.is_valid(
-            raise_exception=True
-        )
+        serializer.is_valid(raise_exception=True)
 
         role = update_role(
             role,
             serializer.validated_data.copy(),
         )
 
-        return Response(
-            RoleDetailSerializer(role).data
-        )
+        return Response(RoleDetailSerializer(role).data)
 
     @extend_schema(tags=["RBAC"])
     def put(self, request, *args, **kwargs):
@@ -162,14 +141,13 @@ class RoleRetrieveUpdateDestroyAPIView(
 
         delete_role(role)
 
-        return Response(
-            status=status.HTTP_204_NO_CONTENT
-        )
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 # =====================================================
 # USER ROLE
 # =====================================================
+
 
 class UserRoleAPIView(APIView):
 
@@ -180,9 +158,7 @@ class UserRoleAPIView(APIView):
 
         user = get_user_by_id(user_id)
 
-        return Response(
-            UserRoleDetailSerializer(user).data
-        )
+        return Response(UserRoleDetailSerializer(user).data)
 
     @extend_schema(
         tags=["RBAC"],
@@ -192,26 +168,18 @@ class UserRoleAPIView(APIView):
 
         user = get_user_by_id(user_id)
 
-        serializer = UserRoleSerializer(
-            data=request.data
-        )
+        serializer = UserRoleSerializer(data=request.data)
 
-        serializer.is_valid(
-            raise_exception=True
-        )
+        serializer.is_valid(raise_exception=True)
 
-        role = get_role_by_id(
-            serializer.validated_data["role_id"]
-        )
+        role = get_role_by_id(serializer.validated_data["role_id"])
 
         assign_role_to_user(
             user,
             role,
         )
 
-        return Response(
-            UserRoleDetailSerializer(user).data
-        )
+        return Response(UserRoleDetailSerializer(user).data)
 
 
 class UserRoleDeleteAPIView(APIView):
@@ -235,14 +203,13 @@ class UserRoleDeleteAPIView(APIView):
             role,
         )
 
-        return Response(
-            status=status.HTTP_204_NO_CONTENT
-        )
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 # =====================================================
 # PERMISSIONS
 # =====================================================
+
 
 class PermissionListAPIView(ListAPIView):
 
@@ -277,18 +244,12 @@ class RolePermissionAPIView(APIView):
 
         role = get_role_by_id(role_id)
 
-        serializer = RolePermissionSerializer(
-            data=request.data
-        )
+        serializer = RolePermissionSerializer(data=request.data)
 
-        serializer.is_valid(
-            raise_exception=True
-        )
+        serializer.is_valid(raise_exception=True)
 
         permissions = get_permissions_by_ids(
-            serializer.validated_data[
-                "permission_ids"
-            ]
+            serializer.validated_data["permission_ids"]
         )
 
         assign_permissions_to_role(
@@ -296,9 +257,7 @@ class RolePermissionAPIView(APIView):
             permissions,
         )
 
-        return Response(
-            RoleDetailSerializer(role).data
-        )
+        return Response(RoleDetailSerializer(role).data)
 
 
 class RolePermissionDeleteAPIView(APIView):
@@ -315,15 +274,11 @@ class RolePermissionDeleteAPIView(APIView):
 
         role = get_role_by_id(role_id)
 
-        permission = get_permission_by_id(
-            permission_id
-        )
+        permission = get_permission_by_id(permission_id)
 
         remove_permission_from_role(
             role,
             permission,
         )
 
-        return Response(
-            status=status.HTTP_204_NO_CONTENT
-        )
+        return Response(status=status.HTTP_204_NO_CONTENT)

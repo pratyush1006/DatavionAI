@@ -12,9 +12,7 @@ def generate_code(prefix="", length=6):
 
     characters = string.ascii_uppercase + string.digits
 
-    random_part = "".join(
-        random.choices(characters, k=length)
-    )
+    random_part = "".join(random.choices(characters, k=length))
 
     if prefix:
         return f"{prefix}-{random_part}"
@@ -27,15 +25,9 @@ def generate_random_string(length=12):
     Generate a random string.
     """
 
-    characters = (
-        string.ascii_letters
-        + string.digits
-    )
+    characters = string.ascii_letters + string.digits
 
-    return "".join(
-        random.choice(characters)
-        for _ in range(length)
-    )
+    return "".join(random.choice(characters) for _ in range(length))
 
 
 def mask_email(email):
@@ -56,9 +48,4 @@ def mask_email(email):
     if len(username) <= 2:
         return "*" * len(username) + "@" + domain
 
-    return (
-        username[:2]
-        + "*" * (len(username) - 2)
-        + "@"
-        + domain
-    )
+    return username[:2] + "*" * (len(username) - 2) + "@" + domain

@@ -2,13 +2,13 @@ from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.filters import OrderingFilter, SearchFilter
-from rest_framework.generics import (
-    ListCreateAPIView,
-    RetrieveUpdateDestroyAPIView,
-)
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from apps.common.api.base_generics import (
+    BaseListCreateAPIView,
+    BaseRetrieveUpdateDestroyAPIView,
+)
 from apps.departments.selectors import (
     get_department_by_id,
     get_departments,
@@ -32,7 +32,7 @@ from apps.rbac.permissions import (
 )
 
 
-class DepartmentListCreateAPIView(ListCreateAPIView):
+class DepartmentListCreateAPIView(BaseListCreateAPIView):
     """
     GET  -> List Departments
     POST -> Create Department
@@ -50,9 +50,7 @@ class DepartmentListCreateAPIView(ListCreateAPIView):
         "organization__name",
     )
 
-    ordering = (
-        "name",
-    )
+    ordering = ("name",)
 
     ordering_fields = (
         "name",
@@ -77,10 +75,7 @@ class DepartmentListCreateAPIView(ListCreateAPIView):
                 CanAddDepartments,
             ]
 
-        return [
-            permission()
-            for permission in permission_classes
-        ]
+        return [permission() for permission in permission_classes]
 
     def get_queryset(self):
         return get_departments()
@@ -102,29 +97,19 @@ class DepartmentListCreateAPIView(ListCreateAPIView):
     @extend_schema(tags=["Departments"])
     def post(self, request, *args, **kwargs):
 
-        serializer = self.get_serializer(
-            data=request.data
-        )
+        serializer = self.get_serializer(data=request.data)
 
-        serializer.is_valid(
-            raise_exception=True
-        )
+        serializer.is_valid(raise_exception=True)
 
-        department = create_department(
-            serializer.validated_data.copy()
-        )
+        department = create_department(serializer.validated_data.copy())
 
         return Response(
-            DepartmentDetailSerializer(
-                department
-            ).data,
+            DepartmentDetailSerializer(department).data,
             status=status.HTTP_201_CREATED,
         )
 
 
-class DepartmentRetrieveUpdateDestroyAPIView(
-    RetrieveUpdateDestroyAPIView
-):
+class DepartmentRetrieveUpdateDestroyAPIView(BaseRetrieveUpdateDestroyAPIView):
     """
     GET
     PUT
@@ -157,15 +142,10 @@ class DepartmentRetrieveUpdateDestroyAPIView(
                 CanDeleteDepartments,
             ]
 
-        return [
-            permission()
-            for permission in permission_classes
-        ]
+        return [permission() for permission in permission_classes]
 
     def get_object(self):
-        return get_department_by_id(
-            self.kwargs["department_id"]
-        )
+        return get_department_by_id(self.kwargs["department_id"])
 
     def get_serializer_class(self):
 
@@ -196,20 +176,14 @@ class DepartmentRetrieveUpdateDestroyAPIView(
             partial=True,
         )
 
-        serializer.is_valid(
-            raise_exception=True
-        )
+        serializer.is_valid(raise_exception=True)
 
         department = update_department(
             department,
             serializer.validated_data.copy(),
         )
 
-        return Response(
-            DepartmentDetailSerializer(
-                department
-            ).data
-        )
+        return Response(DepartmentDetailSerializer(department).data)
 
     @extend_schema(tags=["Departments"])
     def put(self, request, *args, **kwargs):
@@ -222,30 +196,20 @@ class DepartmentRetrieveUpdateDestroyAPIView(
             partial=False,
         )
 
-        serializer.is_valid(
-            raise_exception=True
-        )
+        serializer.is_valid(raise_exception=True)
 
         department = update_department(
             department,
             serializer.validated_data.copy(),
         )
 
-        return Response(
-            DepartmentDetailSerializer(
-                department
-            ).data
-        )
+        return Response(DepartmentDetailSerializer(department).data)
 
     @extend_schema(tags=["Departments"])
     def delete(self, request, *args, **kwargs):
 
         department = self.get_object()
 
-        delete_department(
-            department
-        )
+        delete_department(department)
 
-        return Response(
-            status=status.HTTP_204_NO_CONTENT
-        )
+        return Response(status=status.HTTP_204_NO_CONTENT)

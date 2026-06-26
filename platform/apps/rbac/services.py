@@ -1,9 +1,9 @@
 from django.contrib.auth.models import Group
 
-
 # ======================================================
 # Role Services
 # ======================================================
+
 
 def create_role(validated_data):
     """
@@ -14,14 +14,10 @@ def create_role(validated_data):
         [],
     )
 
-    role = Group.objects.create(
-        **validated_data
-    )
+    role = Group.objects.create(**validated_data)
 
     if permissions:
-        role.permissions.set(
-            permissions
-        )
+        role.permissions.set(permissions)
 
     return role
 
@@ -41,9 +37,7 @@ def update_role(role, validated_data):
     role.save()
 
     if permissions is not None:
-        role.permissions.set(
-            permissions
-        )
+        role.permissions.set(permissions)
 
     return role
 
@@ -58,6 +52,7 @@ def delete_role(role):
 # ======================================================
 # User Role Services
 # ======================================================
+
 
 def assign_role_to_user(user, role):
     """
@@ -79,16 +74,13 @@ def get_user_roles(user):
     """
     Return all roles assigned to a user.
     """
-    return (
-        user.groups
-        .all()
-        .order_by("name")
-    )
+    return user.groups.all().order_by("name")
 
 
 # ======================================================
 # Role Permission Services
 # ======================================================
+
 
 def assign_permissions_to_role(role, permissions):
     """
@@ -110,11 +102,7 @@ def get_role_permissions(role):
     """
     Return permissions assigned to a role.
     """
-    return (
-        role.permissions
-        .select_related("content_type")
-        .order_by(
-            "content_type__app_label",
-            "codename",
-        )
+    return role.permissions.select_related("content_type").order_by(
+        "content_type__app_label",
+        "codename",
     )

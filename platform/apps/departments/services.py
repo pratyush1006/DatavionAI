@@ -8,9 +8,7 @@ def create_department(
     Create a new department.
     """
 
-    department = Department.objects.create(
-        **validated_data
-    )
+    department = Department.objects.create(**validated_data)
 
     return department
 

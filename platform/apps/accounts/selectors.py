@@ -11,18 +11,12 @@ def get_users(user):
     Other users can only see users in their organization.
     """
 
-    queryset = (
-        User.objects
-        .select_related("organization")
-        .order_by("username")
-    )
+    queryset = User.objects.select_related("organization").order_by("username")
 
     if user.is_superuser:
         return queryset
 
-    return queryset.filter(
-        organization=user.organization
-    )
+    return queryset.filter(organization=user.organization)
 
 
 def get_user_by_id(user_id, user):
@@ -30,10 +24,7 @@ def get_user_by_id(user_id, user):
     Return a single user visible to the current user.
     """
 
-    queryset = (
-        User.objects
-        .select_related("organization")
-    )
+    queryset = User.objects.select_related("organization")
 
     if user.is_superuser:
         return get_object_or_404(

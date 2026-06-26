@@ -6,9 +6,7 @@ def create_organization(validated_data):
     Create a new organization.
     """
 
-    organization = Organization.objects.create(
-        **validated_data
-    )
+    organization = Organization.objects.create(**validated_data)
 
     return organization
 
