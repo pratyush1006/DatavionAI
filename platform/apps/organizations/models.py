@@ -1,53 +1,62 @@
 from django.db import models
+
 from apps.core.models import TimeStampedModel
+from apps.common.constants import ORGANIZATION_TYPES
+from apps.common.validators import (
+    phone_validator,
+    validate_organization_code,
+)
+
 
 class Organization(TimeStampedModel):
     name = models.CharField(
         max_length=255,
-        unique=True
+        unique=True,
     )
 
     code = models.CharField(
         max_length=20,
-        unique=True
+        unique=True,
+        validators=[validate_organization_code],
     )
 
     organization_type = models.CharField(
         max_length=100,
-        default="Hospital"
+        choices=ORGANIZATION_TYPES,
+        default="Hospital",
     )
 
     email = models.EmailField(
-        blank=True
+        blank=True,
     )
 
     phone = models.CharField(
         max_length=20,
-        blank=True
+        blank=True,
+        validators=[phone_validator],
     )
 
     address = models.TextField(
-        blank=True
+        blank=True,
     )
 
     city = models.CharField(
         max_length=100,
-        blank=True
+        blank=True,
     )
 
     state = models.CharField(
         max_length=100,
-        blank=True
+        blank=True,
     )
 
     country = models.CharField(
         max_length=100,
-        default="USA"
+        default="USA",
     )
 
     is_active = models.BooleanField(
-        default=True
-    
+        default=True,
     )
 
     def __str__(self):

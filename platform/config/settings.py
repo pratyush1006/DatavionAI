@@ -137,30 +137,31 @@ AUTH_USER_MODEL = "accounts.User"
 STATIC_URL = "static/"
 
 REST_FRAMEWORK = {
-    # Authentication
+    "DEFAULT_SCHEMA_CLASS":
+        "drf_spectacular.openapi.AutoSchema",
+
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
 
-    # Permissions
     "DEFAULT_PERMISSION_CLASSES": (
         "rest_framework.permissions.IsAuthenticated",
     ),
 
-    # OpenAPI / Swagger
-    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
-
-    # Pagination
-    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
-    "PAGE_SIZE": 10,
-
-    # Filtering
     "DEFAULT_FILTER_BACKENDS": (
         "django_filters.rest_framework.DjangoFilterBackend",
-        "rest_framework.filters.SearchFilter",
-        "rest_framework.filters.OrderingFilter",
     ),
+
+    "DEFAULT_PAGINATION_CLASS":
+        "apps.common.pagination.StandardResultsSetPagination",
+
+    "PAGE_SIZE": 20,
+
+    "EXCEPTION_HANDLER":
+        "apps.common.exceptions.custom_exception_handler",
 }
+
+
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
