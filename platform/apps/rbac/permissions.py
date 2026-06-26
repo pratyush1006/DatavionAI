@@ -74,3 +74,46 @@ class CanManageRoles(HasPermission):
 
 class CanManagePermissions(HasPermission):
     permission_codename = "auth.change_permission"
+
+class CanViewDepartments(BasePermission):
+    """
+    Permission to view departments.
+    """
+
+    def has_permission(self, request, view):
+        return request.user.has_perm(
+            "departments.view_department"
+        )
+
+
+class CanAddDepartments(BasePermission):
+    """
+    Permission to create departments.
+    """
+
+    def has_permission(self, request, view):
+        return request.user.has_perm(
+            "departments.add_department"
+        )
+
+
+class CanChangeDepartments(BasePermission):
+    """
+    Permission to update departments.
+    """
+
+    def has_permission(self, request, view):
+        return request.user.has_perm(
+            "departments.change_department"
+        )
+
+
+class CanDeleteDepartments(BasePermission):
+    """
+    Permission to delete departments.
+    """
+
+    def has_permission(self, request, view):
+        return request.user.has_perm(
+            "departments.delete_department"
+        )

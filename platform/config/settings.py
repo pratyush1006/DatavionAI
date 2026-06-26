@@ -46,12 +46,13 @@ INSTALLED_APPS = [
     "django_filters",
     "drf_spectacular",
 
-    # Local Apps
-    "apps.core",
-    "apps.accounts",
-    "apps.organizations",
-    "rest_framework_simplejwt.token_blacklist",
-    "apps.rbac",
+   # Local Apps
+    "apps.core.apps.CoreConfig",
+    "apps.common.apps.CommonConfig",
+    "apps.accounts.apps.AccountsConfig",
+    "apps.organizations.apps.OrganizationsConfig",
+    "apps.rbac.apps.RbacConfig",
+    "apps.departments.apps.DepartmentsConfig",
 ]
 
 MIDDLEWARE = [
