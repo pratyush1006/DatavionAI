@@ -32,4 +32,8 @@ urlpatterns = [
         "api/rbac/",
         include("apps.rbac.urls"),
     ),
+    path(
+    "api/organizations/",
+    include("apps.organizations.urls"),
+),
 ]
