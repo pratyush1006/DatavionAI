@@ -28,6 +28,13 @@ from apps.accounts.services import (
     update_user,
 )
 
+from apps.rbac.permissions import (
+    CanAddUsers,
+    CanChangeUsers,
+    CanDeleteUsers,
+    CanViewUsers,
+)
+
 
 class LoginAPIView(APIView):
     authentication_classes = []
@@ -71,8 +78,6 @@ class UserListCreateAPIView(ListCreateAPIView):
     POST -> Create User
     """
 
-    permission_classes = [IsAuthenticated]
-
     filter_backends = (
         DjangoFilterBackend,
         SearchFilter,
@@ -100,14 +105,53 @@ class UserListCreateAPIView(ListCreateAPIView):
         "organization",
     )
 
+    def get_permissions(self):
+
+        if self.request.method == "GET":
+            permission_classes = [
+                IsAuthenticated,
+                CanViewUsers,
+            ]
+        else:
+            permission_classes = [
+                IsAuthenticated,
+                CanAddUsers,
+            ]
+
+        return [
+            permission()
+            for permission in permission_classes
+        ]
+
+    def get_queryset(self):
+        return get_users(
+            self.request.user
+        )
+
+    def get_serializer_class(self):
+        if self.request.method == "POST":
+            return UserCreateSerializer
+
+        return UserListSerializer
+
     @extend_schema(tags=["Users"])
     def get(self, request, *args, **kwargs):
-        return self.list(request, *args, **kwargs)
+        return self.list(
+            request,
+            *args,
+            **kwargs,
+        )
 
     @extend_schema(tags=["Users"])
     def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+
+        serializer = self.get_serializer(
+            data=request.data
+        )
+
+        serializer.is_valid(
+            raise_exception=True
+        )
 
         user = create_user(
             serializer.validated_data.copy()
@@ -117,15 +161,6 @@ class UserListCreateAPIView(ListCreateAPIView):
             UserDetailSerializer(user).data,
             status=status.HTTP_201_CREATED,
         )
-
-    def get_queryset(self):
-        return get_users(self.request.user)
-
-    def get_serializer_class(self):
-        if self.request.method == "POST":
-            return UserCreateSerializer
-
-        return UserListSerializer
 
 
 class UserRetrieveUpdateDestroyAPIView(
@@ -138,9 +173,35 @@ class UserRetrieveUpdateDestroyAPIView(
     DELETE
     """
 
-    permission_classes = [IsAuthenticated]
-
     lookup_url_kwarg = "user_id"
+
+    def get_permissions(self):
+
+        if self.request.method == "GET":
+            permission_classes = [
+                IsAuthenticated,
+                CanViewUsers,
+            ]
+
+        elif self.request.method in (
+            "PUT",
+            "PATCH",
+        ):
+            permission_classes = [
+                IsAuthenticated,
+                CanChangeUsers,
+            ]
+
+        else:
+            permission_classes = [
+                IsAuthenticated,
+                CanDeleteUsers,
+            ]
+
+        return [
+            permission()
+            for permission in permission_classes
+        ]
 
     def get_object(self):
         return get_user_by_id(
@@ -149,7 +210,11 @@ class UserRetrieveUpdateDestroyAPIView(
         )
 
     def get_serializer_class(self):
-        if self.request.method in ("PUT", "PATCH"):
+
+        if self.request.method in (
+            "PUT",
+            "PATCH",
+        ):
             return UserUpdateSerializer
 
         return UserDetailSerializer
@@ -164,6 +229,7 @@ class UserRetrieveUpdateDestroyAPIView(
 
     @extend_schema(tags=["Users"])
     def patch(self, request, *args, **kwargs):
+
         user = self.get_object()
 
         serializer = self.get_serializer(
@@ -172,7 +238,9 @@ class UserRetrieveUpdateDestroyAPIView(
             partial=True,
         )
 
-        serializer.is_valid(raise_exception=True)
+        serializer.is_valid(
+            raise_exception=True
+        )
 
         user = update_user(
             user,
@@ -185,6 +253,7 @@ class UserRetrieveUpdateDestroyAPIView(
 
     @extend_schema(tags=["Users"])
     def put(self, request, *args, **kwargs):
+
         user = self.get_object()
 
         serializer = self.get_serializer(
@@ -193,7 +262,9 @@ class UserRetrieveUpdateDestroyAPIView(
             partial=False,
         )
 
-        serializer.is_valid(raise_exception=True)
+        serializer.is_valid(
+            raise_exception=True
+        )
 
         user = update_user(
             user,
@@ -206,7 +277,9 @@ class UserRetrieveUpdateDestroyAPIView(
 
     @extend_schema(tags=["Users"])
     def delete(self, request, *args, **kwargs):
+
         user = self.get_object()
+
         user.delete()
 
         return Response(
