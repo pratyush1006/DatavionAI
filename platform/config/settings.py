@@ -9,6 +9,8 @@ from pathlib import Path
 
 from decouple import config
 
+from config.logging import LOGGING as DJANGO_LOGGING
+
 # ------------------------------------------------------------------------------
 # Base Directory
 # ------------------------------------------------------------------------------
@@ -18,8 +20,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # ------------------------------------------------------------------------------
 # Security
 # ------------------------------------------------------------------------------
-
-SECRET_KEY = config("SECRET_KEY")
+SECRET_KEY = config(
+    "SECRET_KEY",
+    default="django-insecure-local-development-key",
+)
 
 DEBUG = config(
     "DEBUG",
@@ -105,14 +109,13 @@ WSGI_APPLICATION = "config.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": config("DATABASE_NAME"),
-        "USER": config("DATABASE_USER"),
-        "PASSWORD": config("DATABASE_PASSWORD"),
-        "HOST": config("DATABASE_HOST"),
-        "PORT": config("DATABASE_PORT"),
+        "NAME": config("DATABASE_NAME", default="datavion"),
+        "USER": config("DATABASE_USER", default="postgres"),
+        "PASSWORD": config("DATABASE_PASSWORD", default="postgres"),
+        "HOST": config("DATABASE_HOST", default="localhost"),
+        "PORT": config("DATABASE_PORT", default="5432"),
     }
 }
-
 # ------------------------------------------------------------------------------
 # Password Validation
 # ------------------------------------------------------------------------------
@@ -167,7 +170,7 @@ REST_FRAMEWORK = {
     ),
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
     "DEFAULT_FILTER_BACKENDS": ("django_filters.rest_framework.DjangoFilterBackend",),
-    "DEFAULT_PAGINATION_CLASS": ("apps.common.pagination.StandardResultsSetPagination"),
+    "DEFAULT_PAGINATION_CLASS": "apps.common.pagination.StandardResultsSetPagination",
     "PAGE_SIZE": 20,
     "EXCEPTION_HANDLER": ("apps.common.exceptions.custom_exception_handler"),
 }
@@ -203,6 +206,11 @@ SPECTACULAR_SETTINGS = {
     },
 }
 
+# -----------------------------------------------------------------------------
+# Logging
+# -----------------------------------------------------------------------------
+
+LOGGING = DJANGO_LOGGING
 # ------------------------------------------------------------------------------
 # Default Primary Key
 # ------------------------------------------------------------------------------
