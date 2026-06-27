@@ -1,5 +1,7 @@
 -r base.txt
 
+gunicorn==26.0.0
+
 uvicorn
 
 sentry-sdk
