@@ -71,6 +71,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "apps.common.middleware.RequestIDMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -211,6 +212,13 @@ SPECTACULAR_SETTINGS = {
 # -----------------------------------------------------------------------------
 
 LOGGING = DJANGO_LOGGING
+
+# ==============================================================================
+# Application
+# ==============================================================================
+
+APP_NAME = "Datavion AI"
+APP_VERSION = "1.0.0"
 # ------------------------------------------------------------------------------
 # Default Primary Key
 # ------------------------------------------------------------------------------

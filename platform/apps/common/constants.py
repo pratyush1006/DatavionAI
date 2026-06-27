@@ -1,10 +1,6 @@
-# Organization Types
-ORGANIZATION_TYPES = (
-    ("Hospital", "Hospital"),
-    ("Clinic", "Clinic"),
-    ("Laboratory", "Laboratory"),
-    ("Corporate", "Corporate"),
-)
+"""
+Shared constants used across DatavionAI.
+"""
 
 # Status Choices
 STATUS_CHOICES = (

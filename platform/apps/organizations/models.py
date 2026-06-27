@@ -1,11 +1,11 @@
 from django.db import models
 
-from apps.common.constants import ORGANIZATION_TYPES
 from apps.common.validators import (
     phone_validator,
     validate_organization_code,
 )
 from apps.core.models import TimeStampedModel
+from apps.organizations.constants import ORGANIZATION_TYPES
 
 
 class Organization(TimeStampedModel):

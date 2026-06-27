@@ -1,18 +1,28 @@
-import random
+"""
+Common utility functions used across DatavionAI.
+"""
+
+import secrets
 import string
 
 
-def generate_code(prefix="", length=6):
+def generate_code(
+    prefix: str = "",
+    length: int = 6,
+) -> str:
     """
-    Generate an uppercase code.
+    Generate a random uppercase alphanumeric code.
 
     Example:
         DAT-AB12CD
     """
 
+    if length <= 0:
+        raise ValueError("Length must be greater than zero.")
+
     characters = string.ascii_uppercase + string.digits
 
-    random_part = "".join(random.choices(characters, k=length))
+    random_part = "".join(secrets.choice(characters) for _ in range(length))
 
     if prefix:
         return f"{prefix}-{random_part}"
@@ -20,30 +30,36 @@ def generate_code(prefix="", length=6):
     return random_part
 
 
-def generate_random_string(length=12):
+def generate_random_string(length: int = 12) -> str:
     """
-    Generate a random string.
+    Generate a cryptographically secure random
+    alphanumeric string.
     """
+
+    if length <= 0:
+        raise ValueError("Length must be greater than zero.")
 
     characters = string.ascii_letters + string.digits
 
-    return "".join(random.choice(characters) for _ in range(length))
+    return "".join(secrets.choice(characters) for _ in range(length))
 
 
-def mask_email(email):
+def mask_email(email: str) -> str:
     """
+    Mask an email address.
+
     Example:
-    john@example.com
+        john@example.com
 
     becomes
 
-    jo****@example.com
+        jo**@example.com
     """
 
     if "@" not in email:
         return email
 
-    username, domain = email.split("@")
+    username, domain = email.split("@", 1)
 
     if len(username) <= 2:
         return "*" * len(username) + "@" + domain

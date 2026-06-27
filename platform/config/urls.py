@@ -41,4 +41,8 @@ urlpatterns = [
         "api/employees/",
         include("apps.employees.urls"),
     ),
+    path(
+        "api/v1/",
+        include("apps.core.urls"),
+    ),
 ]
