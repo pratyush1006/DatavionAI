@@ -1,16 +1,59 @@
+"""
+Tests for reusable model managers.
+"""
+
+from __future__ import annotations
+
+from unittest.mock import MagicMock
+
 from django.test import SimpleTestCase
 
 from apps.common.models import BaseManager
 
 
 class BaseManagerTests(SimpleTestCase):
-    """Tests for BaseManager."""
+    """
+    Tests for BaseManager.
+    """
 
-    def test_has_active_method(self):
-        self.assertTrue(hasattr(BaseManager, "active"))
+    def setUp(self) -> None:
+        self.manager = BaseManager()
 
-    def test_has_inactive_method(self):
-        self.assertTrue(hasattr(BaseManager, "inactive"))
+    def test_active_delegates_to_queryset(
+        self,
+    ) -> None:
+        queryset = MagicMock()
 
-    def test_has_ordered_method(self):
-        self.assertTrue(hasattr(BaseManager, "ordered"))
+        self.manager.get_queryset = MagicMock(
+            return_value=queryset,
+        )
+
+        self.manager.active()
+
+        queryset.active.assert_called_once_with()
+
+    def test_inactive_delegates_to_queryset(
+        self,
+    ) -> None:
+        queryset = MagicMock()
+
+        self.manager.get_queryset = MagicMock(
+            return_value=queryset,
+        )
+
+        self.manager.inactive()
+
+        queryset.inactive.assert_called_once_with()
+
+    def test_ordered_delegates_to_queryset(
+        self,
+    ) -> None:
+        queryset = MagicMock()
+
+        self.manager.get_queryset = MagicMock(
+            return_value=queryset,
+        )
+
+        self.manager.ordered()
+
+        queryset.ordered.assert_called_once_with()

@@ -4,11 +4,7 @@ from django.test import TestCase
 
 from apps.departments.models import Department
 from apps.employees.models import Employee
-from apps.employees.services import (
-    create_employee,
-    delete_employee,
-    update_employee,
-)
+from apps.employees.services import create_employee, delete_employee, update_employee
 from apps.organizations.models import Organization
 from apps.teams.models import Team
 

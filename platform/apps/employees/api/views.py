@@ -9,21 +9,14 @@ from apps.common.api.base_generics import (
     BaseListCreateAPIView,
     BaseRetrieveUpdateDestroyAPIView,
 )
-from apps.employees.selectors import (
-    get_employee_by_id,
-    get_employees,
-)
+from apps.employees.selectors import get_employee_by_id, get_employees
 from apps.employees.serializers import (
     EmployeeCreateSerializer,
     EmployeeDetailSerializer,
     EmployeeListSerializer,
     EmployeeUpdateSerializer,
 )
-from apps.employees.services import (
-    create_employee,
-    delete_employee,
-    update_employee,
-)
+from apps.employees.services import create_employee, delete_employee, update_employee
 from apps.rbac.permissions import (
     CanAddEmployees,
     CanChangeEmployees,

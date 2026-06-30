@@ -15,21 +15,14 @@ from apps.rbac.permissions import (
     CanDeleteTeams,
     CanViewTeams,
 )
-from apps.teams.selectors import (
-    get_team_by_id,
-    get_teams,
-)
+from apps.teams.selectors import get_team_by_id, get_teams
 from apps.teams.serializers import (
     TeamCreateSerializer,
     TeamDetailSerializer,
     TeamListSerializer,
     TeamUpdateSerializer,
 )
-from apps.teams.services import (
-    create_team,
-    delete_team,
-    update_team,
-)
+from apps.teams.services import create_team, delete_team, update_team
 
 
 class TeamListCreateAPIView(BaseListCreateAPIView):

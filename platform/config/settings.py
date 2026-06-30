@@ -115,6 +115,8 @@ DATABASES = {
         "PASSWORD": config("DATABASE_PASSWORD", default="postgres"),
         "HOST": config("DATABASE_HOST", default="localhost"),
         "PORT": config("DATABASE_PORT", default="5432"),
+        "CONN_MAX_AGE": 60,
+        "CONN_HEALTH_CHECKS": True,
     }
 }
 # ------------------------------------------------------------------------------
@@ -160,6 +162,12 @@ AUTH_USER_MODEL = "accounts.User"
 
 STATIC_URL = "static/"
 
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
+MEDIA_URL = "/media/"
+
+MEDIA_ROOT = BASE_DIR / "media"
+
 # ------------------------------------------------------------------------------
 # Django REST Framework
 # ------------------------------------------------------------------------------
@@ -171,9 +179,9 @@ REST_FRAMEWORK = {
     ),
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
     "DEFAULT_FILTER_BACKENDS": ("django_filters.rest_framework.DjangoFilterBackend",),
-    "DEFAULT_PAGINATION_CLASS": "apps.common.pagination.StandardResultsSetPagination",
+    "DEFAULT_PAGINATION_CLASS": ("apps.common.api.pagination.DatavionPagination",),
     "PAGE_SIZE": 20,
-    "EXCEPTION_HANDLER": ("apps.common.exceptions.custom_exception_handler"),
+    "EXCEPTION_HANDLER": ("apps.common.exceptions.handlers.custom_exception_handler",),
 }
 
 # ------------------------------------------------------------------------------
@@ -219,7 +227,21 @@ LOGGING = DJANGO_LOGGING
 
 APP_NAME = "Datavion AI"
 APP_VERSION = "1.0.0"
+APP_ENVIRONMENT = config(
+    "APP_ENVIRONMENT",
+    default="development",
+)
+# ----# ------------------------------------------------------------------------------
+# Production Security
 # ------------------------------------------------------------------------------
+
+if not DEBUG:
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+
+    X_FRAME_OPTIONS = "DENY"
+
+    SECURE_REFERRER_POLICY = "same-origin"
+# --------------------------------------------------------------------------
 # Default Primary Key
 # ------------------------------------------------------------------------------
 

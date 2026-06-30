@@ -1,3 +1,9 @@
+"""
+Standardized API response helpers.
+"""
+
+from __future__ import annotations
+
 from collections.abc import Mapping
 
 from rest_framework import status
@@ -11,12 +17,12 @@ def success_response(
     status_code: int = status.HTTP_200_OK,
 ) -> Response:
     """
-    Return a standardized successful API response.
+    Return a standardized success response.
 
     Example:
     {
         "success": true,
-        "message": "Employee retrieved successfully.",
+        "message": "Success.",
         "data": {...}
     }
     """
@@ -61,8 +67,8 @@ def error_response(
         "success": false,
         "message": "Validation failed.",
         "errors": {
-            "employee_code": [
-                "This field must be unique."
+            "field": [
+                "This field is required."
             ]
         }
     }
@@ -72,7 +78,7 @@ def error_response(
         {
             "success": False,
             "message": message,
-            "errors": errors,
+            "errors": errors or {},
         },
         status=status_code,
     )
@@ -80,7 +86,7 @@ def error_response(
 
 def no_content_response() -> Response:
     """
-    Return a standardized HTTP 204 No Content response.
+    Return an HTTP 204 No Content response.
     """
 
     return Response(

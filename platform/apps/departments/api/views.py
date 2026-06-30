@@ -9,10 +9,7 @@ from apps.common.api.base_generics import (
     BaseListCreateAPIView,
     BaseRetrieveUpdateDestroyAPIView,
 )
-from apps.departments.selectors import (
-    get_department_by_id,
-    get_departments,
-)
+from apps.departments.selectors import get_department_by_id, get_departments
 from apps.departments.serializers import (
     DepartmentCreateSerializer,
     DepartmentDetailSerializer,

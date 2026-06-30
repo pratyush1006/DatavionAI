@@ -1,9 +1,6 @@
 from django.urls import path
 
-from apps.teams.api.views import (
-    TeamListCreateAPIView,
-    TeamRetrieveUpdateDestroyAPIView,
-)
+from apps.teams.api.views import TeamListCreateAPIView, TeamRetrieveUpdateDestroyAPIView
 
 urlpatterns = [
     path(

@@ -1,41 +1,103 @@
-from django.contrib.auth.hashers import make_password
-from rest_framework_simplejwt.tokens import RefreshToken
+"""
+Business services for the Accounts app.
+"""
+
+from __future__ import annotations
+
+from collections.abc import Mapping
+
+from django.db import transaction
 
 from apps.accounts.models import User
 
 
-def generate_tokens(user):
-    refresh = RefreshToken.for_user(user)
+@transaction.atomic
+def create_user(
+    *,
+    validated_data: Mapping[str, object],
+) -> User:
+    """
+    Create a new user.
 
-    return {
-        "access": str(refresh.access_token),
-        "refresh": str(refresh),
-    }
+    Args:
+        validated_data: Validated user data.
 
+    Returns:
+        The newly created user.
+    """
 
-def create_user(validated_data):
-    password = validated_data.pop("password", None)
+    validated_data = dict(validated_data)
 
-    if password is None:
-        raise ValueError("Password is required.")
+    password = validated_data.pop("password")
 
-    user = User.objects.create(
-        password=make_password(password),
+    user = User(
         **validated_data,
     )
 
-    return user
-
-
-def update_user(user, validated_data):
-    password = validated_data.pop("password", None)
-
-    for field, value in validated_data.items():
-        setattr(user, field, value)
-
-    if password:
-        user.set_password(password)
+    user.set_password(
+        password,
+    )
 
     user.save()
 
     return user
+
+
+@transaction.atomic
+def update_user(
+    *,
+    instance: User,
+    validated_data: Mapping[str, object],
+) -> User:
+    """
+    Update an existing user.
+
+    Args:
+        instance: User instance to update.
+        validated_data: Validated fields to update.
+
+    Returns:
+        The updated user.
+    """
+
+    validated_data = dict(validated_data)
+
+    password = validated_data.pop(
+        "password",
+        None,
+    )
+
+    for field, value in validated_data.items():
+        setattr(
+            instance,
+            field,
+            value,
+        )
+
+    if password:
+        instance.set_password(
+            password,
+        )
+
+    instance.save(
+        update_fields=(
+            list(validated_data.keys()) + (["password"] if password else [])
+        ),
+    )
+
+    return instance
+
+
+@transaction.atomic
+def delete_user(
+    *,
+    instance: User,
+) -> None:
+    """
+    Delete a user.
+
+    Args:
+        instance: User instance to delete.
+    """
+
+    instance.delete()

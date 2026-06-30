@@ -1,13 +1,17 @@
 """
-Audit logging utilities for DatavionAI.
+Audit logging utilities for Datavion.
 
 Business modules should never log directly.
 Always use log_audit_event().
 """
 
+from __future__ import annotations
+
 import logging
 
-audit_logger = logging.getLogger("audit")
+audit_logger: logging.Logger = logging.getLogger(
+    "audit",
+)
 
 
 def log_audit_event(
@@ -39,3 +43,8 @@ def log_audit_event(
         user_id,
         message,
     )
+
+
+__all__ = [
+    "log_audit_event",
+]

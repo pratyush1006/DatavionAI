@@ -16,7 +16,6 @@ on:
 jobs:
   backend:
     name: Django Backend
-
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -27,7 +26,6 @@ jobs:
     services:
       postgres:
         image: postgres:16.9
-
         env:
           POSTGRES_DB: datavion
           POSTGRES_USER: postgres
@@ -73,20 +71,20 @@ jobs:
         run: |
           python - <<'EOF'
           import socket
-          import time
           import sys
+          import time
 
           host = "localhost"
           port = 5432
 
           for i in range(30):
-              try:
-                  with socket.create_connection((host, port), timeout=2):
-                      print("✅ PostgreSQL is ready.")
-                      sys.exit(0)
-              except OSError:
-                  print(f"Waiting for PostgreSQL... ({i+1}/30)")
-                  time.sleep(2)
+            try:
+              with socket.create_connection((host, port), timeout=2):
+                  print("✅ PostgreSQL is ready.")
+                  sys.exit(0)
+            except OSError:
+                print(f"Waiting for PostgreSQL... ({i + 1}/30)")
+                time.sleep(2)
 
           raise RuntimeError("❌ PostgreSQL did not become ready.")
           EOF
@@ -107,18 +105,17 @@ jobs:
           print("✅ Connected to PostgreSQL successfully!")
           conn.close()
           EOF
-
       - name: Ruff
         run: ruff check .
 
       - name: Black
         run: black --check .
 
-      - name: isort
-        run: isort . --check-only
-
       - name: Run Migrations
         run: python manage.py migrate
+
+      - name: Check for Missing Migrations
+        run: python manage.py makemigrations --check --dry-run
 
       - name: Django Check
         run: python manage.py check

@@ -1,16 +1,8 @@
 """
 Shared DRF generic API views.
 
-These classes currently extend Django REST Framework generic
-views without overriding their behavior. They provide a
-centralized extension point for future cross-cutting concerns,
-such as:
-
-- Audit logging
-- Organization scoping
-- Request metrics
-- Standardized API responses
-- Soft delete support
+These classes provide common behavior through reusable mixins
+while leaving business workflows inside feature applications.
 """
 
 from rest_framework.generics import (
@@ -18,18 +10,46 @@ from rest_framework.generics import (
     RetrieveUpdateDestroyAPIView,
 )
 
+from apps.common.api.mixins import (
+    PermissionMapMixin,
+    SelectorMixin,
+    SerializerMapMixin,
+)
 
-class BaseListCreateAPIView(ListCreateAPIView):
+
+class BaseListCreateAPIView(
+    PermissionMapMixin,
+    SerializerMapMixin,
+    SelectorMixin,
+    ListCreateAPIView,
+):
     """
     Base class for list/create API endpoints.
+
+    Business logic should remain inside feature views and
+    service layer implementations.
     """
 
     pass
 
 
-class BaseRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
+class BaseRetrieveUpdateDestroyAPIView(
+    PermissionMapMixin,
+    SerializerMapMixin,
+    SelectorMixin,
+    RetrieveUpdateDestroyAPIView,
+):
     """
     Base class for retrieve/update/delete API endpoints.
+
+    Business logic should remain inside feature views and
+    service layer implementations.
     """
 
     pass
+
+
+__all__ = [
+    "BaseListCreateAPIView",
+    "BaseRetrieveUpdateDestroyAPIView",
+]

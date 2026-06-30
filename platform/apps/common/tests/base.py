@@ -1,3 +1,12 @@
+"""
+Shared base test cases.
+
+These classes provide reusable test setup for feature
+applications.
+"""
+
+from __future__ import annotations
+
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from rest_framework.test import APIClient
@@ -11,10 +20,10 @@ User = get_user_model()
 
 class BaseTestCase(TestCase):
     """
-    Base test case shared across all test modules.
+    Base test case shared across feature applications.
     """
 
-    def setUp(self):
+    def setUp(self) -> None:
         super().setUp()
 
         self.organization = Organization.objects.create(
@@ -44,10 +53,10 @@ class BaseTestCase(TestCase):
 
 class BaseAPITestCase(BaseTestCase):
     """
-    Base API test case with authenticated client.
+    Base API test case with an authenticated client.
     """
 
-    def setUp(self):
+    def setUp(self) -> None:
         super().setUp()
 
         self.client = APIClient()

@@ -5,10 +5,22 @@ from rest_framework.test import APITestCase
 
 
 class HealthCheckAPITest(APITestCase):
+    """
+    Tests for the application health endpoint.
+    """
+
     def test_health_endpoint(self):
+        """
+        The health endpoint should return a successful
+        application health response.
+        """
+
         response = self.client.get(reverse("core:health"))
 
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_200_OK,
+        )
 
         self.assertTrue(response.data["success"])
 
@@ -22,7 +34,12 @@ class HealthCheckAPITest(APITestCase):
             settings.APP_VERSION,
         )
 
+        self.assertEqual(
+            response.data["data"]["checks"]["database"],
+            "ok",
+        )
+
         self.assertIn(
-            "database",
-            response.data["data"]["checks"],
+            "timestamp",
+            response.data["data"],
         )
