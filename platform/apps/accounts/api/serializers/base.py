@@ -1,16 +1,22 @@
 """
-Base serializers for the Accounts app.
+Base serializers for the Accounts application.
 """
 
 from __future__ import annotations
 
 from rest_framework import serializers
 
+from apps.accounts.models import User
+
 
 class UserBaseSerializer(serializers.ModelSerializer):
     """
     Base serializer containing shared validation logic.
     """
+
+    class Meta:
+        model = User
+        fields = ()
 
     def validate_email(
         self,
@@ -19,6 +25,7 @@ class UserBaseSerializer(serializers.ModelSerializer):
         """
         Normalize the email address.
         """
+
         return value.strip().lower()
 
     def validate_username(
@@ -28,4 +35,10 @@ class UserBaseSerializer(serializers.ModelSerializer):
         """
         Normalize the username.
         """
+
         return value.strip()
+
+
+__all__ = [
+    "UserBaseSerializer",
+]

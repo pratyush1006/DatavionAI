@@ -1,9 +1,17 @@
 from django.contrib import admin
 from django.urls import include, path
-from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
+from drf_spectacular.views import (
+    SpectacularAPIView,
+    SpectacularSwaggerView,
+)
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
+    # Django Admin
+    path(
+        "admin/",
+        admin.site.urls,
+    ),
+    # API Documentation
     path(
         "api/schema/",
         SpectacularAPIView.as_view(),
@@ -11,9 +19,12 @@ urlpatterns = [
     ),
     path(
         "api/docs/",
-        SpectacularSwaggerView.as_view(url_name="schema"),
+        SpectacularSwaggerView.as_view(
+            url_name="schema",
+        ),
         name="swagger-ui",
     ),
+    # Business APIs
     path(
         "api/auth/",
         include("apps.accounts.urls"),
@@ -39,7 +50,16 @@ urlpatterns = [
         include("apps.employees.urls"),
     ),
     path(
-        "api/v1/",
+        "api/configuration/",
+        include("apps.configuration.urls"),
+    ),
+    path(
+        "api/storage/",
+        include("apps.storage.urls"),
+    ),
+    # Infrastructure Endpoints
+    path(
+        "",
         include("apps.core.urls"),
     ),
 ]

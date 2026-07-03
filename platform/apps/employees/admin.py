@@ -1,7 +1,7 @@
 # Register your models here.
 from django.contrib import admin
 
-from apps.employees.models import Employee
+from apps.employees.models.employee import Employee
 
 
 @admin.register(Employee)

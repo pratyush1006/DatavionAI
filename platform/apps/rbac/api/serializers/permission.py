@@ -7,6 +7,13 @@ from __future__ import annotations
 from apps.rbac.api.serializers.base import RBACSerializer
 from apps.rbac.models import Permission
 
+PERMISSION_WRITE_FIELDS = (
+    "name",
+    "code",
+    "description",
+    "is_active",
+)
+
 
 class PermissionListSerializer(RBACSerializer):
     """
@@ -17,11 +24,9 @@ class PermissionListSerializer(RBACSerializer):
         model = Permission
         fields = (
             "id",
-            "name",
-            "code",
-            "description",
-            "is_active",
+            *PERMISSION_WRITE_FIELDS,
         )
+        read_only_fields = ("id",)
 
 
 class PermissionDetailSerializer(PermissionListSerializer):
@@ -35,6 +40,11 @@ class PermissionDetailSerializer(PermissionListSerializer):
             "created_at",
             "updated_at",
         )
+        read_only_fields = (
+            *PermissionListSerializer.Meta.read_only_fields,
+            "created_at",
+            "updated_at",
+        )
 
 
 class PermissionCreateSerializer(RBACSerializer):
@@ -44,12 +54,7 @@ class PermissionCreateSerializer(RBACSerializer):
 
     class Meta:
         model = Permission
-        fields = (
-            "name",
-            "code",
-            "description",
-            "is_active",
-        )
+        fields = PERMISSION_WRITE_FIELDS
 
 
 class PermissionUpdateSerializer(RBACSerializer):
@@ -59,9 +64,4 @@ class PermissionUpdateSerializer(RBACSerializer):
 
     class Meta:
         model = Permission
-        fields = (
-            "name",
-            "code",
-            "description",
-            "is_active",
-        )
+        fields = PERMISSION_WRITE_FIELDS

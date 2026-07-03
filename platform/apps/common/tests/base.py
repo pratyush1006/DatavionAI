@@ -13,7 +13,7 @@ from rest_framework.test import APIClient
 
 from apps.departments.models import Department
 from apps.organizations.models import Organization
-from apps.teams.models import Team
+from apps.teams.models.team import Team
 
 User = get_user_model()
 
@@ -26,29 +26,81 @@ class BaseTestCase(TestCase):
     def setUp(self) -> None:
         super().setUp()
 
-        self.organization = Organization.objects.create(
-            name="Datavion Analytics",
-            code="DAT",
-        )
+        self.organization = self.create_organization()
 
-        self.department = Department.objects.create(
-            organization=self.organization,
-            name="AI Engineering",
-            code="AI",
-        )
-
-        self.team = Team.objects.create(
-            department=self.department,
-            name="Backend Team",
-            code="BACKEND",
-        )
-
-        self.admin = User.objects.create_superuser(
+        self.admin = self.create_user(
             username="admin",
             email="admin@datavion.ai",
-            password="admin123",
+            password="TestPassword@123",
             organization=self.organization,
+            is_superuser=True,
+            is_staff=True,
         )
+
+    def create_organization(self, **kwargs) -> Organization:
+        """
+        Create a test organization.
+        """
+
+        defaults = {
+            "name": "Datavion Analytics",
+            "code": "DAT",
+        }
+        defaults.update(kwargs)
+
+        return Organization.objects.create(**defaults)
+
+    def create_user(self, **kwargs):
+        """
+        Create a test user.
+        """
+
+        password = kwargs.pop("password", "TestPassword@123")
+        is_superuser = kwargs.pop("is_superuser", False)
+
+        if is_superuser:
+            return User.objects.create_superuser(
+                password=password,
+                **kwargs,
+            )
+
+        return User.objects.create_user(
+            password=password,
+            **kwargs,
+        )
+
+    def create_department(self, **kwargs) -> Department:
+        """
+        Create a test department.
+        """
+
+        defaults = {
+            "organization": self.organization,
+            "name": "AI Engineering",
+            "code": "AI",
+        }
+        defaults.update(kwargs)
+
+        return Department.objects.create(**defaults)
+
+    def create_team(self, **kwargs) -> Team:
+        """
+        Create a test team.
+        """
+
+        department = kwargs.pop(
+            "department",
+            self.create_department(),
+        )
+
+        defaults = {
+            "department": department,
+            "name": "Backend Team",
+            "code": "BACKEND",
+        }
+        defaults.update(kwargs)
+
+        return Team.objects.create(**defaults)
 
 
 class BaseAPITestCase(BaseTestCase):
@@ -59,7 +111,7 @@ class BaseAPITestCase(BaseTestCase):
     def setUp(self) -> None:
         super().setUp()
 
-        self.client = APIClient()
+        self.client: APIClient = APIClient()
 
         self.client.force_authenticate(
             user=self.admin,

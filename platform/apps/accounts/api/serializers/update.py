@@ -1,24 +1,20 @@
 """
-Update serializer for the Accounts app.
+Update serializer for the Accounts application.
 """
 
 from __future__ import annotations
 
-from rest_framework import serializers
-
-from apps.accounts.api.serializers.fields import _UPDATE_FIELDS
-from apps.accounts.models import User
+from .base import UserBaseSerializer
+from .fields import UPDATE_FIELDS
 
 
-class UserUpdateSerializer(serializers.ModelSerializer):
+class UserUpdateSerializer(UserBaseSerializer):
     """
     Serializer for updating users.
     """
 
-    class Meta:
-        model = User
-
-        fields = _UPDATE_FIELDS
+    class Meta(UserBaseSerializer.Meta):
+        fields = UPDATE_FIELDS
 
         extra_kwargs = {
             "password": {
@@ -27,11 +23,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
             },
         }
 
-    def validate_email(
-        self,
-        value: str,
-    ) -> str:
-        """
-        Normalize the email address.
-        """
-        return value.strip().lower()
+
+__all__ = [
+    "UserUpdateSerializer",
+]

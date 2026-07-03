@@ -6,25 +6,23 @@ from __future__ import annotations
 
 from django.db import transaction
 
-from apps.accounts.models import User
-from apps.rbac.models import Role, UserRole
+from apps.rbac.models import UserRole
 
 
 @transaction.atomic
 def assign_role_to_user(
     *,
-    user: User,
-    role: Role,
+    validated_data: dict,
 ) -> UserRole:
     """
     Assign a role to a user.
 
-    If the assignment already exists, return it.
+    If the assignment already exists,
+    return the existing assignment.
     """
 
     user_role, _ = UserRole.objects.get_or_create(
-        user=user,
-        role=role,
+        **validated_data,
     )
 
     return user_role
@@ -33,14 +31,10 @@ def assign_role_to_user(
 @transaction.atomic
 def remove_role_from_user(
     *,
-    user: User,
-    role: Role,
+    instance: UserRole,
 ) -> None:
     """
-    Remove a role from a user.
+    Remove a role assignment.
     """
 
-    UserRole.objects.filter(
-        user=user,
-        role=role,
-    ).delete()
+    instance.delete()

@@ -1,180 +1,102 @@
 """
-Reusable API service mixins.
+Reusable service mixins for Datavion AI.
 
-These mixins provide reusable CRUD orchestration while
-delegating business logic to the service layer.
+These mixins connect DRF generic views with the application's
+service layer while keeping business logic outside the views.
 """
 
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import Any
 
-from rest_framework.request import Request
-from rest_framework.response import Response
 from rest_framework.serializers import BaseSerializer
 
-from .responses import (
-    created_response,
-    no_content_response,
-    success_response,
-)
 
-
-class CreateServiceMixin:
+class BaseServiceMixin:
     """
-    Reusable POST implementation.
-
-    Required attributes:
-        create_service
-        detail_serializer_class
-        create_success_message
+    Base mixin for connecting API views with service functions.
     """
 
-    create_service: Callable[..., object]
-    detail_serializer_class: type[BaseSerializer]
-    create_success_message = "Created successfully."
+    create_service: Callable | None = None
+    update_service: Callable | None = None
+    delete_service: Callable | None = None
 
-    def create(
+    instance = None
+
+
+class CreateServiceMixin(BaseServiceMixin):
+    """
+    Execute the configured create service.
+    """
+
+    def perform_create(
         self,
-        request: Request,
-        *args: Any,
-        **kwargs: Any,
-    ) -> Response:
+        serializer: BaseSerializer,
+    ) -> None:
         """
-        Validate request data, execute the create service,
-        and return the serialized resource.
+        Create a new object using the configured service.
         """
 
-        serializer = self.get_serializer(
-            data=request.data,
-        )
+        if self.create_service is None:
+            raise NotImplementedError(
+                "create_service must be configured.",
+            )
 
-        serializer.is_valid(
-            raise_exception=True,
-        )
-
-        instance = self.create_service(
+        self.instance = self.create_service(
             validated_data=serializer.validated_data,
         )
 
-        detail_serializer = self.detail_serializer_class(
-            instance,
-            context=self.get_serializer_context(),
-        )
 
-        return created_response(
-            data=detail_serializer.data,
-            message=self.create_success_message,
-        )
-
-
-class UpdateServiceMixin:
+class UpdateServiceMixin(BaseServiceMixin):
     """
-    Reusable PUT/PATCH implementation.
-
-    Required attributes:
-        update_service
-        detail_serializer_class
-        update_success_message
+    Execute the configured update service.
     """
 
-    update_service: Callable[..., object]
-    detail_serializer_class: type[BaseSerializer]
-    update_success_message = "Updated successfully."
-
-    def _update(
+    def perform_update(
         self,
-        request: Request,
-        *,
-        partial: bool,
-    ) -> Response:
+        serializer: BaseSerializer,
+    ) -> None:
         """
-        Execute a full or partial update.
+        Update an existing object using the configured service.
         """
 
-        instance = self.get_object()
+        if self.update_service is None:
+            raise NotImplementedError(
+                "update_service must be configured.",
+            )
 
-        serializer = self.get_serializer(
-            instance,
-            data=request.data,
-            partial=partial,
-        )
-
-        serializer.is_valid(
-            raise_exception=True,
-        )
-
-        instance = self.update_service(
-            instance=instance,
+        self.instance = self.update_service(
+            instance=self.get_object(),
             validated_data=serializer.validated_data,
         )
 
-        detail_serializer = self.detail_serializer_class(
-            instance,
-            context=self.get_serializer_context(),
-        )
 
-        return success_response(
-            data=detail_serializer.data,
-            message=self.update_success_message,
-        )
-
-    def update(
-        self,
-        request: Request,
-        *args: Any,
-        **kwargs: Any,
-    ) -> Response:
-        """
-        Handle HTTP PUT requests.
-        """
-
-        return self._update(
-            request,
-            partial=False,
-        )
-
-    def partial_update(
-        self,
-        request: Request,
-        *args: Any,
-        **kwargs: Any,
-    ) -> Response:
-        """
-        Handle HTTP PATCH requests.
-        """
-
-        return self._update(
-            request,
-            partial=True,
-        )
-
-
-class DestroyServiceMixin:
+class DestroyServiceMixin(BaseServiceMixin):
     """
-    Reusable DELETE implementation.
-
-    Required attributes:
-        delete_service
+    Execute the configured delete service.
     """
 
-    delete_service: Callable[..., None]
-
-    def destroy(
+    def perform_destroy(
         self,
-        request: Request,
-        *args: Any,
-        **kwargs: Any,
-    ) -> Response:
+        instance,
+    ) -> None:
         """
-        Delete the requested resource.
+        Delete an object using the configured service.
         """
 
-        instance = self.get_object()
+        if self.delete_service is None:
+            raise NotImplementedError(
+                "delete_service must be configured.",
+            )
 
         self.delete_service(
             instance=instance,
         )
 
-        return no_content_response()
+
+__all__ = [
+    "BaseServiceMixin",
+    "CreateServiceMixin",
+    "UpdateServiceMixin",
+    "DestroyServiceMixin",
+]

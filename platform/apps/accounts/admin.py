@@ -1,5 +1,5 @@
 """
-Admin configuration for the Accounts app.
+Admin configuration for the Accounts application.
 """
 
 from __future__ import annotations
@@ -20,8 +20,8 @@ class CustomUserAdmin(UserAdmin):
     """
 
     list_display = (
-        "username",
         "email",
+        "username",
         "first_name",
         "last_name",
         "is_verified",
@@ -31,8 +31,8 @@ class CustomUserAdmin(UserAdmin):
     )
 
     search_fields = (
-        "username",
         "email",
+        "username",
         "first_name",
         "last_name",
     )
@@ -44,10 +44,20 @@ class CustomUserAdmin(UserAdmin):
         "created_at",
     )
 
+    ordering = ("email",)
+
     readonly_fields = (
         "created_at",
         "updated_at",
     )
+
+    list_per_page = 25
+
+    date_hierarchy = "created_at"
+
+    preserve_filters = True
+
+    empty_value_display = "-"
 
     fieldsets = UserAdmin.fieldsets + (
         (
@@ -71,16 +81,14 @@ class ProfileAdmin(admin.ModelAdmin):
 
     list_display = (
         "user",
-        "phone",
         "language",
         "timezone",
         "created_at",
     )
 
     search_fields = (
-        "user__username",
         "user__email",
-        "phone",
+        "user__username",
     )
 
     list_filter = (
@@ -89,7 +97,23 @@ class ProfileAdmin(admin.ModelAdmin):
         "created_at",
     )
 
+    ordering = ("user__email",)
+
     readonly_fields = (
         "created_at",
         "updated_at",
     )
+
+    list_per_page = 25
+
+    date_hierarchy = "created_at"
+
+    preserve_filters = True
+
+    empty_value_display = "-"
+
+
+__all__ = [
+    "CustomUserAdmin",
+    "ProfileAdmin",
+]

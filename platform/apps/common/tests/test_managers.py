@@ -8,7 +8,7 @@ from unittest.mock import MagicMock
 
 from django.test import SimpleTestCase
 
-from apps.common.models import BaseManager
+from apps.core.models import BaseManager
 
 
 class BaseManagerTests(SimpleTestCase):

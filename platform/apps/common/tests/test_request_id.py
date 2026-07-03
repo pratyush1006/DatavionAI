@@ -12,8 +12,10 @@ from django.test import (
     TestCase,
 )
 
-from apps.common.middleware import RequestIDMiddleware
-from apps.common.request_id import get_request_id
+from apps.common.middleware import (
+    RequestIDMiddleware,
+    get_request_id,
+)
 
 
 class RequestIDMiddlewareTests(TestCase):

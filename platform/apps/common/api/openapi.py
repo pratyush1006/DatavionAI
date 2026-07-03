@@ -1,10 +1,15 @@
 """
 Reusable OpenAPI utilities for Datavion APIs.
 
-This module centralizes reusable OpenAPI helpers based on
-drf-spectacular. Feature applications should import these
-utilities instead of importing directly from drf-spectacular.
+This module provides a centralized import location for
+drf-spectacular utilities used across the platform.
+
+Feature applications should import these utilities from
+this module instead of importing directly from
+drf-spectacular.
 """
+
+from __future__ import annotations
 
 from drf_spectacular.utils import (
     OpenApiExample,

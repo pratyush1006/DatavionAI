@@ -1,13 +1,19 @@
-from django.urls import path
+"""
+URL configuration for the Core application.
+"""
 
-from .views import HealthCheckAPIView
+from __future__ import annotations
+
+from django.urls import include, path
 
 app_name = "core"
 
 urlpatterns = [
     path(
         "health/",
-        HealthCheckAPIView.as_view(),
-        name="health",
+        include(
+            "apps.core.health.urls",
+            namespace="health",
+        ),
     ),
 ]

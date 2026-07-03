@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from django.test import TestCase
 
-from apps.common.audit import log_audit_event
+from apps.common.logging.audit import log_audit_event
 
 
 class AuditLoggingTests(TestCase):
@@ -33,33 +33,43 @@ class AuditLoggingTests(TestCase):
             )
 
         self.assertEqual(
-            len(captured.output),
+            len(captured.records),
             1,
         )
 
-        log_message = captured.output[0]
+        record = captured.records[0]
 
-        self.assertIn(
-            "ACTION=CREATE",
-            log_message,
+        self.assertEqual(
+            record.levelname,
+            "INFO",
         )
 
-        self.assertIn(
-            "RESOURCE=Employee",
-            log_message,
+        self.assertEqual(
+            record.name,
+            "audit",
         )
 
-        self.assertIn(
-            "RESOURCE_ID=1",
-            log_message,
+        self.assertEqual(
+            record.action,
+            "CREATE",
         )
 
-        self.assertIn(
-            "USER_ID=10",
-            log_message,
+        self.assertEqual(
+            record.resource,
+            "Employee",
         )
 
-        self.assertIn(
-            "MESSAGE=Employee created successfully.",
-            log_message,
+        self.assertEqual(
+            record.resource_id,
+            1,
+        )
+
+        self.assertEqual(
+            record.user_id,
+            10,
+        )
+
+        self.assertEqual(
+            record.getMessage(),
+            "Employee created successfully.",
         )

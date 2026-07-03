@@ -12,61 +12,46 @@ from apps.rbac.models import Role
 @transaction.atomic
 def create_role(
     *,
-    name: str,
-    code: str,
-    description: str = "",
-    is_active: bool = True,
+    validated_data: dict,
 ) -> Role:
     """
     Create a new role.
     """
 
     return Role.objects.create(
-        name=name,
-        code=code,
-        description=description,
-        is_active=is_active,
+        **validated_data,
     )
 
 
 @transaction.atomic
 def update_role(
     *,
-    role: Role,
-    name: str,
-    code: str,
-    description: str,
-    is_active: bool,
+    instance: Role,
+    validated_data: dict,
 ) -> Role:
     """
     Update an existing role.
     """
 
-    role.name = name
-    role.code = code
-    role.description = description
-    role.is_active = is_active
+    for field, value in validated_data.items():
+        setattr(
+            instance,
+            field,
+            value,
+        )
 
-    role.save(
-        update_fields=[
-            "name",
-            "code",
-            "description",
-            "is_active",
-            "updated_at",
-        ],
-    )
+    instance.save()
 
-    return role
+    return instance
 
 
 @transaction.atomic
 def delete_role(
     *,
-    role: Role,
+    instance: Role,
 ) -> None:
     """
     Delete a role.
     """
 
-    role.delete()
+    instance.delete()

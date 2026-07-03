@@ -1,3 +1,9 @@
+"""
+Organization API URL patterns.
+"""
+
+from __future__ import annotations
+
 from django.urls import path
 
 from apps.organizations.api.views import (
@@ -5,15 +11,17 @@ from apps.organizations.api.views import (
     OrganizationRetrieveUpdateDestroyAPIView,
 )
 
+app_name = "organizations"
+
 urlpatterns = [
     path(
         "",
         OrganizationListCreateAPIView.as_view(),
-        name="organization-list-create",
+        name="list-create",
     ),
     path(
         "<int:organization_id>/",
         OrganizationRetrieveUpdateDestroyAPIView.as_view(),
-        name="organization-detail",
+        name="detail",
     ),
 ]

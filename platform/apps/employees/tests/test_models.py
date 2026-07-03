@@ -30,6 +30,7 @@ class EmployeeModelTest(TestCase):
         )
 
         self.user = User.objects.create_user(
+            email="john@datavion.ai",
             username="john",
             password="password123",
             first_name="John",
@@ -108,6 +109,7 @@ class EmployeeModelTest(TestCase):
         )
 
         second_user = User.objects.create_user(
+            email="alice@datavion.ai",
             username="alice",
             password="password123",
             first_name="Alice",
@@ -128,6 +130,7 @@ class EmployeeModelTest(TestCase):
 
     def test_manager_relationship(self):
         manager_user = User.objects.create_user(
+            email="manager@datavion.ai",
             username="manager",
             password="password123",
             first_name="Jane",
@@ -180,7 +183,8 @@ class EmployeeModelTest(TestCase):
 
     def test_manager_set_null_on_delete(self):
         manager_user = User.objects.create_user(
-            username="manager",
+            email="manager2@datavion.ai",
+            username="manager2",
             password="password123",
             first_name="Jane",
             last_name="Manager",

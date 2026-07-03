@@ -1,5 +1,5 @@
 """
-Public utility functions for Datavion.
+Reusable utility functions for Datavion AI.
 """
 
 from .codes import generate_code

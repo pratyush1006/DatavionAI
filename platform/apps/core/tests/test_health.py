@@ -1,45 +1,120 @@
-from django.conf import settings
+"""
+Tests for the Core Health API.
+"""
+
+from __future__ import annotations
+
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
+from apps.core.constants import (
+    ALIVE,
+    APP_NAME,
+    APP_VERSION,
+    HEALTHY,
+    READY,
+)
 
-class HealthCheckAPITest(APITestCase):
+
+class HealthAPITestCase(APITestCase):
     """
-    Tests for the application health endpoint.
+    Test suite for Core health endpoints.
     """
 
-    def test_health_endpoint(self):
+    def test_health_endpoint_returns_healthy(self) -> None:
         """
-        The health endpoint should return a successful
-        application health response.
+        Test the overall application health endpoint.
         """
 
-        response = self.client.get(reverse("core:health"))
+        response = self.client.get(
+            reverse("core:health:health"),
+        )
 
         self.assertEqual(
             response.status_code,
             status.HTTP_200_OK,
         )
 
-        self.assertTrue(response.data["success"])
-
         self.assertEqual(
-            response.data["data"]["status"],
-            "healthy",
+            response.data["application"],
+            APP_NAME,
         )
 
         self.assertEqual(
-            response.data["data"]["version"],
-            settings.APP_VERSION,
+            response.data["version"],
+            APP_VERSION,
         )
 
         self.assertEqual(
-            response.data["data"]["checks"]["database"],
-            "ok",
+            response.data["status"],
+            HEALTHY,
         )
 
         self.assertIn(
-            "timestamp",
-            response.data["data"],
+            "checks",
+            response.data,
+        )
+
+        self.assertIn(
+            "database",
+            response.data["checks"],
+        )
+
+    def test_liveness_endpoint_returns_alive(self) -> None:
+        """
+        Test the liveness endpoint.
+        """
+
+        response = self.client.get(
+            reverse("core:health:liveness"),
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_200_OK,
+        )
+
+        self.assertEqual(
+            response.data["status"],
+            ALIVE,
+        )
+
+    def test_readiness_endpoint_returns_ready(self) -> None:
+        """
+        Test the readiness endpoint.
+        """
+
+        response = self.client.get(
+            reverse("core:health:readiness"),
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_200_OK,
+        )
+
+        self.assertEqual(
+            response.data["application"],
+            APP_NAME,
+        )
+
+        self.assertEqual(
+            response.data["version"],
+            APP_VERSION,
+        )
+
+        self.assertEqual(
+            response.data["status"],
+            READY,
+        )
+
+        self.assertIn(
+            "checks",
+            response.data,
+        )
+
+        self.assertIn(
+            "database",
+            response.data["checks"],
         )

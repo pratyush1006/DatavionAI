@@ -1,10 +1,10 @@
 """
-Shared serializer field definitions for the Accounts app.
+Shared serializer field definitions for the Accounts application.
 """
 
 from __future__ import annotations
 
-_LIST_FIELDS = (
+LIST_FIELDS = (
     "id",
     "username",
     "email",
@@ -14,7 +14,7 @@ _LIST_FIELDS = (
     "is_verified",
 )
 
-_DETAIL_FIELDS = (
+DETAIL_FIELDS = (
     "id",
     "username",
     "email",
@@ -26,7 +26,7 @@ _DETAIL_FIELDS = (
     "updated_at",
 )
 
-_WRITE_FIELDS = (
+WRITE_FIELDS = (
     "username",
     "email",
     "first_name",
@@ -35,7 +35,7 @@ _WRITE_FIELDS = (
     "is_active",
 )
 
-_UPDATE_FIELDS = (
+UPDATE_FIELDS = (
     "first_name",
     "last_name",
     "email",
@@ -44,8 +44,8 @@ _UPDATE_FIELDS = (
 )
 
 __all__ = [
-    "_DETAIL_FIELDS",
-    "_LIST_FIELDS",
-    "_UPDATE_FIELDS",
-    "_WRITE_FIELDS",
+    "LIST_FIELDS",
+    "DETAIL_FIELDS",
+    "WRITE_FIELDS",
+    "UPDATE_FIELDS",
 ]

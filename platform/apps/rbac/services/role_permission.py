@@ -6,24 +6,23 @@ from __future__ import annotations
 
 from django.db import transaction
 
-from apps.rbac.models import Permission, Role, RolePermission
+from apps.rbac.models import RolePermission
 
 
 @transaction.atomic
 def assign_permission_to_role(
     *,
-    role: Role,
-    permission: Permission,
+    validated_data: dict,
 ) -> RolePermission:
     """
     Assign a permission to a role.
 
-    If the assignment already exists, return it.
+    If the assignment already exists,
+    return the existing assignment.
     """
 
     role_permission, _ = RolePermission.objects.get_or_create(
-        role=role,
-        permission=permission,
+        **validated_data,
     )
 
     return role_permission
@@ -32,14 +31,10 @@ def assign_permission_to_role(
 @transaction.atomic
 def remove_permission_from_role(
     *,
-    role: Role,
-    permission: Permission,
+    instance: RolePermission,
 ) -> None:
     """
-    Remove a permission from a role.
+    Remove a role-permission assignment.
     """
 
-    RolePermission.objects.filter(
-        role=role,
-        permission=permission,
-    ).delete()
+    instance.delete()

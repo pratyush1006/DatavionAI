@@ -2,6 +2,10 @@
 Organization-specific constants.
 """
 
+from __future__ import annotations
+
+from typing import Final
+
 from django.db import models
 
 
@@ -16,7 +20,7 @@ class OrganizationType(models.TextChoices):
     CORPORATE = "corporate", "Corporate"
 
 
-DEFAULT_ORGANIZATION_TYPE = OrganizationType.HOSPITAL
+DEFAULT_ORGANIZATION_TYPE: Final[str] = OrganizationType.HOSPITAL
 
 
 __all__ = [

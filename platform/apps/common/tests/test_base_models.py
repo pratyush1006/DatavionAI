@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from django.test import SimpleTestCase
 
-from apps.common.models import (
+from apps.core.models import (
     BaseModel,
     TimeStampedModel,
 )

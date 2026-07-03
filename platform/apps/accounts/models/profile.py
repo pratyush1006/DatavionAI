@@ -1,5 +1,5 @@
 """
-Profile model for the Accounts app.
+Profile model for the Accounts application.
 """
 
 from __future__ import annotations
@@ -15,19 +15,14 @@ from apps.core.models import TimeStampedModel
 
 class Profile(TimeStampedModel):
     """
-    Stores additional profile information for a user.
+    Stores additional preferences and profile
+    information for a user.
     """
 
     user = models.OneToOneField(
         "accounts.User",
         on_delete=models.CASCADE,
         related_name="profile",
-    )
-
-    phone = models.CharField(
-        max_length=20,
-        blank=True,
-        null=True,
     )
 
     avatar_url = models.URLField(
@@ -53,6 +48,12 @@ class Profile(TimeStampedModel):
 
     def __str__(self) -> str:
         """
-        Return the string representation of the profile.
+        Return the associated user's email.
         """
+
         return self.user.email
+
+
+__all__ = [
+    "Profile",
+]

@@ -8,6 +8,8 @@ Business-specific permissions (RBAC) belong in
 apps.rbac.permissions.
 """
 
+from __future__ import annotations
+
 from rest_framework.permissions import (
     SAFE_METHODS,
     BasePermission,
@@ -21,6 +23,29 @@ class IsAuthenticatedAndActive(BasePermission):
     Allow access only to authenticated active users.
     """
 
+    message = "Authentication is required or the user account is inactive."
+
+    def has_permission(
+        self,
+        request: Request,
+        _view: APIView,
+    ) -> bool:
+        """
+        Determine whether the current user is authenticated and active.
+        """
+
+        user = request.user
+
+        return bool(
+            user and user.is_authenticated and getattr(user, "is_active", False)
+        )
+
+
+class AllowAnyAuthenticated(BasePermission):
+    """
+    Allow access to any authenticated user.
+    """
+
     message = "Authentication is required."
 
     def has_permission(
@@ -28,14 +53,18 @@ class IsAuthenticatedAndActive(BasePermission):
         request: Request,
         _view: APIView,
     ) -> bool:
+        """
+        Determine whether the current user is authenticated.
+        """
+
         user = request.user
 
-        return bool(user and user.is_authenticated and user.is_active)
+        return bool(user and user.is_authenticated)
 
 
 class ReadOnly(BasePermission):
     """
-    Allow read-only requests.
+    Allow read-only HTTP methods.
     """
 
     def has_permission(
@@ -43,6 +72,10 @@ class ReadOnly(BasePermission):
         request: Request,
         _view: APIView,
     ) -> bool:
+        """
+        Determine whether the request uses a safe HTTP method.
+        """
+
         return request.method in SAFE_METHODS
 
 
@@ -58,22 +91,11 @@ class DenyAll(BasePermission):
         request: Request,
         _view: APIView,
     ) -> bool:
+        """
+        Always deny access.
+        """
+
         return False
-
-
-class AllowAnyAuthenticated(BasePermission):
-    """
-    Allow access to any authenticated user.
-    """
-
-    message = "Authentication is required."
-
-    def has_permission(
-        self,
-        request: Request,
-        _view: APIView,
-    ) -> bool:
-        return bool(request.user and request.user.is_authenticated)
 
 
 __all__ = [

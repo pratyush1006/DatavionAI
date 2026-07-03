@@ -1,5 +1,5 @@
 """
-Admin configuration for the Organizations app.
+Admin configuration for the Organizations application.
 """
 
 from __future__ import annotations
@@ -12,7 +12,7 @@ from apps.organizations.models import Organization
 @admin.register(Organization)
 class OrganizationAdmin(admin.ModelAdmin):
     """
-    Admin configuration for Organization.
+    Django admin configuration for Organization.
     """
 
     list_display = (
@@ -43,6 +43,7 @@ class OrganizationAdmin(admin.ModelAdmin):
     ordering = ("name",)
 
     readonly_fields = (
+        "id",
         "created_at",
         "updated_at",
     )
@@ -86,12 +87,18 @@ class OrganizationAdmin(admin.ModelAdmin):
             },
         ),
         (
-            "Audit",
+            "Audit Information",
             {
                 "fields": (
+                    "id",
                     "created_at",
                     "updated_at",
                 ),
             },
         ),
     )
+
+
+__all__ = [
+    "OrganizationAdmin",
+]

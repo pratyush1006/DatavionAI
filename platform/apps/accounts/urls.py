@@ -1,8 +1,23 @@
-from django.urls import include, path
+"""
+URL configuration for the Accounts application.
+"""
+
+from __future__ import annotations
+
+from django.urls import (
+    include,
+    path,
+)
 
 urlpatterns = [
     path(
-        "auth/",
-        include("apps.accounts.api.urls"),
+        "",
+        include(
+            "apps.accounts.api.urls",
+        ),
     ),
+]
+
+__all__ = [
+    "urlpatterns",
 ]

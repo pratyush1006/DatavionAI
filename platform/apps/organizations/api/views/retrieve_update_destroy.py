@@ -7,45 +7,31 @@ from __future__ import annotations
 from typing import Final
 
 from drf_spectacular.utils import extend_schema
-from rest_framework.permissions import (
-    BasePermission,
-    IsAuthenticated,
-)
-from rest_framework.request import Request
-from rest_framework.response import Response
-from rest_framework.serializers import BaseSerializer
+from rest_framework.permissions import IsAuthenticated
 
 from apps.common.api.base_generics import (
     BaseRetrieveUpdateDestroyAPIView,
-)
-from apps.common.api.responses import (
-    no_content_response,
-    success_response,
 )
 from apps.organizations.api.serializers import (
     OrganizationDetailSerializer,
     OrganizationUpdateSerializer,
 )
-from apps.organizations.models import Organization
-from apps.organizations.selectors import (
-    get_organization_by_id,
+from apps.organizations.permissions.organization import (
+    CanDeleteOrganization,
+    CanUpdateOrganization,
+    CanViewOrganization,
 )
+from apps.organizations.selectors import get_organization_by_id
 from apps.organizations.services import (
     delete_organization,
     update_organization,
 )
-from apps.rbac.permissions import (
-    CanChangeOrganizations,
-    CanDeleteOrganizations,
-    CanViewOrganizations,
-)
 
-ORGANIZATION_TAG: Final = ("Organizations",)
+ORGANIZATION_TAG: Final[tuple[str, ...]] = ("Organizations",)
 
 
-class OrganizationRetrieveUpdateDestroyAPIView(
-    BaseRetrieveUpdateDestroyAPIView,
-):
+@extend_schema(tags=ORGANIZATION_TAG)
+class OrganizationRetrieveUpdateDestroyAPIView(BaseRetrieveUpdateDestroyAPIView):
     """
     Retrieve, update, or delete an organization.
     """
@@ -55,138 +41,46 @@ class OrganizationRetrieveUpdateDestroyAPIView(
     permission_classes_map = {
         "GET": (
             IsAuthenticated,
-            CanViewOrganizations,
+            CanViewOrganization,
         ),
         "PUT": (
             IsAuthenticated,
-            CanChangeOrganizations,
+            CanUpdateOrganization,
         ),
         "PATCH": (
             IsAuthenticated,
-            CanChangeOrganizations,
+            CanUpdateOrganization,
         ),
         "DELETE": (
             IsAuthenticated,
-            CanDeleteOrganizations,
+            CanDeleteOrganization,
         ),
     }
 
-    def get_permissions(self) -> list[BasePermission]:
-        """
-        Return permissions based on request method.
-        """
-        permission_classes = self.permission_classes_map[self.request.method]
-        return [permission() for permission in permission_classes]
+    serializer_classes = {
+        "GET": OrganizationDetailSerializer,
+        "PUT": OrganizationUpdateSerializer,
+        "PATCH": OrganizationUpdateSerializer,
+    }
 
-    def get_object(self) -> Organization:
+    detail_serializer_class = OrganizationDetailSerializer
+
+    update_service = update_organization
+
+    delete_service = delete_organization
+
+    update_success_message = "Organization updated successfully."
+
+    def get_object(self):
         """
         Return the requested organization.
         """
+
         return get_organization_by_id(
             organization_id=self.kwargs[self.lookup_url_kwarg],
         )
 
-    def get_serializer_class(self) -> type[BaseSerializer]:
-        """
-        Return serializer for current request.
-        """
-        if self.request.method in ("PUT", "PATCH"):
-            return OrganizationUpdateSerializer
 
-        return OrganizationDetailSerializer
-
-    def _update(
-        self,
-        request: Request,
-        *,
-        partial: bool = False,
-    ) -> Response:
-        """
-        Shared implementation for PUT and PATCH.
-        """
-
-        organization = self.get_object()
-
-        serializer = self.get_serializer(
-            organization,
-            data=request.data,
-            partial=partial,
-        )
-
-        serializer.is_valid(
-            raise_exception=True,
-        )
-
-        organization = update_organization(
-            organization=organization,
-            validated_data=serializer.validated_data,
-        )
-
-        return success_response(
-            data=OrganizationDetailSerializer(
-                organization,
-            ).data,
-            message="Organization updated successfully.",
-        )
-
-    @extend_schema(tags=ORGANIZATION_TAG)
-    def get(
-        self,
-        request: Request,
-        *args,
-        **kwargs,
-    ) -> Response:
-        """
-        Retrieve organization.
-        """
-        return self.retrieve(
-            request,
-            *args,
-            **kwargs,
-        )
-
-    @extend_schema(tags=ORGANIZATION_TAG)
-    def put(
-        self,
-        request: Request,
-        *args,
-        **kwargs,
-    ) -> Response:
-        """
-        Replace organization.
-        """
-        return self._update(
-            request,
-            partial=False,
-        )
-
-    @extend_schema(tags=ORGANIZATION_TAG)
-    def patch(
-        self,
-        request: Request,
-        *args,
-        **kwargs,
-    ) -> Response:
-        """
-        Partially update organization.
-        """
-        return self._update(
-            request,
-            partial=True,
-        )
-
-    @extend_schema(tags=ORGANIZATION_TAG)
-    def delete(
-        self,
-        request: Request,
-        *args,
-        **kwargs,
-    ) -> Response:
-        """
-        Delete organization.
-        """
-        delete_organization(
-            organization=self.get_object(),
-        )
-
-        return no_content_response()
+__all__ = [
+    "OrganizationRetrieveUpdateDestroyAPIView",
+]

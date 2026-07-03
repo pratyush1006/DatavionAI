@@ -1,16 +1,46 @@
+"""
+Security utility functions.
+
+Provides cryptographically secure helpers used across the
+Datavion AI platform.
+"""
+
+from __future__ import annotations
+
 import secrets
 import string
 
+DEFAULT_RANDOM_STRING_LENGTH = 32
 
-def generate_random_string(length: int = 12) -> str:
+ALPHANUMERIC_CHARACTERS = string.ascii_letters + string.digits
+
+
+def generate_random_string(
+    *,
+    length: int = DEFAULT_RANDOM_STRING_LENGTH,
+    characters: str = ALPHANUMERIC_CHARACTERS,
+) -> str:
     """
-    Generate a cryptographically secure random
-    alphanumeric string.
+    Generate a cryptographically secure random string.
+
+    This helper is intended for security-related values such
+    as temporary passwords, API secrets, verification tokens,
+    and similar use cases.
     """
 
     if length <= 0:
-        raise ValueError("Length must be greater than zero.")
+        raise ValueError(
+            "length must be greater than zero.",
+        )
 
-    characters = string.ascii_letters + string.digits
+    return "".join(
+        secrets.choice(
+            characters,
+        )
+        for _ in range(length)
+    )
 
-    return "".join(secrets.choice(characters) for _ in range(length))
+
+__all__ = [
+    "generate_random_string",
+]

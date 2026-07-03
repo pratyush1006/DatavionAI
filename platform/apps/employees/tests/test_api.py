@@ -40,6 +40,7 @@ class EmployeeAPITest(TestCase):
         )
 
         self.employee_user = User.objects.create_user(
+            email="john@datavion.ai",
             username="john",
             password="password123",
             first_name="John",
@@ -63,14 +64,20 @@ class EmployeeAPITest(TestCase):
 
     def _get_results(self, response):
         """
-        Support both paginated and non-paginated responses.
+        Return the list payload from both paginated and
+        non-paginated Datavion API responses.
         """
-        if isinstance(response.data, dict):
-            return response.data.get(
-                "results",
-                [],
-            )
 
+        if isinstance(response.data, dict):
+            # Datavion standardized response
+            if "data" in response.data:
+                return response.data["data"]
+
+            # Backward compatibility (legacy DRF pagination)
+            if "results" in response.data:
+                return response.data["results"]
+
+            return []
         return response.data
 
     def test_list_employees(self):
@@ -105,6 +112,7 @@ class EmployeeAPITest(TestCase):
 
     def test_create_employee(self):
         new_user = User.objects.create_user(
+            email="alice@datavion.ai",
             username="alice",
             password="password123",
             organization=self.organization,

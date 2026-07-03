@@ -1,26 +1,28 @@
 """
-Organization models.
+Organization model.
 """
 
 from __future__ import annotations
 
 from django.db import models
 
-from apps.common.models import BaseManager
 from apps.common.validators import (
     phone_validator,
     validate_organization_code,
 )
-from apps.core.models import TimeStampedModel
+from apps.core.models import (
+    BaseManager,
+    BaseModel,
+)
 from apps.organizations.constants import (
     DEFAULT_ORGANIZATION_TYPE,
     OrganizationType,
 )
 
 
-class Organization(TimeStampedModel):
+class Organization(BaseModel):
     """
-    Represents a healthcare organization within the platform.
+    Represents an organization within the Datavion AI platform.
     """
 
     objects = BaseManager()
@@ -81,19 +83,23 @@ class Organization(TimeStampedModel):
         help_text="Country where the organization is located.",
     )
 
-    is_active = models.BooleanField(
-        default=True,
-        db_index=True,
-        help_text="Designates whether this organization is active.",
-    )
-
     class Meta:
+        db_table = "organizations"
         verbose_name = "Organization"
         verbose_name_plural = "Organizations"
         ordering = ("name",)
+        indexes = [
+            models.Index(fields=["organization_type"]),
+            models.Index(fields=["is_active"]),
+        ]
 
     def __str__(self) -> str:
         """
-        Return the human-readable representation of the organization.
+        Return the organization name.
         """
         return f"{self.name} ({self.code})"
+
+
+__all__ = [
+    "Organization",
+]

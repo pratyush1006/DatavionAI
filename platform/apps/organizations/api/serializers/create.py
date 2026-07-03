@@ -1,23 +1,32 @@
 """
-Create serializer for organizations.
+Create serializer for the Organizations application.
 """
 
 from __future__ import annotations
 
 from .base import OrganizationBaseSerializer
-from .fields import WRITE_FIELDS
+from .fields import _WRITE_FIELDS
 
 
 class OrganizationCreateSerializer(OrganizationBaseSerializer):
     """
-    Serializer for creating organizations.
+    Serializer used for creating organizations.
     """
 
     class Meta(OrganizationBaseSerializer.Meta):
-        fields = WRITE_FIELDS
+        fields = _WRITE_FIELDS
 
-    def validate_code(self, value: str) -> str:
+    def validate_code(
+        self,
+        value: str,
+    ) -> str:
         """
-        Normalize organization code.
+        Normalize the organization code.
         """
+
         return value.strip().upper()
+
+
+__all__ = [
+    "OrganizationCreateSerializer",
+]

@@ -1,5 +1,5 @@
 """
-Base serializers for the Organizations app.
+Base serializers for the Organizations application.
 """
 
 from __future__ import annotations
@@ -16,16 +16,32 @@ class OrganizationBaseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Organization
-        fields = ()
+        fields: tuple[str, ...] = ()
 
-    def validate_name(self, value: str) -> str:
+    def validate_name(
+        self,
+        value: str,
+    ) -> str:
         """
-        Normalize organization name.
+        Normalize the organization name.
         """
+
         return value.strip()
 
-    def validate_email(self, value: str) -> str:
+    def validate_email(
+        self,
+        value: str,
+    ) -> str:
         """
-        Normalize organization email.
+        Normalize the organization email.
         """
-        return value.strip().lower() if value else value
+
+        if not value:
+            return value
+
+        return value.strip().lower()
+
+
+__all__ = [
+    "OrganizationBaseSerializer",
+]

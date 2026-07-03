@@ -63,8 +63,10 @@ INSTALLED_APPS = [
     "apps.departments.apps.DepartmentsConfig",
     "apps.teams.apps.TeamsConfig",
     "apps.employees.apps.EmployeesConfig",
+    "apps.audit.apps.AuditConfig",
+    "apps.storage.apps.StorageConfig",
+    "apps.configuration.apps.ConfigurationConfig",
 ]
-
 # ------------------------------------------------------------------------------
 # Middleware
 # ------------------------------------------------------------------------------
@@ -174,14 +176,18 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
-    "DEFAULT_AUTHENTICATION_CLASSES": (
+    "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework_simplejwt.authentication.JWTAuthentication",
-    ),
-    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
-    "DEFAULT_FILTER_BACKENDS": ("django_filters.rest_framework.DjangoFilterBackend",),
-    "DEFAULT_PAGINATION_CLASS": ("apps.common.api.pagination.DatavionPagination",),
+    ],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
+    ],
+    "DEFAULT_FILTER_BACKENDS": [
+        "django_filters.rest_framework.DjangoFilterBackend",
+    ],
+    "DEFAULT_PAGINATION_CLASS": "apps.common.api.pagination.DatavionPagination",
     "PAGE_SIZE": 20,
-    "EXCEPTION_HANDLER": ("apps.common.exceptions.handlers.custom_exception_handler",),
+    "EXCEPTION_HANDLER": "apps.common.exceptions.handlers.custom_exception_handler",
 }
 
 # ------------------------------------------------------------------------------

@@ -1,24 +1,20 @@
 """
-Create serializer for the Accounts app.
+Create serializer for the Accounts application.
 """
 
 from __future__ import annotations
 
-from rest_framework import serializers
-
-from apps.accounts.api.serializers.fields import _WRITE_FIELDS
-from apps.accounts.models import User
+from .base import UserBaseSerializer
+from .fields import WRITE_FIELDS
 
 
-class UserCreateSerializer(serializers.ModelSerializer):
+class UserCreateSerializer(UserBaseSerializer):
     """
     Serializer for creating users.
     """
 
-    class Meta:
-        model = User
-
-        fields = _WRITE_FIELDS
+    class Meta(UserBaseSerializer.Meta):
+        fields = WRITE_FIELDS
 
         extra_kwargs = {
             "password": {
@@ -26,20 +22,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
             },
         }
 
-    def validate_email(
-        self,
-        value: str,
-    ) -> str:
-        """
-        Normalize the email address.
-        """
-        return value.strip().lower()
 
-    def validate_username(
-        self,
-        value: str,
-    ) -> str:
-        """
-        Normalize the username.
-        """
-        return value.strip()
+__all__ = [
+    "UserCreateSerializer",
+]

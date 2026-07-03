@@ -1,8 +1,12 @@
 """
-Serializer field definitions for the Organizations app.
+Serializer field definitions for the Organizations application.
 """
 
-LIST_FIELDS = (
+from __future__ import annotations
+
+from typing import Final
+
+_LIST_FIELDS: Final[tuple[str, ...]] = (
     "id",
     "name",
     "code",
@@ -12,7 +16,7 @@ LIST_FIELDS = (
     "is_active",
 )
 
-DETAIL_FIELDS = (
+_DETAIL_FIELDS: Final[tuple[str, ...]] = (
     "id",
     "name",
     "code",
@@ -28,7 +32,7 @@ DETAIL_FIELDS = (
     "updated_at",
 )
 
-WRITE_FIELDS = (
+_WRITE_FIELDS: Final[tuple[str, ...]] = (
     "name",
     "code",
     "organization_type",
@@ -41,7 +45,7 @@ WRITE_FIELDS = (
     "is_active",
 )
 
-UPDATE_FIELDS = (
+_UPDATE_FIELDS: Final[tuple[str, ...]] = (
     "name",
     "organization_type",
     "email",
@@ -52,3 +56,10 @@ UPDATE_FIELDS = (
     "country",
     "is_active",
 )
+
+__all__ = [
+    "_LIST_FIELDS",
+    "_DETAIL_FIELDS",
+    "_WRITE_FIELDS",
+    "_UPDATE_FIELDS",
+]

@@ -4,10 +4,10 @@ Shared constants for Datavion.
 
 from .choices import (
     YES_NO,
-    StatusChoices,
+    ActiveStatusChoices,
 )
 
 __all__ = [
-    "StatusChoices",
+    "ActiveStatusChoices",
     "YES_NO",
 ]

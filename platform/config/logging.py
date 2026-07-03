@@ -20,11 +20,7 @@ LOGGING = {
     "formatters": {
         "standard": {
             "format": (
-                "[{asctime}] "
-                "{levelname:<8} "
-                "{name:<20} "
-                "[{request_id}] "
-                "{message}"
+                "[{asctime}] {levelname:<8} {name:<20} [{request_id}] {message}"
             ),
             "style": "{",
             "datefmt": "%Y-%m-%dT%H:%M:%S%z",

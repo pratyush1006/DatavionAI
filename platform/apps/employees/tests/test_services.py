@@ -4,7 +4,11 @@ from django.test import TestCase
 
 from apps.departments.models import Department
 from apps.employees.models import Employee
-from apps.employees.services import create_employee, delete_employee, update_employee
+from apps.employees.services import (
+    create_employee,
+    delete_employee,
+    update_employee,
+)
 from apps.organizations.models import Organization
 from apps.teams.models import Team
 
@@ -31,6 +35,7 @@ class EmployeeServiceTest(TestCase):
         )
 
         self.user = User.objects.create_user(
+            email="john@datavion.ai",
             username="john",
             password="password123",
             first_name="John",
@@ -40,7 +45,7 @@ class EmployeeServiceTest(TestCase):
 
     def test_create_employee(self):
         employee = create_employee(
-            {
+            validated_data={
                 "organization": self.organization,
                 "department": self.department,
                 "team": self.team,
@@ -50,7 +55,7 @@ class EmployeeServiceTest(TestCase):
                 "manager": None,
                 "hire_date": "2026-06-26",
                 "is_active": True,
-            }
+            },
         )
 
         self.assertEqual(
@@ -60,7 +65,7 @@ class EmployeeServiceTest(TestCase):
 
     def test_update_employee(self):
         employee = create_employee(
-            {
+            validated_data={
                 "organization": self.organization,
                 "department": self.department,
                 "team": self.team,
@@ -70,12 +75,12 @@ class EmployeeServiceTest(TestCase):
                 "manager": None,
                 "hire_date": "2026-06-26",
                 "is_active": True,
-            }
+            },
         )
 
         employee = update_employee(
-            employee,
-            {
+            instance=employee,
+            validated_data={
                 "designation": "Senior Software Engineer",
             },
         )
@@ -87,7 +92,7 @@ class EmployeeServiceTest(TestCase):
 
     def test_delete_employee(self):
         employee = create_employee(
-            {
+            validated_data={
                 "organization": self.organization,
                 "department": self.department,
                 "team": self.team,
@@ -97,10 +102,12 @@ class EmployeeServiceTest(TestCase):
                 "manager": None,
                 "hire_date": "2026-06-26",
                 "is_active": True,
-            }
+            },
         )
 
-        delete_employee(employee)
+        delete_employee(
+            instance=employee,
+        )
 
         self.assertFalse(
             Employee.objects.filter(
@@ -122,7 +129,7 @@ class EmployeeServiceTest(TestCase):
 
         with self.assertRaises(ValidationError):
             create_employee(
-                {
+                validated_data={
                     "organization": self.organization,
                     "department": other_department,
                     "team": None,
@@ -132,7 +139,7 @@ class EmployeeServiceTest(TestCase):
                     "manager": None,
                     "hire_date": "2026-06-26",
                     "is_active": True,
-                }
+                },
             )
 
     def test_invalid_team_for_department(self):
@@ -150,7 +157,7 @@ class EmployeeServiceTest(TestCase):
 
         with self.assertRaises(ValidationError):
             create_employee(
-                {
+                validated_data={
                     "organization": self.organization,
                     "department": self.department,
                     "team": other_team,
@@ -160,12 +167,12 @@ class EmployeeServiceTest(TestCase):
                     "manager": None,
                     "hire_date": "2026-06-26",
                     "is_active": True,
-                }
+                },
             )
 
     def test_duplicate_employee_code(self):
         create_employee(
-            {
+            validated_data={
                 "organization": self.organization,
                 "department": self.department,
                 "team": self.team,
@@ -175,10 +182,11 @@ class EmployeeServiceTest(TestCase):
                 "manager": None,
                 "hire_date": "2026-06-26",
                 "is_active": True,
-            }
+            },
         )
 
         second_user = User.objects.create_user(
+            email="alice@datavion.ai",
             username="alice",
             password="password123",
             organization=self.organization,
@@ -186,7 +194,7 @@ class EmployeeServiceTest(TestCase):
 
         with self.assertRaises(ValidationError):
             create_employee(
-                {
+                validated_data={
                     "organization": self.organization,
                     "department": self.department,
                     "team": self.team,
@@ -196,5 +204,5 @@ class EmployeeServiceTest(TestCase):
                     "manager": None,
                     "hire_date": "2026-06-26",
                     "is_active": True,
-                }
+                },
             )

@@ -14,8 +14,18 @@ from .role import (
     RoleListSerializer,
     RoleUpdateSerializer,
 )
+from .role_permission import (
+    RolePermissionCreateSerializer,
+    RolePermissionDetailSerializer,
+    RolePermissionListSerializer,
+)
+from .user_role import (
+    UserRoleCreateSerializer,
+    UserRoleDetailSerializer,
+    UserRoleListSerializer,
+)
 
-__all__ = [
+__all__ = (
     "RoleListSerializer",
     "RoleDetailSerializer",
     "RoleCreateSerializer",
@@ -24,4 +34,10 @@ __all__ = [
     "PermissionDetailSerializer",
     "PermissionCreateSerializer",
     "PermissionUpdateSerializer",
-]
+    "UserRoleListSerializer",
+    "UserRoleDetailSerializer",
+    "UserRoleCreateSerializer",
+    "RolePermissionListSerializer",
+    "RolePermissionDetailSerializer",
+    "RolePermissionCreateSerializer",
+)
