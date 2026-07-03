@@ -57,6 +57,10 @@ urlpatterns = [
         "api/storage/",
         include("apps.storage.urls"),
     ),
+    path(
+        "api/patients/",
+        include("apps.patients.urls"),
+    ),
     # Infrastructure Endpoints
     path(
         "",

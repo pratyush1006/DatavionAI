@@ -5,12 +5,16 @@ Base generic API views used across the Datavion AI platform.
 from __future__ import annotations
 
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.filters import OrderingFilter, SearchFilter
+from rest_framework.filters import (
+    OrderingFilter,
+    SearchFilter,
+)
 from rest_framework.generics import (
     ListCreateAPIView,
     RetrieveUpdateDestroyAPIView,
 )
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
 from apps.common.api.pagination import DatavionPagination
 from apps.common.api.responses import (
@@ -18,6 +22,11 @@ from apps.common.api.responses import (
     error_response,
     no_content_response,
     success_response,
+)
+from apps.common.api.service_mixins import (
+    CreateServiceMixin,
+    DestroyServiceMixin,
+    UpdateServiceMixin,
 )
 
 
@@ -80,7 +89,7 @@ class BaseAPIViewMixin:
     def success_response(
         self,
         **kwargs,
-    ):
+    ) -> Response:
         """
         Return a standardized success response.
         """
@@ -92,7 +101,7 @@ class BaseAPIViewMixin:
     def created_response(
         self,
         **kwargs,
-    ):
+    ) -> Response:
         """
         Return a standardized created response.
         """
@@ -104,7 +113,7 @@ class BaseAPIViewMixin:
     def error_response(
         self,
         **kwargs,
-    ):
+    ) -> Response:
         """
         Return a standardized error response.
         """
@@ -115,7 +124,7 @@ class BaseAPIViewMixin:
 
     def no_content_response(
         self,
-    ):
+    ) -> Response:
         """
         Return a standardized no-content response.
         """
@@ -125,6 +134,7 @@ class BaseAPIViewMixin:
 
 class BaseListCreateAPIView(
     BaseAPIViewMixin,
+    CreateServiceMixin,
     ListCreateAPIView,
 ):
     """
@@ -134,6 +144,8 @@ class BaseListCreateAPIView(
 
 class BaseRetrieveUpdateDestroyAPIView(
     BaseAPIViewMixin,
+    UpdateServiceMixin,
+    DestroyServiceMixin,
     RetrieveUpdateDestroyAPIView,
 ):
     """

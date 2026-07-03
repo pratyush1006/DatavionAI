@@ -8,7 +8,9 @@ service layer while keeping business logic outside the views.
 from __future__ import annotations
 
 from collections.abc import Callable
+from typing import Any
 
+from django.core.exceptions import ImproperlyConfigured
 from rest_framework.serializers import BaseSerializer
 
 
@@ -17,11 +19,48 @@ class BaseServiceMixin:
     Base mixin for connecting API views with service functions.
     """
 
-    create_service: Callable | None = None
-    update_service: Callable | None = None
-    delete_service: Callable | None = None
+    create_service: Callable[..., Any] | None = None
 
-    instance = None
+    update_service: Callable[..., Any] | None = None
+
+    delete_service: Callable[..., Any] | None = None
+
+    def get_create_service_kwargs(
+        self,
+        serializer: BaseSerializer,
+    ) -> dict[str, Any]:
+        """
+        Return keyword arguments passed to the create service.
+        """
+
+        return {
+            "validated_data": serializer.validated_data,
+        }
+
+    def get_update_service_kwargs(
+        self,
+        serializer: BaseSerializer,
+    ) -> dict[str, Any]:
+        """
+        Return keyword arguments passed to the update service.
+        """
+
+        return {
+            "instance": self.get_object(),
+            "validated_data": serializer.validated_data,
+        }
+
+    def get_delete_service_kwargs(
+        self,
+        instance: Any,
+    ) -> dict[str, Any]:
+        """
+        Return keyword arguments passed to the delete service.
+        """
+
+        return {
+            "instance": instance,
+        }
 
 
 class CreateServiceMixin(BaseServiceMixin):
@@ -34,16 +73,20 @@ class CreateServiceMixin(BaseServiceMixin):
         serializer: BaseSerializer,
     ) -> None:
         """
-        Create a new object using the configured service.
+        Create an object using the configured service.
         """
 
-        if self.create_service is None:
-            raise NotImplementedError(
+        service = type(self).create_service
+
+        if service is None:
+            raise ImproperlyConfigured(
                 "create_service must be configured.",
             )
 
-        self.instance = self.create_service(
-            validated_data=serializer.validated_data,
+        service(
+            **self.get_create_service_kwargs(
+                serializer,
+            ),
         )
 
 
@@ -57,17 +100,20 @@ class UpdateServiceMixin(BaseServiceMixin):
         serializer: BaseSerializer,
     ) -> None:
         """
-        Update an existing object using the configured service.
+        Update an object using the configured service.
         """
 
-        if self.update_service is None:
-            raise NotImplementedError(
+        service = type(self).update_service
+
+        if service is None:
+            raise ImproperlyConfigured(
                 "update_service must be configured.",
             )
 
-        self.instance = self.update_service(
-            instance=self.get_object(),
-            validated_data=serializer.validated_data,
+        service(
+            **self.get_update_service_kwargs(
+                serializer,
+            ),
         )
 
 
@@ -78,19 +124,23 @@ class DestroyServiceMixin(BaseServiceMixin):
 
     def perform_destroy(
         self,
-        instance,
+        instance: Any,
     ) -> None:
         """
         Delete an object using the configured service.
         """
 
-        if self.delete_service is None:
-            raise NotImplementedError(
+        service = type(self).delete_service
+
+        if service is None:
+            raise ImproperlyConfigured(
                 "delete_service must be configured.",
             )
 
-        self.delete_service(
-            instance=instance,
+        service(
+            **self.get_delete_service_kwargs(
+                instance,
+            ),
         )
 
 

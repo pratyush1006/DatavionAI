@@ -20,7 +20,7 @@ urlpatterns = [
         name="list-create",
     ),
     path(
-        "<int:organization_id>/",
+        "<uuid:organization_id>/",
         OrganizationRetrieveUpdateDestroyAPIView.as_view(),
         name="detail",
     ),
