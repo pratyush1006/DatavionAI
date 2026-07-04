@@ -29,6 +29,10 @@ from apps.appointments.constants import (
 )
 from apps.appointments.models import Appointment
 User = get_user_model()
+from apps.encounters.constants import (
+    EncounterStatus,
+)
+from apps.encounters.models import Encounter
 
 
 class BaseTestCase(TestCase):
@@ -392,6 +396,62 @@ class BaseTestCase(TestCase):
             **defaults,
         )
 
+    def create_encounter(
+        self,
+        **kwargs,
+    ) -> Encounter:
+        """
+    Create a test encounter.
+    """
+
+        organization = kwargs.pop(
+            "organization",
+            self.organization,
+        )
+
+        appointment = kwargs.pop(
+            "appointment",
+            self.create_appointment(
+            organization=organization,
+        ),
+    )
+
+        patient = kwargs.pop(
+        "patient",
+        appointment.patient,
+    )
+
+        provider = kwargs.pop(
+        "provider",
+        appointment.provider,
+    )
+
+        encounter_number = kwargs.pop(
+        "encounter_number",
+        f"ENC{Encounter.objects.count() + 1:06d}",
+    )
+
+        defaults = {
+        "organization": organization,
+        "appointment": appointment,
+        "patient": patient,
+        "provider": provider,
+        "encounter_number": encounter_number,
+        "status": EncounterStatus.IN_PROGRESS,
+        "chief_complaint": "General Consultation",
+        "history_of_present_illness": "",
+        "assessment": "",
+        "plan": "",
+        "clinical_notes": "",
+        "duration_minutes": 0,
+        "is_billable": True,
+    }
+
+        defaults.update(kwargs)
+
+        return Encounter.objects.create(
+        **defaults,
+    )
 
 class BaseAPITestCase(BaseTestCase):
     """
