@@ -7,11 +7,16 @@ the Datavion AI platform.
 
 from __future__ import annotations
 
+from datetime import date
+
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from rest_framework.test import APIClient
 
+from apps.departments.models import Department
+from apps.employees.models import Employee
 from apps.organizations.models import Organization
+from apps.teams.models import Team
 
 User = get_user_model()
 
@@ -21,7 +26,9 @@ class BaseTestCase(TestCase):
     Base test case shared across feature applications.
     """
 
-    def setUp(self) -> None:
+    def setUp(
+        self,
+    ) -> None:
         super().setUp()
 
         self.organization = self.create_organization()
@@ -72,16 +79,164 @@ class BaseTestCase(TestCase):
             False,
         )
 
+        defaults = {
+            "first_name": "John",
+            "last_name": "Doe",
+        }
+
+        defaults.update(kwargs)
+
         if is_superuser:
             return User.objects.create_superuser(
                 password=password,
-                **kwargs,
+                **defaults,
             )
 
         return User.objects.create_user(
             password=password,
-            **kwargs,
+            **defaults,
         )
+
+    def create_department(
+        self,
+        **kwargs,
+    ) -> Department:
+        """
+        Create or reuse a test department.
+        """
+
+        organization = kwargs.pop(
+            "organization",
+            self.organization,
+        )
+
+        code = kwargs.pop(
+            "code",
+            "ENG",
+        )
+
+        defaults = {
+            "organization": organization,
+            "name": "Engineering",
+        }
+
+        defaults.update(kwargs)
+
+        department, _ = Department.objects.get_or_create(
+            organization=organization,
+            code=code,
+            defaults=defaults,
+        )
+
+        return department
+
+    def create_team(
+        self,
+        **kwargs,
+    ) -> Team:
+        """
+        Create or reuse a test team.
+        """
+
+        department = kwargs.pop(
+            "department",
+            self.create_department(),
+        )
+
+        code = kwargs.pop(
+            "code",
+            "BACKEND",
+        )
+
+        defaults = {
+            "department": department,
+            "name": "Backend Team",
+        }
+
+        defaults.update(kwargs)
+
+        team, _ = Team.objects.get_or_create(
+            department=department,
+            code=code,
+            defaults=defaults,
+        )
+
+        return team
+
+    def create_employee(
+        self,
+        **kwargs,
+    ) -> Employee:
+        """
+        Create a test employee.
+        """
+
+        organization = kwargs.pop(
+            "organization",
+            self.organization,
+        )
+
+        department = kwargs.pop(
+            "department",
+            None,
+        )
+
+        if department is None:
+            department = self.create_department(
+                organization=organization,
+            )
+
+        team = kwargs.pop(
+            "team",
+            None,
+        )
+
+        if team is None:
+            team = self.create_team(
+                department=department,
+            )
+
+        user = kwargs.pop(
+            "user",
+            None,
+        )
+
+        if user is None:
+            index = Employee.objects.count() + 1
+
+            user = self.create_user(
+                username=f"employee{index}",
+                email=f"employee{index}@datavion.ai",
+                organization=organization,
+            )
+
+        employee_code = kwargs.pop(
+            "employee_code",
+            f"EMP{Employee.objects.count() + 1:06d}",
+        )
+
+        defaults = {
+            "department": department,
+            "team": team,
+            "user": user,
+            "designation": "Software Engineer",
+            "hire_date": date(
+                2025,
+                1,
+                1,
+            ),
+            "is_active": True,
+        }
+
+        defaults.update(kwargs)
+
+        employee, _ = Employee.objects.get_or_create(
+            organization=organization,
+            employee_code=employee_code,
+            defaults=defaults,
+        )
+
+        return employee
 
 
 class BaseAPITestCase(BaseTestCase):
@@ -89,7 +244,9 @@ class BaseAPITestCase(BaseTestCase):
     Base API test case with an authenticated client.
     """
 
-    def setUp(self) -> None:
+    def setUp(
+        self,
+    ) -> None:
         super().setUp()
 
         self.client = APIClient()

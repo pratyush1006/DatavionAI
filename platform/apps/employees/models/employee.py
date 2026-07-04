@@ -75,5 +75,26 @@ class Employee(TimeStampedModel):
             ),
         ]
 
-    def __str__(self):
-        return f"{self.employee_code} - {self.user.get_full_name()}"
+    @property
+    def full_name(
+        self,
+    ) -> str:
+        """
+        Return the employee's full name.
+        """
+
+        return self.user.get_full_name()
+
+    def __str__(
+        self,
+    ) -> str:
+        """
+        Return the employee display name.
+        """
+
+        return f"{self.employee_code} - {self.full_name}"
+
+
+__all__ = [
+    "Employee",
+]
