@@ -77,7 +77,11 @@ urlpatterns = [
         "api/diagnoses/",
         include("apps.diagnoses.urls"),
     ),
-    
+    path(
+    "api/medications/",
+    include("apps.medications.urls"),
+    ),
+
     # Infrastructure Endpoints
     path(
         "",

@@ -70,7 +70,8 @@ INSTALLED_APPS = [
     "apps.providers.apps.ProvidersConfig",
     "apps.appointments.apps.AppointmentsConfig",
     "apps.encounters.apps.EncountersConfig",
-    "apps.diagnoses.apps.DiagnosesConfig"
+    "apps.diagnoses.apps.DiagnosesConfig",
+    "apps.medications.apps.MedicationsConfig",
 ]
 # ------------------------------------------------------------------------------
 # Middleware
