@@ -6,13 +6,9 @@ the Datavion AI platform.
 """
 
 from __future__ import annotations
-
-from datetime import date
-
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from rest_framework.test import APIClient
-
 from apps.departments.models import Department
 from apps.employees.models import Employee
 from apps.organizations.models import Organization
@@ -21,7 +17,17 @@ from apps.patients.models import Patient
 from apps.providers.constants import ProviderType
 from apps.providers.models import Provider
 from apps.teams.models import Team
-
+from datetime import (
+    date,
+    timedelta,
+)
+from django.utils import timezone
+from apps.appointments.constants import (
+    AppointmentPriority,
+    AppointmentStatus,
+    AppointmentType,
+)
+from apps.appointments.models import Appointment
 User = get_user_model()
 
 
@@ -331,6 +337,60 @@ class BaseTestCase(TestCase):
         )
 
         return provider
+
+    def create_appointment(
+        self,
+        **kwargs,
+    ) -> Appointment:
+        """
+        Create a test appointment.
+        """
+
+        organization = kwargs.pop(
+            "organization",
+            self.organization,
+        )
+
+        patient = kwargs.pop(
+            "patient",
+            self.create_patient(
+                organization=organization,
+            ),
+        )
+
+        provider = kwargs.pop(
+            "provider",
+            self.create_provider(
+                organization=organization,
+            ),
+        )
+
+        appointment_number = kwargs.pop(
+            "appointment_number",
+            f"APT{Appointment.objects.count() + 1:06d}",
+        )
+
+        defaults = {
+            "organization": organization,
+            "patient": patient,
+            "provider": provider,
+            "appointment_number": appointment_number,
+            "appointment_type": AppointmentType.CONSULTATION,
+            "status": AppointmentStatus.SCHEDULED,
+            "priority": AppointmentPriority.NORMAL,
+            "scheduled_start": timezone.now(),
+            "scheduled_end": timezone.now() + timedelta(
+                minutes=30,
+            ),
+            "duration_minutes": 30,
+            "reason": "General Consultation",
+        }
+
+        defaults.update(kwargs)
+
+        return Appointment.objects.create(
+            **defaults,
+        )
 
 
 class BaseAPITestCase(BaseTestCase):
