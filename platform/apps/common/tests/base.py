@@ -16,6 +16,10 @@ from rest_framework.test import APIClient
 from apps.departments.models import Department
 from apps.employees.models import Employee
 from apps.organizations.models import Organization
+from apps.patients.constants import PatientGender
+from apps.patients.models import Patient
+from apps.providers.constants import ProviderType
+from apps.providers.models import Provider
 from apps.teams.models import Team
 
 User = get_user_model()
@@ -168,7 +172,7 @@ class BaseTestCase(TestCase):
         **kwargs,
     ) -> Employee:
         """
-        Create a test employee.
+        Create or reuse a test employee.
         """
 
         organization = kwargs.pop(
@@ -237,6 +241,96 @@ class BaseTestCase(TestCase):
         )
 
         return employee
+
+    def create_patient(
+        self,
+        **kwargs,
+    ) -> Patient:
+        """
+        Create or reuse a test patient.
+        """
+
+        organization = kwargs.pop(
+            "organization",
+            self.organization,
+        )
+
+        mrn = kwargs.pop(
+            "mrn",
+            f"MRN{Patient.objects.count() + 1:06d}",
+        )
+
+        defaults = {
+            "first_name": "John",
+            "last_name": "Doe",
+            "date_of_birth": date(
+                1995,
+                1,
+                1,
+            ),
+            "gender": PatientGender.MALE,
+        }
+
+        defaults.update(kwargs)
+
+        patient, _ = Patient.objects.get_or_create(
+            organization=organization,
+            mrn=mrn,
+            defaults=defaults,
+        )
+
+        return patient
+
+    def create_provider(
+        self,
+        **kwargs,
+    ) -> Provider:
+        """
+        Create or reuse a test provider.
+        """
+
+        organization = kwargs.pop(
+            "organization",
+            self.organization,
+        )
+
+        employee = kwargs.pop(
+            "employee",
+            None,
+        )
+
+        if employee is None:
+            employee = self.create_employee(
+                organization=organization,
+            )
+
+        provider_number = kwargs.pop(
+            "provider_number",
+            f"PRV{Provider.objects.count() + 1:06d}",
+        )
+
+        license_number = kwargs.pop(
+            "license_number",
+            f"LIC{Provider.objects.count() + 1:06d}",
+        )
+
+        defaults = {
+            "employee": employee,
+            "provider_type": ProviderType.PHYSICIAN,
+        }
+
+        defaults.update(kwargs)
+
+        provider, _ = Provider.objects.get_or_create(
+            organization=organization,
+            provider_number=provider_number,
+            defaults={
+                **defaults,
+                "license_number": license_number,
+            },
+        )
+
+        return provider
 
 
 class BaseAPITestCase(BaseTestCase):

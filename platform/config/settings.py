@@ -68,6 +68,7 @@ INSTALLED_APPS = [
     "apps.configuration.apps.ConfigurationConfig",
     "apps.patients.apps.PatientsConfig",
     "apps.providers.apps.ProvidersConfig",
+    "apps.appointments.apps.AppointmentsConfig",
 ]
 # ------------------------------------------------------------------------------
 # Middleware
