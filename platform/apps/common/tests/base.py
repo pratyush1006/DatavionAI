@@ -33,7 +33,11 @@ from apps.encounters.constants import (
     EncounterStatus,
 )
 from apps.encounters.models import Encounter
-
+from apps.medications.constants import (
+    MedicationDosageForm,
+    MedicationRoute,
+)
+from apps.medications.models import Medication
 
 class BaseTestCase(TestCase):
     """
@@ -450,6 +454,33 @@ class BaseTestCase(TestCase):
         defaults.update(kwargs)
 
         return Encounter.objects.create(
+        **defaults,
+    )
+    def create_medication(
+        self,
+        **kwargs,
+    ) -> Medication:
+        """
+        Create a medication for tests.
+        """
+
+        defaults = {
+            "organization": self.organization,
+            "medication_code": "MED000001",
+            "generic_name": "Paracetamol",
+            "brand_name": "Crocin",
+            "strength": "500",
+            "strength_unit": "mg",
+            "dosage_form": MedicationDosageForm.TABLET,
+            "route": MedicationRoute.ORAL,
+            "manufacturer": "ABC Pharma",
+            "description": "Pain reliever",
+            "is_controlled": False,
+    }
+
+        defaults.update(kwargs)
+
+        return Medication.objects.create(
         **defaults,
     )
 
