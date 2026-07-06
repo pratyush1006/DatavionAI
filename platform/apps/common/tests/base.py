@@ -6,29 +6,25 @@ the Datavion AI platform.
 """
 
 from __future__ import annotations
-from django.contrib.auth import get_user_model
-from django.test import TestCase
-from rest_framework.test import APIClient
-from apps.departments.models import Department
-from apps.employees.models import Employee
-from apps.organizations.models import Organization
-from apps.patients.constants import PatientGender
-from apps.patients.models import Patient
-from apps.providers.constants import ProviderType
-from apps.providers.models import Provider
-from apps.teams.models import Team
+
 from datetime import (
     date,
     timedelta,
 )
+
+from django.contrib.auth import get_user_model
+from django.test import TestCase
 from django.utils import timezone
+from rest_framework.test import APIClient
+
 from apps.appointments.constants import (
     AppointmentPriority,
     AppointmentStatus,
     AppointmentType,
 )
 from apps.appointments.models import Appointment
-User = get_user_model()
+from apps.departments.models import Department
+from apps.employees.models import Employee
 from apps.encounters.constants import (
     EncounterStatus,
 )
@@ -38,6 +34,15 @@ from apps.medications.constants import (
     MedicationRoute,
 )
 from apps.medications.models import Medication
+from apps.organizations.models import Organization
+from apps.patients.constants import PatientGender
+from apps.patients.models import Patient
+from apps.providers.constants import ProviderType
+from apps.providers.models import Provider
+from apps.teams.models import Team
+
+User = get_user_model()
+
 
 class BaseTestCase(TestCase):
     """
@@ -387,7 +392,8 @@ class BaseTestCase(TestCase):
             "status": AppointmentStatus.SCHEDULED,
             "priority": AppointmentPriority.NORMAL,
             "scheduled_start": timezone.now(),
-            "scheduled_end": timezone.now() + timedelta(
+            "scheduled_end": timezone.now()
+            + timedelta(
                 minutes=30,
             ),
             "duration_minutes": 30,
@@ -405,8 +411,8 @@ class BaseTestCase(TestCase):
         **kwargs,
     ) -> Encounter:
         """
-    Create a test encounter.
-    """
+        Create a test encounter.
+        """
 
         organization = kwargs.pop(
             "organization",
@@ -416,46 +422,47 @@ class BaseTestCase(TestCase):
         appointment = kwargs.pop(
             "appointment",
             self.create_appointment(
-            organization=organization,
-        ),
-    )
+                organization=organization,
+            ),
+        )
 
         patient = kwargs.pop(
-        "patient",
-        appointment.patient,
-    )
+            "patient",
+            appointment.patient,
+        )
 
         provider = kwargs.pop(
-        "provider",
-        appointment.provider,
-    )
+            "provider",
+            appointment.provider,
+        )
 
         encounter_number = kwargs.pop(
-        "encounter_number",
-        f"ENC{Encounter.objects.count() + 1:06d}",
-    )
+            "encounter_number",
+            f"ENC{Encounter.objects.count() + 1:06d}",
+        )
 
         defaults = {
-        "organization": organization,
-        "appointment": appointment,
-        "patient": patient,
-        "provider": provider,
-        "encounter_number": encounter_number,
-        "status": EncounterStatus.IN_PROGRESS,
-        "chief_complaint": "General Consultation",
-        "history_of_present_illness": "",
-        "assessment": "",
-        "plan": "",
-        "clinical_notes": "",
-        "duration_minutes": 0,
-        "is_billable": True,
-    }
+            "organization": organization,
+            "appointment": appointment,
+            "patient": patient,
+            "provider": provider,
+            "encounter_number": encounter_number,
+            "status": EncounterStatus.IN_PROGRESS,
+            "chief_complaint": "General Consultation",
+            "history_of_present_illness": "",
+            "assessment": "",
+            "plan": "",
+            "clinical_notes": "",
+            "duration_minutes": 0,
+            "is_billable": True,
+        }
 
         defaults.update(kwargs)
 
         return Encounter.objects.create(
-        **defaults,
-    )
+            **defaults,
+        )
+
     def create_medication(
         self,
         **kwargs,
@@ -476,13 +483,14 @@ class BaseTestCase(TestCase):
             "manufacturer": "ABC Pharma",
             "description": "Pain reliever",
             "is_controlled": False,
-    }
+        }
 
         defaults.update(kwargs)
 
         return Medication.objects.create(
-        **defaults,
-    )
+            **defaults,
+        )
+
 
 class BaseAPITestCase(BaseTestCase):
     """
@@ -494,7 +502,7 @@ class BaseAPITestCase(BaseTestCase):
     ) -> None:
         super().setUp()
 
-        self.client = APIClient()
+        self.client: APIClient = APIClient()
 
         self.client.force_authenticate(
             user=self.admin,

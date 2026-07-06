@@ -58,7 +58,8 @@ class AppointmentServiceTestCase(BaseTestCase):
             status=AppointmentStatus.SCHEDULED,
             priority=AppointmentPriority.NORMAL,
             scheduled_start=timezone.now(),
-            scheduled_end=timezone.now() + timedelta(
+            scheduled_end=timezone.now()
+            + timedelta(
                 minutes=30,
             ),
             duration_minutes=30,
@@ -82,8 +83,7 @@ class AppointmentServiceTestCase(BaseTestCase):
                 "status": AppointmentStatus.CONFIRMED,
                 "priority": AppointmentPriority.HIGH,
                 "scheduled_start": timezone.now(),
-                "scheduled_end": timezone.now()
-                + timedelta(minutes=45),
+                "scheduled_end": timezone.now() + timedelta(minutes=45),
                 "duration_minutes": 45,
                 "reason": "Follow-up Visit",
             },
@@ -202,8 +202,7 @@ class AppointmentServiceTestCase(BaseTestCase):
                 "appointment_number": "APT000003",
                 "appointment_type": AppointmentType.SURGERY,
                 "scheduled_start": timezone.now(),
-                "scheduled_end": timezone.now()
-                + timedelta(hours=2),
+                "scheduled_end": timezone.now() + timedelta(hours=2),
             },
         )
 

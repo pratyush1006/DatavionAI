@@ -16,8 +16,6 @@ class MedicationCreateSerializer(
     Serializer for creating medications.
     """
 
-    pass
-
 
 __all__ = [
     "MedicationCreateSerializer",

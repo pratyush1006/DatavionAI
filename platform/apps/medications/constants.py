@@ -119,13 +119,9 @@ class MedicationRoute(models.TextChoices):
     )
 
 
-DEFAULT_DOSAGE_FORM = (
-    MedicationDosageForm.TABLET
-)
+DEFAULT_DOSAGE_FORM = MedicationDosageForm.TABLET
 
-DEFAULT_ROUTE = (
-    MedicationRoute.ORAL
-)
+DEFAULT_ROUTE = MedicationRoute.ORAL
 
 
 __all__ = [

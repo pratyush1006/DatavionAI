@@ -14,8 +14,6 @@ class DiagnosisFieldsSerializer(
     Serializer exposing diagnosis fields.
     """
 
-    pass
-
 
 __all__ = [
     "DiagnosisFieldsSerializer",

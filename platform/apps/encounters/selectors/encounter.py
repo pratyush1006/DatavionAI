@@ -14,15 +14,13 @@ def get_encounters() -> QuerySet[Encounter]:
     Return the encounter queryset.
     """
 
-    return (
-        Encounter.objects.select_related(
-            "organization",
-            "appointment",
-            "patient",
-            "provider",
-            "provider__employee",
-            "provider__employee__user",
-        )
+    return Encounter.objects.select_related(
+        "organization",
+        "appointment",
+        "patient",
+        "provider",
+        "provider__employee",
+        "provider__employee__user",
     )
 
 

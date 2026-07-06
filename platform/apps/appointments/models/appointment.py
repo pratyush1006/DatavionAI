@@ -7,11 +7,11 @@ from __future__ import annotations
 from django.db import models
 
 from apps.appointments.constants import (
+    DEFAULT_APPOINTMENT_PRIORITY,
+    DEFAULT_APPOINTMENT_STATUS,
     AppointmentPriority,
     AppointmentStatus,
     AppointmentType,
-    DEFAULT_APPOINTMENT_PRIORITY,
-    DEFAULT_APPOINTMENT_STATUS,
 )
 from apps.core.models import (
     BaseManager,
@@ -134,9 +134,7 @@ class Appointment(BaseModel):
 
         verbose_name_plural = "Appointments"
 
-        ordering = (
-            "-scheduled_start",
-        )
+        ordering = ("-scheduled_start",)
 
         indexes = [
             models.Index(

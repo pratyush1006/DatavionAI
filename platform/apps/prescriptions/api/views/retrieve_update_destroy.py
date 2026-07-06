@@ -30,9 +30,7 @@ from apps.prescriptions.services import (
     update_prescription,
 )
 
-PRESCRIPTION_TAG: Final[tuple[str, ...]] = (
-    "Prescriptions",
-)
+PRESCRIPTION_TAG: Final[tuple[str, ...]] = ("Prescriptions",)
 
 
 @extend_schema(tags=PRESCRIPTION_TAG)
@@ -70,9 +68,7 @@ class PrescriptionRetrieveUpdateDestroyAPIView(
         "PATCH": PrescriptionUpdateSerializer,
     }
 
-    detail_serializer_class = (
-        PrescriptionDetailSerializer
-    )
+    detail_serializer_class = PrescriptionDetailSerializer
 
     update_service = update_prescription
 
@@ -86,9 +82,7 @@ class PrescriptionRetrieveUpdateDestroyAPIView(
         """
 
         return get_prescription_by_id(
-            prescription_id=self.kwargs[
-                self.lookup_url_kwarg
-            ],
+            prescription_id=self.kwargs[self.lookup_url_kwarg],
         )
 
 

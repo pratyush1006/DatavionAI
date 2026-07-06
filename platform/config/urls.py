@@ -85,7 +85,14 @@ urlpatterns = [
         "api/prescriptions/",
         include("apps.prescriptions.urls"),
     ),
-    
+    path(
+        "api/allergies/",
+        include("apps.allergies.urls"),
+    ),
+    path(
+        "api/vitals/",
+        include("apps.vitals.urls"),
+    ),
     # Infrastructure Endpoints
     path(
         "",

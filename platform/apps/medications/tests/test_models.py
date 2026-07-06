@@ -51,10 +51,7 @@ class MedicationModelTestCase(BaseTestCase):
 
         self.assertEqual(
             str(self.medication),
-            (
-                f"{self.medication.medication_code} | "
-                f"{self.medication.title}"
-            ),
+            (f"{self.medication.medication_code} | {self.medication.title}"),
         )
 
     def test_title_property(

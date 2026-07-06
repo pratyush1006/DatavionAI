@@ -116,14 +116,10 @@ class AppointmentPriority(
     )
 
 
-DEFAULT_APPOINTMENT_STATUS = (
-    AppointmentStatus.SCHEDULED
-)
+DEFAULT_APPOINTMENT_STATUS = AppointmentStatus.SCHEDULED
 
 
-DEFAULT_APPOINTMENT_PRIORITY = (
-    AppointmentPriority.NORMAL
-)
+DEFAULT_APPOINTMENT_PRIORITY = AppointmentPriority.NORMAL
 
 
 __all__ = [

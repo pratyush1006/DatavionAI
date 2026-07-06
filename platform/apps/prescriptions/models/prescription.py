@@ -153,9 +153,7 @@ class Prescription(BaseModel):
 
         verbose_name_plural = "Prescriptions"
 
-        ordering = (
-            "-created_at",
-        )
+        ordering = ("-created_at",)
 
         indexes = [
             models.Index(
@@ -218,10 +216,7 @@ class Prescription(BaseModel):
         Return a readable title.
         """
 
-        return (
-            f"{self.medication.title} | "
-            f"{self.patient.full_name}"
-        )
+        return f"{self.medication.title} | {self.patient.full_name}"
 
     def __str__(
         self,
@@ -230,10 +225,7 @@ class Prescription(BaseModel):
         Return prescription display name.
         """
 
-        return (
-            f"{self.prescription_number} | "
-            f"{self.title}"
-        )
+        return f"{self.prescription_number} | {self.title}"
 
 
 __all__ = [

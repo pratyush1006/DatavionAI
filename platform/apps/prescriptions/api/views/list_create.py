@@ -24,9 +24,7 @@ from apps.prescriptions.permissions import (
 from apps.prescriptions.selectors import get_prescriptions
 from apps.prescriptions.services import create_prescription
 
-PRESCRIPTION_TAG: Final[tuple[str, ...]] = (
-    "Prescriptions",
-)
+PRESCRIPTION_TAG: Final[tuple[str, ...]] = ("Prescriptions",)
 
 
 @extend_schema(tags=PRESCRIPTION_TAG)
@@ -51,15 +49,11 @@ class PrescriptionListCreateAPIView(BaseListCreateAPIView):
         "POST": PrescriptionCreateSerializer,
     }
 
-    detail_serializer_class = (
-        PrescriptionDetailSerializer
-    )
+    detail_serializer_class = PrescriptionDetailSerializer
 
     create_service = create_prescription
 
-    create_success_message = (
-        "Prescription created successfully."
-    )
+    create_success_message = "Prescription created successfully."
 
     search_fields = (
         "prescription_number",
@@ -71,9 +65,7 @@ class PrescriptionListCreateAPIView(BaseListCreateAPIView):
         "medication__brand_name",
     )
 
-    ordering = (
-        "-created_at",
-    )
+    ordering = ("-created_at",)
 
     ordering_fields = (
         "prescription_number",

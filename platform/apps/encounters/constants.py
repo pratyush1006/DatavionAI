@@ -31,9 +31,7 @@ class EncounterStatus(models.TextChoices):
     )
 
 
-DEFAULT_ENCOUNTER_STATUS = (
-    EncounterStatus.SCHEDULED
-)
+DEFAULT_ENCOUNTER_STATUS = EncounterStatus.SCHEDULED
 
 
 __all__ = [

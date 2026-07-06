@@ -16,8 +16,6 @@ class PrescriptionUpdateSerializer(
     Serializer for updating prescriptions.
     """
 
-    pass
-
 
 __all__ = [
     "PrescriptionUpdateSerializer",

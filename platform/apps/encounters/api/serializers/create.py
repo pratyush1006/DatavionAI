@@ -16,8 +16,6 @@ class EncounterCreateSerializer(
     Serializer used when creating encounters.
     """
 
-    pass
-
 
 __all__ = [
     "EncounterCreateSerializer",

@@ -60,7 +60,8 @@ class AppointmentModelTestCase(BaseTestCase):
             status=AppointmentStatus.SCHEDULED,
             priority=AppointmentPriority.NORMAL,
             scheduled_start=timezone.now(),
-            scheduled_end=timezone.now() + timedelta(
+            scheduled_end=timezone.now()
+            + timedelta(
                 minutes=30,
             ),
             duration_minutes=30,
@@ -113,7 +114,8 @@ class AppointmentModelTestCase(BaseTestCase):
             appointment_number="APT000002",
             appointment_type=AppointmentType.FOLLOW_UP,
             scheduled_start=timezone.now(),
-            scheduled_end=timezone.now() + timedelta(
+            scheduled_end=timezone.now()
+            + timedelta(
                 minutes=30,
             ),
         )

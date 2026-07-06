@@ -16,8 +16,6 @@ class AppointmentListSerializer(
     Serializer used for listing appointments.
     """
 
-    pass
-
 
 __all__ = [
     "AppointmentListSerializer",

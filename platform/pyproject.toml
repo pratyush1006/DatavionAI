@@ -32,7 +32,7 @@ keywords = [
 classifiers = [
     "Development Status :: 4 - Beta",
     "Framework :: Django",
-    "Framework :: Django :: 5.2",
+    "Framework :: Django :: 6.0",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.12",
     "Operating System :: OS Independent",
@@ -118,6 +118,7 @@ python_version = "3.12"
 
 plugins = [
     "mypy_django_plugin.main",
+    "mypy_drf_plugin.main",
 ]
 
 namespace_packages = true
@@ -126,6 +127,7 @@ explicit_package_bases = true
 cache_dir = ".mypy_cache"
 
 incremental = true
+
 pretty = true
 show_error_codes = true
 show_column_numbers = true
@@ -138,7 +140,6 @@ warn_redundant_casts = true
 warn_unreachable = true
 warn_no_return = true
 
-# Gradual typing for an existing Django project
 check_untyped_defs = false
 disallow_untyped_defs = false
 disallow_incomplete_defs = false
@@ -147,6 +148,7 @@ disallow_any_generics = false
 
 strict_optional = true
 no_implicit_optional = true
+strict_equality = true
 
 exclude = '''(?x)(
     ^\.venv/
@@ -156,27 +158,30 @@ exclude = '''(?x)(
   | ^dist/
   | ^\.pytest_cache/
   | (^|.*/)migrations/
-  | (^|.*/)tests/
 )'''
 
-###############################################################################
-# Third-party libraries
-###############################################################################
+################################################################################
+# THIRD PARTY LIBRARIES
+################################################################################
 
 [[tool.mypy.overrides]]
 module = [
-    "rest_framework.*",
     "rest_framework",
-    "drf_spectacular.*",
+    "rest_framework.*",
     "drf_spectacular",
-    "django_filters.*",
+    "drf_spectacular.*",
     "django_filters",
+    "django_filters.*",
     "decouple",
+    "redis",
+    "celery",
+    "kombu",
 ]
 ignore_missing_imports = true
-###############################################################################
-# Keep core platform strict
-###############################################################################
+
+################################################################################
+# KEEP CORE PLATFORM STRICT
+################################################################################
 
 [[tool.mypy.overrides]]
 module = [
@@ -186,61 +191,47 @@ module = [
     "apps.configuration.services.*",
     "apps.configuration.selectors.*",
 ]
+
 check_untyped_defs = true
 disallow_untyped_defs = true
 disallow_incomplete_defs = true
 
-###############################################################################
-# Django management commands
-###############################################################################
+################################################################################
+# DJANGO MANAGEMENT COMMANDS
+################################################################################
 
 [[tool.mypy.overrides]]
 module = [
     "*.management.commands.*",
 ]
+
 disallow_untyped_defs = false
 
-###############################################################################
-# Settings
-###############################################################################
+################################################################################
+# DJANGO SETTINGS
+################################################################################
 
 [[tool.mypy.overrides]]
 module = [
     "config.settings",
 ]
+
 ignore_errors = true
 
-###############################################################################
-# Django Stubs
-###############################################################################
+################################################################################
+# DJANGO STUBS
+################################################################################
 
 [tool.django-stubs]
 django_settings_module = "config.settings"
-###############################################################################
-# Django management commands
-###############################################################################
-
-[[tool.mypy.overrides]]
-module = [
-    "*.management.commands.*",
-]
-disallow_untyped_defs = false
-
-###############################################################################
-# Settings
-###############################################################################
-
-[[tool.mypy.overrides]]
-module = [
-    "config.settings",
-]
-ignore_errors = true
+strict_settings = false
 
 ################################################################################
 # PYTEST
 ################################################################################
 
 [tool.pytest.ini_options]
+
 DJANGO_SETTINGS_MODULE = "config.settings"
 
 python_files = [
@@ -289,7 +280,6 @@ source = [
 
 omit = [
     "*/migrations/*",
-    "*/tests/*",
     "manage.py",
 ]
 
@@ -312,6 +302,7 @@ output = "coverage.xml"
 ################################################################################
 
 [tool.bandit]
+
 exclude_dirs = [
     "tests",
     ".venv",
@@ -330,14 +321,18 @@ confidence = "medium"
 ################################################################################
 
 [tool.setuptools]
+
 include-package-data = true
 
 [tool.setuptools.packages.find]
+
 where = ["."]
+
 include = [
     "apps*",
     "config*",
 ]
+
 exclude = [
     "tests*",
     "docs*",

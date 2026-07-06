@@ -30,9 +30,7 @@ from apps.encounters.services import (
     update_encounter,
 )
 
-ENCOUNTER_TAG: Final[tuple[str, ...]] = (
-    "Encounters",
-)
+ENCOUNTER_TAG: Final[tuple[str, ...]] = ("Encounters",)
 
 
 @extend_schema(tags=ENCOUNTER_TAG)
@@ -70,9 +68,7 @@ class EncounterRetrieveUpdateDestroyAPIView(
         "PATCH": EncounterUpdateSerializer,
     }
 
-    detail_serializer_class = (
-        EncounterDetailSerializer
-    )
+    detail_serializer_class = EncounterDetailSerializer
 
     update_service = update_encounter
 
@@ -86,9 +82,7 @@ class EncounterRetrieveUpdateDestroyAPIView(
         """
 
         return get_encounter_by_id(
-            encounter_id=self.kwargs[
-                self.lookup_url_kwarg
-            ],
+            encounter_id=self.kwargs[self.lookup_url_kwarg],
         )
 
 

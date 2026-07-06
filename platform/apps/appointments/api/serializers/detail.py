@@ -16,8 +16,6 @@ class AppointmentDetailSerializer(
     Serializer used for retrieving appointments.
     """
 
-    pass
-
 
 __all__ = [
     "AppointmentDetailSerializer",

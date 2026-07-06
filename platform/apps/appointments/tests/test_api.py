@@ -55,7 +55,8 @@ class AppointmentAPITestCase(BaseAPITestCase):
             status=AppointmentStatus.SCHEDULED,
             priority=AppointmentPriority.NORMAL,
             scheduled_start=timezone.now(),
-            scheduled_end=timezone.now() + timedelta(
+            scheduled_end=timezone.now()
+            + timedelta(
                 minutes=30,
             ),
             duration_minutes=30,
@@ -122,7 +123,8 @@ class AppointmentAPITestCase(BaseAPITestCase):
             "priority": AppointmentPriority.HIGH,
             "scheduled_start": timezone.now().isoformat(),
             "scheduled_end": (
-                timezone.now() + timedelta(
+                timezone.now()
+                + timedelta(
                     minutes=45,
                 )
             ).isoformat(),

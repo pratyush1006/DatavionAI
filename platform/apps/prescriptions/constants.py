@@ -89,13 +89,9 @@ class PrescriptionFrequency(models.TextChoices):
     )
 
 
-DEFAULT_PRESCRIPTION_STATUS = (
-    PrescriptionStatus.ACTIVE
-)
+DEFAULT_PRESCRIPTION_STATUS = PrescriptionStatus.ACTIVE
 
-DEFAULT_PRESCRIPTION_FREQUENCY = (
-    PrescriptionFrequency.ONCE_DAILY
-)
+DEFAULT_PRESCRIPTION_FREQUENCY = PrescriptionFrequency.ONCE_DAILY
 
 
 __all__ = [

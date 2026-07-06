@@ -16,8 +16,6 @@ class MedicationDetailSerializer(
     Serializer for medication details.
     """
 
-    pass
-
 
 __all__ = [
     "MedicationDetailSerializer",

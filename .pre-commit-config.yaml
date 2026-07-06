@@ -1,0 +1,102 @@
+default_language_version:
+  python: python3.12
+
+default_stages:
+  - pre-commit
+
+exclude: |
+  (?x)^(
+      .git/|
+      .venv/|
+      venv/|
+      __pycache__/|
+      .pytest_cache/|
+      .ruff_cache/|
+      .mypy_cache/|
+      .idea/|
+      .vscode/|
+      build/|
+      dist/|
+      htmlcov/|
+      coverage/|
+      node_modules/|
+      platform/staticfiles/|
+      platform/media/|
+      platform/logs/
+  )
+
+repos:
+
+##############################################################################
+# Ruff (Lint + Format)
+##############################################################################
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.0
+    hooks:
+
+      - id: ruff-check
+        name: Ruff Lint
+        files: ^platform/
+        args:
+          - --fix
+          - --config=platform/pyproject.toml
+
+      - id: ruff-format
+        name: Ruff Format
+        files: ^platform/
+        args:
+          - --config=platform/pyproject.toml
+
+##############################################################################
+# General File Quality
+##############################################################################
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+
+      - id: trailing-whitespace
+
+      - id: end-of-file-fixer
+
+      - id: mixed-line-ending
+        args:
+          - --fix=lf
+
+      - id: check-yaml
+
+      - id: check-json
+
+      - id: check-toml
+
+      - id: check-merge-conflict
+
+      - id: check-case-conflict
+
+      - id: check-added-large-files
+        args:
+          - --maxkb=1024
+
+      - id: debug-statements
+
+      - id: check-ast
+
+##############################################################################
+# Local Django Checks
+##############################################################################
+
+  - repo: local
+    hooks:
+
+      - id: django-check
+        name: Django System Check
+        entry: python platform/manage.py check
+        language: system
+        pass_filenames: false
+
+      - id: django-migrations
+        name: Check Missing Migrations
+        entry: python platform/manage.py makemigrations --check --dry-run
+        language: system
+        pass_filenames: false

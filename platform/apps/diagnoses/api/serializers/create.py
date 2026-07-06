@@ -14,8 +14,6 @@ class DiagnosisCreateSerializer(
     Serializer for creating diagnoses.
     """
 
-    pass
-
 
 __all__ = [
     "DiagnosisCreateSerializer",

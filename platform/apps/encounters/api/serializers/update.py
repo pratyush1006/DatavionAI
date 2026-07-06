@@ -16,8 +16,6 @@ class EncounterUpdateSerializer(
     Serializer used when updating encounters.
     """
 
-    pass
-
 
 __all__ = [
     "EncounterUpdateSerializer",

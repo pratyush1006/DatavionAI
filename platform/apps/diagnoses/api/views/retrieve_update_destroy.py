@@ -30,9 +30,7 @@ from apps.diagnoses.services import (
     update_diagnosis,
 )
 
-DIAGNOSIS_TAG: Final[tuple[str, ...]] = (
-    "Diagnoses",
-)
+DIAGNOSIS_TAG: Final[tuple[str, ...]] = ("Diagnoses",)
 
 
 @extend_schema(tags=DIAGNOSIS_TAG)
@@ -70,9 +68,7 @@ class DiagnosisRetrieveUpdateDestroyAPIView(
         "PATCH": DiagnosisUpdateSerializer,
     }
 
-    detail_serializer_class = (
-        DiagnosisDetailSerializer
-    )
+    detail_serializer_class = DiagnosisDetailSerializer
 
     update_service = update_diagnosis
 
@@ -86,9 +82,7 @@ class DiagnosisRetrieveUpdateDestroyAPIView(
         """
 
         return get_diagnosis_by_id(
-            diagnosis_id=self.kwargs[
-                self.lookup_url_kwarg
-            ],
+            diagnosis_id=self.kwargs[self.lookup_url_kwarg],
         )
 
 

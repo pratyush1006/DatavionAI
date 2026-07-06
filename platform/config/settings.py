@@ -73,6 +73,8 @@ INSTALLED_APPS = [
     "apps.diagnoses.apps.DiagnosesConfig",
     "apps.medications.apps.MedicationsConfig",
     "apps.prescriptions.apps.PrescriptionsConfig",
+    "apps.allergies.apps.AllergiesConfig",
+    "apps.vitals.apps.VitalsConfig",
 ]
 # ------------------------------------------------------------------------------
 # Middleware

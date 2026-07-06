@@ -16,8 +16,6 @@ class AppointmentCreateSerializer(
     Serializer for creating appointments.
     """
 
-    pass
-
 
 __all__ = [
     "AppointmentCreateSerializer",

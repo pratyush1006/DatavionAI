@@ -103,9 +103,7 @@ class Medication(BaseModel):
 
         verbose_name_plural = "Medications"
 
-        ordering = (
-            "generic_name",
-        )
+        ordering = ("generic_name",)
 
         indexes = [
             models.Index(
@@ -171,10 +169,7 @@ class Medication(BaseModel):
                 f"({self.brand_name})"
             )
 
-        return (
-            f"{self.generic_name} "
-            f"{self.strength}{self.strength_unit}"
-        )
+        return f"{self.generic_name} {self.strength}{self.strength_unit}"
 
     def __str__(
         self,
@@ -183,10 +178,7 @@ class Medication(BaseModel):
         Return medication display string.
         """
 
-        return (
-            f"{self.medication_code} | "
-            f"{self.title}"
-        )
+        return f"{self.medication_code} | {self.title}"
 
 
 __all__ = [

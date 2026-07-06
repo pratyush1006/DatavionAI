@@ -16,8 +16,6 @@ class EncounterListSerializer(
     Serializer for encounter list endpoint.
     """
 
-    pass
-
 
 __all__ = [
     "EncounterListSerializer",

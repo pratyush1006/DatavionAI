@@ -1,0 +1,3 @@
+"""
+Vitals application.
+"""

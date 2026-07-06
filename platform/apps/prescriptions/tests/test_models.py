@@ -110,10 +110,7 @@ class PrescriptionModelTestCase(BaseTestCase):
 
         self.assertEqual(
             str(self.prescription),
-            (
-                f"{self.prescription.prescription_number} | "
-                f"{self.prescription.title}"
-            ),
+            (f"{self.prescription.prescription_number} | {self.prescription.title}"),
         )
 
     def test_title_property(
@@ -125,10 +122,7 @@ class PrescriptionModelTestCase(BaseTestCase):
 
         self.assertEqual(
             self.prescription.title,
-            (
-                f"{self.medication.title} | "
-                f"{self.patient.full_name}"
-            ),
+            (f"{self.medication.title} | {self.patient.full_name}"),
         )
 
     def test_defaults(

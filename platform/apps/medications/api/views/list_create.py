@@ -24,9 +24,7 @@ from apps.medications.permissions import (
 from apps.medications.selectors import get_medications
 from apps.medications.services import create_medication
 
-MEDICATION_TAG: Final[tuple[str, ...]] = (
-    "Medications",
-)
+MEDICATION_TAG: Final[tuple[str, ...]] = ("Medications",)
 
 
 @extend_schema(tags=MEDICATION_TAG)
@@ -51,15 +49,11 @@ class MedicationListCreateAPIView(BaseListCreateAPIView):
         "POST": MedicationCreateSerializer,
     }
 
-    detail_serializer_class = (
-        MedicationDetailSerializer
-    )
+    detail_serializer_class = MedicationDetailSerializer
 
     create_service = create_medication
 
-    create_success_message = (
-        "Medication created successfully."
-    )
+    create_success_message = "Medication created successfully."
 
     search_fields = (
         "medication_code",
@@ -68,9 +62,7 @@ class MedicationListCreateAPIView(BaseListCreateAPIView):
         "manufacturer",
     )
 
-    ordering = (
-        "generic_name",
-    )
+    ordering = ("generic_name",)
 
     ordering_fields = (
         "medication_code",

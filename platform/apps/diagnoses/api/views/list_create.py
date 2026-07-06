@@ -28,9 +28,7 @@ from apps.diagnoses.services import (
     create_diagnosis,
 )
 
-DIAGNOSIS_TAG: Final[tuple[str, ...]] = (
-    "Diagnoses",
-)
+DIAGNOSIS_TAG: Final[tuple[str, ...]] = ("Diagnoses",)
 
 
 @extend_schema(tags=DIAGNOSIS_TAG)
@@ -57,15 +55,11 @@ class DiagnosisListCreateAPIView(
         "POST": DiagnosisCreateSerializer,
     }
 
-    detail_serializer_class = (
-        DiagnosisDetailSerializer
-    )
+    detail_serializer_class = DiagnosisDetailSerializer
 
     create_service = create_diagnosis
 
-    create_success_message = (
-        "Diagnosis created successfully."
-    )
+    create_success_message = "Diagnosis created successfully."
 
     search_fields = (
         "diagnosis_code",
@@ -73,9 +67,7 @@ class DiagnosisListCreateAPIView(
         "encounter__encounter_number",
     )
 
-    ordering = (
-        "-created_at",
-    )
+    ordering = ("-created_at",)
 
     ordering_fields = (
         "diagnosis_code",

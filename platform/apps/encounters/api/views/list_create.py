@@ -24,9 +24,7 @@ from apps.encounters.permissions import (
 from apps.encounters.selectors import get_encounters
 from apps.encounters.services import create_encounter
 
-ENCOUNTER_TAG: Final[tuple[str, ...]] = (
-    "Encounters",
-)
+ENCOUNTER_TAG: Final[tuple[str, ...]] = ("Encounters",)
 
 
 @extend_schema(tags=ENCOUNTER_TAG)
@@ -53,15 +51,11 @@ class EncounterListCreateAPIView(
         "POST": EncounterCreateSerializer,
     }
 
-    detail_serializer_class = (
-        EncounterDetailSerializer
-    )
+    detail_serializer_class = EncounterDetailSerializer
 
     create_service = create_encounter
 
-    create_success_message = (
-        "Encounter created successfully."
-    )
+    create_success_message = "Encounter created successfully."
 
     search_fields = (
         "encounter_number",
@@ -71,9 +65,7 @@ class EncounterListCreateAPIView(
         "provider__employee__user__last_name",
     )
 
-    ordering = (
-        "-created_at",
-    )
+    ordering = ("-created_at",)
 
     ordering_fields = (
         "encounter_number",

@@ -14,8 +14,6 @@ class DiagnosisUpdateSerializer(
     Serializer for updating diagnoses.
     """
 
-    pass
-
 
 __all__ = [
     "DiagnosisUpdateSerializer",

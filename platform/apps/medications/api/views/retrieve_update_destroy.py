@@ -30,9 +30,7 @@ from apps.medications.services import (
     update_medication,
 )
 
-MEDICATION_TAG: Final[tuple[str, ...]] = (
-    "Medications",
-)
+MEDICATION_TAG: Final[tuple[str, ...]] = ("Medications",)
 
 
 @extend_schema(tags=MEDICATION_TAG)
@@ -70,9 +68,7 @@ class MedicationRetrieveUpdateDestroyAPIView(
         "PATCH": MedicationUpdateSerializer,
     }
 
-    detail_serializer_class = (
-        MedicationDetailSerializer
-    )
+    detail_serializer_class = MedicationDetailSerializer
 
     update_service = update_medication
 
@@ -86,9 +82,7 @@ class MedicationRetrieveUpdateDestroyAPIView(
         """
 
         return get_medication_by_id(
-            medication_id=self.kwargs[
-                self.lookup_url_kwarg
-            ],
+            medication_id=self.kwargs[self.lookup_url_kwarg],
         )
 
 

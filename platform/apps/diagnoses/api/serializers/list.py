@@ -14,8 +14,6 @@ class DiagnosisListSerializer(
     Serializer for listing diagnoses.
     """
 
-    pass
-
 
 __all__ = [
     "DiagnosisListSerializer",

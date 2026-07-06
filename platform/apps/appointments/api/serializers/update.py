@@ -16,8 +16,6 @@ class AppointmentUpdateSerializer(
     Serializer for updating appointments.
     """
 
-    pass
-
 
 __all__ = [
     "AppointmentUpdateSerializer",

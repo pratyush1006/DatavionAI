@@ -91,9 +91,7 @@ class Diagnosis(BaseModel):
 
         verbose_name_plural = "Diagnoses"
 
-        ordering = (
-            "-created_at",
-        )
+        ordering = ("-created_at",)
 
         indexes = [
             models.Index(
@@ -148,10 +146,7 @@ class Diagnosis(BaseModel):
         Return diagnosis title.
         """
 
-        return (
-            f"{self.diagnosis_code} | "
-            f"{self.diagnosis_description}"
-        )
+        return f"{self.diagnosis_code} | {self.diagnosis_description}"
 
     def __str__(
         self,
@@ -160,10 +155,7 @@ class Diagnosis(BaseModel):
         Return diagnosis display string.
         """
 
-        return (
-            f"{self.diagnosis_code} | "
-            f"{self.diagnosis_description}"
-        )
+        return f"{self.diagnosis_code} | {self.diagnosis_description}"
 
 
 __all__ = [

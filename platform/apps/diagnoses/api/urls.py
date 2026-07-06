@@ -9,7 +9,6 @@ from apps.diagnoses.api.views import (
     DiagnosisRetrieveUpdateDestroyAPIView,
 )
 
-
 urlpatterns = [
     path(
         "",

@@ -44,9 +44,7 @@ class AppointmentAdmin(admin.ModelAdmin):
         "provider__employee__user__last_name",
     )
 
-    ordering = (
-        "-scheduled_start",
-    )
+    ordering = ("-scheduled_start",)
 
     readonly_fields = (
         "id",

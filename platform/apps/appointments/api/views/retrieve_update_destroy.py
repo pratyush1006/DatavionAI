@@ -28,9 +28,7 @@ from apps.common.api.base_generics import (
     BaseRetrieveUpdateDestroyAPIView,
 )
 
-APPOINTMENT_TAG: Final[tuple[str, ...]] = (
-    "Appointments",
-)
+APPOINTMENT_TAG: Final[tuple[str, ...]] = ("Appointments",)
 
 
 @extend_schema(tags=APPOINTMENT_TAG)
@@ -68,9 +66,7 @@ class AppointmentRetrieveUpdateDestroyAPIView(
         "PATCH": AppointmentUpdateSerializer,
     }
 
-    detail_serializer_class = (
-        AppointmentDetailSerializer
-    )
+    detail_serializer_class = AppointmentDetailSerializer
 
     update_service = update_appointment
 
@@ -84,9 +80,7 @@ class AppointmentRetrieveUpdateDestroyAPIView(
         """
 
         return get_appointment_by_id(
-            appointment_id=self.kwargs[
-                self.lookup_url_kwarg
-            ],
+            appointment_id=self.kwargs[self.lookup_url_kwarg],
         )
 
 

@@ -21,8 +21,10 @@ class DatavionException(Exception):
     """
 
     error_code: ErrorCode = ErrorCode.SERVER_ERROR
-    default_message = "An unexpected error occurred."
-    status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+    default_message: str = "An unexpected error occurred."
+
+    # Explicitly type as int so subclasses can override freely.
+    status_code: int = status.HTTP_500_INTERNAL_SERVER_ERROR
 
     def __init__(
         self,
@@ -36,57 +38,57 @@ class DatavionException(Exception):
 
 
 class ValidationException(DatavionException):
-    error_code = ErrorCode.VALIDATION_ERROR
-    default_message = "Validation failed."
-    status_code = status.HTTP_400_BAD_REQUEST
+    error_code: ErrorCode = ErrorCode.VALIDATION_ERROR
+    default_message: str = "Validation failed."
+    status_code: int = status.HTTP_400_BAD_REQUEST
 
 
 class AuthenticationException(DatavionException):
-    error_code = ErrorCode.AUTHENTICATION_REQUIRED
-    default_message = "Authentication required."
-    status_code = status.HTTP_401_UNAUTHORIZED
+    error_code: ErrorCode = ErrorCode.AUTHENTICATION_REQUIRED
+    default_message: str = "Authentication required."
+    status_code: int = status.HTTP_401_UNAUTHORIZED
 
 
 class PermissionDeniedException(DatavionException):
-    error_code = ErrorCode.PERMISSION_DENIED
-    default_message = "Permission denied."
-    status_code = status.HTTP_403_FORBIDDEN
+    error_code: ErrorCode = ErrorCode.PERMISSION_DENIED
+    default_message: str = "Permission denied."
+    status_code: int = status.HTTP_403_FORBIDDEN
 
 
 class ResourceNotFoundException(DatavionException):
-    error_code = ErrorCode.RESOURCE_NOT_FOUND
-    default_message = "Resource not found."
-    status_code = status.HTTP_404_NOT_FOUND
+    error_code: ErrorCode = ErrorCode.RESOURCE_NOT_FOUND
+    default_message: str = "Resource not found."
+    status_code: int = status.HTTP_404_NOT_FOUND
 
 
 class DuplicateResourceException(DatavionException):
-    error_code = ErrorCode.DUPLICATE_RESOURCE
-    default_message = "Resource already exists."
-    status_code = status.HTTP_409_CONFLICT
+    error_code: ErrorCode = ErrorCode.DUPLICATE_RESOURCE
+    default_message: str = "Resource already exists."
+    status_code: int = status.HTTP_409_CONFLICT
 
 
 class ConfigurationException(DatavionException):
-    error_code = ErrorCode.CONFIGURATION_NOT_FOUND
-    default_message = "Configuration not found."
-    status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+    error_code: ErrorCode = ErrorCode.CONFIGURATION_NOT_FOUND
+    default_message: str = "Configuration not found."
+    status_code: int = status.HTTP_500_INTERNAL_SERVER_ERROR
 
 
 class FeatureDisabledException(DatavionException):
-    error_code = ErrorCode.FEATURE_DISABLED
-    default_message = "Feature is disabled."
-    status_code = status.HTTP_403_FORBIDDEN
+    error_code: ErrorCode = ErrorCode.FEATURE_DISABLED
+    default_message: str = "Feature is disabled."
+    status_code: int = status.HTTP_403_FORBIDDEN
 
 
 class FileValidationException(DatavionException):
-    error_code = ErrorCode.INVALID_FILE_TYPE
-    default_message = "Invalid file."
-    status_code = status.HTTP_400_BAD_REQUEST
+    error_code: ErrorCode = ErrorCode.INVALID_FILE_TYPE
+    default_message: str = "Invalid file."
+    status_code: int = status.HTTP_400_BAD_REQUEST
 
 
 class ExternalServiceException(DatavionException):
-    error_code = ErrorCode.EXTERNAL_SERVICE_ERROR
-    default_message = "External service error."
-    status_code = status.HTTP_502_BAD_GATEWAY
+    error_code: ErrorCode = ErrorCode.EXTERNAL_SERVICE_ERROR
+    default_message: str = "External service error."
+    status_code: int = status.HTTP_502_BAD_GATEWAY
 
 
 __all__ = [

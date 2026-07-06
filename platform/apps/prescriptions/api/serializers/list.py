@@ -16,8 +16,6 @@ class PrescriptionListSerializer(
     Serializer for listing prescriptions.
     """
 
-    pass
-
 
 __all__ = [
     "PrescriptionListSerializer",

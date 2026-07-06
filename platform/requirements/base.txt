@@ -1,11 +1,26 @@
 Django==6.0.6
+
+# REST API
 djangorestframework==3.17.1
 djangorestframework-simplejwt==5.5.1
 django-filter==25.2
 drf-spectacular==0.29.0
 
+# Database
 psycopg[binary]==3.3.4
 
+# Configuration
 python-decouple==3.8
 
+# Background Tasks
+celery==5.6.3
+redis==8.0.1
+
+# Images
+Pillow==12.2.0
+
+# Static Files
 whitenoise==6.12.0
+
+# CORS
+django-cors-headers==4.9.0

@@ -122,9 +122,7 @@ class Encounter(BaseModel):
 
         verbose_name_plural = "Encounters"
 
-        ordering = (
-            "-created_at",
-        )
+        ordering = ("-created_at",)
 
         indexes = [
             models.Index(

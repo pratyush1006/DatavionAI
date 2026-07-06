@@ -24,9 +24,7 @@ from apps.appointments.selectors import get_appointments
 from apps.appointments.services import create_appointment
 from apps.common.api.base_generics import BaseListCreateAPIView
 
-APPOINTMENT_TAG: Final[tuple[str, ...]] = (
-    "Appointments",
-)
+APPOINTMENT_TAG: Final[tuple[str, ...]] = ("Appointments",)
 
 
 @extend_schema(tags=APPOINTMENT_TAG)
@@ -55,9 +53,7 @@ class AppointmentListCreateAPIView(BaseListCreateAPIView):
 
     create_service = create_appointment
 
-    create_success_message = (
-        "Appointment created successfully."
-    )
+    create_success_message = "Appointment created successfully."
 
     search_fields = (
         "appointment_number",
@@ -67,9 +63,7 @@ class AppointmentListCreateAPIView(BaseListCreateAPIView):
         "provider__provider_number",
     )
 
-    ordering = (
-        "-scheduled_start",
-    )
+    ordering = ("-scheduled_start",)
 
     ordering_fields = (
         "appointment_number",

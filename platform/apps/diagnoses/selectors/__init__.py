@@ -3,8 +3,8 @@ Diagnosis selectors.
 """
 
 from .diagnosis import (
-    get_diagnosis_by_id,
     get_diagnoses,
+    get_diagnosis_by_id,
 )
 
 __all__ = [
