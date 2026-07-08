@@ -93,6 +93,10 @@ urlpatterns = [
         "api/vitals/",
         include("apps.vitals.urls"),
     ),
+    path(
+        "api/laboratories/",
+        include("apps.laboratories.urls"),
+    ),
     # Infrastructure Endpoints
     path(
         "",

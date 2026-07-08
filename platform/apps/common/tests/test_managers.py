@@ -45,7 +45,7 @@ class BaseManagerTests(SimpleTestCase):
 
         queryset.inactive.assert_called_once_with()
 
-    def test_ordered_delegates_to_queryset(
+    def test_newest_delegates_to_queryset(
         self,
     ) -> None:
         queryset = MagicMock()
@@ -54,6 +54,6 @@ class BaseManagerTests(SimpleTestCase):
             return_value=queryset,
         )
 
-        self.manager.ordered()
+        self.manager.newest()
 
-        queryset.ordered.assert_called_once_with()
+        queryset.newest.assert_called_once_with()

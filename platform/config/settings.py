@@ -75,6 +75,7 @@ INSTALLED_APPS = [
     "apps.prescriptions.apps.PrescriptionsConfig",
     "apps.allergies.apps.AllergiesConfig",
     "apps.vitals.apps.VitalsConfig",
+    "apps.laboratories.apps.LaboratoriesConfig",
 ]
 # ------------------------------------------------------------------------------
 # Middleware
@@ -155,7 +156,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = "Asia/Kolkata"
 
 USE_I18N = True
 

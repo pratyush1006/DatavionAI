@@ -83,11 +83,13 @@ class CreateServiceMixin(BaseServiceMixin):
                 "create_service must be configured.",
             )
 
-        service(
+        instance = service(
             **self.get_create_service_kwargs(
                 serializer,
             ),
         )
+
+        serializer.instance = instance
 
 
 class UpdateServiceMixin(BaseServiceMixin):
@@ -110,11 +112,13 @@ class UpdateServiceMixin(BaseServiceMixin):
                 "update_service must be configured.",
             )
 
-        service(
+        instance = service(
             **self.get_update_service_kwargs(
                 serializer,
             ),
         )
+
+        serializer.instance = instance
 
 
 class DestroyServiceMixin(BaseServiceMixin):

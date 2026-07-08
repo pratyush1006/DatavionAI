@@ -51,16 +51,16 @@ class BaseQuerySetTests(SimpleTestCase):
             is_active=False,
         )
 
-    def test_ordered_orders_by_created_at_descending(
+    def test_newest_orders_by_created_at_descending(
         self,
     ) -> None:
         """
-        Ensure ordered() sorts by newest records first.
+        Ensure newest() sorts by newest records first.
         """
 
         self.queryset.order_by = MagicMock()
 
-        self.queryset.ordered()
+        self.queryset.newest()
 
         self.queryset.order_by.assert_called_once_with(
             "-created_at",

@@ -29,6 +29,20 @@ from apps.encounters.constants import (
     EncounterStatus,
 )
 from apps.encounters.models import Encounter
+from apps.laboratories.constants import (
+    LaboratoryCategory,
+    LaboratoryOrderStatus,
+    LaboratoryPriority,
+    LaboratoryResultFlag,
+    LaboratoryResultStatus,
+    LaboratorySpecimenType,
+    LaboratoryTestStatus,
+)
+from apps.laboratories.models import (
+    LaboratoryOrder,
+    LaboratoryResult,
+    LaboratoryTest,
+)
 from apps.medications.constants import (
     MedicationDosageForm,
     MedicationRoute,
@@ -488,6 +502,126 @@ class BaseTestCase(TestCase):
         defaults.update(kwargs)
 
         return Medication.objects.create(
+            **defaults,
+        )
+
+    def create_laboratory_order(
+        self,
+        **kwargs,
+    ) -> LaboratoryOrder:
+        """
+        Create a laboratory order for tests.
+        """
+
+        organization = kwargs.pop(
+            "organization",
+            self.organization,
+        )
+
+        patient = kwargs.pop(
+            "patient",
+            self.create_patient(
+                organization=organization,
+            ),
+        )
+
+        provider = kwargs.pop(
+            "provider",
+            self.create_provider(
+                organization=organization,
+            ),
+        )
+
+        encounter = kwargs.pop(
+            "encounter",
+            self.create_encounter(
+                organization=organization,
+                patient=patient,
+                provider=provider,
+            ),
+        )
+
+        defaults = {
+            "organization": organization,
+            "patient": patient,
+            "provider": provider,
+            "encounter": encounter,
+            "order_number": (f"LAB{LaboratoryOrder.objects.count() + 1:06d}"),
+            "priority": LaboratoryPriority.ROUTINE,
+            "status": LaboratoryOrderStatus.ORDERED,
+            "ordered_at": timezone.now(),
+            "clinical_notes": "",
+            "instructions": "",
+        }
+
+        defaults.update(kwargs)
+
+        return LaboratoryOrder.objects.create(
+            **defaults,
+        )
+
+    def create_laboratory_test(
+        self,
+        **kwargs,
+    ) -> LaboratoryTest:
+        """
+        Create a laboratory test.
+        """
+
+        laboratory_order = kwargs.pop(
+            "laboratory_order",
+            self.create_laboratory_order(),
+        )
+
+        defaults = {
+            "laboratory_order": laboratory_order,
+            "code": (f"TEST{LaboratoryTest.objects.count() + 1:04d}"),
+            "name": "Complete Blood Count",
+            "category": LaboratoryCategory.HEMATOLOGY,
+            "specimen_type": LaboratorySpecimenType.BLOOD,
+            "priority": LaboratoryPriority.ROUTINE,
+            "status": LaboratoryTestStatus.PENDING,
+            "display_order": 1,
+            "notes": "",
+            "is_active": True,
+        }
+
+        defaults.update(kwargs)
+
+        return LaboratoryTest.objects.create(
+            **defaults,
+        )
+
+    def create_laboratory_result(
+        self,
+        **kwargs,
+    ) -> LaboratoryResult:
+        """
+        Create a laboratory result.
+        """
+
+        laboratory_test = kwargs.pop(
+            "laboratory_test",
+            self.create_laboratory_test(),
+        )
+
+        defaults = {
+            "laboratory_test": laboratory_test,
+            "result_value_numeric": 12.5,
+            "result_value_text": "",
+            "unit": "g/dL",
+            "reference_range": "11.5-15.5",
+            "abnormal_flag": LaboratoryResultFlag.NORMAL,
+            "status": LaboratoryResultStatus.RECORDED,
+            "resulted_at": timezone.now(),
+            "verified_by": None,
+            "verified_at": None,
+            "notes": "",
+        }
+
+        defaults.update(kwargs)
+
+        return LaboratoryResult.objects.create(
             **defaults,
         )
 
