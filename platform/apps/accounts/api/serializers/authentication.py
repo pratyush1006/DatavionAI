@@ -29,10 +29,16 @@ class LoginSerializer(serializers.Serializer):
         Authenticate the user.
         """
 
+        print("=" * 60)
+        print("LOGIN REQUEST:", attrs)
+
         user = authenticate(
             username=attrs["email"],
             password=attrs["password"],
         )
+
+        print("AUTHENTICATED USER:", user)
+        print("=" * 60)
 
         if user is None:
             raise serializers.ValidationError(
@@ -71,6 +77,7 @@ class MeSerializer(serializers.ModelSerializer):
             "is_verified",
             "is_staff",
             "is_active",
+            "organization",
         )
 
         read_only_fields = fields
