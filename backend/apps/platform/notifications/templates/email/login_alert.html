@@ -1,0 +1,41 @@
+{% extends "email/base.html" %}
+
+{% block content %}
+
+<h2>Hello {{ name }},</h2>
+
+<p>
+A new sign-in to your DatavionAI account has been detected.
+</p>
+
+<table style="width:100%;border-collapse:collapse;margin-top:20px;">
+    <tr>
+        <td><strong>IP Address</strong></td>
+        <td>{{ ip_address }}</td>
+    </tr>
+
+    <tr>
+        <td><strong>Device</strong></td>
+        <td>{{ device }}</td>
+    </tr>
+
+    <tr>
+        <td><strong>Location</strong></td>
+        <td>{{ location }}</td>
+    </tr>
+</table>
+
+<p style="margin-top:30px;">
+If this was you, no action is required.
+</p>
+
+<p>
+If you don't recognize this activity, change your password immediately.
+</p>
+
+<p>
+Regards,<br>
+<strong>DatavionAI Security Team</strong>
+</p>
+
+{% endblock %}

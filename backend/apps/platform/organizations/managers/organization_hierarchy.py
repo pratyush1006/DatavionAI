@@ -1,0 +1,125 @@
+"""
+Organization hierarchy manager.
+"""
+
+from __future__ import annotations
+
+from django.db import models
+
+from apps.platform.organizations.querysets import (
+    OrganizationHierarchyQuerySet,
+)
+
+
+class OrganizationHierarchyManager(
+    models.Manager["OrganizationHierarchy"],
+):
+    """
+    Custom manager for OrganizationHierarchy.
+    """
+
+    _queryset_class = OrganizationHierarchyQuerySet
+
+    def get_queryset(
+        self,
+    ) -> OrganizationHierarchyQuerySet:
+        """
+        Return the custom queryset.
+        """
+
+        return self._queryset_class(
+            self.model,
+            using=self._db,
+        )
+
+    def active(
+        self,
+    ) -> OrganizationHierarchyQuerySet:
+        """
+        Return active hierarchy relationships.
+        """
+
+        return self.get_queryset().active()
+
+    def inactive(
+        self,
+    ) -> OrganizationHierarchyQuerySet:
+        """
+        Return inactive hierarchy relationships.
+        """
+
+        return self.get_queryset().inactive()
+
+    def by_parent(
+        self,
+        parent_organization_id,
+    ) -> OrganizationHierarchyQuerySet:
+        """
+        Filter by parent organization.
+        """
+
+        return self.get_queryset().by_parent(
+            parent_organization_id,
+        )
+
+    def by_child(
+        self,
+        child_organization_id,
+    ) -> OrganizationHierarchyQuerySet:
+        """
+        Filter by child organization.
+        """
+
+        return self.get_queryset().by_child(
+            child_organization_id,
+        )
+
+    def by_relationship_type(
+        self,
+        relationship_type: str,
+    ) -> OrganizationHierarchyQuerySet:
+        """
+        Filter by relationship type.
+        """
+
+        return self.get_queryset().by_relationship_type(
+            relationship_type,
+        )
+
+    def by_status(
+        self,
+        status: str,
+    ) -> OrganizationHierarchyQuerySet:
+        """
+        Filter by hierarchy status.
+        """
+
+        return self.get_queryset().by_status(
+            status,
+        )
+
+    def with_related(
+        self,
+    ) -> OrganizationHierarchyQuerySet:
+        """
+        Return queryset with related organizations.
+        """
+
+        return self.get_queryset().with_related()
+
+    def search(
+        self,
+        query: str,
+    ) -> OrganizationHierarchyQuerySet:
+        """
+        Search hierarchy relationships.
+        """
+
+        return self.get_queryset().search(
+            query,
+        )
+
+
+__all__ = [
+    "OrganizationHierarchyManager",
+]

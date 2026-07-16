@@ -20,9 +20,9 @@ exclude: |
       htmlcov/|
       coverage/|
       node_modules/|
-      platform/staticfiles/|
-      platform/media/|
-      platform/logs/
+      backend/staticfiles/|
+      backend/media/|
+      backend/logs/
   )
 
 repos:
@@ -37,16 +37,16 @@ repos:
 
       - id: ruff-check
         name: Ruff Lint
-        files: ^platform/
+        files: ^backend/
         args:
           - --fix
-          - --config=platform/pyproject.toml
+          - --config=backend/pyproject.toml
 
       - id: ruff-format
         name: Ruff Format
-        files: ^platform/
+        files: ^backend/
         args:
-          - --config=platform/pyproject.toml
+          - --config=backend/pyproject.toml
 
 ##############################################################################
 # General File Quality
@@ -91,12 +91,12 @@ repos:
 
       - id: django-check
         name: Django System Check
-        entry: python platform/manage.py check
+        entry: python backend/manage.py check
         language: system
         pass_filenames: false
 
       - id: django-migrations
         name: Check Missing Migrations
-        entry: python platform/manage.py makemigrations --check --dry-run
+        entry: python backend/manage.py makemigrations --check --dry-run
         language: system
         pass_filenames: false

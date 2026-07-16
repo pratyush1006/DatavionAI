@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+
+    <style>
+        body{
+            margin:0;
+            padding:40px;
+            background:#f5f7fb;
+            font-family:Arial,Helvetica,sans-serif;
+        }
+
+        .container{
+            max-width:640px;
+            margin:auto;
+            background:#ffffff;
+            border-radius:12px;
+            overflow:hidden;
+            box-shadow:0 8px 20px rgba(0,0,0,.08);
+        }
+
+        .header{
+            background:#0F62FE;
+            color:#ffffff;
+            padding:24px;
+            font-size:28px;
+            font-weight:bold;
+        }
+
+        .content{
+            padding:40px;
+            color:#333333;
+            line-height:1.7;
+        }
+
+        .otp{
+            margin:30px auto;
+            width:220px;
+            text-align:center;
+            font-size:34px;
+            font-weight:bold;
+            letter-spacing:10px;
+            padding:18px;
+            border-radius:10px;
+            background:#eef4ff;
+            color:#0F62FE;
+        }
+
+        .footer{
+            padding:25px;
+            font-size:13px;
+            text-align:center;
+            color:#777777;
+            background:#fafafa;
+        }
+
+        a{
+            color:#0F62FE;
+        }
+    </style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="header">
+        DatavionAI
+    </div>
+
+    <div class="content">
+
+        {% block content %}
+        {% endblock %}
+
+    </div>
+
+    <div class="footer">
+
+        © {{ now|date:"Y" }} DatavionAI
+
+        <br><br>
+
+        AI Operating System for Healthcare
+
+    </div>
+
+</div>
+
+</body>
+
+</html>

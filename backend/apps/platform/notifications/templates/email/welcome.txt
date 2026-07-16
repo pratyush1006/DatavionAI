@@ -1,0 +1,11 @@
+Hello {{ name }},
+
+Welcome to DatavionAI!
+
+Your account has been successfully verified.
+
+You can now sign in and start using the platform.
+
+Regards,
+
+DatavionAI Team

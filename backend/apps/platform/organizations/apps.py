@@ -1,0 +1,15 @@
+from django.apps import AppConfig
+
+
+class OrganizationsConfig(AppConfig):
+    """
+    Organizations application configuration.
+    """
+
+    default_auto_field = "django.db.models.BigAutoField"
+
+    name = "apps.platform.organizations"
+
+    label = "organizations"
+
+    verbose_name = "Organizations"

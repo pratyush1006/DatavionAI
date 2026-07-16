@@ -1,0 +1,17 @@
+Hello {{ name }},
+
+A new login to your DatavionAI account has been detected.
+
+IP Address : {{ ip_address }}
+
+Device : {{ device }}
+
+Location : {{ location }}
+
+If this was you, no action is required.
+
+If you don't recognize this login, change your password immediately.
+
+Regards,
+
+DatavionAI Security Team
