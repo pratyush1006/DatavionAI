@@ -1,8 +1,4 @@
-"""
-Employee permission classes.
-"""
-
-from .employee import (
+from apps.employees.permissions.employee import (
     CanCreateEmployee,
     CanDeleteEmployee,
     CanUpdateEmployee,

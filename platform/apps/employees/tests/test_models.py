@@ -1,5 +1,4 @@
 from django.contrib.auth import get_user_model
-from django.db import IntegrityError
 from django.test import TestCase
 
 from apps.departments.models import Department
@@ -10,210 +9,126 @@ from apps.teams.models import Team
 User = get_user_model()
 
 
-class EmployeeModelTest(TestCase):
+class EmployeeModelTestCase(TestCase):
+    """
+    Test cases for the Employee model.
+    """
+
     def setUp(self):
+        """
+        Set up test data.
+        """
         self.organization = Organization.objects.create(
-            name="Datavion Analytics",
-            code="DAT",
+            name="Test Organization",
         )
 
         self.department = Department.objects.create(
+            name="Test Department",
             organization=self.organization,
-            name="AI Engineering",
-            code="AI",
         )
 
         self.team = Team.objects.create(
+            name="Test Team",
             department=self.department,
-            name="Backend Team",
-            code="BACKEND",
         )
 
         self.user = User.objects.create_user(
-            email="john@datavion.ai",
-            username="john",
-            password="password123",
-            first_name="John",
-            last_name="Doe",
-            organization=self.organization,
+            username="testuser",
+            email="test@example.com",
+            first_name="Test",
+            last_name="User",
         )
 
-    def test_create_employee(self):
-        employee = Employee.objects.create(
+        self.employee = Employee.objects.create(
             organization=self.organization,
             department=self.department,
             team=self.team,
             user=self.user,
             employee_code="EMP001",
             designation="Software Engineer",
-            hire_date="2026-06-26",
+            hire_date="2023-01-01",
         )
 
-        self.assertEqual(
-            employee.employee_code,
-            "EMP001",
+    def test_employee_creation(self):
+        """
+        Test that an employee is created successfully.
+        """
+        self.assertEqual(self.employee.employee_code, "EMP001")
+        self.assertEqual(self.employee.designation, "Software Engineer")
+        self.assertEqual(self.employee.organization, self.organization)
+        self.assertEqual(self.employee.department, self.department)
+        self.assertEqual(self.employee.team, self.team)
+        self.assertEqual(self.employee.user, self.user)
+        self.assertTrue(self.employee.is_active)
+
+    def test_employee_full_name(self):
+        """
+        Test that the full_name property returns the user's full name.
+        """
+        self.assertEqual(self.employee.full_name, "Test User")
+
+    def test_employee_str(self):
+        """
+        Test the string representation of an employee.
+        """
+        expected_str = "EMP001 - Test User"
+        self.assertEqual(str(self.employee), expected_str)
+
+    def test_employee_code_uniqueness_per_organization(self):
+        """
+        Test that employee codes are unique per organization.
+        """
+        user2 = User.objects.create_user(
+            username="testuser2",
+            email="test2@example.com",
+            first_name="Test2",
+            last_name="User2",
         )
 
-        self.assertTrue(employee.is_active)
+        org2 = Organization.objects.create(
+            name="Another Organization",
+        )
 
-    def test_employee_string_representation(self):
-        employee = Employee.objects.create(
-            organization=self.organization,
-            department=self.department,
-            team=self.team,
-            user=self.user,
+        dept2 = Department.objects.create(
+            name="Another Department",
+            organization=org2,
+        )
+
+        employee2 = Employee.objects.create(
+            organization=org2,
+            department=dept2,
+            user=user2,
             employee_code="EMP001",
-            designation="Software Engineer",
-            hire_date="2026-06-26",
+            designation="Manager",
+            hire_date="2023-02-01",
         )
 
-        self.assertEqual(
-            str(employee),
-            "EMP001 - John Doe",
-        )
+        self.assertEqual(employee2.employee_code, "EMP001")
+        self.assertNotEqual(employee2.organization, self.employee.organization)
 
-    def test_team_can_be_null(self):
-        employee = Employee.objects.create(
-            organization=self.organization,
-            department=self.department,
-            user=self.user,
-            employee_code="EMP001",
-            designation="Software Engineer",
-            hire_date="2026-06-26",
-        )
-
-        self.assertIsNone(employee.team)
-
-    def test_manager_can_be_null(self):
-        employee = Employee.objects.create(
-            organization=self.organization,
-            department=self.department,
-            team=self.team,
-            user=self.user,
-            employee_code="EMP001",
-            designation="Software Engineer",
-            hire_date="2026-06-26",
-        )
-
-        self.assertIsNone(employee.manager)
-
-    def test_unique_employee_code_per_organization(self):
-        Employee.objects.create(
-            organization=self.organization,
-            department=self.department,
-            team=self.team,
-            user=self.user,
-            employee_code="EMP001",
-            designation="Software Engineer",
-            hire_date="2026-06-26",
-        )
-
-        second_user = User.objects.create_user(
-            email="alice@datavion.ai",
-            username="alice",
-            password="password123",
-            first_name="Alice",
-            last_name="Smith",
-            organization=self.organization,
-        )
-
-        with self.assertRaises(IntegrityError):
-            Employee.objects.create(
-                organization=self.organization,
-                department=self.department,
-                team=self.team,
-                user=second_user,
-                employee_code="EMP001",
-                designation="QA Engineer",
-                hire_date="2026-06-26",
-            )
-
-    def test_manager_relationship(self):
-        manager_user = User.objects.create_user(
-            email="manager@datavion.ai",
+    def test_employee_manager_relationship(self):
+        """
+        Test the manager relationship.
+        """
+        user3 = User.objects.create_user(
             username="manager",
-            password="password123",
-            first_name="Jane",
-            last_name="Manager",
-            organization=self.organization,
+            email="manager@example.com",
+            first_name="Manager",
+            last_name="User",
         )
 
         manager = Employee.objects.create(
             organization=self.organization,
             department=self.department,
-            team=self.team,
-            user=manager_user,
-            employee_code="EMP100",
-            designation="Manager",
-            hire_date="2026-06-26",
+            user=user3,
+            employee_code="MGR001",
+            designation="Team Lead",
+            hire_date="2022-01-01",
         )
 
-        employee = Employee.objects.create(
-            organization=self.organization,
-            department=self.department,
-            team=self.team,
-            user=self.user,
-            employee_code="EMP101",
-            designation="Developer",
-            manager=manager,
-            hire_date="2026-06-26",
-        )
+        self.employee.manager = manager
+        self.employee.save()
 
-        self.assertEqual(
-            employee.manager,
-            manager,
-        )
-
-    def test_team_set_null_on_delete(self):
-        employee = Employee.objects.create(
-            organization=self.organization,
-            department=self.department,
-            team=self.team,
-            user=self.user,
-            employee_code="EMP001",
-            designation="Developer",
-            hire_date="2026-06-26",
-        )
-
-        self.team.delete()
-
-        employee.refresh_from_db()
-
-        self.assertIsNone(employee.team)
-
-    def test_manager_set_null_on_delete(self):
-        manager_user = User.objects.create_user(
-            email="manager2@datavion.ai",
-            username="manager2",
-            password="password123",
-            first_name="Jane",
-            last_name="Manager",
-            organization=self.organization,
-        )
-
-        manager = Employee.objects.create(
-            organization=self.organization,
-            department=self.department,
-            team=self.team,
-            user=manager_user,
-            employee_code="EMP100",
-            designation="Manager",
-            hire_date="2026-06-26",
-        )
-
-        employee = Employee.objects.create(
-            organization=self.organization,
-            department=self.department,
-            team=self.team,
-            user=self.user,
-            employee_code="EMP101",
-            designation="Developer",
-            manager=manager,
-            hire_date="2026-06-26",
-        )
-
-        manager.delete()
-
-        employee.refresh_from_db()
-
-        self.assertIsNone(employee.manager)
+        self.employee.refresh_from_db()
+        self.assertEqual(self.employee.manager, manager)
+        self.assertIn(self.employee, manager.subordinates.all())

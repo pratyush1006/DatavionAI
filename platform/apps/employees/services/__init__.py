@@ -1,4 +1,4 @@
-from .employee import (
+from apps.employees.services.employee import (
     create_employee,
     delete_employee,
     update_employee,

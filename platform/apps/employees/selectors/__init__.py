@@ -1,4 +1,4 @@
-from .employee import (
+from apps.employees.selectors.employee import (
     get_employee_by_id,
     get_employees,
 )

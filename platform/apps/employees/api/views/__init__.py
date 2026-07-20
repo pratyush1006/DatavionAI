@@ -1,9 +1,7 @@
-"""
-Employee API views.
-"""
-
-from .list_create import EmployeeListCreateAPIView
-from .retrieve_update_destroy import (
+from apps.employees.api.views.list_create import (
+    EmployeeListCreateAPIView,
+)
+from apps.employees.api.views.retrieve_update_destroy import (
     EmployeeRetrieveUpdateDestroyAPIView,
 )
 

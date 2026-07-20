@@ -1,43 +1,35 @@
-"""
-Serializer field definitions for Employees.
-"""
+from rest_framework import serializers
 
-from __future__ import annotations
+from apps.employees.models import Employee
 
-from typing import Final
-
-LIST_FIELDS: Final[tuple[str, ...]] = (
+# List of fields for different serializer operations
+BASE_FIELDS = (
     "id",
     "employee_code",
     "employee_name",
     "designation",
-    "organization",
-    "department",
-    "team",
-    "is_active",
-)
-
-DETAIL_FIELDS: Final[tuple[str, ...]] = (
-    "id",
-    "employee_code",
-    "employee_name",
-    "user_id",
-    "organization",
-    "organization_id",
-    "department",
-    "department_id",
-    "team",
-    "team_id",
-    "designation",
-    "manager",
-    "manager_id",
-    "hire_date",
     "is_active",
     "created_at",
     "updated_at",
 )
 
-WRITE_FIELDS: Final[tuple[str, ...]] = (
+LIST_FIELDS = BASE_FIELDS + (
+    "organization",
+    "department",
+    "team",
+)
+
+DETAIL_FIELDS = LIST_FIELDS + (
+    "organization_id",
+    "department_id",
+    "team_id",
+    "user_id",
+    "manager",
+    "manager_id",
+    "hire_date",
+)
+
+CREATE_FIELDS = (
     "organization",
     "department",
     "team",
@@ -49,11 +41,12 @@ WRITE_FIELDS: Final[tuple[str, ...]] = (
     "is_active",
 )
 
-UPDATE_FIELDS = WRITE_FIELDS
-
-__all__ = [
-    "LIST_FIELDS",
-    "DETAIL_FIELDS",
-    "WRITE_FIELDS",
-    "UPDATE_FIELDS",
-]
+UPDATE_FIELDS = (
+    "organization",
+    "department",
+    "team",
+    "designation",
+    "manager",
+    "hire_date",
+    "is_active",
+)

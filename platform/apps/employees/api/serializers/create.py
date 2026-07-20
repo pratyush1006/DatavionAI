@@ -1,9 +1,15 @@
-from .base import EmployeeBaseSerializer
-from .fields import WRITE_FIELDS
+from rest_framework import serializers
+
+from apps.employees.api.serializers.base import EmployeeBaseSerializer
+from apps.employees.api.serializers.fields import CREATE_FIELDS
 
 
 class EmployeeCreateSerializer(
     EmployeeBaseSerializer,
 ):
+    """
+    Serializer for creating a new employee.
+    """
+
     class Meta(EmployeeBaseSerializer.Meta):
-        fields = WRITE_FIELDS
+        fields = CREATE_FIELDS
