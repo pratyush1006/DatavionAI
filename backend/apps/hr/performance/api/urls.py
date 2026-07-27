@@ -1,0 +1,61 @@
+from django.urls import path
+
+from apps.hr.performance.api.views import (
+    PerformanceGoalListCreateAPIView,
+    PerformanceGoalRetrieveUpdateDestroyAPIView,
+    PerformanceReviewAcknowledgeAPIView,
+    PerformanceReviewCompleteAPIView,
+    PerformanceReviewCycleListCreateAPIView,
+    PerformanceReviewCycleRetrieveUpdateDestroyAPIView,
+    PerformanceReviewListCreateAPIView,
+    PerformanceReviewRetrieveUpdateDestroyAPIView,
+    PerformanceReviewSubmitAPIView,
+)
+
+urlpatterns = [
+    path(
+        "cycles/",
+        PerformanceReviewCycleListCreateAPIView.as_view(),
+        name="review-cycle-list-create",
+    ),
+    path(
+        "cycles/<int:review_cycle_id>/",
+        PerformanceReviewCycleRetrieveUpdateDestroyAPIView.as_view(),
+        name="review-cycle-detail",
+    ),
+    path(
+        "reviews/",
+        PerformanceReviewListCreateAPIView.as_view(),
+        name="performance-review-list-create",
+    ),
+    path(
+        "reviews/<int:performance_review_id>/",
+        PerformanceReviewRetrieveUpdateDestroyAPIView.as_view(),
+        name="performance-review-detail",
+    ),
+    path(
+        "reviews/<int:performance_review_id>/submit/",
+        PerformanceReviewSubmitAPIView.as_view(),
+        name="performance-review-submit",
+    ),
+    path(
+        "reviews/<int:performance_review_id>/acknowledge/",
+        PerformanceReviewAcknowledgeAPIView.as_view(),
+        name="performance-review-acknowledge",
+    ),
+    path(
+        "reviews/<int:performance_review_id>/complete/",
+        PerformanceReviewCompleteAPIView.as_view(),
+        name="performance-review-complete",
+    ),
+    path(
+        "goals/",
+        PerformanceGoalListCreateAPIView.as_view(),
+        name="performance-goal-list-create",
+    ),
+    path(
+        "goals/<int:performance_goal_id>/",
+        PerformanceGoalRetrieveUpdateDestroyAPIView.as_view(),
+        name="performance-goal-detail",
+    ),
+]

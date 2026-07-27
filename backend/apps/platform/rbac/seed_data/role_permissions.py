@@ -1,5 +1,15 @@
 """
 Built-in RBAC role permissions.
+
+Defines default permissions assigned to
+system roles in DatavionOS.
+
+Supports:
+
+- Multi-tenant SaaS RBAC
+- Healthcare roles
+- AI platform access
+- Audit compliance
 """
 
 from __future__ import annotations
@@ -23,15 +33,15 @@ def permissions_for(
 
 
 SYSTEM_ROLE_PERMISSIONS = {
-    #
+    # =========================================================================
     # Platform Administrator
-    #
+    # =========================================================================
     SystemRole.PLATFORM_ADMIN.value: [
         "*",
     ],
-    #
+    # =========================================================================
     # Organization Owner
-    #
+    # =========================================================================
     SystemRole.ORGANIZATION_OWNER.value: (
         permissions_for(
             PermissionModule.ORGANIZATIONS,
@@ -61,10 +71,32 @@ SYSTEM_ROLE_PERMISSIONS = {
             PermissionModule.APPOINTMENTS,
             *PermissionAction,
         )
+        # ---------------------------------------------------------------------
+        # RBAC Administration
+        # ---------------------------------------------------------------------
+        + permissions_for(
+            PermissionModule.RBAC,
+            *PermissionAction,
+        )
+        # ---------------------------------------------------------------------
+        # AI Platform
+        # ---------------------------------------------------------------------
+        + permissions_for(
+            PermissionModule.AI,
+            *PermissionAction,
+        )
+        # ---------------------------------------------------------------------
+        # Compliance Audit
+        # ---------------------------------------------------------------------
+        + permissions_for(
+            PermissionModule.AUDIT,
+            PermissionAction.VIEW,
+            PermissionAction.EXPORT,
+        )
     ),
-    #
+    # =========================================================================
     # Organization Administrator
-    #
+    # =========================================================================
     SystemRole.ORGANIZATION_ADMIN.value: (
         permissions_for(
             PermissionModule.PATIENTS,
@@ -84,10 +116,25 @@ SYSTEM_ROLE_PERMISSIONS = {
             PermissionAction.CREATE,
             PermissionAction.UPDATE,
         )
+        # RBAC visibility
+        + permissions_for(
+            PermissionModule.RBAC,
+            PermissionAction.VIEW,
+        )
+        # AI access
+        + permissions_for(
+            PermissionModule.AI,
+            PermissionAction.VIEW,
+        )
+        # Audit visibility
+        + permissions_for(
+            PermissionModule.AUDIT,
+            PermissionAction.VIEW,
+        )
     ),
-    #
+    # =========================================================================
     # Doctor
-    #
+    # =========================================================================
     SystemRole.DOCTOR.value: (
         permissions_for(
             PermissionModule.PATIENTS,
@@ -115,9 +162,9 @@ SYSTEM_ROLE_PERMISSIONS = {
             *PermissionAction,
         )
     ),
-    #
+    # =========================================================================
     # Consultant
-    #
+    # =========================================================================
     SystemRole.CONSULTANT.value: (
         permissions_for(
             PermissionModule.PATIENTS,
@@ -128,9 +175,9 @@ SYSTEM_ROLE_PERMISSIONS = {
             PermissionAction.VIEW,
         )
     ),
-    #
+    # =========================================================================
     # Nurse
-    #
+    # =========================================================================
     SystemRole.NURSE.value: (
         permissions_for(
             PermissionModule.PATIENTS,
@@ -142,18 +189,18 @@ SYSTEM_ROLE_PERMISSIONS = {
             *PermissionAction,
         )
     ),
-    #
+    # =========================================================================
     # Laboratory Manager
-    #
+    # =========================================================================
     SystemRole.LABORATORY_MANAGER.value: (
         permissions_for(
             PermissionModule.LABORATORIES,
             *PermissionAction,
         )
     ),
-    #
+    # =========================================================================
     # Laboratory Technician
-    #
+    # =========================================================================
     SystemRole.LABORATORY_TECHNICIAN.value: (
         permissions_for(
             PermissionModule.LABORATORIES,
@@ -162,9 +209,9 @@ SYSTEM_ROLE_PERMISSIONS = {
             PermissionAction.RELEASE,
         )
     ),
-    #
+    # =========================================================================
     # Pharmacist
-    #
+    # =========================================================================
     SystemRole.PHARMACIST.value: (
         permissions_for(
             PermissionModule.PHARMACY,
@@ -175,9 +222,9 @@ SYSTEM_ROLE_PERMISSIONS = {
             PermissionAction.VIEW,
         )
     ),
-    #
+    # =========================================================================
     # Receptionist
-    #
+    # =========================================================================
     SystemRole.RECEPTIONIST.value: (
         permissions_for(
             PermissionModule.PATIENTS,
@@ -189,9 +236,9 @@ SYSTEM_ROLE_PERMISSIONS = {
             *PermissionAction,
         )
     ),
-    #
+    # =========================================================================
     # Patient
-    #
+    # =========================================================================
     SystemRole.PATIENT.value: (
         permissions_for(
             PermissionModule.PATIENTS,
@@ -202,9 +249,9 @@ SYSTEM_ROLE_PERMISSIONS = {
             PermissionAction.VIEW,
         )
     ),
-    #
+    # =========================================================================
     # AI Agent
-    #
+    # =========================================================================
     SystemRole.AI_AGENT.value: (
         permissions_for(
             PermissionModule.AI,

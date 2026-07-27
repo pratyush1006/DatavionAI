@@ -24,3 +24,5 @@ whitenoise==6.12.0
 
 # CORS
 django-cors-headers==4.9.0
+
+phonenumbers>=9.0.34

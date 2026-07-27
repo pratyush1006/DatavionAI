@@ -4,6 +4,8 @@ Health check API views.
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
+
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
@@ -15,25 +17,58 @@ from apps.core.constants import (
     ALIVE,
     APP_NAME,
     APP_VERSION,
-    HEALTHY,
     NOT_READY,
     READY,
-    UNHEALTHY,
 )
 from apps.core.health.checks import (
     application_health_checks,
-    is_application_ready,
 )
+
+
+def _timestamp() -> str:
+    """
+    Return the current UTC timestamp in ISO-8601 format.
+    """
+
+    return datetime.now(UTC).isoformat().replace("+00:00", "Z")
 
 
 class BaseHealthAPIView(APIView):
     """
-    Base class for health endpoints.
+    Base class for infrastructure health endpoints.
+
+    These endpoints are intended for infrastructure monitoring
+    and therefore:
+
+    - Require no authentication
+    - Are never throttled
+    - Support GET requests only
     """
 
     permission_classes = (AllowAny,)
-
     authentication_classes: tuple = ()
+    throttle_classes: tuple = ()
+    http_method_names = ["get"]
+
+    @staticmethod
+    def _response(
+        data: dict,
+        *,
+        status_code: int,
+    ) -> Response:
+        """
+        Create a standardized health response.
+        """
+
+        response = Response(
+            data,
+            status=status_code,
+        )
+
+        response["Cache-Control"] = "no-store"
+        response["Pragma"] = "no-cache"
+
+        return response
 
 
 class HealthAPIView(BaseHealthAPIView):
@@ -54,19 +89,19 @@ class HealthAPIView(BaseHealthAPIView):
         Return application health information.
         """
 
-        checks = application_health_checks()
+        health = application_health_checks()
 
-        healthy = is_application_ready()
-
-        return Response(
+        return self._response(
             {
                 "application": APP_NAME,
                 "version": APP_VERSION,
-                "status": HEALTHY if healthy else UNHEALTHY,
-                "checks": checks,
+                "timestamp": _timestamp(),
+                **health,
             },
-            status=(
-                status.HTTP_200_OK if healthy else status.HTTP_503_SERVICE_UNAVAILABLE
+            status_code=(
+                status.HTTP_200_OK
+                if health["healthy"]
+                else status.HTTP_503_SERVICE_UNAVAILABLE
             ),
         )
 
@@ -89,11 +124,14 @@ class LivenessAPIView(BaseHealthAPIView):
         Return liveness status.
         """
 
-        return Response(
+        return self._response(
             {
+                "application": APP_NAME,
+                "version": APP_VERSION,
+                "timestamp": _timestamp(),
                 "status": ALIVE,
             },
-            status=status.HTTP_200_OK,
+            status_code=status.HTTP_200_OK,
         )
 
 
@@ -115,19 +153,20 @@ class ReadinessAPIView(BaseHealthAPIView):
         Return readiness status.
         """
 
-        checks = application_health_checks()
+        health = application_health_checks()
 
-        ready = is_application_ready()
-
-        return Response(
+        return self._response(
             {
                 "application": APP_NAME,
                 "version": APP_VERSION,
-                "status": READY if ready else NOT_READY,
-                "checks": checks,
+                "timestamp": _timestamp(),
+                "status": READY if health["healthy"] else NOT_READY,
+                "checks": health["checks"],
             },
-            status=(
-                status.HTTP_200_OK if ready else status.HTTP_503_SERVICE_UNAVAILABLE
+            status_code=(
+                status.HTTP_200_OK
+                if health["healthy"]
+                else status.HTTP_503_SERVICE_UNAVAILABLE
             ),
         )
 

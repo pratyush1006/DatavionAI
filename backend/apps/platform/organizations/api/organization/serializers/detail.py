@@ -12,7 +12,10 @@ class OrganizationDetailSerializer(
     OrganizationBaseSerializer,
 ):
     """
-    Serializer used for retrieving organization details.
+    Serializer used for retrieving a complete organization.
+
+    This serializer exposes the full read-only representation
+    of an Organization for retrieve endpoints.
     """
 
     class Meta(
@@ -22,6 +25,4 @@ class OrganizationDetailSerializer(
         read_only_fields = _DETAIL_FIELDS
 
 
-__all__ = [
-    "OrganizationDetailSerializer",
-]
+__all__: tuple[str, ...] = ("OrganizationDetailSerializer",)

@@ -8,6 +8,10 @@ from typing import Any
 
 from rest_framework import serializers
 
+from apps.platform.rbac.constants import (
+    RolePermissionSource,
+    RolePermissionType,
+)
 from apps.platform.rbac.models import (
     RolePermission,
 )
@@ -22,6 +26,16 @@ class RolePermissionUpdateSerializer(
     """
     Serializer for updating a role permission.
     """
+
+    assignment_type = serializers.ChoiceField(
+        choices=RolePermissionType.choices,
+        required=False,
+    )
+
+    assignment_source = serializers.ChoiceField(
+        choices=RolePermissionSource.choices,
+        required=False,
+    )
 
     class Meta:
         model = RolePermission
@@ -40,7 +54,7 @@ class RolePermissionUpdateSerializer(
         validated_data: dict[str, Any],
     ) -> RolePermission:
         """
-        Update a role permission.
+        Update role permission.
         """
 
         return update_role_permission(

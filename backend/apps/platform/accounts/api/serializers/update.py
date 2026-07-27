@@ -4,35 +4,78 @@ Update serializer for the Accounts application.
 
 from __future__ import annotations
 
+from typing import Any
+
+from django.contrib.auth.password_validation import (
+    validate_password,
+)
+from rest_framework import serializers
+
 from apps.platform.accounts.models import User
-from apps.platform.accounts.services import UserService
+from apps.platform.accounts.selectors import (
+    get_user_by_email,
+)
+from apps.platform.accounts.services import (
+    UserService,
+)
 
 from .base import UserBaseSerializer
 from .fields import UPDATE_FIELDS
 
 
-class UserUpdateSerializer(UserBaseSerializer):
+class UserUpdateSerializer(
+    UserBaseSerializer,
+):
     """
     Serializer for updating users.
     """
 
-    class Meta(UserBaseSerializer.Meta):
+    password = serializers.CharField(
+        write_only=True,
+        required=False,
+        validators=[
+            validate_password,
+        ],
+        style={
+            "input_type": "password",
+        },
+    )
+
+    class Meta(
+        UserBaseSerializer.Meta,
+    ):
+        model = User
+
         fields = UPDATE_FIELDS
 
-        extra_kwargs = {
-            "password": {
-                "write_only": True,
-                "required": False,
-            },
-        }
+    def validate_email(
+        self,
+        value: str,
+    ) -> str:
+        """
+        Normalize and validate email changes.
+        """
+
+        email = value.strip().lower()
+
+        existing_user = get_user_by_email(
+            email=email,
+        )
+
+        if existing_user is not None and existing_user.pk != self.instance.pk:
+            raise serializers.ValidationError(
+                "A user with this email already exists.",
+            )
+
+        return email
 
     def update(
         self,
         instance: User,
-        validated_data: dict,
+        validated_data: dict[str, Any],
     ) -> User:
         """
-        Update a user.
+        Update user through service layer.
         """
 
         return UserService.update(
@@ -41,6 +84,4 @@ class UserUpdateSerializer(UserBaseSerializer):
         )
 
 
-__all__ = [
-    "UserUpdateSerializer",
-]
+__all__ = ("UserUpdateSerializer",)

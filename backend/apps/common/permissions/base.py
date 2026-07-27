@@ -1,30 +1,33 @@
 """
 Base permission classes.
 
-Provides the foundation for all Datavion AI permission
-classes.
+Provides framework-level permission primitives for DatavionOS.
+
+Framework permissions must remain independent of feature modules
+such as RBAC, Organizations, Patients, or Laboratories.
 """
 
 from __future__ import annotations
 
+from abc import abstractmethod
+
 from rest_framework.permissions import BasePermission as DRFBasePermission
 from rest_framework.request import Request
 from rest_framework.views import APIView
-
-from apps.platform.rbac.engines import (
-    user_has_permission,
-)
 
 
 class DatavionPermission(
     DRFBasePermission,
 ):
     """
-    Base permission class for Datavion AI.
+    Base permission class.
 
-    Feature-specific permission classes should inherit from
-    this class and define a required_permission when
-    applicable.
+    Subclasses may specify a ``required_permission`` and implement
+    ``check_permission()`` to integrate with an authorization engine
+    such as RBAC.
+
+    This class intentionally contains no knowledge of how permissions
+    are resolved.
     """
 
     required_permission: str | None = None
@@ -42,31 +45,15 @@ class DatavionPermission(
 
         user = request.user
 
-        #
-        # Authentication is always required.
-        #
         if not user.is_authenticated:
             return False
 
-        #
-        # Permission-less endpoints only require authentication.
-        #
         if self.required_permission is None:
             return True
 
-        #
-        # Resolve organization context.
-        #
-        organization = getattr(
-            request,
-            "organization",
-            None,
-        )
-
-        return user_has_permission(
-            user=user,
+        return self.check_permission(
+            request=request,
             permission=self.required_permission,
-            organization=organization,
         )
 
     def has_object_permission(
@@ -76,23 +63,33 @@ class DatavionPermission(
         obj: object,
     ) -> bool:
         """
-        Determine whether access to a specific object should
-        be permitted.
+        Determine whether access to an object should be permitted.
         """
 
         return self.has_permission(
-            request,
-            view,
+            request=request,
+            view=view,
         )
 
+    @abstractmethod
+    def check_permission(
+        self,
+        request: Request,
+        permission: str,
+    ) -> bool:
+        """
+        Determine whether the authenticated user has the specified
+        permission.
 
-#
-# Backward compatibility.
-#
+        Subclasses must provide the authorization implementation.
+        """
+        raise NotImplementedError
+
+
 BasePermission = DatavionPermission
 
 
-__all__ = [
-    "DatavionPermission",
+__all__ = (
     "BasePermission",
-]
+    "DatavionPermission",
+)

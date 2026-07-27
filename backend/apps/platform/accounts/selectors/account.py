@@ -14,17 +14,18 @@ from apps.platform.accounts.models import (
 )
 
 type UserQuerySet = QuerySet[User]
+
 type ProfileQuerySet = QuerySet[Profile]
 
 
 def get_users(
     *,
+    tenant=None,
+    organization=None,
     include_inactive: bool = False,
 ) -> UserQuerySet:
     """
-    Return users ordered by email.
-
-    Related objects are eagerly loaded to avoid N+1 queries.
+    Return users scoped to tenant and organization.
     """
 
     queryset = User.objects.select_related(
@@ -34,6 +35,16 @@ def get_users(
         "email",
     )
 
+    if organization is not None:
+        queryset = queryset.filter(
+            organization=organization,
+        )
+
+    elif tenant is not None:
+        queryset = queryset.filter(
+            organization__tenant=tenant,
+        )
+
     if not include_inactive:
         queryset = queryset.filter(
             is_active=True,
@@ -42,30 +53,50 @@ def get_users(
     return queryset
 
 
-def get_active_users() -> UserQuerySet:
+def get_active_users(
+    *,
+    tenant=None,
+    organization=None,
+) -> UserQuerySet:
     """
     Return active users.
     """
 
-    return get_users()
+    return get_users(
+        tenant=tenant,
+        organization=organization,
+    )
 
 
-def get_verified_users() -> UserQuerySet:
+def get_verified_users(
+    *,
+    tenant=None,
+    organization=None,
+) -> UserQuerySet:
     """
     Return verified users.
     """
 
-    return get_users().filter(
+    return get_users(
+        tenant=tenant,
+        organization=organization,
+    ).filter(
         is_verified=True,
     )
 
 
-def get_unverified_users() -> UserQuerySet:
+def get_unverified_users(
+    *,
+    tenant=None,
+    organization=None,
+) -> UserQuerySet:
     """
-    Return users whose email has not yet been verified.
+    Return unverified users.
     """
 
     return get_users(
+        tenant=tenant,
+        organization=organization,
         include_inactive=True,
     ).filter(
         is_verified=False,
@@ -75,13 +106,17 @@ def get_unverified_users() -> UserQuerySet:
 def get_user_by_id(
     *,
     user_id: UUID,
+    tenant=None,
+    organization=None,
 ) -> User | None:
     """
-    Return a user by ID.
+    Return user by UUID.
     """
 
     return (
         get_users(
+            tenant=tenant,
+            organization=organization,
             include_inactive=True,
         )
         .filter(
@@ -96,7 +131,10 @@ def get_user_by_email(
     email: str,
 ) -> User | None:
     """
-    Return a user by email.
+    Global email lookup.
+
+    Required for authentication before
+    tenant resolution.
     """
 
     return (
@@ -113,26 +151,47 @@ def get_user_by_email(
 def search_users(
     *,
     query: str,
+    tenant=None,
+    organization=None,
 ) -> UserQuerySet:
     """
-    Search users by email.
+    Search users inside tenant boundary.
     """
 
     return get_users(
+        tenant=tenant,
+        organization=organization,
         include_inactive=True,
     ).filter(
         email__icontains=query.strip(),
     )
 
 
-def get_profiles() -> ProfileQuerySet:
+def get_profiles(
+    *,
+    tenant=None,
+    organization=None,
+) -> ProfileQuerySet:
     """
-    Return all profiles ordered by user email.
+    Return tenant scoped profiles.
     """
 
-    return Profile.objects.select_related(
+    queryset = Profile.objects.select_related(
         "user",
-    ).order_by(
+        "user__organization",
+    )
+
+    if organization is not None:
+        queryset = queryset.filter(
+            user__organization=organization,
+        )
+
+    elif tenant is not None:
+        queryset = queryset.filter(
+            user__organization__tenant=tenant,
+        )
+
+    return queryset.order_by(
         "user__email",
     )
 
@@ -140,13 +199,18 @@ def get_profiles() -> ProfileQuerySet:
 def get_profile_by_id(
     *,
     profile_id: UUID,
+    tenant=None,
+    organization=None,
 ) -> Profile | None:
     """
-    Return a profile by ID.
+    Return profile by UUID.
     """
 
     return (
-        get_profiles()
+        get_profiles(
+            tenant=tenant,
+            organization=organization,
+        )
         .filter(
             pk=profile_id,
         )
@@ -157,13 +221,18 @@ def get_profile_by_id(
 def get_profile_by_user(
     *,
     user: User,
+    tenant=None,
+    organization=None,
 ) -> Profile | None:
     """
-    Return a user's profile.
+    Return profile by user.
     """
 
     return (
-        get_profiles()
+        get_profiles(
+            tenant=tenant,
+            organization=organization,
+        )
         .filter(
             user=user,
         )
@@ -171,7 +240,7 @@ def get_profile_by_user(
     )
 
 
-__all__ = [
+__all__ = (
     "get_active_users",
     "get_profiles",
     "get_profile_by_id",
@@ -182,4 +251,4 @@ __all__ = [
     "get_users",
     "get_verified_users",
     "search_users",
-]
+)

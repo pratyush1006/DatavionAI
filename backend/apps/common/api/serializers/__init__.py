@@ -4,10 +4,6 @@ Common serializer framework exports.
 
 from __future__ import annotations
 
-from .base import (
-    BaseModelSerializer,
-)
+from .base import BaseModelSerializer
 
-__all__ = [
-    "BaseModelSerializer",
-]
+__all__: tuple[str, ...] = ("BaseModelSerializer",)

@@ -1,5 +1,8 @@
 """
 Role permission constants.
+
+Defines role-permission assignment
+types and assignment sources.
 """
 
 from __future__ import annotations
@@ -32,7 +35,7 @@ class RolePermissionSource(
     models.TextChoices,
 ):
     """
-    Source of the permission assignment.
+    Source of permission assignment.
     """
 
     SYSTEM = (
@@ -48,6 +51,16 @@ class RolePermissionSource(
     USER = (
         "user",
         "User",
+    )
+
+    IMPORT = (
+        "import",
+        "Import",
+    )
+
+    API = (
+        "api",
+        "API",
     )
 
 

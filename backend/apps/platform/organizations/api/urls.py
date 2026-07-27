@@ -30,6 +30,15 @@ urlpatterns = [
             ),
         ),
     ),
+    path(
+        "branding/",
+        include(
+            (
+                "apps.platform.organizations.api.organization_branding.urls",
+                "organization-branding",
+            ),
+        ),
+    ),
 ]
 
 __all__ = [

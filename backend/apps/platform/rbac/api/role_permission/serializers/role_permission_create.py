@@ -6,6 +6,12 @@ from __future__ import annotations
 
 from rest_framework import serializers
 
+from apps.platform.rbac.constants import (
+    DEFAULT_ROLE_PERMISSION_SOURCE,
+    DEFAULT_ROLE_PERMISSION_TYPE,
+    RolePermissionSource,
+    RolePermissionType,
+)
 from apps.platform.rbac.models import (
     RolePermission,
 )
@@ -24,6 +30,18 @@ class RolePermissionCreateSerializer(
     Serializer for creating a role permission.
     """
 
+    assignment_type = serializers.ChoiceField(
+        choices=RolePermissionType.choices,
+        required=False,
+        default=DEFAULT_ROLE_PERMISSION_TYPE,
+    )
+
+    assignment_source = serializers.ChoiceField(
+        choices=RolePermissionSource.choices,
+        required=False,
+        default=DEFAULT_ROLE_PERMISSION_SOURCE,
+    )
+
     class Meta:
         model = RolePermission
 
@@ -40,14 +58,20 @@ class RolePermissionCreateSerializer(
         attrs: dict,
     ) -> dict:
         """
-        Validate the serializer data.
+        Validate role permission assignment.
         """
 
         validate_role_permission(
             role=attrs["role"],
             permission=attrs["permission"],
-            assignment_type=attrs["assignment_type"],
-            assignment_source=attrs["assignment_source"],
+            assignment_type=attrs.get(
+                "assignment_type",
+                DEFAULT_ROLE_PERMISSION_TYPE,
+            ),
+            assignment_source=attrs.get(
+                "assignment_source",
+                DEFAULT_ROLE_PERMISSION_SOURCE,
+            ),
         )
 
         return attrs
@@ -57,9 +81,14 @@ class RolePermissionCreateSerializer(
         validated_data: dict,
     ) -> RolePermission:
         """
-        Create a role permission.
+        Create role permission.
         """
 
         return create_role_permission(
             validated_data=validated_data,
         )
+
+
+__all__ = [
+    "RolePermissionCreateSerializer",
+]

@@ -7,12 +7,15 @@ from __future__ import annotations
 from typing import Final
 
 from drf_spectacular.utils import extend_schema
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import (
+    IsAuthenticated,
+)
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
-from apps.common.api.responses import success_response
+from apps.common.api.base_generics import (
+    BaseGenericAPIView,
+)
 from apps.platform.accounts.api.serializers.authentication import (
     MeSerializer,
 )
@@ -23,14 +26,16 @@ AUTH_TAG: Final = ("Authentication",)
 @extend_schema(
     tags=AUTH_TAG,
     summary="Current User",
-    description="Return the currently authenticated user.",
+    description=("Return the currently authenticated user."),
     responses={
         200: MeSerializer,
     },
 )
-class MeAPIView(APIView):
+class MeAPIView(
+    BaseGenericAPIView,
+):
     """
-    Retrieve the authenticated user.
+    Retrieve authenticated user.
     """
 
     permission_classes = (IsAuthenticated,)
@@ -42,18 +47,16 @@ class MeAPIView(APIView):
         request: Request,
     ) -> Response:
         """
-        Return the authenticated user.
+        Return current authenticated user.
         """
 
-        serializer = self.serializer_class(
-            instance=request.user,
+        serializer = self.get_serializer(
+            request.user,
         )
 
-        return success_response(
+        return self.success_response(
             data=serializer.data,
         )
 
 
-__all__ = [
-    "MeAPIView",
-]
+__all__ = ("MeAPIView",)

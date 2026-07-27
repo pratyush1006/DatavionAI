@@ -19,25 +19,20 @@ export function LoginPage() {
   const loginMutation = useLoginMutation();
 
   async function handleSubmit(
-  values: LoginFormValues,
-) {
-  console.log("LOGIN SUBMIT");
-  console.log(values);
+    values: LoginFormValues,
+  ) {
 
     try {
-    await loginMutation.mutateAsync(values);
+      await loginMutation.mutateAsync(values);
 
-    console.log("LOGIN SUCCESS");
+      toast.success("Welcome to Datavion AI.");
 
-    toast.success("Welcome to Datavion AI.");
+      router.replace("/dashboard");
+    } catch {
 
-    router.replace("/dashboard");
-  } catch (error) {
-    console.error("LOGIN ERROR", error);
-
-    toast.error("Invalid email or password.");
+      toast.error("Invalid email or password.");
+    }
   }
-}
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-muted/30 p-6">

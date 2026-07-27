@@ -5,18 +5,14 @@ Admin configuration for the Organizations application.
 from __future__ import annotations
 
 from django.contrib import admin
+from django.db.models import QuerySet
+from django.http import HttpRequest
 
-from apps.platform.organizations.models import (
-    Organization,
-)
+from apps.platform.organizations.models import Organization
 
 
-@admin.register(
-    Organization,
-)
-class OrganizationAdmin(
-    admin.ModelAdmin,
-):
+@admin.register(Organization)
+class OrganizationAdmin(admin.ModelAdmin):
     """
     Django admin configuration for Organization.
     """
@@ -28,11 +24,9 @@ class OrganizationAdmin(
         "organization_type",
         "status",
         "verification_status",
-        "subscription_status",
         "city",
         "country",
         "is_active",
-        "is_verified",
         "created_at",
     )
 
@@ -41,15 +35,19 @@ class OrganizationAdmin(
         "code",
     )
 
+    list_editable = ("is_active",)
+
     search_fields = (
         "name",
         "display_name",
         "code",
+        "slug",
         "email",
         "support_email",
         "city",
         "state",
         "country",
+        "registration_number",
     )
 
     list_filter = (
@@ -57,10 +55,8 @@ class OrganizationAdmin(
         "organization_type",
         "status",
         "verification_status",
-        "subscription_status",
         "country",
         "is_active",
-        "is_verified",
         "created_at",
     )
 
@@ -72,13 +68,20 @@ class OrganizationAdmin(
         "updated_at",
     )
 
-    list_per_page = 25
-
     date_hierarchy = "created_at"
+
+    list_per_page = 25
 
     preserve_filters = True
 
+    save_on_top = True
+
     empty_value_display = "-"
+
+    actions = (
+        "activate_organizations",
+        "deactivate_organizations",
+    )
 
     fieldsets = (
         (
@@ -143,8 +146,6 @@ class OrganizationAdmin(
             {
                 "fields": (
                     "verification_status",
-                    "subscription_status",
-                    "is_verified",
                     "is_demo",
                     "is_active",
                 ),
@@ -159,6 +160,7 @@ class OrganizationAdmin(
         (
             "Audit",
             {
+                "classes": ("collapse",),
                 "fields": (
                     "id",
                     "created_at",
@@ -168,7 +170,45 @@ class OrganizationAdmin(
         ),
     )
 
+    def get_queryset(
+        self,
+        request: HttpRequest,
+    ) -> QuerySet[Organization]:
+        """
+        Return the optimized queryset for the admin.
 
-__all__ = [
-    "OrganizationAdmin",
-]
+        Add select_related() here if any of the displayed fields become
+        ForeignKey relationships in the future.
+        """
+        queryset = super().get_queryset(request)
+
+        return queryset
+
+    @admin.action(description="Activate selected organizations")
+    def activate_organizations(
+        self,
+        request: HttpRequest,
+        queryset: QuerySet[Organization],
+    ) -> None:
+        """
+        Activate the selected organizations.
+        """
+        queryset.update(
+            is_active=True,
+        )
+
+    @admin.action(description="Deactivate selected organizations")
+    def deactivate_organizations(
+        self,
+        request: HttpRequest,
+        queryset: QuerySet[Organization],
+    ) -> None:
+        """
+        Deactivate the selected organizations.
+        """
+        queryset.update(
+            is_active=False,
+        )
+
+
+__all__: tuple[str, ...] = ("OrganizationAdmin",)

@@ -19,16 +19,13 @@ from apps.clinical.patients.permissions import (
     CanUpdatePatient,
     CanViewPatient,
 )
-from apps.clinical.patients.selectors import get_patient_by_id
-from apps.clinical.patients.services import (
-    delete_patient,
-    update_patient,
-)
+from apps.clinical.patients.selectors import PatientSelector
+from apps.clinical.patients.services import PatientService
 from apps.common.api.base_generics import (
     BaseRetrieveUpdateDestroyAPIView,
 )
 
-PATIENT_TAG: Final = ("Patients",)
+PATIENT_TAG: Final[tuple[str, ...]] = ("Patients",)
 
 
 @extend_schema(tags=PATIENT_TAG)
@@ -60,19 +57,17 @@ class PatientRetrieveUpdateDestroyAPIView(
         ),
     }
 
-    # Default serializer used by DRF, Browsable API and drf-spectacular.
     serializer_class = PatientDetailSerializer
 
-    # Method-specific serializer overrides.
     serializer_classes = {
         "GET": PatientDetailSerializer,
         "PUT": PatientUpdateSerializer,
         "PATCH": PatientUpdateSerializer,
     }
 
-    update_service = update_patient
+    update_service = PatientService.update
 
-    delete_service = delete_patient
+    delete_service = PatientService.delete
 
     def get_object(
         self,
@@ -81,7 +76,7 @@ class PatientRetrieveUpdateDestroyAPIView(
         Return the requested patient.
         """
 
-        return get_patient_by_id(
+        return PatientSelector.get(
             patient_id=self.kwargs[self.lookup_url_kwarg],
         )
 

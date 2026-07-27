@@ -1,21 +1,28 @@
 """
 Organization hierarchy manager.
+
+Provides manager entry points for
+OrganizationHierarchy query operations.
 """
 
 from __future__ import annotations
 
-from django.db import models
+from typing import Any
 
+from apps.core.models.managers import BaseManager
 from apps.platform.organizations.querysets import (
     OrganizationHierarchyQuerySet,
 )
 
 
 class OrganizationHierarchyManager(
-    models.Manager["OrganizationHierarchy"],
+    BaseManager,
 ):
     """
-    Custom manager for OrganizationHierarchy.
+    Manager for OrganizationHierarchy.
+
+    Delegates reusable query operations
+    to OrganizationHierarchyQuerySet.
     """
 
     _queryset_class = OrganizationHierarchyQuerySet
@@ -24,7 +31,7 @@ class OrganizationHierarchyManager(
         self,
     ) -> OrganizationHierarchyQuerySet:
         """
-        Return the custom queryset.
+        Return the base queryset.
         """
 
         return self._queryset_class(
@@ -52,26 +59,26 @@ class OrganizationHierarchyManager(
 
     def by_parent(
         self,
-        parent_organization_id,
+        parent_organization: Any,
     ) -> OrganizationHierarchyQuerySet:
         """
         Filter by parent organization.
         """
 
         return self.get_queryset().by_parent(
-            parent_organization_id,
+            parent_organization,
         )
 
     def by_child(
         self,
-        child_organization_id,
+        child_organization: Any,
     ) -> OrganizationHierarchyQuerySet:
         """
         Filter by child organization.
         """
 
         return self.get_queryset().by_child(
-            child_organization_id,
+            child_organization,
         )
 
     def by_relationship_type(
@@ -102,7 +109,7 @@ class OrganizationHierarchyManager(
         self,
     ) -> OrganizationHierarchyQuerySet:
         """
-        Return queryset with related organizations.
+        Load related organizations.
         """
 
         return self.get_queryset().with_related()
@@ -120,6 +127,4 @@ class OrganizationHierarchyManager(
         )
 
 
-__all__ = [
-    "OrganizationHierarchyManager",
-]
+__all__: tuple[str, ...] = ("OrganizationHierarchyManager",)

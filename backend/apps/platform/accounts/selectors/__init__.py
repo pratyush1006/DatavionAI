@@ -17,7 +17,7 @@ from .account import (
     search_users,
 )
 
-__all__ = [
+__all__ = (
     "get_active_users",
     "get_profile_by_id",
     "get_profile_by_user",
@@ -28,4 +28,4 @@ __all__ = [
     "get_users",
     "get_verified_users",
     "search_users",
-]
+)

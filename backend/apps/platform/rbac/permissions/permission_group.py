@@ -1,52 +1,66 @@
 """
 RBAC PermissionGroup permission classes.
+
+Uses DatavionOS RBAC authorization engine.
 """
 
 from __future__ import annotations
 
-from apps.common.permissions import (
-    BasePermission,
+from apps.platform.rbac.permissions.base import (
+    RBACPermissionBase,
 )
+
+# =============================================================================
+# Permission Group API Permissions
+# =============================================================================
 
 
 class CanViewPermissionGroup(
-    BasePermission,
+    RBACPermissionBase,
 ):
     """
     Permission required to view permission groups.
     """
 
-    required_permission = "rbac.permission_group.view.organization"
+    message = "You do not have permission to view permission groups."
+
+    permission_code = "rbac.view"
 
 
 class CanCreatePermissionGroup(
-    BasePermission,
+    RBACPermissionBase,
 ):
     """
     Permission required to create permission groups.
     """
 
-    required_permission = "rbac.permission_group.create.organization"
+    message = "You do not have permission to create permission groups."
+
+    permission_code = "rbac.create"
 
 
 class CanUpdatePermissionGroup(
-    BasePermission,
+    RBACPermissionBase,
 ):
     """
     Permission required to update permission groups.
     """
 
-    required_permission = "rbac.permission_group.update.organization"
+    message = "You do not have permission to update permission groups."
+
+    permission_code = "rbac.update"
 
 
 class CanDeletePermissionGroup(
-    BasePermission,
+    RBACPermissionBase,
 ):
     """
     Permission required to delete permission groups.
     """
 
-    required_permission = "rbac.permission_group.delete.organization"
+    message = "You do not have permission to delete permission groups."
+
+    permission_code = "rbac.delete"
 
 
 __all__ = [

@@ -1,11 +1,13 @@
 """
 Reusable model managers.
 
-Provides reusable manager implementations shared across the
-Datavion AI platform.
+Provides reusable database access managers shared across
+the DatavionOS platform.
 """
 
 from __future__ import annotations
+
+from typing import TypeVar
 
 from django.db import models
 
@@ -15,79 +17,114 @@ from .querysets import (
     SoftDeleteQuerySet,
 )
 
+ModelType = TypeVar(
+    "ModelType",
+    bound=models.Model,
+)
+
+
+BaseManagerMixin = models.Manager.from_queryset(
+    BaseQuerySet,
+)
+
+
+ActiveManagerMixin = models.Manager.from_queryset(
+    ActiveQuerySet,
+)
+
+
+SoftDeleteManagerMixin = models.Manager.from_queryset(
+    SoftDeleteQuerySet,
+)
+
 
 class BaseManager(
-    models.Manager.from_queryset(
-        BaseQuerySet,
-    ),
+    BaseManagerMixin[ModelType],
 ):
     """
-    Base manager shared across models.
+    Default manager for DatavionOS models.
     """
+
+    use_in_migrations = True
 
 
 class ActiveManager(
-    models.Manager.from_queryset(
-        ActiveQuerySet,
-    ),
+    ActiveManagerMixin[ModelType],
 ):
     """
-    Manager for models implementing ActiveMixin.
+    Manager for active-state models.
+
+    Returns only active records by default.
     """
 
-
-class SoftDeleteManager(
-    models.Manager.from_queryset(
-        SoftDeleteQuerySet,
-    ),
-):
-    """
-    Default manager excluding soft-deleted records.
-    """
+    use_in_migrations = True
 
     def get_queryset(
         self,
-    ) -> SoftDeleteQuerySet:
+    ) -> ActiveQuerySet[ModelType]:
         """
-        Return only non-deleted records.
+        Return active records only.
+        """
+
+        return super().get_queryset().active()
+
+
+class SoftDeleteManager(
+    SoftDeleteManagerMixin[ModelType],
+):
+    """
+    Default manager for soft-delete models.
+
+    Returns only non-deleted records.
+    """
+
+    use_in_migrations = True
+
+    def get_queryset(
+        self,
+    ) -> SoftDeleteQuerySet[ModelType]:
+        """
+        Return alive records only.
         """
 
         return super().get_queryset().alive()
 
 
 class AllObjectsManager(
-    models.Manager.from_queryset(
-        SoftDeleteQuerySet,
-    ),
+    SoftDeleteManagerMixin[ModelType],
 ):
     """
-    Manager returning all records, including soft-deleted ones.
+    Manager exposing all records.
+
+    Includes soft-deleted records.
     """
+
+    use_in_migrations = True
 
 
 class DeletedObjectsManager(
-    models.Manager.from_queryset(
-        SoftDeleteQuerySet,
-    ),
+    SoftDeleteManagerMixin[ModelType],
 ):
     """
-    Manager returning only soft-deleted records.
+    Manager exposing deleted records only.
     """
+
+    use_in_migrations = True
 
     def get_queryset(
         self,
-    ) -> SoftDeleteQuerySet:
+    ) -> SoftDeleteQuerySet[ModelType]:
         """
-        Return only soft-deleted records.
+        Return deleted records only.
         """
 
         return super().get_queryset().deleted()
 
 
-__all__ = [
+__all__: tuple[str, ...] = (
     "ActiveManager",
     "AllObjectsManager",
     "BaseManager",
     "DeletedObjectsManager",
     "SoftDeleteManager",
-]
+)

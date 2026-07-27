@@ -1,52 +1,72 @@
 """
-Role hierarchy permissions.
+RBAC role hierarchy permission classes.
+
+Uses DatavionOS RBAC authorization engine.
+
+Responsibilities:
+
+- Protect role hierarchy APIs
+- Delegate authorization to RBAC engine
+- Enforce centralized RBAC permission codes
 """
 
 from __future__ import annotations
 
-from apps.common.permissions import (
-    DatavionPermission,
+from apps.platform.rbac.permissions.base import (
+    RBACPermissionBase,
 )
+
+# =============================================================================
+# Role Hierarchy API Permissions
+# =============================================================================
 
 
 class CanViewRoleHierarchy(
-    DatavionPermission,
+    RBACPermissionBase,
 ):
     """
     Permission required to view role hierarchies.
     """
 
-    required_permission = "role_hierarchy.view"
+    message = "You do not have permission to view role hierarchies."
+
+    permission_code = "rbac.view"
 
 
 class CanCreateRoleHierarchy(
-    DatavionPermission,
+    RBACPermissionBase,
 ):
     """
     Permission required to create role hierarchies.
     """
 
-    required_permission = "role_hierarchy.create"
+    message = "You do not have permission to create role hierarchies."
+
+    permission_code = "rbac.create"
 
 
 class CanUpdateRoleHierarchy(
-    DatavionPermission,
+    RBACPermissionBase,
 ):
     """
     Permission required to update role hierarchies.
     """
 
-    required_permission = "role_hierarchy.update"
+    message = "You do not have permission to update role hierarchies."
+
+    permission_code = "rbac.update"
 
 
 class CanDeleteRoleHierarchy(
-    DatavionPermission,
+    RBACPermissionBase,
 ):
     """
     Permission required to delete role hierarchies.
     """
 
-    required_permission = "role_hierarchy.delete"
+    message = "You do not have permission to delete role hierarchies."
+
+    permission_code = "rbac.delete"
 
 
 __all__ = [

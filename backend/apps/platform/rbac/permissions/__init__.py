@@ -1,9 +1,32 @@
 """
 RBAC permission exports.
+
+Central export registry for DatavionOS
+authorization permission classes.
 """
 
 from __future__ import annotations
 
+# ============================================================================
+# Assignment
+# ============================================================================
+from .assignment import (
+    CanAssignPermission,
+    CanAssignRole,
+    CanRemovePermission,
+    CanRemoveRole,
+)
+
+# ============================================================================
+# Base
+# ============================================================================
+from .base import (
+    RBACPermissionBase,
+)
+
+# ============================================================================
+# Organization Role
+# ============================================================================
 from .organization_role import (
     CanCreateOrganizationRole,
     CanDeleteOrganizationRole,
@@ -73,47 +96,61 @@ from .user_role import (
 
 __all__ = [
     # =========================================================================
+    # Base
+    # =========================================================================
+    "RBACPermissionBase",
+    # =========================================================================
+    # Assignment
+    # =========================================================================
+    "CanAssignPermission",
+    "CanAssignRole",
+    "CanRemovePermission",
+    "CanRemoveRole",
+    # =========================================================================
+    # Organization Role
+    # =========================================================================
+    "CanCreateOrganizationRole",
+    "CanDeleteOrganizationRole",
+    "CanUpdateOrganizationRole",
+    "CanViewOrganizationRole",
+    # =========================================================================
     # Permission
-    # ============================================================================
+    # =========================================================================
     "CanCreatePermission",
     "CanDeletePermission",
     "CanUpdatePermission",
     "CanViewPermission",
     # =========================================================================
     # Permission Group
-    # ============================================================================
+    # =========================================================================
     "CanCreatePermissionGroup",
     "CanDeletePermissionGroup",
     "CanUpdatePermissionGroup",
     "CanViewPermissionGroup",
     # =========================================================================
     # Role
-    # ============================================================================
+    # =========================================================================
     "CanCreateRole",
     "CanDeleteRole",
     "CanUpdateRole",
     "CanViewRole",
     # =========================================================================
     # Role Permission
-    # ============================================================================
+    # =========================================================================
     "CanCreateRolePermission",
     "CanDeleteRolePermission",
     "CanUpdateRolePermission",
     "CanViewRolePermission",
     # =========================================================================
     # User Role
-    # ============================================================================
+    # =========================================================================
     "CanCreateUserRole",
     "CanDeleteUserRole",
     "CanUpdateUserRole",
     "CanViewUserRole",
-    "CanCreateOrganizationRole",
-    "CanDeleteOrganizationRole",
-    "CanUpdateOrganizationRole",
-    "CanViewOrganizationRole",
-    # ============================================================================
+    # =========================================================================
     # Role Hierarchy
-    # ============================================================================
+    # =========================================================================
     "CanCreateRoleHierarchy",
     "CanDeleteRoleHierarchy",
     "CanUpdateRoleHierarchy",

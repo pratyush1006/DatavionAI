@@ -1,5 +1,7 @@
 """
 Organization serializer exports.
+
+Public serializer registry for the Organizations API.
 """
 
 from .base import (
@@ -21,11 +23,11 @@ from .update import (
     OrganizationUpdateSerializer,
 )
 
-__all__ = [
+__all__: tuple[str, ...] = (
     "OrganizationBaseSerializer",
     "OrganizationCreateSerializer",
     "OrganizationDetailSerializer",
     "OrganizationListSerializer",
     "OrganizationSummarySerializer",
     "OrganizationUpdateSerializer",
-]
+)

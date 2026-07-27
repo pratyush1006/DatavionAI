@@ -1,5 +1,8 @@
 """
 Role permission services.
+
+Handles RBAC permission assignments
+with enterprise audit integration.
 """
 
 from __future__ import annotations
@@ -8,6 +11,9 @@ from typing import Any
 
 from django.db import transaction
 
+from apps.platform.audit.services import (
+    AuditService,
+)
 from apps.platform.rbac.builders import (
     RolePermissionBuilder,
 )
@@ -19,13 +25,48 @@ from apps.platform.rbac.validators import (
 )
 
 
+def _audit_permission_payload(
+    instance: RolePermission,
+) -> dict[str, Any]:
+    """
+    Build permission audit payload.
+    """
+
+    return {
+        "role": (instance.role.name if instance.role else None),
+        "role_code": (instance.role.code if instance.role else None),
+        "permission": (instance.permission.code if instance.permission else None),
+        "assignment_type": (instance.assignment_type),
+        "assignment_source": (instance.assignment_source),
+        "is_active": (instance.is_active),
+    }
+
+
+def _audit_context(
+    instance: RolePermission,
+) -> dict[str, Any]:
+    """
+    Build audit ownership context.
+    """
+
+    role = instance.role
+
+    return {
+        "organization": getattr(
+            role,
+            "organization",
+            None,
+        ),
+    }
+
+
 @transaction.atomic
 def create_role_permission(
     *,
     validated_data: dict[str, Any],
 ) -> RolePermission:
     """
-    Create a role permission assignment.
+    Create role permission assignment.
     """
 
     data = RolePermissionBuilder.build_create(
@@ -39,9 +80,24 @@ def create_role_permission(
         assignment_source=data["assignment_source"],
     )
 
-    return RolePermission.objects.create(
+    instance = RolePermission.objects.create(
         **data,
     )
+
+    AuditService.log_permission_change(
+        object_type="RolePermission",
+        object_id=str(
+            instance.id,
+        ),
+        new_values=_audit_permission_payload(
+            instance,
+        ),
+        **_audit_context(
+            instance,
+        ),
+    )
+
+    return instance
 
 
 @transaction.atomic
@@ -51,8 +107,12 @@ def update_role_permission(
     validated_data: dict[str, Any],
 ) -> RolePermission:
     """
-    Update a role permission assignment.
+    Update role permission assignment.
     """
+
+    old_values = _audit_permission_payload(
+        instance,
+    )
 
     data = RolePermissionBuilder.build_update(
         validated_data=validated_data,
@@ -85,8 +145,25 @@ def update_role_permission(
             value,
         )
 
-    instance.save(
-        update_fields=list(data.keys()),
+    if data:
+        instance.save(
+            update_fields=list(
+                data.keys(),
+            ),
+        )
+
+    AuditService.log_permission_change(
+        object_type="RolePermission",
+        object_id=str(
+            instance.id,
+        ),
+        old_values=old_values,
+        new_values=_audit_permission_payload(
+            instance,
+        ),
+        **_audit_context(
+            instance,
+        ),
     )
 
     return instance
@@ -98,8 +175,12 @@ def activate_role_permission(
     instance: RolePermission,
 ) -> RolePermission:
     """
-    Activate a role permission assignment.
+    Activate role permission.
     """
+
+    old_values = _audit_permission_payload(
+        instance,
+    )
 
     instance.is_active = True
 
@@ -107,6 +188,20 @@ def activate_role_permission(
         update_fields=[
             "is_active",
         ],
+    )
+
+    AuditService.log_permission_change(
+        object_type="RolePermission",
+        object_id=str(
+            instance.id,
+        ),
+        old_values=old_values,
+        new_values=_audit_permission_payload(
+            instance,
+        ),
+        **_audit_context(
+            instance,
+        ),
     )
 
     return instance
@@ -118,8 +213,12 @@ def deactivate_role_permission(
     instance: RolePermission,
 ) -> RolePermission:
     """
-    Deactivate a role permission assignment.
+    Deactivate role permission.
     """
+
+    old_values = _audit_permission_payload(
+        instance,
+    )
 
     instance.is_active = False
 
@@ -127,6 +226,20 @@ def deactivate_role_permission(
         update_fields=[
             "is_active",
         ],
+    )
+
+    AuditService.log_permission_change(
+        object_type="RolePermission",
+        object_id=str(
+            instance.id,
+        ),
+        old_values=old_values,
+        new_values=_audit_permission_payload(
+            instance,
+        ),
+        **_audit_context(
+            instance,
+        ),
     )
 
     return instance
@@ -138,8 +251,23 @@ def delete_role_permission(
     instance: RolePermission,
 ) -> None:
     """
-    Delete a role permission assignment.
+    Delete role permission assignment.
     """
+
+    old_values = _audit_permission_payload(
+        instance,
+    )
+
+    AuditService.log_permission_change(
+        object_type="RolePermission",
+        object_id=str(
+            instance.id,
+        ),
+        old_values=old_values,
+        **_audit_context(
+            instance,
+        ),
+    )
 
     instance.delete()
 

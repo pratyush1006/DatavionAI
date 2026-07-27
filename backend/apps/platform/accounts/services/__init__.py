@@ -8,6 +8,7 @@ from .authentication import AuthenticationService
 from .oauth import OAuthService
 from .otp import OTPService
 from .password import PasswordService
+from .security import SecurityService
 from .user import UserService
 from .verification import VerificationService
 
@@ -18,4 +19,5 @@ __all__ = [
     "PasswordService",
     "UserService",
     "VerificationService",
+    "SecurityService",
 ]

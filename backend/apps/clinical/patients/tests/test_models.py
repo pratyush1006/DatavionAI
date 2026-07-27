@@ -7,6 +7,7 @@ from __future__ import annotations
 from datetime import date
 
 from django.core.exceptions import ValidationError
+from django.db import IntegrityError
 
 from apps.clinical.patients.constants import (
     DEFAULT_PATIENT_STATUS,
@@ -67,6 +68,48 @@ class PatientModelTestCase(BaseTestCase):
         self.assertEqual(
             str(self.patient),
             "John Doe (MRN000001)",
+        )
+
+    def test_full_name_property(self) -> None:
+        """
+        full_name should return the legal patient name.
+        """
+
+        self.assertEqual(
+            self.patient.full_name,
+            "John Doe",
+        )
+
+    def test_display_name_defaults_to_full_name(self) -> None:
+        """
+        display_name should fall back to full_name.
+        """
+
+        self.assertEqual(
+            self.patient.display_name,
+            "John Doe",
+        )
+
+    def test_display_name_uses_preferred_name(self) -> None:
+        """
+        display_name should use the preferred name when provided.
+        """
+
+        self.patient.preferred_name = "Johnny"
+
+        self.assertEqual(
+            self.patient.display_name,
+            "Johnny",
+        )
+
+    def test_age_property(self) -> None:
+        """
+        Age should be calculated correctly.
+        """
+
+        self.assertGreaterEqual(
+            self.patient.age,
+            0,
         )
 
     def test_default_status(self) -> None:
@@ -141,6 +184,23 @@ class PatientModelTestCase(BaseTestCase):
         ):
             self.patient.full_clean()
 
+    def test_unique_mrn_per_organization(self) -> None:
+        """
+        MRN should be unique within an organization.
+        """
+
+        with self.assertRaises(
+            IntegrityError,
+        ):
+            Patient.objects.create(
+                organization=self.organization,
+                mrn="MRN000001",
+                first_name="Jane",
+                last_name="Doe",
+                date_of_birth=date(1990, 1, 1),
+                gender=PatientGender.FEMALE,
+            )
+
     def test_meta_ordering(self) -> None:
         """
         Patient model should use the configured ordering.
@@ -149,8 +209,8 @@ class PatientModelTestCase(BaseTestCase):
         self.assertEqual(
             Patient._meta.ordering,
             (
-                "first_name",
                 "last_name",
+                "first_name",
             ),
         )
 
@@ -170,8 +230,8 @@ class PatientModelTestCase(BaseTestCase):
         """
 
         self.assertEqual(
-            self.patient.organization.id,
-            self.organization.id,
+            self.patient.organization,
+            self.organization,
         )
 
 

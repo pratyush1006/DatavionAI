@@ -31,7 +31,7 @@ from apps.platform.organizations.services import (
 from drf_spectacular.utils import extend_schema
 from rest_framework.permissions import IsAuthenticated
 
-ORGANIZATION_TAG: Final = ("Organizations",)
+ORGANIZATION_TAG: Final[tuple[str, ...]] = ("Organizations",)
 
 
 @extend_schema(
@@ -41,7 +41,16 @@ class OrganizationRetrieveUpdateDestroyAPIView(
     BaseRetrieveUpdateDestroyAPIView,
 ):
     """
-    Retrieve, update, or archive an organization.
+    API endpoint for retrieving, updating, and deleting organizations.
+
+    GET
+        Retrieve organization details.
+
+    PUT/PATCH
+        Update an organization through the service layer.
+
+    DELETE
+        Archive an organization through the service layer.
     """
 
     lookup_url_kwarg = "organization_id"
@@ -89,7 +98,9 @@ class OrganizationRetrieveUpdateDestroyAPIView(
         self,
     ) -> Organization:
         """
-        Return the requested organization.
+        Return the organization requested by the URL.
+
+        Retrieval is delegated to the selector layer.
         """
 
         return get_organization_by_id(
@@ -97,6 +108,4 @@ class OrganizationRetrieveUpdateDestroyAPIView(
         )
 
 
-__all__ = [
-    "OrganizationRetrieveUpdateDestroyAPIView",
-]
+__all__: tuple[str, ...] = ("OrganizationRetrieveUpdateDestroyAPIView",)

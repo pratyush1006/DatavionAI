@@ -1,5 +1,8 @@
 """
 User role services.
+
+Handles user-role assignments
+with RBAC audit integration.
 """
 
 from __future__ import annotations
@@ -8,6 +11,9 @@ from typing import Any
 
 from django.db import transaction
 
+from apps.platform.audit.services import (
+    AuditService,
+)
 from apps.platform.rbac.builders import (
     UserRoleBuilder,
 )
@@ -19,13 +25,45 @@ from apps.platform.rbac.validators import (
 )
 
 
+def _audit_role_payload(
+    instance: UserRole,
+) -> dict[str, Any]:
+    """
+    Build role assignment audit payload.
+    """
+
+    return {
+        "user": (instance.user.email if instance.user else None),
+        "role": (instance.role.name if instance.role else None),
+        "role_code": (instance.role.code if instance.role else None),
+        "is_active": instance.is_active,
+    }
+
+
+def _audit_context(
+    instance: UserRole,
+) -> dict[str, Any]:
+    """
+    Build audit context.
+    """
+
+    return {
+        "user": instance.user,
+        "organization": getattr(
+            instance,
+            "organization",
+            None,
+        ),
+    }
+
+
 @transaction.atomic
 def create_user_role(
     *,
     validated_data: dict[str, Any],
 ) -> UserRole:
     """
-    Create a user role assignment.
+    Create user role assignment.
     """
 
     data = UserRoleBuilder.build_create(
@@ -37,9 +75,22 @@ def create_user_role(
         role=data["role"],
     )
 
-    return UserRole.objects.create(
+    instance = UserRole.objects.create(
         **data,
     )
+
+    AuditService.log_role_change(
+        object_type="UserRole",
+        object_id=str(instance.id),
+        new_values=_audit_role_payload(
+            instance,
+        ),
+        **_audit_context(
+            instance,
+        ),
+    )
+
+    return instance
 
 
 @transaction.atomic
@@ -49,8 +100,12 @@ def update_user_role(
     validated_data: dict[str, Any],
 ) -> UserRole:
     """
-    Update a user role assignment.
+    Update user role assignment.
     """
+
+    old_values = _audit_role_payload(
+        instance,
+    )
 
     data = UserRoleBuilder.build_update(
         validated_data=validated_data,
@@ -77,8 +132,22 @@ def update_user_role(
 
     if data:
         instance.save(
-            update_fields=list(data.keys()),
+            update_fields=list(
+                data.keys(),
+            ),
         )
+
+    AuditService.log_role_change(
+        object_type="UserRole",
+        object_id=str(instance.id),
+        old_values=old_values,
+        new_values=_audit_role_payload(
+            instance,
+        ),
+        **_audit_context(
+            instance,
+        ),
+    )
 
     return instance
 
@@ -89,8 +158,12 @@ def activate_user_role(
     instance: UserRole,
 ) -> UserRole:
     """
-    Activate a user role.
+    Activate user role.
     """
+
+    old_values = _audit_role_payload(
+        instance,
+    )
 
     instance.is_active = True
 
@@ -98,6 +171,18 @@ def activate_user_role(
         update_fields=[
             "is_active",
         ],
+    )
+
+    AuditService.log_role_change(
+        object_type="UserRole",
+        object_id=str(instance.id),
+        old_values=old_values,
+        new_values=_audit_role_payload(
+            instance,
+        ),
+        **_audit_context(
+            instance,
+        ),
     )
 
     return instance
@@ -109,8 +194,12 @@ def deactivate_user_role(
     instance: UserRole,
 ) -> UserRole:
     """
-    Deactivate a user role.
+    Deactivate user role.
     """
+
+    old_values = _audit_role_payload(
+        instance,
+    )
 
     instance.is_active = False
 
@@ -118,6 +207,18 @@ def deactivate_user_role(
         update_fields=[
             "is_active",
         ],
+    )
+
+    AuditService.log_role_change(
+        object_type="UserRole",
+        object_id=str(instance.id),
+        old_values=old_values,
+        new_values=_audit_role_payload(
+            instance,
+        ),
+        **_audit_context(
+            instance,
+        ),
     )
 
     return instance
@@ -129,8 +230,21 @@ def delete_user_role(
     instance: UserRole,
 ) -> None:
     """
-    Delete a user role assignment.
+    Delete user role assignment.
     """
+
+    old_values = _audit_role_payload(
+        instance,
+    )
+
+    AuditService.log_role_change(
+        object_type="UserRole",
+        object_id=str(instance.id),
+        old_values=old_values,
+        **_audit_context(
+            instance,
+        ),
+    )
 
     instance.delete()
 

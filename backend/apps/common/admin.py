@@ -1,17 +1,15 @@
 """
 Common admin exports.
 
-This module exists for backwards compatibility.
+This module is maintained for backwards compatibility.
 
 Prefer importing from:
 
     apps.common.admin
 """
 
-from apps.common.admin.base import (
-    BaseAdmin,
-)
+from __future__ import annotations
 
-__all__ = [
-    "BaseAdmin",
-]
+from apps.common.admin.base import BaseAdmin
+
+__all__ = ("BaseAdmin",)

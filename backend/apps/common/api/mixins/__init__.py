@@ -1,8 +1,10 @@
 """
-Public API mixins for the Datavion AI platform.
+Public API for reusable API mixins.
 
-Only reusable mixins that provide cross-cutting behavior
-should be exported from this package.
+This package exposes framework-level mixins that provide
+cross-cutting behavior for the DatavionAI API layer.
+Business-specific mixins should remain within their
+respective applications.
 """
 
 from __future__ import annotations
@@ -15,10 +17,10 @@ from .services import (
     UpdateServiceMixin,
 )
 
-__all__ = [
+__all__ = (
     "BaseServiceMixin",
     "CreateServiceMixin",
     "DestroyServiceMixin",
     "SelectorMixin",
     "UpdateServiceMixin",
-]
+)

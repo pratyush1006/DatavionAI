@@ -18,14 +18,16 @@ from apps.platform.accounts.api.views.authentication import (
     RegisterAPIView,
     ResendOTPAPIView,
     ResetPasswordAPIView,
+    VerifyLoginOTPAPIView,
     VerifyOTPAPIView,
 )
 
 app_name = "authentication"
 
+
 urlpatterns = [
     #
-    # Authentication
+    # Authentication lifecycle
     #
     path(
         "register/",
@@ -38,6 +40,11 @@ urlpatterns = [
         name="login",
     ),
     path(
+        "login/verify-otp/",
+        VerifyLoginOTPAPIView.as_view(),
+        name="verify-login-otp",
+    ),
+    path(
         "refresh/",
         RefreshAPIView.as_view(),
         name="refresh",
@@ -48,7 +55,7 @@ urlpatterns = [
         name="logout",
     ),
     #
-    # Current User
+    # Current authenticated user
     #
     path(
         "me/",
@@ -56,7 +63,7 @@ urlpatterns = [
         name="me",
     ),
     #
-    # Password Management
+    # Password management
     #
     path(
         "change-password/",
@@ -74,7 +81,7 @@ urlpatterns = [
         name="reset-password",
     ),
     #
-    # Email Verification
+    # Verification
     #
     path(
         "verify-email/",
@@ -87,7 +94,7 @@ urlpatterns = [
         name="resend-verification",
     ),
     #
-    # OAuth
+    # OAuth providers
     #
     path(
         "oauth/google/",
@@ -101,6 +108,5 @@ urlpatterns = [
     ),
 ]
 
-__all__ = [
-    "urlpatterns",
-]
+
+__all__ = ("urlpatterns",)

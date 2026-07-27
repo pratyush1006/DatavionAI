@@ -13,11 +13,9 @@ from rest_framework.permissions import (
 )
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
-from apps.common.api.responses import (
-    created_response,
-    success_response,
+from apps.common.api.base_generics import (
+    BaseGenericAPIView,
 )
 from apps.common.http import (
     get_client_device,
@@ -30,6 +28,11 @@ from apps.platform.accounts.api.serializers.authentication import (
     LogoutSerializer,
     RefreshSerializer,
     RegisterSerializer,
+    TokenResponseSerializer,
+    VerifyLoginOTPSerializer,
+)
+from apps.platform.accounts.api.serializers.summary import (
+    UserSummarySerializer,
 )
 
 AUTH_TAG: Final = ("Authentication",)
@@ -41,10 +44,12 @@ AUTH_TAG: Final = ("Authentication",)
     description="Register a new user account.",
     request=RegisterSerializer,
     responses={
-        201: RegisterSerializer,
+        201: UserSummarySerializer,
     },
 )
-class RegisterAPIView(APIView):
+class RegisterAPIView(
+    BaseGenericAPIView,
+):
     """
     Register a new user.
     """
@@ -60,10 +65,10 @@ class RegisterAPIView(APIView):
         request: Request,
     ) -> Response:
         """
-        Register a new user.
+        Register user.
         """
 
-        serializer = self.serializer_class(
+        serializer = self.get_serializer(
             data=request.data,
         )
 
@@ -73,28 +78,27 @@ class RegisterAPIView(APIView):
 
         user = serializer.save()
 
-        return created_response(
+        response_serializer = UserSummarySerializer(
+            user,
+        )
+
+        return self.created_response(
             message="Registration successful.",
-            data={
-                "id": str(user.id),
-                "email": user.email,
-                "is_verified": user.is_verified,
-            },
+            data=response_serializer.data,
         )
 
 
 @extend_schema(
     tags=AUTH_TAG,
     summary="Login",
-    description="Authenticate a user and return JWT tokens.",
+    description=("Validate credentials and send login OTP."),
     request=LoginSerializer,
-    responses={
-        200: LoginSerializer,
-    },
 )
-class LoginAPIView(APIView):
+class LoginAPIView(
+    BaseGenericAPIView,
+):
     """
-    Authenticate a user.
+    Request login OTP.
     """
 
     permission_classes = (AllowAny,)
@@ -108,10 +112,56 @@ class LoginAPIView(APIView):
         request: Request,
     ) -> Response:
         """
-        Authenticate a user.
+        Generate login OTP.
         """
 
-        serializer = self.serializer_class(
+        serializer = self.get_serializer(
+            data=request.data,
+        )
+
+        serializer.is_valid(
+            raise_exception=True,
+        )
+
+        result = serializer.save()
+
+        return self.success_response(
+            message="Login OTP sent successfully.",
+            data=result,
+        )
+
+
+@extend_schema(
+    tags=AUTH_TAG,
+    summary="Verify Login OTP",
+    description=("Verify login OTP and issue JWT tokens."),
+    request=VerifyLoginOTPSerializer,
+    responses={
+        200: TokenResponseSerializer,
+    },
+)
+class VerifyLoginOTPAPIView(
+    BaseGenericAPIView,
+):
+    """
+    Verify login OTP.
+    """
+
+    permission_classes = (AllowAny,)
+
+    authentication_classes = ()
+
+    serializer_class = VerifyLoginOTPSerializer
+
+    def post(
+        self,
+        request: Request,
+    ) -> Response:
+        """
+        Verify OTP.
+        """
+
+        serializer = self.get_serializer(
             data=request.data,
             context={
                 "ip_address": get_client_ip(
@@ -130,9 +180,22 @@ class LoginAPIView(APIView):
             raise_exception=True,
         )
 
-        tokens = serializer.save()
+        tokens = serializer.save(
+            ip_address=serializer.context.get(
+                "ip_address",
+                "",
+            ),
+            device=serializer.context.get(
+                "device",
+                "Unknown Device",
+            ),
+            location=serializer.context.get(
+                "location",
+                "Unknown Location",
+            ),
+        )
 
-        return success_response(
+        return self.success_response(
             message="Login successful.",
             data=tokens,
         )
@@ -141,15 +204,14 @@ class LoginAPIView(APIView):
 @extend_schema(
     tags=AUTH_TAG,
     summary="Change Password",
-    description="Change the authenticated user's password.",
+    description="Change authenticated user's password.",
     request=ChangePasswordSerializer,
-    responses={
-        200: None,
-    },
 )
-class ChangePasswordAPIView(APIView):
+class ChangePasswordAPIView(
+    BaseGenericAPIView,
+):
     """
-    Change the authenticated user's password.
+    Change password.
     """
 
     permission_classes = (IsAuthenticated,)
@@ -161,10 +223,10 @@ class ChangePasswordAPIView(APIView):
         request: Request,
     ) -> Response:
         """
-        Change the authenticated user's password.
+        Change password.
         """
 
-        serializer = self.serializer_class(
+        serializer = self.get_serializer(
             data=request.data,
         )
 
@@ -176,7 +238,7 @@ class ChangePasswordAPIView(APIView):
             user=request.user,
         )
 
-        return success_response(
+        return self.success_response(
             message="Password changed successfully.",
             data=None,
         )
@@ -185,15 +247,14 @@ class ChangePasswordAPIView(APIView):
 @extend_schema(
     tags=AUTH_TAG,
     summary="Logout",
-    description="Blacklist the supplied refresh token and logout the authenticated user.",
+    description=("Blacklist refresh token."),
     request=LogoutSerializer,
-    responses={
-        200: None,
-    },
 )
-class LogoutAPIView(APIView):
+class LogoutAPIView(
+    BaseGenericAPIView,
+):
     """
-    Logout the authenticated user.
+    Logout user.
     """
 
     permission_classes = (IsAuthenticated,)
@@ -204,11 +265,8 @@ class LogoutAPIView(APIView):
         self,
         request: Request,
     ) -> Response:
-        """
-        Logout the authenticated user.
-        """
 
-        serializer = self.serializer_class(
+        serializer = self.get_serializer(
             data=request.data,
         )
 
@@ -218,7 +276,7 @@ class LogoutAPIView(APIView):
 
         serializer.save()
 
-        return success_response(
+        return self.success_response(
             message="Logout successful.",
             data=None,
         )
@@ -227,15 +285,17 @@ class LogoutAPIView(APIView):
 @extend_schema(
     tags=AUTH_TAG,
     summary="Refresh Token",
-    description="Generate a new access token.",
+    description="Generate a new JWT access token.",
     request=RefreshSerializer,
     responses={
-        200: RefreshSerializer,
+        200: TokenResponseSerializer,
     },
 )
-class RefreshAPIView(APIView):
+class RefreshAPIView(
+    BaseGenericAPIView,
+):
     """
-    Refresh a JWT access token.
+    Refresh JWT token.
     """
 
     permission_classes = (AllowAny,)
@@ -248,11 +308,8 @@ class RefreshAPIView(APIView):
         self,
         request: Request,
     ) -> Response:
-        """
-        Refresh an access token.
-        """
 
-        serializer = self.serializer_class(
+        serializer = self.get_serializer(
             data=request.data,
         )
 
@@ -260,16 +317,17 @@ class RefreshAPIView(APIView):
             raise_exception=True,
         )
 
-        return success_response(
+        return self.success_response(
             message="Token refreshed successfully.",
             data=serializer.validated_data,
         )
 
 
-__all__ = [
+__all__ = (
     "ChangePasswordAPIView",
     "LoginAPIView",
     "LogoutAPIView",
     "RefreshAPIView",
     "RegisterAPIView",
-]
+    "VerifyLoginOTPAPIView",
+)

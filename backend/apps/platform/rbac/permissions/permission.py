@@ -1,52 +1,72 @@
 """
 RBAC permission classes.
+
+Uses DatavionOS RBAC authorization engine.
+
+Responsibilities:
+
+- Protect permission management APIs
+- Delegate authorization to RBAC engine
+- Enforce centralized RBAC permission codes
 """
 
 from __future__ import annotations
 
-from apps.common.permissions import (
-    BasePermission,
+from apps.platform.rbac.permissions.base import (
+    RBACPermissionBase,
 )
+
+# =============================================================================
+# Permission API Permissions
+# =============================================================================
 
 
 class CanViewPermission(
-    BasePermission,
+    RBACPermissionBase,
 ):
     """
     Permission required to view permissions.
     """
 
-    required_permission = "rbac.permission.view.organization"
+    message = "You do not have permission to view permissions."
+
+    permission_code = "rbac.view"
 
 
 class CanCreatePermission(
-    BasePermission,
+    RBACPermissionBase,
 ):
     """
     Permission required to create permissions.
     """
 
-    required_permission = "rbac.permission.create.organization"
+    message = "You do not have permission to create permissions."
+
+    permission_code = "rbac.create"
 
 
 class CanUpdatePermission(
-    BasePermission,
+    RBACPermissionBase,
 ):
     """
     Permission required to update permissions.
     """
 
-    required_permission = "rbac.permission.update.organization"
+    message = "You do not have permission to update permissions."
+
+    permission_code = "rbac.update"
 
 
 class CanDeletePermission(
-    BasePermission,
+    RBACPermissionBase,
 ):
     """
     Permission required to delete permissions.
     """
 
-    required_permission = "rbac.permission.delete.organization"
+    message = "You do not have permission to delete permissions."
+
+    permission_code = "rbac.delete"
 
 
 __all__ = [

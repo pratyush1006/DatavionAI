@@ -20,8 +20,8 @@ from apps.clinical.patients.permissions import (
     CanCreatePatient,
     CanViewPatient,
 )
-from apps.clinical.patients.selectors import get_patients
-from apps.clinical.patients.services import create_patient
+from apps.clinical.patients.selectors import PatientSelector
+from apps.clinical.patients.services import PatientService
 from apps.common.api.base_generics import BaseListCreateAPIView
 
 PATIENT_TAG: Final[tuple[str, ...]] = ("Patients",)
@@ -30,7 +30,7 @@ PATIENT_TAG: Final[tuple[str, ...]] = ("Patients",)
 @extend_schema(tags=PATIENT_TAG)
 class PatientListCreateAPIView(BaseListCreateAPIView):
     """
-    List existing patients or create a new patient.
+    API view for listing existing patients and creating new patients.
     """
 
     permission_classes_map = {
@@ -51,7 +51,7 @@ class PatientListCreateAPIView(BaseListCreateAPIView):
 
     detail_serializer_class = PatientDetailSerializer
 
-    create_service = create_patient
+    create_service = PatientService.create
 
     create_success_message = "Patient created successfully."
 
@@ -64,8 +64,8 @@ class PatientListCreateAPIView(BaseListCreateAPIView):
     )
 
     ordering = (
-        "first_name",
         "last_name",
+        "first_name",
     )
 
     ordering_fields = (
@@ -86,10 +86,10 @@ class PatientListCreateAPIView(BaseListCreateAPIView):
         self,
     ) -> QuerySet[Patient]:
         """
-        Return the patients queryset.
+        Return the patient queryset.
         """
 
-        return get_patients()
+        return PatientSelector.queryset()
 
 
 __all__ = [

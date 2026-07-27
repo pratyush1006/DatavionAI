@@ -19,61 +19,68 @@ class SelectorMixin:
     """
     Delegate read operations to selector functions.
 
-    Views should configure:
+    Applications should configure:
 
-    - list_selector for queryset retrieval.
-    - detail_selector for object retrieval.
+    - ``list_selector`` for queryset retrieval.
+    - ``detail_selector`` for single-object retrieval.
+
+    Selector functions own all read-side business logic.
+    API views should remain orchestration layers only.
     """
 
-    list_selector: (
-        Callable[
-            ...,
-            QuerySet[Any],
-        ]
-        | None
-    ) = None
+    list_selector: Callable[..., QuerySet[Any]] | None = None
 
-    detail_selector: (
-        Callable[
-            ...,
-            Any,
-        ]
-        | None
-    ) = None
+    detail_selector: Callable[..., Any] | None = None
 
-    lookup_url_kwarg = "pk"
+    lookup_url_kwarg: str = "pk"
 
-    def get_queryset(
-        self,
-    ) -> QuerySet[Any]:
+    def get_selector_kwargs(self) -> dict[str, Any]:
+        """
+        Return keyword arguments passed to selector functions.
+
+        Subclasses may override this method to provide additional
+        context such as the current user, organization, query
+        parameters, or request-scoped data.
+        """
+
+        return {}
+
+    def get_queryset(self) -> QuerySet[Any]:
         """
         Return the queryset using the configured selector.
         """
 
         if self.list_selector is None:
+            raise ImproperlyConfigured("'list_selector' must be configured.")
+
+        return self.list_selector(
+            **self.get_selector_kwargs(),
+        )
+
+    def get_lookup_value(self) -> object:
+        """
+        Return the lookup value from the URL.
+        """
+
+        if not hasattr(self, "kwargs"):
             raise ImproperlyConfigured(
-                "list_selector must be configured.",
+                "SelectorMixin requires 'kwargs' to be available."
             )
 
-        return self.list_selector()
+        return self.kwargs[self.lookup_url_kwarg]
 
-    def get_object(
-        self,
-    ) -> Any:
+    def get_object(self) -> Any:
         """
         Return the requested object using the configured selector.
         """
 
         if self.detail_selector is None:
-            raise ImproperlyConfigured(
-                "detail_selector must be configured.",
-            )
+            raise ImproperlyConfigured("'detail_selector' must be configured.")
 
         return self.detail_selector(
-            self.kwargs[self.lookup_url_kwarg],
+            self.get_lookup_value(),
+            **self.get_selector_kwargs(),
         )
 
 
-__all__ = [
-    "SelectorMixin",
-]
+__all__ = ("SelectorMixin",)

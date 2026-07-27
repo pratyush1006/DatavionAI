@@ -1,5 +1,7 @@
 """
 Role resolution helpers.
+
+Resolves tenant-aware RBAC roles for DatavionOS.
 """
 
 from __future__ import annotations
@@ -10,29 +12,41 @@ from apps.platform.accounts.models import User
 from apps.platform.rbac.models import (
     Role,
 )
+from apps.platform.tenancy.models import (
+    Tenant,
+)
 
 
 def resolve_user_roles(
     *,
     user: User,
+    tenant: Tenant | None = None,
 ) -> QuerySet[Role]:
     """
-    Resolve all active roles directly assigned to a user.
+    Resolve active roles assigned to a user.
 
-    This resolver only returns direct role assignments.
-    Inherited roles are resolved separately by the
-    hierarchy resolver.
+    Resolution scope:
+
+    - User
+    - Tenant membership
+    - Active role assignment
+
+    Inherited roles are handled separately
+    by hierarchy resolver.
     """
 
-    return (
-        Role.objects.active()
-        .filter(
-            user_roles__user=user,
-            user_roles__is_active=True,
-            user_roles__is_deleted=False,
-        )
-        .distinct()
+    queryset = Role.objects.active().filter(
+        user_roles__user=user,
+        user_roles__is_active=True,
+        user_roles__is_deleted=False,
     )
+
+    if tenant is not None:
+        queryset = queryset.filter(
+            user_roles__tenant=tenant,
+        )
+
+    return queryset.distinct()
 
 
 __all__ = [

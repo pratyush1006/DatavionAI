@@ -1,91 +1,65 @@
 """
-Permissions for the Organization Hierarchy application.
+Organization hierarchy permissions.
 """
 
 from __future__ import annotations
 
-from rest_framework.permissions import BasePermission
+from apps.platform.rbac.permissions import (
+    RBACPermissionBase,
+)
 
 
 class CanViewOrganizationHierarchy(
-    BasePermission,
+    RBACPermissionBase,
 ):
     """
     Permission to view organization hierarchies.
     """
 
-    def has_permission(
-        self,
-        request,
-        view,
-    ) -> bool:
-        """
-        Return whether the user can view organization hierarchies.
-        """
+    permission_code = "organizations.view"
 
-        return request.user.is_authenticated
+    message = "You do not have permission to view organization hierarchies."
 
 
 class CanCreateOrganizationHierarchy(
-    BasePermission,
+    RBACPermissionBase,
 ):
     """
     Permission to create organization hierarchies.
     """
 
-    def has_permission(
-        self,
-        request,
-        view,
-    ) -> bool:
-        """
-        Return whether the user can create organization hierarchies.
-        """
+    permission_code = "organizations.create"
 
-        return request.user.is_authenticated
+    message = "You do not have permission to create organization hierarchies."
 
 
 class CanUpdateOrganizationHierarchy(
-    BasePermission,
+    RBACPermissionBase,
 ):
     """
     Permission to update organization hierarchies.
     """
 
-    def has_permission(
-        self,
-        request,
-        view,
-    ) -> bool:
-        """
-        Return whether the user can update organization hierarchies.
-        """
+    permission_code = "organizations.update"
 
-        return request.user.is_authenticated
+    message = "You do not have permission to update organization hierarchies."
 
 
 class CanDeleteOrganizationHierarchy(
-    BasePermission,
+    RBACPermissionBase,
 ):
     """
     Permission to delete organization hierarchies.
     """
 
-    def has_permission(
-        self,
-        request,
-        view,
-    ) -> bool:
-        """
-        Return whether the user can delete organization hierarchies.
-        """
+    permission_code = "organizations.delete"
 
-        return request.user.is_authenticated
+    message = "You do not have permission to delete organization hierarchies."
 
 
-__all__ = [
+__all__: tuple[str, ...] = (
     "CanViewOrganizationHierarchy",
     "CanCreateOrganizationHierarchy",
     "CanUpdateOrganizationHierarchy",
     "CanDeleteOrganizationHierarchy",
-]
+)

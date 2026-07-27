@@ -4,10 +4,6 @@ Create serializer for the Organizations application.
 
 from __future__ import annotations
 
-from apps.platform.organizations.services import (
-    create_organization,
-)
-
 from .base import OrganizationBaseSerializer
 from .fields import _WRITE_FIELDS
 
@@ -17,6 +13,9 @@ class OrganizationCreateSerializer(
 ):
     """
     Serializer used for creating organizations.
+
+    Validation only.
+    Object creation is delegated to CreateServiceMixin.
     """
 
     class Meta(
@@ -24,19 +23,5 @@ class OrganizationCreateSerializer(
     ):
         fields = _WRITE_FIELDS
 
-    def create(
-        self,
-        validated_data: dict[str, object],
-    ):
-        """
-        Create an organization.
-        """
 
-        return create_organization(
-            validated_data=validated_data,
-        )
-
-
-__all__ = [
-    "OrganizationCreateSerializer",
-]
+__all__: tuple[str, ...] = ("OrganizationCreateSerializer",)

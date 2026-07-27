@@ -1,45 +1,54 @@
 """
-Validators for OrganizationHierarchy.
+Organization hierarchy validators.
+
+Business validation helpers for maintaining
+organization hierarchy integrity.
 """
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING, Any
+
+from django.apps import apps
 from django.core.exceptions import ValidationError
-from django.db.models import QuerySet
+
+if TYPE_CHECKING:
+    pass
 
 
 def validate_not_self_reference(
     *,
-    parent_organization_id,
-    child_organization_id,
+    parent_organization: Any,
+    child_organization: Any,
 ) -> None:
     """
-    Ensure an organization cannot reference itself.
+    Prevent an organization from referencing itself.
     """
 
-    if parent_organization_id == child_organization_id:
+    if parent_organization == child_organization:
         raise ValidationError(
-            "An organization cannot be its own parent.",
+            "Organization cannot be parent of itself.",
         )
 
 
 def validate_unique_relationship(
     *,
-    parent_organization_id,
-    child_organization_id,
-    exclude_id=None,
+    parent_organization: Any,
+    child_organization: Any,
+    exclude_id: Any = None,
 ) -> None:
     """
-    Ensure the relationship is unique.
+    Prevent duplicate hierarchy relationships.
     """
 
-    from apps.platform.organizations.models import (
-        OrganizationHierarchy,
+    OrganizationHierarchy = apps.get_model(
+        "organizations",
+        "OrganizationHierarchy",
     )
 
-    queryset: QuerySet[OrganizationHierarchy] = OrganizationHierarchy.objects.filter(
-        parent_organization_id=parent_organization_id,
-        child_organization_id=child_organization_id,
+    queryset = OrganizationHierarchy.objects.filter(
+        parent_organization=parent_organization,
+        child_organization=child_organization,
     )
 
     if exclude_id is not None:
@@ -49,49 +58,38 @@ def validate_unique_relationship(
 
     if queryset.exists():
         raise ValidationError(
-            "This organization hierarchy already exists.",
+            "Hierarchy relationship already exists.",
         )
 
 
 def validate_no_cycle(
     *,
-    parent_organization_id,
-    child_organization_id,
+    parent_organization: Any,
+    child_organization: Any,
 ) -> None:
     """
-    Prevent circular hierarchy relationships.
+    Prevent immediate circular hierarchy relationships.
+
+    Full recursive cycle detection should be implemented
+    in a hierarchy service or selector.
     """
 
-    from apps.platform.organizations.models import (
-        OrganizationHierarchy,
+    OrganizationHierarchy = apps.get_model(
+        "organizations",
+        "OrganizationHierarchy",
     )
 
-    current_parent = parent_organization_id
-
-    while current_parent is not None:
-        if current_parent == child_organization_id:
-            raise ValidationError(
-                "Circular organization hierarchy detected.",
-            )
-
-        relationship = (
-            OrganizationHierarchy.objects.filter(
-                child_organization_id=current_parent,
-            )
-            .only(
-                "parent_organization_id",
-            )
-            .first()
+    if OrganizationHierarchy.objects.filter(
+        parent_organization=child_organization,
+        child_organization=parent_organization,
+    ).exists():
+        raise ValidationError(
+            "Circular organization hierarchy detected.",
         )
 
-        if relationship is None:
-            break
 
-        current_parent = relationship.parent_organization_id
-
-
-__all__ = [
+__all__: tuple[str, ...] = (
+    "validate_no_cycle",
     "validate_not_self_reference",
     "validate_unique_relationship",
-    "validate_no_cycle",
-]
+)

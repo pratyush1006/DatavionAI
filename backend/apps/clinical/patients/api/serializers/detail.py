@@ -5,7 +5,10 @@ Detail serializer for the Patients application.
 from __future__ import annotations
 
 from .base import PatientBaseSerializer
-from .fields import _DETAIL_FIELDS
+from .fields import (
+    DETAIL_FIELDS,
+    READ_ONLY_FIELDS,
+)
 
 
 class PatientDetailSerializer(PatientBaseSerializer):
@@ -14,8 +17,8 @@ class PatientDetailSerializer(PatientBaseSerializer):
     """
 
     class Meta(PatientBaseSerializer.Meta):
-        fields = _DETAIL_FIELDS
-        read_only_fields = _DETAIL_FIELDS
+        fields = DETAIL_FIELDS
+        read_only_fields = READ_ONLY_FIELDS
 
 
 __all__ = [

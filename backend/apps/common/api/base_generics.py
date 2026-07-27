@@ -1,26 +1,44 @@
 """
-Base generic API views used across the Datavion AI platform.
+Base generic API views used across the DatavionOS platform.
+
+Provides enterprise API foundations:
+
+- Authentication defaults
+- Permission handling
+- Object-level permissions
+- Tenant context
+- Organization context
+- Filtering
+- Searching
+- Ordering
+- Pagination
+- Dynamic serializers
+- Standardized responses
+- Service-layer integration
 """
 
 from __future__ import annotations
 
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.filters import (
-    OrderingFilter,
-    SearchFilter,
-)
+from collections.abc import Callable
+from typing import Any, ClassVar, Final
+
+from django.contrib.auth.base_user import AbstractBaseUser
+from django.contrib.auth.models import AnonymousUser
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.generics import (
     GenericAPIView,
     ListCreateAPIView,
     RetrieveUpdateDestroyAPIView,
 )
-from rest_framework.permissions import (
-    BasePermission,
-    IsAuthenticated,
-)
+from rest_framework.permissions import BasePermission
 from rest_framework.response import Response
 from rest_framework.serializers import Serializer
 
+from apps.common.api.filters import (
+    DatavionFilterBackend,
+    DatavionOrderingFilter,
+    DatavionSearchFilter,
+)
 from apps.common.api.mixins.services import (
     CreateServiceMixin,
     DestroyServiceMixin,
@@ -33,167 +51,237 @@ from apps.common.api.responses import (
     no_content_response,
     success_response,
 )
+from apps.common.permissions import IsAuthenticatedAndActive
+
+HTTP_GET: Final[str] = "GET"
+
+HTTP_POST: Final[str] = "POST"
+
+HTTP_PUT: Final[str] = "PUT"
+
+HTTP_PATCH: Final[str] = "PATCH"
 
 
 class BaseAPIViewMixin:
     """
-    Common defaults shared by all API views.
+    Common defaults shared by all DatavionOS API views.
+
+    Every API endpoint automatically receives:
+
+    - Authentication
+    - Permission handling
+    - Object permission handling
+    - Filtering
+    - Searching
+    - Ordering
+    - Pagination
+    - Tenant context
+    - Organization context
     """
 
-    permission_classes = (IsAuthenticated,)
-
-    pagination_class = DatavionPagination
-
-    filter_backends = (
-        DjangoFilterBackend,
-        SearchFilter,
-        OrderingFilter,
+    permission_classes: ClassVar[tuple[type[BasePermission], ...]] = (
+        IsAuthenticatedAndActive,
     )
+
+    pagination_class: ClassVar[type[DatavionPagination]] = DatavionPagination
+
+    filter_backends: ClassVar[tuple[type[Any], ...]] = (
+        DatavionFilterBackend,
+        DatavionSearchFilter,
+        DatavionOrderingFilter,
+    )
+
+    permission_classes_map: ClassVar[
+        dict[
+            str,
+            tuple[type[BasePermission], ...],
+        ]
+    ] = {}
+
+    list_serializer_class: ClassVar[type[Serializer] | None] = None
+
+    detail_serializer_class: ClassVar[type[Serializer] | None] = None
+
+    create_serializer_class: ClassVar[type[Serializer] | None] = None
+
+    update_serializer_class: ClassVar[type[Serializer] | None] = None
+
+    serializer_classes: ClassVar[dict[str, type[Serializer]] | None] = None
+
+    selector: ClassVar[Callable[..., Any] | None] = None
 
     @property
     def current_user(
         self,
-    ):
+    ) -> AbstractBaseUser | AnonymousUser:
         """
-        Return the authenticated user.
+        Return authenticated user.
         """
 
-        return self.request.user
+        return getattr(
+            self.request,
+            "user",
+            AnonymousUser(),
+        )
+
+    @property
+    def current_tenant(
+        self,
+    ):
+        """
+        Return current tenant context.
+        """
+
+        return getattr(
+            self.request,
+            "tenant",
+            None,
+        )
+
+    @property
+    def current_organization(
+        self,
+    ):
+        """
+        Return current organization context.
+        """
+
+        return getattr(
+            self.request,
+            "organization",
+            None,
+        )
 
     def get_permissions(
         self,
     ) -> list[BasePermission]:
         """
-        Return permissions for the current HTTP method.
+        Return permission instances.
+
+        Supports HTTP method based permissions.
         """
 
-        permission_classes = getattr(
-            self,
-            "permission_classes_map",
-            {},
-        ).get(
+        permission_classes = self.permission_classes_map.get(
             self.request.method,
             self.permission_classes,
         )
 
         return [permission() for permission in permission_classes]
 
-    def get_serializer_class(
+    def check_object_permissions(
         self,
-    ) -> type[Serializer]:
+        obj: Any,
+    ) -> None:
         """
-        Return the serializer class for the current request.
+        Execute object-level permissions.
 
-        Resolution order:
+        Required because DatavionOS uses
+        selector-based object retrieval instead
+        of always relying on DRF get_object().
+        """
 
-        1. Action-specific serializer attributes
-        2. serializer_classes mapping
-        3. serializer_class
-        4. DRF default implementation
+        for permission in self.get_permissions():
+            if hasattr(
+                permission,
+                "has_object_permission",
+            ):
+                allowed = permission.has_object_permission(
+                    self.request,
+                    self,
+                    obj,
+                )
+
+                if not allowed:
+                    raise PermissionDenied(
+                        detail=("You do not have permission to access this resource."),
+                    )
+
+    def _get_action_serializer(
+        self,
+    ) -> type[Serializer] | None:
+        """
+        Resolve serializer based on HTTP action.
         """
 
         method = self.request.method
 
-        #
-        # GET
-        #
-        if method == "GET":
-            if isinstance(
+        if method == HTTP_GET:
+            lookup = getattr(
                 self,
-                ListCreateAPIView,
-            ) and hasattr(
-                self,
-                "list_serializer_class",
-            ):
-                serializer = self.list_serializer_class
-
-                if serializer is not None:
-                    return serializer
-
-            if isinstance(
-                self,
-                RetrieveUpdateDestroyAPIView,
-            ) and hasattr(
-                self,
-                "detail_serializer_class",
-            ):
-                serializer = self.detail_serializer_class
-
-                if serializer is not None:
-                    return serializer
-
-        #
-        # POST
-        #
-        elif method == "POST":
-            serializer = getattr(
-                self,
-                "create_serializer_class",
+                "lookup_url_kwarg",
                 None,
             )
 
-            if serializer is not None:
-                return serializer
+            if (
+                lookup is not None
+                and lookup in self.kwargs
+                and self.detail_serializer_class is not None
+            ):
+                return self.detail_serializer_class
 
-        #
-        # PUT / PATCH
-        #
-        elif method in (
-            "PUT",
-            "PATCH",
+            return self.list_serializer_class
+
+        if method == HTTP_POST:
+            return self.create_serializer_class
+
+        if method in (
+            HTTP_PUT,
+            HTTP_PATCH,
         ):
-            serializer = getattr(
-                self,
-                "update_serializer_class",
+            return self.update_serializer_class
+
+        return None
+
+    def _get_mapping_serializer(
+        self,
+    ) -> type[Serializer] | None:
+        """
+        Resolve serializer from mapping.
+        """
+
+        if not self.serializer_classes:
+            return None
+
+        return (
+            self.serializer_classes.get(
+                self.request.method,
+            )
+            or self.serializer_classes.get(
+                HTTP_GET,
+            )
+            or next(
+                iter(
+                    self.serializer_classes.values(),
+                ),
                 None,
             )
-
-            if serializer is not None:
-                return serializer
-
-        #
-        # serializer_classes mapping
-        #
-        serializer_classes = getattr(
-            self,
-            "serializer_classes",
-            None,
         )
 
-        if serializer_classes:
-            serializer = serializer_classes.get(
-                method,
+    def _resolve_serializer_class(
+        self,
+    ) -> type[Serializer] | None:
+        """
+        Resolve serializer class.
+        """
+
+        return (
+            self._get_action_serializer()
+            or self._get_mapping_serializer()
+            or getattr(
+                self,
+                "serializer_class",
+                None,
             )
-
-            if serializer is not None:
-                return serializer
-
-            #
-            # Schema generation fallback.
-            #
-            serializer = serializer_classes.get(
-                "GET",
-            )
-
-            if serializer is None:
-                serializer = next(
-                    iter(
-                        serializer_classes.values(),
-                    ),
-                    None,
-                )
-
-            if serializer is not None:
-                return serializer
-
-        #
-        # Single serializer
-        #
-        serializer = getattr(
-            self,
-            "serializer_class",
-            None,
         )
+
+    def get_serializer_class(
+        self,
+    ) -> type[Serializer]:
+        """
+        Return serializer class.
+        """
+
+        serializer = self._resolve_serializer_class()
 
         if serializer is not None:
             return serializer
@@ -211,47 +299,34 @@ class BaseGenericAPIView(
 
     def success_response(
         self,
-        **kwargs,
+        **kwargs: Any,
     ) -> Response:
-        """
-        Return a standardized success response.
-        """
-
         return success_response(
+            request=self.request,
             **kwargs,
         )
 
     def created_response(
         self,
-        **kwargs,
+        **kwargs: Any,
     ) -> Response:
-        """
-        Return a standardized created response.
-        """
-
         return created_response(
+            request=self.request,
             **kwargs,
         )
 
     def error_response(
         self,
-        **kwargs,
+        **kwargs: Any,
     ) -> Response:
-        """
-        Return a standardized error response.
-        """
-
         return error_response(
+            request=self.request,
             **kwargs,
         )
 
     def no_content_response(
         self,
     ) -> Response:
-        """
-        Return a standardized no-content response.
-        """
-
         return no_content_response()
 
 
@@ -275,9 +350,24 @@ class BaseRetrieveUpdateDestroyAPIView(
     Base class for retrieve/update/delete endpoints.
     """
 
+    def get_object(
+        self,
+    ):
+        """
+        Retrieve object and enforce object permissions.
+        """
 
-__all__ = [
+        obj = super().get_object()
+
+        self.check_object_permissions(
+            obj,
+        )
+
+        return obj
+
+
+__all__: tuple[str, ...] = (
     "BaseGenericAPIView",
     "BaseListCreateAPIView",
     "BaseRetrieveUpdateDestroyAPIView",
-]
+)

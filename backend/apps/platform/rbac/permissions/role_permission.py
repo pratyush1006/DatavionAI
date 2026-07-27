@@ -1,16 +1,28 @@
 """
-RBAC role permission permission classes.
+RBAC role permission classes.
+
+Uses DatavionOS RBAC authorization engine.
+
+Responsibilities:
+
+- Protect RBAC role permission APIs
+- Delegate authorization to RBAC engine
+- Enforce permission codes consistently
 """
 
 from __future__ import annotations
 
-from rest_framework.permissions import (
-    BasePermission,
+from apps.platform.rbac.permissions.base import (
+    RBACPermissionBase,
 )
+
+# =============================================================================
+# Role Permission API Permissions
+# =============================================================================
 
 
 class CanViewRolePermission(
-    BasePermission,
+    RBACPermissionBase,
 ):
     """
     Permission to view role permissions.
@@ -18,41 +30,23 @@ class CanViewRolePermission(
 
     message = "You do not have permission to view role permissions."
 
-    def has_permission(
-        self,
-        request,
-        view,
-    ) -> bool:
-        """
-        Return whether the user may view role permissions.
-        """
-
-        return request.user.is_authenticated
+    permission_code = "rbac.view"
 
 
 class CanCreateRolePermission(
-    BasePermission,
+    RBACPermissionBase,
 ):
     """
     Permission to create role permissions.
     """
 
-    message = "You do not have permission to assign role permissions."
+    message = "You do not have permission to create role permissions."
 
-    def has_permission(
-        self,
-        request,
-        view,
-    ) -> bool:
-        """
-        Return whether the user may create role permissions.
-        """
-
-        return request.user.is_authenticated
+    permission_code = "rbac.create"
 
 
 class CanUpdateRolePermission(
-    BasePermission,
+    RBACPermissionBase,
 ):
     """
     Permission to update role permissions.
@@ -60,20 +54,11 @@ class CanUpdateRolePermission(
 
     message = "You do not have permission to update role permissions."
 
-    def has_permission(
-        self,
-        request,
-        view,
-    ) -> bool:
-        """
-        Return whether the user may update role permissions.
-        """
-
-        return request.user.is_authenticated
+    permission_code = "rbac.update"
 
 
 class CanDeleteRolePermission(
-    BasePermission,
+    RBACPermissionBase,
 ):
     """
     Permission to delete role permissions.
@@ -81,16 +66,7 @@ class CanDeleteRolePermission(
 
     message = "You do not have permission to delete role permissions."
 
-    def has_permission(
-        self,
-        request,
-        view,
-    ) -> bool:
-        """
-        Return whether the user may delete role permissions.
-        """
-
-        return request.user.is_authenticated
+    permission_code = "rbac.delete"
 
 
 __all__ = [

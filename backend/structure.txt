@@ -1,0 +1,4207 @@
+Folder PATH listing for volume DATA
+Volume serial number is 000000FA 288F:168E
+D:.
+|   .editorconfig
+|   .env
+|   .env.example
+|   .gitignore
+|   CHANGELOG.md
+|   CONTRIBUTING.md
+|   Makefile
+|   manage.py
+|   pyproject.toml
+|   pytest.ini
+|   README.md
+|   requirements.txt
+|   schema.yml
+|   structure.txt
+|
++---apps
+|   |   __init__.py
+|   |
+|   +---ai
+|   |   |   admin.py
+|   |   |   apps.py
+|   |   |   tasks.py
+|   |   |   urls.py
+|   |   |   __init__.py
+|   |   |
+|   |   +---api
+|   |   |   |   urls.py
+|   |   |   |   __init__.py
+|   |   |   |
+|   |   |   +---serializers
+|   |   |   |       prediction.py
+|   |   |   |       recommendation.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   \---views
+|   |   |           bulk.py
+|   |   |           prediction.py
+|   |   |           recommendation.py
+|   |   |           __init__.py
+|   |   |
+|   |   +---constants
+|   |   |       ai.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---migrations
+|   |   |       0001_initial.py
+|   |   |       0002_rename_prediction_patient_predicted_idx_pred_patient_predicted_idx_and_more.py
+|   |   |       0003_knowledgedocument_documentchunk_prompttemplate.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---models
+|   |   |       knowledge.py
+|   |   |       model.py
+|   |   |       prediction.py
+|   |   |       prompt.py
+|   |   |       recommendation.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---permissions
+|   |   |       ai.py
+|   |   |       recommendation.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---selectors
+|   |   |       prediction.py
+|   |   |       recommendation.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---services
+|   |   |       prediction.py
+|   |   |       recommendation.py
+|   |   |       __init__.py
+|   |   |
+|   |   \---tests
+|   |           factories.py
+|   |           test_models.py
+|   |           test_runtime.py
+|   |           test_selectors.py
+|   |           test_services.py
+|   |           __init__.py
+|   |
+|   +---application
+|   |   |   __init__.py
+|   |   |
+|   |   \---common
+|   |           commands.py
+|   |           exceptions.py
+|   |           handlers.py
+|   |           mediator.py
+|   |           pipeline.py
+|   |           queries.py
+|   |           results.py
+|   |           validation.py
+|   |           __init__.py
+|   |
+|   +---billing
+|   |   |   admin.py
+|   |   |   apps.py
+|   |   |   urls.py
+|   |   |   __init__.py
+|   |   |
+|   |   +---accounts_payable
+|   |   |   |   admin.py
+|   |   |   |   apps.py
+|   |   |   |   constants.py
+|   |   |   |   urls.py
+|   |   |   |
+|   |   |   +---api
+|   |   |   |   |   urls.py
+|   |   |   |   |   __init__.py
+|   |   |   |   |
+|   |   |   |   +---serializers
+|   |   |   |   |       base_vendor.py
+|   |   |   |   |       base_vendor_invoice.py
+|   |   |   |   |       create_vendor.py
+|   |   |   |   |       create_vendor_invoice.py
+|   |   |   |   |       detail_vendor.py
+|   |   |   |   |       detail_vendor_invoice.py
+|   |   |   |   |       fields_vendor.py
+|   |   |   |   |       fields_vendor_invoice.py
+|   |   |   |   |       list_vendor.py
+|   |   |   |   |       list_vendor_invoice.py
+|   |   |   |   |       update_vendor.py
+|   |   |   |   |       update_vendor_invoice.py
+|   |   |   |   |       __init__.py
+|   |   |   |   |
+|   |   |   |   \---views
+|   |   |   |           list_create_vendor.py
+|   |   |   |           list_create_vendor_invoice.py
+|   |   |   |           retrieve_update_destroy_vendor.py
+|   |   |   |           retrieve_update_destroy_vendor_invoice.py
+|   |   |   |           __init__.py
+|   |   |   |
+|   |   |   +---migrations
+|   |   |   |       0001_initial.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---models
+|   |   |   |       vendor.py
+|   |   |   |       vendor_invoice.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---permissions
+|   |   |   |       accounts_payable.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---selectors
+|   |   |   |       vendor.py
+|   |   |   |       vendor_invoice.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---services
+|   |   |   |       vendor.py
+|   |   |   |       vendor_invoice.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   \---tests
+|   |   |           test_models.py
+|   |   |
+|   |   +---accounts_receivable
+|   |   |   |   admin.py
+|   |   |   |   apps.py
+|   |   |   |   constants.py
+|   |   |   |   urls.py
+|   |   |   |
+|   |   |   +---api
+|   |   |   |   |   urls.py
+|   |   |   |   |   __init__.py
+|   |   |   |   |
+|   |   |   |   +---serializers
+|   |   |   |   |       base_customer.py
+|   |   |   |   |       base_customer_invoice.py
+|   |   |   |   |       create_customer.py
+|   |   |   |   |       create_customer_invoice.py
+|   |   |   |   |       detail_customer.py
+|   |   |   |   |       detail_customer_invoice.py
+|   |   |   |   |       fields_customer.py
+|   |   |   |   |       fields_customer_invoice.py
+|   |   |   |   |       list_customer.py
+|   |   |   |   |       list_customer_invoice.py
+|   |   |   |   |       update_customer.py
+|   |   |   |   |       update_customer_invoice.py
+|   |   |   |   |       __init__.py
+|   |   |   |   |
+|   |   |   |   \---views
+|   |   |   |           list_create_customer.py
+|   |   |   |           list_create_customer_invoice.py
+|   |   |   |           retrieve_update_destroy_customer.py
+|   |   |   |           retrieve_update_destroy_customer_invoice.py
+|   |   |   |           __init__.py
+|   |   |   |
+|   |   |   +---migrations
+|   |   |   |       0001_initial.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---models
+|   |   |   |       customer.py
+|   |   |   |       customer_invoice.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---permissions
+|   |   |   |       accounts_receivable.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---selectors
+|   |   |   |       customer.py
+|   |   |   |       customer_invoice.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---services
+|   |   |   |       customer.py
+|   |   |   |       customer_invoice.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   \---tests
+|   |   |           test_models.py
+|   |   |
+|   |   +---api
+|   |   |   |   urls.py
+|   |   |   |   __init__.py
+|   |   |   |
+|   |   |   +---serializers
+|   |   |   |       insurance_claim.py
+|   |   |   |       invoice.py
+|   |   |   |       payment.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   \---views
+|   |   |           insurance_claim.py
+|   |   |           invoice.py
+|   |   |           payment.py
+|   |   |           __init__.py
+|   |   |
+|   |   +---cash_management
+|   |   |   |   admin.py
+|   |   |   |   apps.py
+|   |   |   |   constants.py
+|   |   |   |   urls.py
+|   |   |   |
+|   |   |   +---api
+|   |   |   |   |   urls.py
+|   |   |   |   |   __init__.py
+|   |   |   |   |
+|   |   |   |   +---serializers
+|   |   |   |   |       base_bank_account.py
+|   |   |   |   |       base_cash_transaction.py
+|   |   |   |   |       create_bank_account.py
+|   |   |   |   |       create_cash_transaction.py
+|   |   |   |   |       detail_bank_account.py
+|   |   |   |   |       detail_cash_transaction.py
+|   |   |   |   |       fields_bank_account.py
+|   |   |   |   |       fields_cash_transaction.py
+|   |   |   |   |       list_bank_account.py
+|   |   |   |   |       list_cash_transaction.py
+|   |   |   |   |       update_bank_account.py
+|   |   |   |   |       update_cash_transaction.py
+|   |   |   |   |       __init__.py
+|   |   |   |   |
+|   |   |   |   \---views
+|   |   |   |           list_create_bank_account.py
+|   |   |   |           list_create_cash_transaction.py
+|   |   |   |           retrieve_update_destroy_bank_account.py
+|   |   |   |           retrieve_update_destroy_cash_transaction.py
+|   |   |   |           __init__.py
+|   |   |   |
+|   |   |   +---migrations
+|   |   |   |       0001_initial.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---models
+|   |   |   |       bank_account.py
+|   |   |   |       cash_transaction.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---permissions
+|   |   |   |       cash_management.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---selectors
+|   |   |   |       bank_account.py
+|   |   |   |       cash_transaction.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---services
+|   |   |   |       bank_account.py
+|   |   |   |       cash_transaction.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   \---tests
+|   |   |           test_models.py
+|   |   |
+|   |   +---constants
+|   |   |       billing.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---financial_management
+|   |   |   |   admin.py
+|   |   |   |   apps.py
+|   |   |   |   constants.py
+|   |   |   |   urls.py
+|   |   |   |
+|   |   |   +---api
+|   |   |   |   |   urls.py
+|   |   |   |   |   __init__.py
+|   |   |   |   |
+|   |   |   |   +---serializers
+|   |   |   |   |       base_budget.py
+|   |   |   |   |       base_financial_report.py
+|   |   |   |   |       create_budget.py
+|   |   |   |   |       create_financial_report.py
+|   |   |   |   |       detail_budget.py
+|   |   |   |   |       detail_financial_report.py
+|   |   |   |   |       fields_budget.py
+|   |   |   |   |       fields_financial_report.py
+|   |   |   |   |       list_budget.py
+|   |   |   |   |       list_financial_report.py
+|   |   |   |   |       update_budget.py
+|   |   |   |   |       update_financial_report.py
+|   |   |   |   |       __init__.py
+|   |   |   |   |
+|   |   |   |   \---views
+|   |   |   |           list_create_budget.py
+|   |   |   |           list_create_financial_report.py
+|   |   |   |           retrieve_update_destroy_budget.py
+|   |   |   |           retrieve_update_destroy_financial_report.py
+|   |   |   |           __init__.py
+|   |   |   |
+|   |   |   +---migrations
+|   |   |   |       0001_initial.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---models
+|   |   |   |       budget.py
+|   |   |   |       financial_report.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---permissions
+|   |   |   |       financial_management.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---selectors
+|   |   |   |       budget.py
+|   |   |   |       financial_report.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---services
+|   |   |   |       budget.py
+|   |   |   |       financial_report.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   \---tests
+|   |   |           test_models.py
+|   |   |
+|   |   +---general_ledger
+|   |   |   |   admin.py
+|   |   |   |   apps.py
+|   |   |   |   constants.py
+|   |   |   |   urls.py
+|   |   |   |   __init__.py
+|   |   |   |
+|   |   |   +---api
+|   |   |   |   |   urls.py
+|   |   |   |   |   __init__.py
+|   |   |   |   |
+|   |   |   |   +---serializers
+|   |   |   |   |       base.py
+|   |   |   |   |       create.py
+|   |   |   |   |       detail.py
+|   |   |   |   |       fields.py
+|   |   |   |   |       list.py
+|   |   |   |   |       update.py
+|   |   |   |   |       __init__.py
+|   |   |   |   |
+|   |   |   |   \---views
+|   |   |   |           list_create.py
+|   |   |   |           retrieve_update_destroy.py
+|   |   |   |           __init__.py
+|   |   |   |
+|   |   |   +---migrations
+|   |   |   |       0001_initial.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---models
+|   |   |   |       account.py
+|   |   |   |       journal_entry.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---permissions
+|   |   |   |       account.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---selectors
+|   |   |   |       account.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---services
+|   |   |   |       account.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   \---tests
+|   |   |           test_models.py
+|   |   |
+|   |   +---migrations
+|   |   |       0001_initial.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---models
+|   |   |       insurance_claim.py
+|   |   |       invoice.py
+|   |   |       invoice_item.py
+|   |   |       payment.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---permissions
+|   |   |       billing.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---selectors
+|   |   |       insurance_claim.py
+|   |   |       invoice.py
+|   |   |       payment.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---services
+|   |   |       insurance_claim.py
+|   |   |       invoice.py
+|   |   |       payment.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---tax_gst
+|   |   |   |   admin.py
+|   |   |   |   apps.py
+|   |   |   |   constants.py
+|   |   |   |   urls.py
+|   |   |   |
+|   |   |   +---api
+|   |   |   |   |   urls.py
+|   |   |   |   |   __init__.py
+|   |   |   |   |
+|   |   |   |   +---serializers
+|   |   |   |   |       base_tax_filing.py
+|   |   |   |   |       base_tax_rate.py
+|   |   |   |   |       create_tax_filing.py
+|   |   |   |   |       create_tax_rate.py
+|   |   |   |   |       detail_tax_filing.py
+|   |   |   |   |       detail_tax_rate.py
+|   |   |   |   |       fields_tax_filing.py
+|   |   |   |   |       fields_tax_rate.py
+|   |   |   |   |       list_tax_filing.py
+|   |   |   |   |       list_tax_rate.py
+|   |   |   |   |       update_tax_filing.py
+|   |   |   |   |       update_tax_rate.py
+|   |   |   |   |       __init__.py
+|   |   |   |   |
+|   |   |   |   \---views
+|   |   |   |           list_create_tax_filing.py
+|   |   |   |           list_create_tax_rate.py
+|   |   |   |           retrieve_update_destroy_tax_filing.py
+|   |   |   |           retrieve_update_destroy_tax_rate.py
+|   |   |   |           __init__.py
+|   |   |   |
+|   |   |   +---migrations
+|   |   |   |       0001_initial.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---models
+|   |   |   |       tax_filing.py
+|   |   |   |       tax_rate.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---permissions
+|   |   |   |       tax_gst.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---selectors
+|   |   |   |       tax_filing.py
+|   |   |   |       tax_rate.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---services
+|   |   |   |       tax_filing.py
+|   |   |   |       tax_rate.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   \---tests
+|   |   |           test_models.py
+|   |   |
+|   |   \---tests
+|   |           factories.py
+|   |           test_models.py
+|   |           test_selectors.py
+|   |           test_services.py
+|   |           __init__.py
+|   |
+|   +---clinical
+|   |   |   __init__.py
+|   |   |
+|   |   +---allergies
+|   |   |   |   admin.py
+|   |   |   |   apps.py
+|   |   |   |   constants.py
+|   |   |   |   urls.py
+|   |   |   |   __init__.py
+|   |   |   |
+|   |   |   +---api
+|   |   |   |   |   urls.py
+|   |   |   |   |   __init__.py
+|   |   |   |   |
+|   |   |   |   +---serializers
+|   |   |   |   |       base.py
+|   |   |   |   |       create.py
+|   |   |   |   |       detail.py
+|   |   |   |   |       fields.py
+|   |   |   |   |       list.py
+|   |   |   |   |       update.py
+|   |   |   |   |       __init__.py
+|   |   |   |   |
+|   |   |   |   \---views
+|   |   |   |           list_create.py
+|   |   |   |           retrieve_update_destroy.py
+|   |   |   |           __init__.py
+|   |   |   |
+|   |   |   +---migrations
+|   |   |   |       0001_initial.py
+|   |   |   |       0002_initial.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---models
+|   |   |   |       allergy.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---permissions
+|   |   |   |       allergy.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---selectors
+|   |   |   |       allergy.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---services
+|   |   |   |       allergy.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   \---tests
+|   |   |           test_api.py
+|   |   |           test_models.py
+|   |   |           test_services.py
+|   |   |           __init__.py
+|   |   |
+|   |   +---appointments
+|   |   |   |   admin.py
+|   |   |   |   apps.py
+|   |   |   |   constants.py
+|   |   |   |   urls.py
+|   |   |   |   __init__.py
+|   |   |   |
+|   |   |   +---api
+|   |   |   |   |   urls.py
+|   |   |   |   |   __init__.py
+|   |   |   |   |
+|   |   |   |   +---serializers
+|   |   |   |   |       base.py
+|   |   |   |   |       create.py
+|   |   |   |   |       detail.py
+|   |   |   |   |       fields.py
+|   |   |   |   |       list.py
+|   |   |   |   |       update.py
+|   |   |   |   |       __init__.py
+|   |   |   |   |
+|   |   |   |   \---views
+|   |   |   |           list_create.py
+|   |   |   |           retrieve_update_destroy.py
+|   |   |   |           __init__.py
+|   |   |   |
+|   |   |   +---migrations
+|   |   |   |       0001_initial.py
+|   |   |   |       0002_initial.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---models
+|   |   |   |       appointment.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---permissions
+|   |   |   |       appointment.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---selectors
+|   |   |   |       appointment.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---services
+|   |   |   |       appointment.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   \---tests
+|   |   |           test_api.py
+|   |   |           test_models.py
+|   |   |           test_services.py
+|   |   |           __init__.py
+|   |   |
+|   |   +---diagnoses
+|   |   |   |   admin.py
+|   |   |   |   apps.py
+|   |   |   |   constants.py
+|   |   |   |   urls.py
+|   |   |   |   __init__.py
+|   |   |   |
+|   |   |   +---api
+|   |   |   |   |   urls.py
+|   |   |   |   |   __init__.py
+|   |   |   |   |
+|   |   |   |   +---serializers
+|   |   |   |   |       base.py
+|   |   |   |   |       create.py
+|   |   |   |   |       detail.py
+|   |   |   |   |       fields.py
+|   |   |   |   |       list.py
+|   |   |   |   |       update.py
+|   |   |   |   |       __init__.py
+|   |   |   |   |
+|   |   |   |   \---views
+|   |   |   |           list_create.py
+|   |   |   |           retrieve_update_destroy.py
+|   |   |   |           __init__.py
+|   |   |   |
+|   |   |   +---migrations
+|   |   |   |       0001_initial.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---models
+|   |   |   |       diagnosis.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---permissions
+|   |   |   |       diagnosis.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---selectors
+|   |   |   |       diagnosis.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---services
+|   |   |   |       diagnosis.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   \---tests
+|   |   |           test_api.py
+|   |   |           test_models.py
+|   |   |           test_services.py
+|   |   |           __init__.py
+|   |   |
+|   |   +---encounters
+|   |   |   |   admin.py
+|   |   |   |   apps.py
+|   |   |   |   constants.py
+|   |   |   |   urls.py
+|   |   |   |   __init__.py
+|   |   |   |
+|   |   |   +---api
+|   |   |   |   |   urls.py
+|   |   |   |   |   __init__.py
+|   |   |   |   |
+|   |   |   |   +---serializers
+|   |   |   |   |       base.py
+|   |   |   |   |       create.py
+|   |   |   |   |       detail.py
+|   |   |   |   |       fields.py
+|   |   |   |   |       list.py
+|   |   |   |   |       update.py
+|   |   |   |   |       __init__.py
+|   |   |   |   |
+|   |   |   |   \---views
+|   |   |   |           list_create.py
+|   |   |   |           retrieve_update_destroy.py
+|   |   |   |           __init__.py
+|   |   |   |
+|   |   |   +---migrations
+|   |   |   |       0001_initial.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---models
+|   |   |   |       encounter.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---permissions
+|   |   |   |       encounter.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---selectors
+|   |   |   |       encounter.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---services
+|   |   |   |       encounter.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   \---tests
+|   |   |           test_api.py
+|   |   |           test_models.py
+|   |   |           test_services.py
+|   |   |           __init__.py
+|   |   |
+|   |   +---laboratories
+|   |   |   |   admin.py
+|   |   |   |   apps.py
+|   |   |   |   constants.py
+|   |   |   |   urls.py
+|   |   |   |   __init__.py
+|   |   |   |
+|   |   |   +---api
+|   |   |   |   |   urls.py
+|   |   |   |   |   __init__.py
+|   |   |   |   |
+|   |   |   |   +---serializers
+|   |   |   |   |   |   workflow.py
+|   |   |   |   |   |   __init__.py
+|   |   |   |   |   |
+|   |   |   |   |   +---laboratory_order
+|   |   |   |   |   |       base.py
+|   |   |   |   |   |       create.py
+|   |   |   |   |   |       detail.py
+|   |   |   |   |   |       fields.py
+|   |   |   |   |   |       list.py
+|   |   |   |   |   |       update.py
+|   |   |   |   |   |       __init__.py
+|   |   |   |   |   |
+|   |   |   |   |   +---laboratory_result
+|   |   |   |   |   |       base.py
+|   |   |   |   |   |       create.py
+|   |   |   |   |   |       detail.py
+|   |   |   |   |   |       list.py
+|   |   |   |   |   |       update.py
+|   |   |   |   |   |       __init__.py
+|   |   |   |   |   |
+|   |   |   |   |   \---laboratory_test
+|   |   |   |   |           base.py
+|   |   |   |   |           create.py
+|   |   |   |   |           detail.py
+|   |   |   |   |           list.py
+|   |   |   |   |           update.py
+|   |   |   |   |           __init__.py
+|   |   |   |   |
+|   |   |   |   +---urls
+|   |   |   |   |       laboratory_order.py
+|   |   |   |   |       laboratory_result.py
+|   |   |   |   |       laboratory_test.py
+|   |   |   |   |       __init__.py
+|   |   |   |   |
+|   |   |   |   \---views
+|   |   |   |       +---laboratory_order
+|   |   |   |       |       list_create.py
+|   |   |   |       |       retrieve_update_destroy.py
+|   |   |   |       |       __init__.py
+|   |   |   |       |
+|   |   |   |       +---laboratory_result
+|   |   |   |       |       list_create.py
+|   |   |   |       |       retrieve_update_destroy.py
+|   |   |   |       |       workflow.py
+|   |   |   |       |       __init__.py
+|   |   |   |       |
+|   |   |   |       \---laboratory_test
+|   |   |   |               list_create.py
+|   |   |   |               retrieve_update_destroy.py
+|   |   |   |               workflow.py
+|   |   |   |               __init__.py
+|   |   |   |
+|   |   |   +---migrations
+|   |   |   |       0001_initial.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---models
+|   |   |   |       laboratory_order.py
+|   |   |   |       laboratory_result.py
+|   |   |   |       laboratory_test.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---permissions
+|   |   |   |       laboratory_order.py
+|   |   |   |       laboratory_result.py
+|   |   |   |       laboratory_test.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---selectors
+|   |   |   |       laboratory_order.py
+|   |   |   |       laboratory_result.py
+|   |   |   |       laboratory_test.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---services
+|   |   |   |       laboratory_order.py
+|   |   |   |       laboratory_result.py
+|   |   |   |       laboratory_test.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   \---tests
+|   |   |           test_api.py
+|   |   |           test_models.py
+|   |   |           test_selectors.py
+|   |   |           test_services.py
+|   |   |           test_workflows.py
+|   |   |           __init__.py
+|   |   |
+|   |   +---medications
+|   |   |   |   admin.py
+|   |   |   |   apps.py
+|   |   |   |   constants.py
+|   |   |   |   urls.py
+|   |   |   |   __init__.py
+|   |   |   |
+|   |   |   +---api
+|   |   |   |   |   urls.py
+|   |   |   |   |   __init__.py
+|   |   |   |   |
+|   |   |   |   +---serializers
+|   |   |   |   |       base.py
+|   |   |   |   |       create.py
+|   |   |   |   |       detail.py
+|   |   |   |   |       fields.py
+|   |   |   |   |       list.py
+|   |   |   |   |       update.py
+|   |   |   |   |       __init__.py
+|   |   |   |   |
+|   |   |   |   \---views
+|   |   |   |           list_create.py
+|   |   |   |           retrieve_update_destroy.py
+|   |   |   |           __init__.py
+|   |   |   |
+|   |   |   +---migrations
+|   |   |   |       0001_initial.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---models
+|   |   |   |       medication.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---permissions
+|   |   |   |       medication.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---selectors
+|   |   |   |       medication.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---services
+|   |   |   |       medication.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   \---tests
+|   |   |           test_api.py
+|   |   |           test_models.py
+|   |   |           test_services.py
+|   |   |           __init__.py
+|   |   |
+|   |   +---patients
+|   |   |   |   admin.py
+|   |   |   |   apps.py
+|   |   |   |   constants.py
+|   |   |   |   urls.py
+|   |   |   |   __init__.py
+|   |   |   |
+|   |   |   +---api
+|   |   |   |   |   urls.py
+|   |   |   |   |   __init__.py
+|   |   |   |   |
+|   |   |   |   +---serializers
+|   |   |   |   |       base.py
+|   |   |   |   |       create.py
+|   |   |   |   |       detail.py
+|   |   |   |   |       fields.py
+|   |   |   |   |       list.py
+|   |   |   |   |       update.py
+|   |   |   |   |       __init__.py
+|   |   |   |   |
+|   |   |   |   \---views
+|   |   |   |           bulk.py
+|   |   |   |           list_create.py
+|   |   |   |           retrieve_update_destroy.py
+|   |   |   |           __init__.py
+|   |   |   |
+|   |   |   +---migrations
+|   |   |   |       0001_initial.py
+|   |   |   |       0002_patientauditlog.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---models
+|   |   |   |       patient.py
+|   |   |   |       patient_audit_log.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---permissions
+|   |   |   |       patient.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---selectors
+|   |   |   |       patient.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---services
+|   |   |   |       patient.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   \---tests
+|   |   |           factories.py
+|   |   |           test_api.py
+|   |   |           test_models.py
+|   |   |           test_permissions.py
+|   |   |           test_selectors.py
+|   |   |           test_serializers.py
+|   |   |           test_services.py
+|   |   |           __init__.py
+|   |   |
+|   |   +---prescriptions
+|   |   |   |   admin.py
+|   |   |   |   apps.py
+|   |   |   |   constants.py
+|   |   |   |   urls.py
+|   |   |   |   __init__.py
+|   |   |   |
+|   |   |   +---api
+|   |   |   |   |   urls.py
+|   |   |   |   |   __init__.py
+|   |   |   |   |
+|   |   |   |   +---serializers
+|   |   |   |   |       base.py
+|   |   |   |   |       create.py
+|   |   |   |   |       detail.py
+|   |   |   |   |       fields.py
+|   |   |   |   |       list.py
+|   |   |   |   |       update.py
+|   |   |   |   |       __init__.py
+|   |   |   |   |
+|   |   |   |   \---views
+|   |   |   |           list_create.py
+|   |   |   |           retrieve_update_destroy.py
+|   |   |   |           __init__.py
+|   |   |   |
+|   |   |   +---migrations
+|   |   |   |       0001_initial.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---models
+|   |   |   |       prescription.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---permissions
+|   |   |   |       prescription.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---selectors
+|   |   |   |       prescription.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---services
+|   |   |   |       prescription.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   \---tests
+|   |   |           test_api.py
+|   |   |           test_models.py
+|   |   |           test_services.py
+|   |   |           __init__.py
+|   |   |
+|   |   +---providers
+|   |   |   |   admin.py
+|   |   |   |   apps.py
+|   |   |   |   constants.py
+|   |   |   |   urls.py
+|   |   |   |   __init__.py
+|   |   |   |
+|   |   |   +---api
+|   |   |   |   |   urls.py
+|   |   |   |   |   __init__.py
+|   |   |   |   |
+|   |   |   |   +---serializers
+|   |   |   |   |       base.py
+|   |   |   |   |       create.py
+|   |   |   |   |       detail.py
+|   |   |   |   |       fields.py
+|   |   |   |   |       list.py
+|   |   |   |   |       update.py
+|   |   |   |   |       __init__.py
+|   |   |   |   |
+|   |   |   |   \---views
+|   |   |   |           list_create.py
+|   |   |   |           retrieve_update_destroy.py
+|   |   |   |           __init__.py
+|   |   |   |
+|   |   |   +---migrations
+|   |   |   |       0001_initial.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---models
+|   |   |   |       provider.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---permissions
+|   |   |   |       provider.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---selectors
+|   |   |   |       provider.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---services
+|   |   |   |       provider.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   \---tests
+|   |   |           factories.py
+|   |   |           test_api.py
+|   |   |           test_models.py
+|   |   |           test_permissions.py
+|   |   |           test_selectors.py
+|   |   |           test_serializers.py
+|   |   |           test_services.py
+|   |   |           __init__.py
+|   |   |
+|   |   \---vitals
+|   |       |   admin.py
+|   |       |   apps.py
+|   |       |   constants.py
+|   |       |   urls.py
+|   |       |   __init__.py
+|   |       |
+|   |       +---api
+|   |       |   |   urls.py
+|   |       |   |   __init__.py
+|   |       |   |
+|   |       |   +---serializers
+|   |       |   |       base.py
+|   |       |   |       create.py
+|   |       |   |       detail.py
+|   |       |   |       fields.py
+|   |       |   |       list.py
+|   |       |   |       update.py
+|   |       |   |       __init__.py
+|   |       |   |
+|   |       |   \---views
+|   |       |           list_create.py
+|   |       |           retrieve_update_destroy.py
+|   |       |           __init__.py
+|   |       |
+|   |       +---migrations
+|   |       |       0001_initial.py
+|   |       |       __init__.py
+|   |       |
+|   |       +---models
+|   |       |       vital.py
+|   |       |       __init__.py
+|   |       |
+|   |       +---permissions
+|   |       |       vital.py
+|   |       |       __init__.py
+|   |       |
+|   |       +---selectors
+|   |       |       vital.py
+|   |       |       __init__.py
+|   |       |
+|   |       +---services
+|   |       |       vital.py
+|   |       |       __init__.py
+|   |       |
+|   |       \---tests
+|   |               test_api.py
+|   |               test_models.py
+|   |               test_services.py
+|   |               __init__.py
+|   |
+|   +---common
+|   |   |   admin.py
+|   |   |   apps.py
+|   |   |   __init__.py
+|   |   |
+|   |   +---admin
+|   |   |       base.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---api
+|   |   |   |   base_generics.py
+|   |   |   |   base_permissions.py
+|   |   |   |   filters.py
+|   |   |   |   openapi.py
+|   |   |   |   pagination.py
+|   |   |   |   renderers.py
+|   |   |   |   responses.py
+|   |   |   |   throttling.py
+|   |   |   |   versioning.py
+|   |   |   |   workflows.py
+|   |   |   |   __init__.py
+|   |   |   |
+|   |   |   +---mixins
+|   |   |   |       selectors.py
+|   |   |   |       services.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   \---serializers
+|   |   |           base.py
+|   |   |           fields.py
+|   |   |           mixins.py
+|   |   |           __init__.py
+|   |   |
+|   |   +---cache
+|   |   |       backend.py
+|   |   |       client.py
+|   |   |       config.py
+|   |   |       constants.py
+|   |   |       exceptions.py
+|   |   |       keys.py
+|   |   |       lock.py
+|   |   |       types.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---constants
+|   |   |       choices.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---exceptions
+|   |   |       base.py
+|   |   |       codes.py
+|   |   |       handlers.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---http
+|   |   |       auth.py
+|   |   |       client.py
+|   |   |       config.py
+|   |   |       constants.py
+|   |   |       exceptions.py
+|   |   |       models.py
+|   |   |       request.py
+|   |   |       response.py
+|   |   |       retry.py
+|   |   |       status.py
+|   |   |       timeout.py
+|   |   |       transport.py
+|   |   |       types.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---logging
+|   |   |       audit.py
+|   |   |       constants.py
+|   |   |       context.py
+|   |   |       filters.py
+|   |   |       formatters.py
+|   |   |       handlers.py
+|   |   |       logger.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---middleware
+|   |   |       audit.py
+|   |   |       base.py
+|   |   |       context.py
+|   |   |       correlation_id.py
+|   |   |       request_id.py
+|   |   |       request_id_middleware.py
+|   |   |       security_headers.py
+|   |   |       tenant.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---migrations
+|   |   |       __init__.py
+|   |   |
+|   |   +---permissions
+|   |   |       authentication.py
+|   |   |       base.py
+|   |   |       mixins.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---tests
+|   |   |       assertions.py
+|   |   |       authentication.py
+|   |   |       base.py
+|   |   |       factories.py
+|   |   |       mixins.py
+|   |   |       test_audit.py
+|   |   |       test_base_models.py
+|   |   |       test_managers.py
+|   |   |       test_querysets.py
+|   |   |       test_request_id.py
+|   |   |       utils.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---utils
+|   |   |       codes.py
+|   |   |       security.py
+|   |   |       strings.py
+|   |   |       __init__.py
+|   |   |
+|   |   \---validators
+|   |           email.py
+|   |           file.py
+|   |           name.py
+|   |           password.py
+|   |           phone.py
+|   |           slug.py
+|   |           url.py
+|   |           uuid.py
+|   |           __init__.py
+|   |
+|   +---compliance
+|   |   |   apps.py
+|   |   |   __init__.py
+|   |   |
+|   |   +---constants
+|   |   |       __init__.py
+|   |   |
+|   |   +---migrations
+|   |   |       0001_initial.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---models
+|   |   |       __init__.py
+|   |   |
+|   |   +---services
+|   |   |       __init__.py
+|   |   |
+|   |   \---tests
+|   |           test_services.py
+|   |           __init__.py
+|   |
+|   +---configuration
+|   |   |   admin.py
+|   |   |   apps.py
+|   |   |   constants.py
+|   |   |   urls.py
+|   |   |   __init__.py
+|   |   |
+|   |   +---api
+|   |   |   |   urls.py
+|   |   |   |   __init__.py
+|   |   |   |
+|   |   |   +---serializers
+|   |   |   |       base.py
+|   |   |   |       create.py
+|   |   |   |       detail.py
+|   |   |   |       list.py
+|   |   |   |       update.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   \---views
+|   |   |           list_create.py
+|   |   |           retrieve_update_destroy.py
+|   |   |           __init__.py
+|   |   |
+|   |   +---migrations
+|   |   |       0001_initial.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---models
+|   |   |       configuration.py
+|   |   |       feature_flag.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---permissions
+|   |   |       configuration.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---selectors
+|   |   |       configuration.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---services
+|   |   |       configuration.py
+|   |   |       __init__.py
+|   |   |
+|   |   \---tests
+|   |           test_api.py
+|   |           test_models.py
+|   |           test_selectors.py
+|   |           test_services.py
+|   |           __init__.py
+|   |
+|   +---core
+|   |   |   admin.py
+|   |   |   apps.py
+|   |   |   constants.py
+|   |   |   urls.py
+|   |   |   __init__.py
+|   |   |
+|   |   +---exceptions
+|   |   |       business.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---health
+|   |   |       checks.py
+|   |   |       urls.py
+|   |   |       views.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---migrations
+|   |   |       __init__.py
+|   |   |
+|   |   +---models
+|   |   |       active.py
+|   |   |       base.py
+|   |   |       managers.py
+|   |   |       querysets.py
+|   |   |       soft_delete.py
+|   |   |       timestamp.py
+|   |   |       uuid.py
+|   |   |       __init__.py
+|   |   |
+|   |   \---tests
+|   |           test_health.py
+|   |           __init__.py
+|   |
+|   +---datavionos
+|   |   |   admin.py
+|   |   |   apps.py
+|   |   |   models.py
+|   |   |   module_registry_initializer.py
+|   |   |   urls.py
+|   |   |   views.py
+|   |   |   __init__.py
+|   |   |
+|   |   +---ai
+|   |   |   |   chat.py
+|   |   |   |   embeddings.py
+|   |   |   |   exceptions.py
+|   |   |   |   prompt.py
+|   |   |   |   provider.py
+|   |   |   |   rag.py
+|   |   |   |   services.py
+|   |   |   |   vector_store.py
+|   |   |   |   __init__.py
+|   |   |   |
+|   |   |   \---implementation
+|   |   |           chat.py
+|   |   |           embeddings.py
+|   |   |           prompt_engine.py
+|   |   |           provider.py
+|   |   |           rag_engine.py
+|   |   |           vector_store.py
+|   |   |           __init__.py
+|   |   |
+|   |   +---api
+|   |   |   |   urls.py
+|   |   |   |   __init__.py
+|   |   |   |
+|   |   |   +---serializers
+|   |   |   |       bootstrap.py
+|   |   |   |       branding.py
+|   |   |   |       dashboard.py
+|   |   |   |       feature_flags.py
+|   |   |   |       module.py
+|   |   |   |       navigation.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   \---views
+|   |   |           bootstrap.py
+|   |   |           __init__.py
+|   |   |
+|   |   +---builders
+|   |   |       bootstrap.py
+|   |   |       dashboard.py
+|   |   |       navigation.py
+|   |   |       organization_bootstrap.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---commands
+|   |   |       bus.py
+|   |   |       command.py
+|   |   |       context.py
+|   |   |       dispatcher.py
+|   |   |       exceptions.py
+|   |   |       handler.py
+|   |   |       middleware.py
+|   |   |       registry.py
+|   |   |       result.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---configuration
+|   |   |       configuration.py
+|   |   |       exceptions.py
+|   |   |       provider.py
+|   |   |       secrets.py
+|   |   |       services.py
+|   |   |       validation.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---constants
+|   |   |       capability.py
+|   |   |       platform.py
+|   |   |       version.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---container
+|   |   |       builder.py
+|   |   |       container.py
+|   |   |       descriptor.py
+|   |   |       exceptions.py
+|   |   |       lifetime.py
+|   |   |       provider.py
+|   |   |       registry.py
+|   |   |       resolver.py
+|   |   |       scope.py
+|   |   |       service.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---contracts
+|   |   |       ai.py
+|   |   |       base.py
+|   |   |       bootstrap.py
+|   |   |       capability.py
+|   |   |       command.py
+|   |   |       configuration.py
+|   |   |       event.py
+|   |   |       lifecycle.py
+|   |   |       metadata.py
+|   |   |       module.py
+|   |   |       plugin.py
+|   |   |       query.py
+|   |   |       service.py
+|   |   |       workflow.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---events
+|   |   |       bus.py
+|   |   |       context.py
+|   |   |       dispatcher.py
+|   |   |       event.py
+|   |   |       exceptions.py
+|   |   |       handler.py
+|   |   |       middleware.py
+|   |   |       publisher.py
+|   |   |       registry.py
+|   |   |       result.py
+|   |   |       store.py
+|   |   |       subscriber.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---exceptions
+|   |   |       base.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---hosting
+|   |   |       application.py
+|   |   |       environment.py
+|   |   |       exceptions.py
+|   |   |       health.py
+|   |   |       host.py
+|   |   |       lifecycle.py
+|   |   |       runtime.py
+|   |   |       services.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---kernel
+|   |   |       application.py
+|   |   |       bootstrap.py
+|   |   |       configuration.py
+|   |   |       environment.py
+|   |   |       exceptions.py
+|   |   |       health.py
+|   |   |       kernel.py
+|   |   |       lifecycle.py
+|   |   |       runtime.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---lifecycle
+|   |   |       base.py
+|   |   |       events.py
+|   |   |       manager.py
+|   |   |       state.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---management
+|   |   |   |   __init__.py
+|   |   |   |
+|   |   |   \---commands
+|   |   |           bootstrap_organization.py
+|   |   |           __init__.py
+|   |   |
+|   |   +---messaging
+|   |   |       bus.py
+|   |   |       command.py
+|   |   |       event.py
+|   |   |       exceptions.py
+|   |   |       message.py
+|   |   |       publisher.py
+|   |   |       queue.py
+|   |   |       router.py
+|   |   |       services.py
+|   |   |       subscriber.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---migrations
+|   |   |       __init__.py
+|   |   |
+|   |   +---modules
+|   |   |       ai_assistant_module.py
+|   |   |       ai_workflow_module.py
+|   |   |       appointment_management_module.py
+|   |   |       context.py
+|   |   |       dependency.py
+|   |   |       descriptor.py
+|   |   |       exceptions.py
+|   |   |       lifecycle.py
+|   |   |       loader.py
+|   |   |       manifest.py
+|   |   |       metadata.py
+|   |   |       module.py
+|   |   |       registration.py
+|   |   |       registry.py
+|   |   |       services.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---observability
+|   |   |       diagnostics.py
+|   |   |       events.py
+|   |   |       exceptions.py
+|   |   |       logger.py
+|   |   |       metrics.py
+|   |   |       monitoring.py
+|   |   |       services.py
+|   |   |       tracing.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---persistence
+|   |   |       exceptions.py
+|   |   |       repository.py
+|   |   |       services.py
+|   |   |       specification.py
+|   |   |       storage.py
+|   |   |       transaction.py
+|   |   |       unit_of_work.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---platform
+|   |   |       audit.py
+|   |   |       cache.py
+|   |   |       configuration.py
+|   |   |       exceptions.py
+|   |   |       feature_flags.py
+|   |   |       health.py
+|   |   |       logger.py
+|   |   |       metrics.py
+|   |   |       notifications.py
+|   |   |       scheduler.py
+|   |   |       secrets.py
+|   |   |       services.py
+|   |   |       storage.py
+|   |   |       telemetry.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---plugins
+|   |   |       dependency.py
+|   |   |       descriptor.py
+|   |   |       exceptions.py
+|   |   |       lifecycle.py
+|   |   |       loader.py
+|   |   |       registry.py
+|   |   |       services.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---queries
+|   |   |       bus.py
+|   |   |       context.py
+|   |   |       dispatcher.py
+|   |   |       exceptions.py
+|   |   |       handler.py
+|   |   |       middleware.py
+|   |   |       query.py
+|   |   |       registry.py
+|   |   |       result.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---registries
+|   |   |       base.py
+|   |   |       bootstrap.py
+|   |   |       capability.py
+|   |   |       module.py
+|   |   |       plugin.py
+|   |   |       registry.py
+|   |   |       service.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---resolvers
+|   |   |       branding.py
+|   |   |       feature_flags.py
+|   |   |       permissions.py
+|   |   |
+|   |   +---scheduler
+|   |   |       dispatcher.py
+|   |   |       engine.py
+|   |   |       exceptions.py
+|   |   |       execution.py
+|   |   |       job.py
+|   |   |       registry.py
+|   |   |       schedule.py
+|   |   |       services.py
+|   |   |       trigger.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---security
+|   |   |       authentication.py
+|   |   |       authorization.py
+|   |   |       context.py
+|   |   |       evaluator.py
+|   |   |       exceptions.py
+|   |   |       identity.py
+|   |   |       permission.py
+|   |   |       policy.py
+|   |   |       principal.py
+|   |   |       role.py
+|   |   |       services.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---selectors
+|   |   |       bootstrap.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---services
+|   |   |       bootstrap.py
+|   |   |       organization_bootstrap.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---tenant
+|   |   |       context.py
+|   |   |       organization.py
+|   |   |       resolver.py
+|   |   |       services.py
+|   |   |       subscription.py
+|   |   |       tenant.py
+|   |   |       user.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---tests
+|   |   |       test_kernel.py
+|   |   |       test_package.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---types
+|   |   |       common.py
+|   |   |       __init__.py
+|   |   |
+|   |   \---workflow
+|   |           definition.py
+|   |           descriptor.py
+|   |           engine.py
+|   |           exceptions.py
+|   |           execution.py
+|   |           instance.py
+|   |           registry.py
+|   |           services.py
+|   |           step.py
+|   |           transition.py
+|   |           __init__.py
+|   |
+|   +---domain
+|   |   |   __init__.py
+|   |   |
+|   |   +---common
+|   |   |   |   aggregate.py
+|   |   |   |   domain_event.py
+|   |   |   |   entity.py
+|   |   |   |   exceptions.py
+|   |   |   |   factory.py
+|   |   |   |   repository.py
+|   |   |   |   service.py
+|   |   |   |   specification.py
+|   |   |   |   value_object.py
+|   |   |   |   __init__.py
+|   |   |   |
+|   |   |   \---identity
+|   |   |           entity_id.py
+|   |   |           generator.py
+|   |   |           __init__.py
+|   |   |
+|   |   +---organizations
+|   |   |   |   constants.py
+|   |   |   |   exceptions.py
+|   |   |   |   README.md
+|   |   |   |   __init__.py
+|   |   |   |
+|   |   |   +---aggregates
+|   |   |   |       organization.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---entities
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---enums
+|   |   |   |       organization_status.py
+|   |   |   |       organization_type.py
+|   |   |   |       subscription_type.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---events
+|   |   |   |       organization_activated.py
+|   |   |   |       organization_archived.py
+|   |   |   |       organization_created.py
+|   |   |   |       organization_deactivated.py
+|   |   |   |       organization_deleted.py
+|   |   |   |       organization_suspended.py
+|   |   |   |       organization_updated.py
+|   |   |   |       subscription_changed.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---factories
+|   |   |   |       organization_factory.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---policies
+|   |   |   |       organization_policy.py
+|   |   |   |       subscription_policy.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---repositories
+|   |   |   |       organization_repository.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---services
+|   |   |   |       organization_domain_service.py
+|   |   |   |       organization_slug_service.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---specifications
+|   |   |   |       active_organization_specification.py
+|   |   |   |       organization_can_be_deleted_specification.py
+|   |   |   |       paid_subscription_specification.py
+|   |   |   |       trial_organization_specification.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   \---value_objects
+|   |   |           organization_address.py
+|   |   |           organization_email.py
+|   |   |           organization_id.py
+|   |   |           organization_logo.py
+|   |   |           organization_name.py
+|   |   |           organization_phone.py
+|   |   |           organization_slug.py
+|   |   |           organization_status.py
+|   |   |           organization_type.py
+|   |   |           organization_website.py
+|   |   |           __init__.py
+|   |   |
+|   |   \---shared
+|   |       \---time
+|   |               clock.py
+|   |               date_range.py
+|   |               duration.py
+|   |               exceptions.py
+|   |               __init__.py
+|   |
+|   +---imaging
+|   |   |   admin.py
+|   |   |   apps.py
+|   |   |   __init__.py
+|   |   |
+|   |   +---api
+|   |   |   |   urls.py
+|   |   |   |   __init__.py
+|   |   |   |
+|   |   |   +---serializers
+|   |   |   |       ai_analysis.py
+|   |   |   |       fields.py
+|   |   |   |       report.py
+|   |   |   |       study.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   \---views
+|   |   |           ai_analysis.py
+|   |   |           report.py
+|   |   |           study.py
+|   |   |           __init__.py
+|   |   |
+|   |   +---constants
+|   |   |       imaging.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---migrations
+|   |   |       0001_initial.py
+|   |   |       0002_alter_aianalysis_findings_and_more.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---models
+|   |   |       ai_analysis.py
+|   |   |       image_instance.py
+|   |   |       report.py
+|   |   |       series.py
+|   |   |       study.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---permissions
+|   |   |       imaging.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---selectors
+|   |   |       ai_analysis.py
+|   |   |       report.py
+|   |   |       study.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---services
+|   |   |       ai_analysis.py
+|   |   |       report.py
+|   |   |       study.py
+|   |   |       __init__.py
+|   |   |
+|   |   \---tests
+|   |           factories.py
+|   |           test_models.py
+|   |           test_selectors.py
+|   |           test_services.py
+|   |           __init__.py
+|   |
+|   +---infrastructure
+|   |   |   __init__.py
+|   |   |
+|   |   +---bootstrap
+|   |   |       builder.py
+|   |   |       configuration.py
+|   |   |       modules.py
+|   |   |       startup.py
+|   |   |       __init__.py
+|   |   |
+|   |   \---container
+|   |           container.py
+|   |           exceptions.py
+|   |           registry.py
+|   |           service_provider.py
+|   |           __init__.py
+|   |
+|   +---insurance
+|   |   |   apps.py
+|   |   |   __init__.py
+|   |   |
+|   |   +---constants
+|   |   |       insurance.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---migrations
+|   |   |       0001_initial.py
+|   |   |       __init__.py
+|   |   |
+|   |   \---models
+|   |           authorization.py
+|   |           claim.py
+|   |           enrollment.py
+|   |           plan.py
+|   |           __init__.py
+|   |
+|   +---interoperability
+|   |   |   apps.py
+|   |   |   __init__.py
+|   |   |
+|   |   +---constants
+|   |   |       __init__.py
+|   |   |
+|   |   +---models
+|   |   |       __init__.py
+|   |   |
+|   |   +---serializers
+|   |   |       fhir.py
+|   |   |       hl7.py
+|   |   |
+|   |   +---services
+|   |   |       __init__.py
+|   |   |
+|   |   \---tests
+|   |           test_serializers.py
+|   |           __init__.py
+|   |
+|   +---notes
+|   |   |   admin.py
+|   |   |   apps.py
+|   |   |   __init__.py
+|   |   |
+|   |   +---api
+|   |   |   |   urls.py
+|   |   |   |   __init__.py
+|   |   |   |
+|   |   |   +---serializers
+|   |   |   |       fields.py
+|   |   |   |       note.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   \---views
+|   |   |           note.py
+|   |   |           __init__.py
+|   |   |
+|   |   +---constants
+|   |   |       notes.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---migrations
+|   |   |       0001_initial.py
+|   |   |       0002_alter_clinicalnote_content_and_more.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---models
+|   |   |       note.py
+|   |   |       template.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---permissions
+|   |   |       notes.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---selectors
+|   |   |       note.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---services
+|   |   |       note.py
+|   |   |       __init__.py
+|   |   |
+|   |   \---tests
+|   |           factories.py
+|   |           test_models.py
+|   |           test_selectors.py
+|   |           test_services.py
+|   |           __init__.py
+|   |
+|   +---organization
+|   |   +---departments
+|   |   |   |   admin.py
+|   |   |   |   apps.py
+|   |   |   |   constants.py
+|   |   |   |   urls.py
+|   |   |   |   __init__.py
+|   |   |   |
+|   |   |   +---api
+|   |   |   |   |   urls.py
+|   |   |   |   |   __init__.py
+|   |   |   |   |
+|   |   |   |   +---serializers
+|   |   |   |   |       base.py
+|   |   |   |   |       create.py
+|   |   |   |   |       detail.py
+|   |   |   |   |       fields.py
+|   |   |   |   |       list.py
+|   |   |   |   |       update.py
+|   |   |   |   |       __init__.py
+|   |   |   |   |
+|   |   |   |   \---views
+|   |   |   |           list_create.py
+|   |   |   |           retrieve_update_destroy.py
+|   |   |   |           __init__.py
+|   |   |   |
+|   |   |   +---migrations
+|   |   |   |       0001_initial.py
+|   |   |   |       0002_initial.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---models
+|   |   |   |       department.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---permissions
+|   |   |   |       department.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---selectors
+|   |   |   |       department.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---services
+|   |   |   |       department.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   \---tests
+|   |   |           test_api.py
+|   |   |           test_models.py
+|   |   |           test_services.py
+|   |   |           __init__.py
+|   |   |
+|   |   +---employees
+|   |   |   |   admin.py
+|   |   |   |   apps.py
+|   |   |   |   urls.py
+|   |   |   |   __init__.py
+|   |   |   |
+|   |   |   +---api
+|   |   |   |   |   urls.py
+|   |   |   |   |   __init__.py
+|   |   |   |   |
+|   |   |   |   +---serializers
+|   |   |   |   |       base.py
+|   |   |   |   |       create.py
+|   |   |   |   |       detail.py
+|   |   |   |   |       fields.py
+|   |   |   |   |       list.py
+|   |   |   |   |       update.py
+|   |   |   |   |       __init__.py
+|   |   |   |   |
+|   |   |   |   \---views
+|   |   |   |           list_create.py
+|   |   |   |           retrieve_update_destroy.py
+|   |   |   |           __init__.py
+|   |   |   |
+|   |   |   +---migrations
+|   |   |   |       0001_initial.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---models
+|   |   |   |       employee.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---permissions
+|   |   |   |       employee.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---selectors
+|   |   |   |       employee.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---services
+|   |   |   |       employee.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   \---tests
+|   |   |           test_api.py
+|   |   |           test_models.py
+|   |   |           test_services.py
+|   |   |           __init__.py
+|   |   |
+|   |   +---organizations
+|   |   |   +---models
+|   |   |   |       organization.py
+|   |   |   |
+|   |   |   \---validators
+|   |   |           __init__.py
+|   |   |
+|   |   \---teams
+|   |       |   admin.py
+|   |       |   apps.py
+|   |       |   urls.py
+|   |       |   __init__.py
+|   |       |
+|   |       +---api
+|   |       |   |   urls.py
+|   |       |   |   __init__.py
+|   |       |   |
+|   |       |   +---serializers
+|   |       |   |       base.py
+|   |       |   |       create.py
+|   |       |   |       detail.py
+|   |       |   |       fields.py
+|   |       |   |       list.py
+|   |       |   |       update.py
+|   |       |   |       __init__.py
+|   |       |   |
+|   |       |   \---views
+|   |       |           list_create.py
+|   |       |           retrieve_update_destroy.py
+|   |       |           __init__.py
+|   |       |
+|   |       +---migrations
+|   |       |       0001_initial.py
+|   |       |       __init__.py
+|   |       |
+|   |       +---models
+|   |       |       team.py
+|   |       |       __init__.py
+|   |       |
+|   |       +---permissions
+|   |       |       team.py
+|   |       |       __init__.py
+|   |       |
+|   |       +---selectors
+|   |       |       team.py
+|   |       |       __init__.py
+|   |       |
+|   |       +---services
+|   |       |       team.py
+|   |       |       __init__.py
+|   |       |
+|   |       \---tests
+|   |               test_api.py
+|   |               test_models.py
+|   |               test_services.py
+|   |               __init__.py
+|   |
+|   +---patient_management
+|   |   |   apps.py
+|   |   |   components.py
+|   |   |   urls.py
+|   |   |   __init__.py
+|   |   |
+|   |   +---communication
+|   |   |   |   constants.py
+|   |   |   |   urls.py
+|   |   |   |
+|   |   |   +---api
+|   |   |   |   |   __init__.py
+|   |   |   |   |
+|   |   |   |   +---serializers
+|   |   |   |   |       communication.py
+|   |   |   |   |       __init__.py
+|   |   |   |   |
+|   |   |   |   \---views
+|   |   |   |           communication.py
+|   |   |   |           __init__.py
+|   |   |   |
+|   |   |   +---migrations
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---models
+|   |   |   |       communication.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---permissions
+|   |   |   |       communication.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---selectors
+|   |   |   |       communication.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   \---services
+|   |   |           communication.py
+|   |   |           __init__.py
+|   |   |
+|   |   +---consent
+|   |   |   |   constants.py
+|   |   |   |   urls.py
+|   |   |   |
+|   |   |   +---api
+|   |   |   |   |   __init__.py
+|   |   |   |   |
+|   |   |   |   +---serializers
+|   |   |   |   |       consent.py
+|   |   |   |   |       __init__.py
+|   |   |   |   |
+|   |   |   |   \---views
+|   |   |   |           consent.py
+|   |   |   |           __init__.py
+|   |   |   |
+|   |   |   +---migrations
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---models
+|   |   |   |       consent.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---permissions
+|   |   |   |       consent.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---selectors
+|   |   |   |       consent.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   \---services
+|   |   |           consent.py
+|   |   |           __init__.py
+|   |   |
+|   |   +---constants
+|   |   |       __init__.py
+|   |   |
+|   |   +---documents
+|   |   |   |   constants.py
+|   |   |   |   urls.py
+|   |   |   |
+|   |   |   +---api
+|   |   |   |   |   __init__.py
+|   |   |   |   |
+|   |   |   |   +---serializers
+|   |   |   |   |       documents.py
+|   |   |   |   |       __init__.py
+|   |   |   |   |
+|   |   |   |   \---views
+|   |   |   |           documents.py
+|   |   |   |           __init__.py
+|   |   |   |
+|   |   |   +---migrations
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---models
+|   |   |   |       documents.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---permissions
+|   |   |   |       documents.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---selectors
+|   |   |   |       documents.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   \---services
+|   |   |           documents.py
+|   |   |           __init__.py
+|   |   |
+|   |   +---emergency
+|   |   |   |   constants.py
+|   |   |   |   urls.py
+|   |   |   |
+|   |   |   +---api
+|   |   |   |   |   __init__.py
+|   |   |   |   |
+|   |   |   |   +---serializers
+|   |   |   |   |       emergency.py
+|   |   |   |   |       __init__.py
+|   |   |   |   |
+|   |   |   |   \---views
+|   |   |   |           emergency.py
+|   |   |   |           __init__.py
+|   |   |   |
+|   |   |   +---migrations
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---models
+|   |   |   |       emergency.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---permissions
+|   |   |   |       emergency.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---selectors
+|   |   |   |       emergency.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   \---services
+|   |   |           emergency.py
+|   |   |           __init__.py
+|   |   |
+|   |   +---family
+|   |   |   |   constants.py
+|   |   |   |   urls.py
+|   |   |   |
+|   |   |   +---api
+|   |   |   |   |   __init__.py
+|   |   |   |   |
+|   |   |   |   +---serializers
+|   |   |   |   |       family.py
+|   |   |   |   |       __init__.py
+|   |   |   |   |
+|   |   |   |   \---views
+|   |   |   |           family.py
+|   |   |   |           __init__.py
+|   |   |   |
+|   |   |   +---migrations
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---models
+|   |   |   |       family.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---permissions
+|   |   |   |       family.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---selectors
+|   |   |   |       family.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   \---services
+|   |   |           family.py
+|   |   |           __init__.py
+|   |   |
+|   |   +---medical_history
+|   |   |   |   constants.py
+|   |   |   |   urls.py
+|   |   |   |
+|   |   |   +---api
+|   |   |   |   |   __init__.py
+|   |   |   |   |
+|   |   |   |   +---serializers
+|   |   |   |   |       medical_history.py
+|   |   |   |   |       __init__.py
+|   |   |   |   |
+|   |   |   |   \---views
+|   |   |   |           medical_history.py
+|   |   |   |           __init__.py
+|   |   |   |
+|   |   |   +---migrations
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---models
+|   |   |   |       medical_history.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---permissions
+|   |   |   |       medical_history.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---selectors
+|   |   |   |       medical_history.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   \---services
+|   |   |           medical_history.py
+|   |   |           __init__.py
+|   |   |
+|   |   +---migrations
+|   |   |       0001_initial.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---mpi
+|   |   |   |   constants.py
+|   |   |   |   urls.py
+|   |   |   |
+|   |   |   +---api
+|   |   |   |   |   __init__.py
+|   |   |   |   |
+|   |   |   |   +---serializers
+|   |   |   |   |       mpi.py
+|   |   |   |   |       __init__.py
+|   |   |   |   |
+|   |   |   |   \---views
+|   |   |   |           mpi.py
+|   |   |   |           __init__.py
+|   |   |   |
+|   |   |   +---migrations
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---models
+|   |   |   |       mpi.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---permissions
+|   |   |   |       mpi.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---selectors
+|   |   |   |       mpi.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   \---services
+|   |   |           mpi.py
+|   |   |           __init__.py
+|   |   |
+|   |   +---portal
+|   |   |   |   constants.py
+|   |   |   |   urls.py
+|   |   |   |
+|   |   |   +---api
+|   |   |   |   |   __init__.py
+|   |   |   |   |
+|   |   |   |   +---serializers
+|   |   |   |   |       portal.py
+|   |   |   |   |       __init__.py
+|   |   |   |   |
+|   |   |   |   \---views
+|   |   |   |           portal.py
+|   |   |   |           __init__.py
+|   |   |   |
+|   |   |   +---migrations
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---models
+|   |   |   |       portal.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---permissions
+|   |   |   |       portal.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---selectors
+|   |   |   |       portal.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   \---services
+|   |   |           portal.py
+|   |   |           __init__.py
+|   |   |
+|   |   +---profile
+|   |   |   |   constants.py
+|   |   |   |   urls.py
+|   |   |   |
+|   |   |   +---api
+|   |   |   |   |   __init__.py
+|   |   |   |   |
+|   |   |   |   +---serializers
+|   |   |   |   |       profile.py
+|   |   |   |   |       __init__.py
+|   |   |   |   |
+|   |   |   |   \---views
+|   |   |   |           profile.py
+|   |   |   |           __init__.py
+|   |   |   |
+|   |   |   +---migrations
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---models
+|   |   |   |       profile.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---permissions
+|   |   |   |       profile.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---selectors
+|   |   |   |       profile.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   \---services
+|   |   |           profile.py
+|   |   |           __init__.py
+|   |   |
+|   |   +---referrals
+|   |   |   |   constants.py
+|   |   |   |   urls.py
+|   |   |   |
+|   |   |   +---api
+|   |   |   |   |   __init__.py
+|   |   |   |   |
+|   |   |   |   +---serializers
+|   |   |   |   |       referrals.py
+|   |   |   |   |       __init__.py
+|   |   |   |   |
+|   |   |   |   \---views
+|   |   |   |           referrals.py
+|   |   |   |           __init__.py
+|   |   |   |
+|   |   |   +---migrations
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---models
+|   |   |   |       referrals.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---permissions
+|   |   |   |       referrals.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---selectors
+|   |   |   |       referrals.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   \---services
+|   |   |           referrals.py
+|   |   |           __init__.py
+|   |   |
+|   |   +---registration
+|   |   |   |   constants.py
+|   |   |   |   urls.py
+|   |   |   |
+|   |   |   +---api
+|   |   |   |   |   __init__.py
+|   |   |   |   |
+|   |   |   |   +---serializers
+|   |   |   |   |       registration.py
+|   |   |   |   |       __init__.py
+|   |   |   |   |
+|   |   |   |   \---views
+|   |   |   |           registration.py
+|   |   |   |           __init__.py
+|   |   |   |
+|   |   |   +---migrations
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---models
+|   |   |   |       registration.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---permissions
+|   |   |   |       registration.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---selectors
+|   |   |   |       registration.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   \---services
+|   |   |           registration.py
+|   |   |           __init__.py
+|   |   |
+|   |   \---timeline
+|   |       |   constants.py
+|   |       |   urls.py
+|   |       |
+|   |       +---api
+|   |       |   |   __init__.py
+|   |       |   |
+|   |       |   +---serializers
+|   |       |   |       timeline.py
+|   |       |   |       __init__.py
+|   |       |   |
+|   |       |   \---views
+|   |       |           timeline.py
+|   |       |           __init__.py
+|   |       |
+|   |       +---migrations
+|   |       |       __init__.py
+|   |       |
+|   |       +---models
+|   |       |       timeline.py
+|   |       |       __init__.py
+|   |       |
+|   |       +---permissions
+|   |       |       timeline.py
+|   |       |       __init__.py
+|   |       |
+|   |       +---selectors
+|   |       |       timeline.py
+|   |       |       __init__.py
+|   |       |
+|   |       \---services
+|   |               timeline.py
+|   |               __init__.py
+|   |
+|   +---platform
+|   |   |   __init__.py
+|   |   |
+|   |   +---accounts
+|   |   |   |   admin.py
+|   |   |   |   apps.py
+|   |   |   |   constants.py
+|   |   |   |   urls.py
+|   |   |   |   __init__.py
+|   |   |   |
+|   |   |   +---api
+|   |   |   |   |   urls.py
+|   |   |   |   |   __init__.py
+|   |   |   |   |
+|   |   |   |   +---serializers
+|   |   |   |   |   |   base.py
+|   |   |   |   |   |   create.py
+|   |   |   |   |   |   detail.py
+|   |   |   |   |   |   fields.py
+|   |   |   |   |   |   list.py
+|   |   |   |   |   |   summary.py
+|   |   |   |   |   |   update.py
+|   |   |   |   |   |   __init__.py
+|   |   |   |   |   |
+|   |   |   |   |   \---authentication
+|   |   |   |   |           auth.py
+|   |   |   |   |           me.py
+|   |   |   |   |           oauth.py
+|   |   |   |   |           otp.py
+|   |   |   |   |           password.py
+|   |   |   |   |           __init__.py
+|   |   |   |   |
+|   |   |   |   +---urls
+|   |   |   |   |       authentication.py
+|   |   |   |   |       __init__.py
+|   |   |   |   |
+|   |   |   |   \---views
+|   |   |   |       |   list_create.py
+|   |   |   |       |   retrieve_update_destroy.py
+|   |   |   |       |   __init__.py
+|   |   |   |       |
+|   |   |   |       \---authentication
+|   |   |   |               auth.py
+|   |   |   |               me.py
+|   |   |   |               oauth.py
+|   |   |   |               otp.py
+|   |   |   |               password.py
+|   |   |   |               __init__.py
+|   |   |   |
+|   |   |   +---migrations
+|   |   |   |       0001_initial.py
+|   |   |   |       0002_initial.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---models
+|   |   |   |   |   oauth_account.py
+|   |   |   |   |   otp.py
+|   |   |   |   |   profile.py
+|   |   |   |   |   user.py
+|   |   |   |   |   __init__.py
+|   |   |   |   |
+|   |   |   |   \---managers
+|   |   |   |           user.py
+|   |   |   |           __init__.py
+|   |   |   |
+|   |   |   +---permissions
+|   |   |   |       organization.py
+|   |   |   |       user.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---selectors
+|   |   |   |       account.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---services
+|   |   |   |       authentication.py
+|   |   |   |       oauth.py
+|   |   |   |       otp.py
+|   |   |   |       password.py
+|   |   |   |       user.py
+|   |   |   |       verification.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   \---tests
+|   |   |       |   base.py
+|   |   |       |   factories.py
+|   |   |       |   __init__.py
+|   |   |       |
+|   |   |       +---authentication
+|   |   |       |       test_change_password.py
+|   |   |       |       test_forgot_password.py
+|   |   |       |       test_login.py
+|   |   |       |       test_logout.py
+|   |   |       |       test_me.py
+|   |   |       |       test_oauth.py
+|   |   |       |       test_otp.py
+|   |   |       |       test_password.py
+|   |   |       |       test_refresh.py
+|   |   |       |       test_register.py
+|   |   |       |       test_reset_password.py
+|   |   |       |       test_verify_email.py
+|   |   |       |       __init__.py
+|   |   |       |
+|   |   |       +---models
+|   |   |       |       test_organization_role.py
+|   |   |       |       test_profile.py
+|   |   |       |       test_user.py
+|   |   |       |       __init__.py
+|   |   |       |
+|   |   |       \---services
+|   |   |               test_authentication.py
+|   |   |               test_oauth.py
+|   |   |               test_password.py
+|   |   |               test_user.py
+|   |   |               test_verification.py
+|   |   |               __init__.py
+|   |   |
+|   |   +---audit
+|   |   |   |   apps.py
+|   |   |   |   constants.py
+|   |   |   |   dispatch.py
+|   |   |   |   signals.py
+|   |   |   |   tasks.py
+|   |   |   |   urls.py
+|   |   |   |   __init__.py
+|   |   |   |
+|   |   |   +---admin
+|   |   |   |       audit_log.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---api
+|   |   |   |   |   urls.py
+|   |   |   |   |   __init__.py
+|   |   |   |   |
+|   |   |   |   +---serializers
+|   |   |   |   |       base.py
+|   |   |   |   |       detail.py
+|   |   |   |   |       list.py
+|   |   |   |   |       __init__.py
+|   |   |   |   |
+|   |   |   |   +---urls
+|   |   |   |   |       audit.py
+|   |   |   |   |       __init__.py
+|   |   |   |   |
+|   |   |   |   \---views
+|   |   |   |           list.py
+|   |   |   |           retrieve.py
+|   |   |   |           __init__.py
+|   |   |   |
+|   |   |   +---managers
+|   |   |   |       audit.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---middleware
+|   |   |   |       audit.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---migrations
+|   |   |   |       0001_initial.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---models
+|   |   |   |       audit_log.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---permissions
+|   |   |   |       audit.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---querysets
+|   |   |   |       audit.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---selectors
+|   |   |   |       audit.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---services
+|   |   |   |       audit.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   \---tests
+|   |   |           base.py
+|   |   |           factories.py
+|   |   |           test_api.py
+|   |   |           test_managers.py
+|   |   |           test_models.py
+|   |   |           test_permissions.py
+|   |   |           test_querysets.py
+|   |   |           test_selectors.py
+|   |   |           test_services.py
+|   |   |           __init__.py
+|   |   |
+|   |   +---branding
+|   |   |   |   admin.py
+|   |   |   |   apps.py
+|   |   |   |   models.py
+|   |   |   |   tests.py
+|   |   |   |   views.py
+|   |   |   |   __init__.py
+|   |   |   |
+|   |   |   \---migrations
+|   |   |           __init__.py
+|   |   |
+|   |   +---dashboard
+|   |   |   |   admin.py
+|   |   |   |   apps.py
+|   |   |   |   models.py
+|   |   |   |   tests.py
+|   |   |   |   views.py
+|   |   |   |   __init__.py
+|   |   |   |
+|   |   |   \---migrations
+|   |   |           __init__.py
+|   |   |
+|   |   +---feature_flags
+|   |   |   |   admin.py
+|   |   |   |   apps.py
+|   |   |   |   models.py
+|   |   |   |   tests.py
+|   |   |   |   views.py
+|   |   |   |   __init__.py
+|   |   |   |
+|   |   |   \---migrations
+|   |   |           __init__.py
+|   |   |
+|   |   +---identity
+|   |   |   |   admin.py
+|   |   |   |   apps.py
+|   |   |   |   models.py
+|   |   |   |   tests.py
+|   |   |   |   views.py
+|   |   |   |   __init__.py
+|   |   |   |
+|   |   |   \---migrations
+|   |   |           __init__.py
+|   |   |
+|   |   +---module_registry
+|   |   |   |   admin.py
+|   |   |   |   apps.py
+|   |   |   |   models.py
+|   |   |   |   tests.py
+|   |   |   |   views.py
+|   |   |   |   __init__.py
+|   |   |   |
+|   |   |   \---migrations
+|   |   |           __init__.py
+|   |   |
+|   |   +---navigation
+|   |   |   |   admin.py
+|   |   |   |   apps.py
+|   |   |   |   models.py
+|   |   |   |   tests.py
+|   |   |   |   views.py
+|   |   |   |   __init__.py
+|   |   |   |
+|   |   |   \---migrations
+|   |   |           __init__.py
+|   |   |
+|   |   +---notifications
+|   |   |   |   apps.py
+|   |   |   |   constants.py
+|   |   |   |   dispatch.py
+|   |   |   |   tasks.py
+|   |   |   |   urls.py
+|   |   |   |   __init__.py
+|   |   |   |
+|   |   |   +---admin
+|   |   |   |       notification.py
+|   |   |   |       notification_log.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---api
+|   |   |   |   +---serializers
+|   |   |   |   |       notification.py
+|   |   |   |   |       notification_action.py
+|   |   |   |   |       notification_log.py
+|   |   |   |   |       __init__.py
+|   |   |   |   |
+|   |   |   |   +---urls
+|   |   |   |   |       notification.py
+|   |   |   |   |       __init__.py
+|   |   |   |   |
+|   |   |   |   \---views
+|   |   |   |           notification.py
+|   |   |   |           notification_action.py
+|   |   |   |           notification_log.py
+|   |   |   |           __init__.py
+|   |   |   |
+|   |   |   +---managers
+|   |   |   |       notification.py
+|   |   |   |       notification_log.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---migrations
+|   |   |   |       0001_initial.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---models
+|   |   |   |       notification.py
+|   |   |   |       notification_log.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---permissions
+|   |   |   |       notification.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---providers
+|   |   |   |       base.py
+|   |   |   |       email.py
+|   |   |   |       push.py
+|   |   |   |       sms.py
+|   |   |   |       whatsapp.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---querysets
+|   |   |   |       notification.py
+|   |   |   |       notification_log.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---selectors
+|   |   |   |       notification.py
+|   |   |   |       notification_log.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---services
+|   |   |   |       notification.py
+|   |   |   |       notification_action.py
+|   |   |   |       notification_log.py
+|   |   |   |       registry.py
+|   |   |   |       template.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---templates
+|   |   |   |   \---email
+|   |   |   |           base.html
+|   |   |   |           login_alert.html
+|   |   |   |           login_alert.txt
+|   |   |   |           login_otp.html
+|   |   |   |           login_otp.txt
+|   |   |   |           password_changed.html
+|   |   |   |           password_changed.txt
+|   |   |   |           password_reset_otp.html
+|   |   |   |           password_reset_otp.txt
+|   |   |   |           verification_otp.html
+|   |   |   |           verification_otp.txt
+|   |   |   |           welcome.html
+|   |   |   |           welcome.txt
+|   |   |   |
+|   |   |   \---tests
+|   |   |           base.py
+|   |   |           factories.py
+|   |   |           test_email.py
+|   |   |           test_notification.py
+|   |   |           test_provider.py
+|   |   |           __init__.py
+|   |   |
+|   |   +---organizations
+|   |   |   |   admin.py
+|   |   |   |   apps.py
+|   |   |   |   urls.py
+|   |   |   |   __init__.py
+|   |   |   |
+|   |   |   +---admin
+|   |   |   |       organization.py
+|   |   |   |       organization_hierarchy.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---api
+|   |   |   |   |   urls.py
+|   |   |   |   |   __init__.py
+|   |   |   |   |
+|   |   |   |   +---organization
+|   |   |   |   |   |   urls.py
+|   |   |   |   |   |
+|   |   |   |   |   +---serializers
+|   |   |   |   |   |       base.py
+|   |   |   |   |   |       create.py
+|   |   |   |   |   |       detail.py
+|   |   |   |   |   |       fields.py
+|   |   |   |   |   |       list.py
+|   |   |   |   |   |       summary.py
+|   |   |   |   |   |       update.py
+|   |   |   |   |   |       __init__.py
+|   |   |   |   |   |
+|   |   |   |   |   \---views
+|   |   |   |   |           list_create.py
+|   |   |   |   |           retrieve_update_destroy.py
+|   |   |   |   |           __init__.py
+|   |   |   |   |
+|   |   |   |   \---organization_hierarchy
+|   |   |   |       |   urls.py
+|   |   |   |       |
+|   |   |   |       +---serializers
+|   |   |   |       |       create.py
+|   |   |   |       |       detail.py
+|   |   |   |       |       fields.py
+|   |   |   |       |       list.py
+|   |   |   |       |       summary.py
+|   |   |   |       |       update.py
+|   |   |   |       |       __init__.py
+|   |   |   |       |
+|   |   |   |       \---views
+|   |   |   |               list_create.py
+|   |   |   |               retrieve_update_destroy.py
+|   |   |   |               __init__.py
+|   |   |   |
+|   |   |   +---constants
+|   |   |   |       organization.py
+|   |   |   |       organization_hierarchy.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---managers
+|   |   |   |       organization.py
+|   |   |   |       organization_hierarchy.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---migrations
+|   |   |   |       0001_initial.py
+|   |   |   |       0002_alter_organization_slug.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---models
+|   |   |   |       organization.py
+|   |   |   |       organization_hierarchy.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---permissions
+|   |   |   |       organization.py
+|   |   |   |       organization_hierarchy.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---querysets
+|   |   |   |       organization.py
+|   |   |   |       organization_hierarchy.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---selectors
+|   |   |   |       organization.py
+|   |   |   |       organization_hierarchy.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---services
+|   |   |   |       organization.py
+|   |   |   |       organization_hierarchy.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---tests
+|   |   |   |   |   __init__.py
+|   |   |   |   |
+|   |   |   |   +---factories
+|   |   |   |   |       organization.py
+|   |   |   |   |       organization_hierarchy.py
+|   |   |   |   |       __init__.py
+|   |   |   |   |
+|   |   |   |   +---organization
+|   |   |   |   |       test_admin.py
+|   |   |   |   |       test_api.py
+|   |   |   |   |       test_managers.py
+|   |   |   |   |       test_models.py
+|   |   |   |   |       test_querysets.py
+|   |   |   |   |       test_selectors.py
+|   |   |   |   |       test_serializers.py
+|   |   |   |   |       test_services.py
+|   |   |   |   |       test_views.py
+|   |   |   |   |       __init__.py
+|   |   |   |   |
+|   |   |   |   \---organization_hierarchy
+|   |   |   |           test_managers.py
+|   |   |   |           test_models.py
+|   |   |   |           test_querysets.py
+|   |   |   |           test_selectors.py
+|   |   |   |           test_serializers.py
+|   |   |   |           test_services.py
+|   |   |   |           test_validators.py
+|   |   |   |           test_views.py
+|   |   |   |           __init__.py
+|   |   |   |
+|   |   |   \---validators
+|   |   |           organization.py
+|   |   |           organization_hierarchy.py
+|   |   |           __init__.py
+|   |   |
+|   |   +---rbac
+|   |   |   |   admin.py
+|   |   |   |   apps.py
+|   |   |   |   urls.py
+|   |   |   |   __init__.py
+|   |   |   |
+|   |   |   +---admin
+|   |   |   |       organization_role.py
+|   |   |   |       permission.py
+|   |   |   |       permission_group.py
+|   |   |   |       role.py
+|   |   |   |       role_permission.py
+|   |   |   |       user_permission.py
+|   |   |   |       user_role.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---api
+|   |   |   |   |   urls.py
+|   |   |   |   |   __init__.py
+|   |   |   |   |
+|   |   |   |   +---filters
+|   |   |   |   |       permission.py
+|   |   |   |   |       role.py
+|   |   |   |   |       role_permission.py
+|   |   |   |   |       user_role.py
+|   |   |   |   |       __init__.py
+|   |   |   |   |
+|   |   |   |   +---organization_role
+|   |   |   |   |   |   urls.py
+|   |   |   |   |   |
+|   |   |   |   |   +---serializers
+|   |   |   |   |   |       organization_role_create.py
+|   |   |   |   |   |       organization_role_detail.py
+|   |   |   |   |   |       organization_role_list.py
+|   |   |   |   |   |       organization_role_update.py
+|   |   |   |   |   |       __init__.py
+|   |   |   |   |   |
+|   |   |   |   |   \---views
+|   |   |   |   |           organization_role_detail.py
+|   |   |   |   |           organization_role_list_create.py
+|   |   |   |   |           __init__.py
+|   |   |   |   |
+|   |   |   |   +---permission
+|   |   |   |   |   |   urls.py
+|   |   |   |   |   |
+|   |   |   |   |   +---serializers
+|   |   |   |   |   |       base.py
+|   |   |   |   |   |       create.py
+|   |   |   |   |   |       detail.py
+|   |   |   |   |   |       list.py
+|   |   |   |   |   |       update.py
+|   |   |   |   |   |       __init__.py
+|   |   |   |   |   |
+|   |   |   |   |   \---views
+|   |   |   |   |           permission_list_create.py
+|   |   |   |   |           permission_retrieve_update_destroy.py
+|   |   |   |   |           __init__.py
+|   |   |   |   |
+|   |   |   |   +---permission_group
+|   |   |   |   |   |   urls.py
+|   |   |   |   |   |
+|   |   |   |   |   +---serializers
+|   |   |   |   |   |       base.py
+|   |   |   |   |   |       create.py
+|   |   |   |   |   |       detail.py
+|   |   |   |   |   |       list.py
+|   |   |   |   |   |       update.py
+|   |   |   |   |   |       __init__.py
+|   |   |   |   |   |
+|   |   |   |   |   \---views
+|   |   |   |   |           permission_group_list_create.py
+|   |   |   |   |           permission_group_retrieve_update_destroy.py
+|   |   |   |   |           __init__.py
+|   |   |   |   |
+|   |   |   |   +---role
+|   |   |   |   |   |   urls.py
+|   |   |   |   |   |
+|   |   |   |   |   +---serializers
+|   |   |   |   |   |       role_create.py
+|   |   |   |   |   |       role_detail.py
+|   |   |   |   |   |       role_list.py
+|   |   |   |   |   |       role_update.py
+|   |   |   |   |   |       __init__.py
+|   |   |   |   |   |
+|   |   |   |   |   \---views
+|   |   |   |   |           role_list_create.py
+|   |   |   |   |           role_retrieve_update_destroy.py
+|   |   |   |   |           __init__.py
+|   |   |   |   |
+|   |   |   |   +---role_hierarchy
+|   |   |   |   |   |   urls.py
+|   |   |   |   |   |
+|   |   |   |   |   +---serializers
+|   |   |   |   |   |       role_hierarchy_create.py
+|   |   |   |   |   |       role_hierarchy_detail.py
+|   |   |   |   |   |       role_hierarchy_list.py
+|   |   |   |   |   |       role_hierarchy_update.py
+|   |   |   |   |   |       __init__.py
+|   |   |   |   |   |
+|   |   |   |   |   \---views
+|   |   |   |   |           role_hierarchy_detail.py
+|   |   |   |   |           role_hierarchy_list_create.py
+|   |   |   |   |           __init__.py
+|   |   |   |   |
+|   |   |   |   +---role_permission
+|   |   |   |   |   |   urls.py
+|   |   |   |   |   |   __init__.py
+|   |   |   |   |   |
+|   |   |   |   |   +---serializers
+|   |   |   |   |   |       role_permission_create.py
+|   |   |   |   |   |       role_permission_detail.py
+|   |   |   |   |   |       role_permission_list.py
+|   |   |   |   |   |       role_permission_update.py
+|   |   |   |   |   |       __init__.py
+|   |   |   |   |   |
+|   |   |   |   |   \---views
+|   |   |   |   |           role_permission_list_create.py
+|   |   |   |   |           role_permission_retrieve_update_destroy.py
+|   |   |   |   |           __init__.py
+|   |   |   |   |
+|   |   |   |   \---user_role
+|   |   |   |       |   urls.py
+|   |   |   |       |
+|   |   |   |       +---serializers
+|   |   |   |       |       user_role_create.py
+|   |   |   |       |       user_role_detail.py
+|   |   |   |       |       user_role_list.py
+|   |   |   |       |       user_role_update.py
+|   |   |   |       |       __init__.py
+|   |   |   |       |
+|   |   |   |       \---views
+|   |   |   |               user_role_list_create.py
+|   |   |   |               user_role_retrieve_update_destroy.py
+|   |   |   |               __init__.py
+|   |   |   |
+|   |   |   +---builders
+|   |   |   |       organization_role.py
+|   |   |   |       permission.py
+|   |   |   |       permission_group.py
+|   |   |   |       role.py
+|   |   |   |       role_hierarchy.py
+|   |   |   |       role_permission.py
+|   |   |   |       user_role.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---constants
+|   |   |   |       organization_role.py
+|   |   |   |       permission.py
+|   |   |   |       permission_group.py
+|   |   |   |       role.py
+|   |   |   |       role_hierarchy.py
+|   |   |   |       role_permission.py
+|   |   |   |       user_role.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---engines
+|   |   |   |       permission.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---management
+|   |   |   |   |   base.py
+|   |   |   |   |   __init__.py
+|   |   |   |   |
+|   |   |   |   \---commands
+|   |   |   |           seed_permissions.py
+|   |   |   |           seed_permission_groups.py
+|   |   |   |           seed_rbac.py
+|   |   |   |           seed_roles.py
+|   |   |   |           seed_role_hierarchy.py
+|   |   |   |           seed_role_permissions.py
+|   |   |   |           __init__.py
+|   |   |   |
+|   |   |   +---managers
+|   |   |   |       organization_role.py
+|   |   |   |       permission.py
+|   |   |   |       permission_group.py
+|   |   |   |       role.py
+|   |   |   |       role_hierarchy.py
+|   |   |   |       role_permission.py
+|   |   |   |       user_permission.py
+|   |   |   |       user_role.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---migrations
+|   |   |   |       0001_initial.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---models
+|   |   |   |       organization_role.py
+|   |   |   |       permission.py
+|   |   |   |       permission_group.py
+|   |   |   |       role.py
+|   |   |   |       role_hierarchy.py
+|   |   |   |       role_permission.py
+|   |   |   |       user_role.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---permissions
+|   |   |   |       assignment.py
+|   |   |   |       base.py
+|   |   |   |       organization_role.py
+|   |   |   |       permission.py
+|   |   |   |       permission_group.py
+|   |   |   |       role.py
+|   |   |   |       role_hierarchy.py
+|   |   |   |       role_permission.py
+|   |   |   |       user_role.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---querysets
+|   |   |   |       organization_role.py
+|   |   |   |       permission.py
+|   |   |   |       permission_group.py
+|   |   |   |       role.py
+|   |   |   |       role_hierarchy.py
+|   |   |   |       role_permission.py
+|   |   |   |       user_role.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---registries
+|   |   |   |       permission.py
+|   |   |   |       permission_group.py
+|   |   |   |       roles.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---resolvers
+|   |   |   |       hierarchy.py
+|   |   |   |       organization.py
+|   |   |   |       permission.py
+|   |   |   |       role.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---seed_data
+|   |   |   |       permissions.py
+|   |   |   |       permission_groups.py
+|   |   |   |       roles.py
+|   |   |   |       role_hierarchy.py
+|   |   |   |       role_permissions.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---selectors
+|   |   |   |       organization_role.py
+|   |   |   |       permission.py
+|   |   |   |       permission_group.py
+|   |   |   |       role.py
+|   |   |   |       role_hierarchy.py
+|   |   |   |       role_permission.py
+|   |   |   |       user_role.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---services
+|   |   |   |       organization_role.py
+|   |   |   |       permission.py
+|   |   |   |       permission_group.py
+|   |   |   |       role.py
+|   |   |   |       role_hierarchy.py
+|   |   |   |       role_permission.py
+|   |   |   |       user_role.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---tests
+|   |   |   |   |   factories.py
+|   |   |   |   |   __init__.py
+|   |   |   |   |
+|   |   |   |   +---engine
+|   |   |   |   |       test_permission.py
+|   |   |   |   |       __init__.py
+|   |   |   |   |
+|   |   |   |   +---factories
+|   |   |   |   |       organization_role.py
+|   |   |   |   |       permission.py
+|   |   |   |   |       permission_group.py
+|   |   |   |   |       role.py
+|   |   |   |   |       role_hierarchy.py
+|   |   |   |   |       role_permission.py
+|   |   |   |   |       user_role.py
+|   |   |   |   |       __init__.py
+|   |   |   |   |
+|   |   |   |   +---permission
+|   |   |   |   |       test_api.py
+|   |   |   |   |       test_managers.py
+|   |   |   |   |       test_models.py
+|   |   |   |   |       test_querysets.py
+|   |   |   |   |       test_selectors.py
+|   |   |   |   |       test_services.py
+|   |   |   |   |       test_validators.py
+|   |   |   |   |       __init__.py
+|   |   |   |   |
+|   |   |   |   +---permission_group
+|   |   |   |   |       test_api.py
+|   |   |   |   |       test_managers.py
+|   |   |   |   |       test_models.py
+|   |   |   |   |       test_querysets.py
+|   |   |   |   |       test_selectors.py
+|   |   |   |   |       test_services.py
+|   |   |   |   |       test_validators.py
+|   |   |   |   |       __init__.py
+|   |   |   |   |
+|   |   |   |   +---role
+|   |   |   |   |       test_api.py
+|   |   |   |   |       test_managers.py
+|   |   |   |   |       test_models.py
+|   |   |   |   |       test_querysets.py
+|   |   |   |   |       test_selectors.py
+|   |   |   |   |       test_services.py
+|   |   |   |   |       test_validators.py
+|   |   |   |   |       __init__.py
+|   |   |   |   |
+|   |   |   |   +---role_hierarchy
+|   |   |   |   |       test_api.py
+|   |   |   |   |       test_managers.py
+|   |   |   |   |       test_models.py
+|   |   |   |   |       test_querysets.py
+|   |   |   |   |       test_selectors.py
+|   |   |   |   |       test_services.py
+|   |   |   |   |       test_validators.py
+|   |   |   |   |       __init__.py
+|   |   |   |   |
+|   |   |   |   +---role_permission
+|   |   |   |   |       test_api.py
+|   |   |   |   |       test_managers.py
+|   |   |   |   |       test_models.py
+|   |   |   |   |       test_querysets.py
+|   |   |   |   |       test_selectors.py
+|   |   |   |   |       test_services.py
+|   |   |   |   |       test_validators.py
+|   |   |   |   |       __init__.py
+|   |   |   |   |
+|   |   |   |   \---user_role
+|   |   |   |           test_api.py
+|   |   |   |           test_managers.py
+|   |   |   |           test_models.py
+|   |   |   |           test_querysets.py
+|   |   |   |           test_selectors.py
+|   |   |   |           test_services.py
+|   |   |   |           test_validators.py
+|   |   |   |
+|   |   |   \---validators
+|   |   |           organization_role.py
+|   |   |           permission.py
+|   |   |           permission_group.py
+|   |   |           role.py
+|   |   |           role_hierarchy.py
+|   |   |           role_permission.py
+|   |   |           user_role.py
+|   |   |           __init__.py
+|   |   |
+|   |   \---subscriptions
+|   |       |   admin.py
+|   |       |   apps.py
+|   |       |   models.py
+|   |       |   tests.py
+|   |       |   views.py
+|   |       |   __init__.py
+|   |       |
+|   |       \---migrations
+|   |               __init__.py
+|   |
+|   +---revenue_cycle
+|   |   |   apps.py
+|   |   |   components.py
+|   |   |   urls.py
+|   |   |
+|   |   +---analytics
+|   |   |   |   urls.py
+|   |   |   |
+|   |   |   +---api
+|   |   |   |   |   __init__.py
+|   |   |   |   |
+|   |   |   |   +---serializers
+|   |   |   |   |       analytics.py
+|   |   |   |   |       __init__.py
+|   |   |   |   |
+|   |   |   |   \---views
+|   |   |   |           analytics.py
+|   |   |   |           __init__.py
+|   |   |   |
+|   |   |   +---migrations
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---models
+|   |   |   |       analytics.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---permissions
+|   |   |   |       analytics.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---selectors
+|   |   |   |       analytics.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   \---services
+|   |   |           analytics.py
+|   |   |           __init__.py
+|   |   |
+|   |   +---appeals
+|   |   |   |   urls.py
+|   |   |   |
+|   |   |   +---api
+|   |   |   |   |   __init__.py
+|   |   |   |   |
+|   |   |   |   +---serializers
+|   |   |   |   |       appeals.py
+|   |   |   |   |       __init__.py
+|   |   |   |   |
+|   |   |   |   \---views
+|   |   |   |           appeals.py
+|   |   |   |           __init__.py
+|   |   |   |
+|   |   |   +---migrations
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---models
+|   |   |   |       appeals.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---permissions
+|   |   |   |       appeals.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---selectors
+|   |   |   |       appeals.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   \---services
+|   |   |           appeals.py
+|   |   |           __init__.py
+|   |   |
+|   |   +---ar
+|   |   |   |   urls.py
+|   |   |   |
+|   |   |   +---api
+|   |   |   |   |   __init__.py
+|   |   |   |   |
+|   |   |   |   +---serializers
+|   |   |   |   |       ar.py
+|   |   |   |   |       __init__.py
+|   |   |   |   |
+|   |   |   |   \---views
+|   |   |   |           ar.py
+|   |   |   |           __init__.py
+|   |   |   |
+|   |   |   +---migrations
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---models
+|   |   |   |       ar.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---permissions
+|   |   |   |       ar.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---selectors
+|   |   |   |       ar.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   \---services
+|   |   |           ar.py
+|   |   |           __init__.py
+|   |   |
+|   |   +---billing
+|   |   |   |   urls.py
+|   |   |   |
+|   |   |   +---api
+|   |   |   |   |   __init__.py
+|   |   |   |   |
+|   |   |   |   +---serializers
+|   |   |   |   |       billing.py
+|   |   |   |   |       __init__.py
+|   |   |   |   |
+|   |   |   |   \---views
+|   |   |   |           billing.py
+|   |   |   |           __init__.py
+|   |   |   |
+|   |   |   +---migrations
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---models
+|   |   |   |       billing.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---permissions
+|   |   |   |       billing.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---selectors
+|   |   |   |       billing.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   \---services
+|   |   |           billing.py
+|   |   |           __init__.py
+|   |   |
+|   |   +---charge_capture
+|   |   |   |   urls.py
+|   |   |   |
+|   |   |   +---api
+|   |   |   |   |   __init__.py
+|   |   |   |   |
+|   |   |   |   +---serializers
+|   |   |   |   |       charge_capture.py
+|   |   |   |   |       __init__.py
+|   |   |   |   |
+|   |   |   |   \---views
+|   |   |   |           charge_capture.py
+|   |   |   |           __init__.py
+|   |   |   |
+|   |   |   +---migrations
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---models
+|   |   |   |       charge_capture.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---permissions
+|   |   |   |       charge_capture.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---selectors
+|   |   |   |       charge_capture.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   \---services
+|   |   |           charge_capture.py
+|   |   |           __init__.py
+|   |   |
+|   |   +---claim_scrubbing
+|   |   |   |   urls.py
+|   |   |   |
+|   |   |   +---api
+|   |   |   |   |   __init__.py
+|   |   |   |   |
+|   |   |   |   +---serializers
+|   |   |   |   |       claim_scrubbing.py
+|   |   |   |   |       __init__.py
+|   |   |   |   |
+|   |   |   |   \---views
+|   |   |   |           claim_scrubbing.py
+|   |   |   |           __init__.py
+|   |   |   |
+|   |   |   +---migrations
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---models
+|   |   |   |       claim_scrubbing.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---permissions
+|   |   |   |       claim_scrubbing.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---selectors
+|   |   |   |       claim_scrubbing.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   \---services
+|   |   |           claim_scrubbing.py
+|   |   |           __init__.py
+|   |   |
+|   |   +---claim_submission
+|   |   |   |   urls.py
+|   |   |   |
+|   |   |   +---api
+|   |   |   |   |   __init__.py
+|   |   |   |   |
+|   |   |   |   +---serializers
+|   |   |   |   |       claim_submission.py
+|   |   |   |   |       __init__.py
+|   |   |   |   |
+|   |   |   |   \---views
+|   |   |   |           claim_submission.py
+|   |   |   |           __init__.py
+|   |   |   |
+|   |   |   +---migrations
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---models
+|   |   |   |       claim_submission.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---permissions
+|   |   |   |       claim_submission.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---selectors
+|   |   |   |       claim_submission.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   \---services
+|   |   |           claim_submission.py
+|   |   |           __init__.py
+|   |   |
+|   |   +---coding
+|   |   |   |   urls.py
+|   |   |   |
+|   |   |   +---api
+|   |   |   |   |   __init__.py
+|   |   |   |   |
+|   |   |   |   +---serializers
+|   |   |   |   |       coding.py
+|   |   |   |   |       __init__.py
+|   |   |   |   |
+|   |   |   |   \---views
+|   |   |   |           coding.py
+|   |   |   |           __init__.py
+|   |   |   |
+|   |   |   +---migrations
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---models
+|   |   |   |       coding.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---permissions
+|   |   |   |       coding.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---selectors
+|   |   |   |       coding.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   \---services
+|   |   |           coding.py
+|   |   |           __init__.py
+|   |   |
+|   |   +---constants
+|   |   |       __init__.py
+|   |   |
+|   |   +---denials
+|   |   |   |   urls.py
+|   |   |   |
+|   |   |   +---api
+|   |   |   |   |   __init__.py
+|   |   |   |   |
+|   |   |   |   +---serializers
+|   |   |   |   |       denials.py
+|   |   |   |   |       __init__.py
+|   |   |   |   |
+|   |   |   |   \---views
+|   |   |   |           denials.py
+|   |   |   |           __init__.py
+|   |   |   |
+|   |   |   +---migrations
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---models
+|   |   |   |       denials.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---permissions
+|   |   |   |       denials.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---selectors
+|   |   |   |       denials.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   \---services
+|   |   |           denials.py
+|   |   |           __init__.py
+|   |   |
+|   |   +---eligibility
+|   |   |   |   urls.py
+|   |   |   |
+|   |   |   +---api
+|   |   |   |   |   __init__.py
+|   |   |   |   |
+|   |   |   |   +---serializers
+|   |   |   |   |       eligibility.py
+|   |   |   |   |       __init__.py
+|   |   |   |   |
+|   |   |   |   \---views
+|   |   |   |           eligibility.py
+|   |   |   |           __init__.py
+|   |   |   |
+|   |   |   +---migrations
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---models
+|   |   |   |       eligibility.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---permissions
+|   |   |   |       eligibility.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---selectors
+|   |   |   |       eligibility.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   \---services
+|   |   |           eligibility.py
+|   |   |           __init__.py
+|   |   |
+|   |   +---era
+|   |   |   |   urls.py
+|   |   |   |
+|   |   |   +---api
+|   |   |   |   |   __init__.py
+|   |   |   |   |
+|   |   |   |   +---serializers
+|   |   |   |   |       era.py
+|   |   |   |   |       __init__.py
+|   |   |   |   |
+|   |   |   |   \---views
+|   |   |   |           era.py
+|   |   |   |           __init__.py
+|   |   |   |
+|   |   |   +---migrations
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---models
+|   |   |   |       era.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---permissions
+|   |   |   |       era.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---selectors
+|   |   |   |       era.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   \---services
+|   |   |           era.py
+|   |   |           __init__.py
+|   |   |
+|   |   +---insurance_verification
+|   |   |   |   urls.py
+|   |   |   |
+|   |   |   +---api
+|   |   |   |   |   __init__.py
+|   |   |   |   |
+|   |   |   |   +---serializers
+|   |   |   |   |       insurance_verification.py
+|   |   |   |   |       __init__.py
+|   |   |   |   |
+|   |   |   |   \---views
+|   |   |   |           insurance_verification.py
+|   |   |   |           __init__.py
+|   |   |   |
+|   |   |   +---migrations
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---models
+|   |   |   |       insurance_verification.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---permissions
+|   |   |   |       insurance_verification.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---selectors
+|   |   |   |       insurance_verification.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   \---services
+|   |   |           insurance_verification.py
+|   |   |           __init__.py
+|   |   |
+|   |   +---migrations
+|   |   |       0001_initial.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---payment_posting
+|   |   |   |   urls.py
+|   |   |   |
+|   |   |   +---api
+|   |   |   |   |   __init__.py
+|   |   |   |   |
+|   |   |   |   +---serializers
+|   |   |   |   |       payment_posting.py
+|   |   |   |   |       __init__.py
+|   |   |   |   |
+|   |   |   |   \---views
+|   |   |   |           payment_posting.py
+|   |   |   |           __init__.py
+|   |   |   |
+|   |   |   +---migrations
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---models
+|   |   |   |       payment_posting.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---permissions
+|   |   |   |       payment_posting.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   +---selectors
+|   |   |   |       payment_posting.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   \---services
+|   |   |           payment_posting.py
+|   |   |           __init__.py
+|   |   |
+|   |   \---prior_authorization
+|   |       |   urls.py
+|   |       |
+|   |       +---api
+|   |       |   |   __init__.py
+|   |       |   |
+|   |       |   +---serializers
+|   |       |   |       prior_authorization.py
+|   |       |   |       __init__.py
+|   |       |   |
+|   |       |   \---views
+|   |       |           prior_authorization.py
+|   |       |           __init__.py
+|   |       |
+|   |       +---migrations
+|   |       |       __init__.py
+|   |       |
+|   |       +---models
+|   |       |       prior_authorization.py
+|   |       |       __init__.py
+|   |       |
+|   |       +---permissions
+|   |       |       prior_authorization.py
+|   |       |       __init__.py
+|   |       |
+|   |       +---selectors
+|   |       |       prior_authorization.py
+|   |       |       __init__.py
+|   |       |
+|   |       \---services
+|   |               prior_authorization.py
+|   |               __init__.py
+|   |
+|   +---storage
+|   |   |   admin.py
+|   |   |   apps.py
+|   |   |   constants.py
+|   |   |   urls.py
+|   |   |   __init__.py
+|   |   |
+|   |   +---api
+|   |   |   |   urls.py
+|   |   |   |   __init__.py
+|   |   |   |
+|   |   |   +---serializers
+|   |   |   |       base.py
+|   |   |   |       create.py
+|   |   |   |       detail.py
+|   |   |   |       list.py
+|   |   |   |       update.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   \---views
+|   |   |           list_create.py
+|   |   |           retrieve_update_destroy.py
+|   |   |           __init__.py
+|   |   |
+|   |   +---migrations
+|   |   |       0001_initial.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---models
+|   |   |       asset.py
+|   |   |       folder.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---permissions
+|   |   |       storage.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---providers
+|   |   |       azure.py
+|   |   |       base.py
+|   |   |       gcs.py
+|   |   |       local.py
+|   |   |       s3.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---selectors
+|   |   |       asset.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---services
+|   |   |       asset.py
+|   |   |       delete.py
+|   |   |       download.py
+|   |   |       upload.py
+|   |   |       __init__.py
+|   |   |
+|   |   \---tests
+|   |           test_api.py
+|   |           test_models.py
+|   |           test_selectors.py
+|   |           test_services.py
+|   |           __init__.py
+|   |
+|   +---telemedicine
+|   |   |   admin.py
+|   |   |   apps.py
+|   |   |   __init__.py
+|   |   |
+|   |   +---api
+|   |   |   |   urls.py
+|   |   |   |   __init__.py
+|   |   |   |
+|   |   |   +---serializers
+|   |   |   |       session.py
+|   |   |   |       __init__.py
+|   |   |   |
+|   |   |   \---views
+|   |   |           bulk.py
+|   |   |           list_create.py
+|   |   |           retrieve_update_destroy.py
+|   |   |           __init__.py
+|   |   |
+|   |   +---constants
+|   |   |       telemedicine.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---migrations
+|   |   |       0001_initial.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---models
+|   |   |       participant.py
+|   |   |       recording.py
+|   |   |       session.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---permissions
+|   |   |       telemedicine.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---selectors
+|   |   |       recording.py
+|   |   |       session.py
+|   |   |       __init__.py
+|   |   |
+|   |   +---services
+|   |   |       recording.py
+|   |   |       session.py
+|   |   |       __init__.py
+|   |   |
+|   |   \---tests
+|   |           factories.py
+|   |           test_models.py
+|   |           test_selectors.py
+|   |           test_services.py
+|   |           __init__.py
+|   |
+|   \---transcription
+|       |   apps.py
+|       |   tasks.py
+|       |   __init__.py
+|       |
+|       +---constants
+|       |       __init__.py
+|       |
+|       +---migrations
+|       |       0001_initial.py
+|       |       __init__.py
+|       |
+|       +---models
+|       |       __init__.py
+|       |
+|       +---services
+|       |       __init__.py
+|       |
+|       \---tests
+|               __init__.py
+|
++---config
+|       asgi.py
+|       celery.py
+|       logging.py
+|       settings.py
+|       urls.py
+|       wsgi.py
+|       __init__.py
+|
++---docs
+|   |   README.md
+|   |
+|   +---adr
+|   |       ADR-001-Service-Selector.md
+|   |       ADR-002-Request-Correlation.md
+|   |       ADR-003-Audit-Framework.md
+|   |
+|   +---api
+|   |       authentication.md
+|   |       error-handling.md
+|   |       response-format.md
+|   |
+|   +---architecture
+|   |       domain-model.md
+|   |       overview.md
+|   |       project-structure.md
+|   |
+|   +---deployment
+|   |       local-development.md
+|   |       production.md
+|   |
+|   \---development
+|           code-review-checklist.md
+|           coding-standards.md
+|           git-workflow.md
+|           testing.md
+|
++---kernel
+|       lifecycle.py
+|       manager.py
+|       state.py
+|       status.py
+|       __init__.py
+|
++---logs
+|       .gitkeep
+|       application.log
+|       audit.log
+|       error.log
+|
++---media
+|   +---03bec3a9-e896-4609-8292-05418c26b52b
+|   |       805150744bea43c5b2040271c6d04226.pdf
+|   |
+|   +---09c0149c-7e6a-42bd-bf44-a3f5afc620c6
+|   |       62220be5ef2c42c3ae1f9e686d79d805.pdf
+|   |
+|   +---09c39d0a-0af9-4e95-a9e7-1c3f6edb048f
+|   |       08743440004f4934be24daa49cdd8342.pdf
+|   |
+|   +---0c484959-e7af-493e-ace6-5fd36b485df1
+|   |       f8b66ec878f84603a7ce61ed2f1455f7.pdf
+|   |
+|   +---108b8e00-8383-49d7-a5cd-667b34080438
+|   |       4732157dc8914106967582f06b301895.pdf
+|   |
+|   +---139f0d87-a236-41bf-b63b-16ba2b05b935
+|   |       4dc5749aac554b55a79d9ac747e4fa3e.pdf
+|   |
+|   +---1836ba88-b97d-4a93-bfce-b65cdda13a3e
+|   |       7506e04c94154231981dc56c1cd9fcee.pdf
+|   |
+|   +---1cb9d284-4004-4716-ad37-92c892411686
+|   |       490ac54c00db4649b60c24c0d5ca288e.pdf
+|   |
+|   +---208646a6-a6bc-438d-a791-ebb350c1b0cc
+|   |       d6a1ee26350f45e4bb3abc9a94727d2e.pdf
+|   |
+|   +---226dfdcc-e7e2-4198-bdf6-9f978370df21
+|   |       d0fcf8c2ed1a41299d0ea1cd0d50cc8a.pdf
+|   |
+|   +---2c0990e8-5214-4e8e-9f9f-8543887f241e
+|   |       2c5384e9405740e3a53cd259b1efc725.pdf
+|   |
+|   +---31d3c2fd-501c-4cd1-9afb-7bd5c2227f8e
+|   |       88dcac549e114c36885a90dbbe9195d8.pdf
+|   |
+|   +---3e5c71c2-bb9a-4485-a90c-35bfdf05a949
+|   |       619be4ee5ec94fabafa3573ecbe69bb8.pdf
+|   |
+|   +---3eec4953-5922-4db3-916d-3792a55107db
+|   |       4c8ee5f8dbdf49a1801775574bff19f3.pdf
+|   |
+|   +---3f5a6465-c184-4c0e-a448-edb649b5d463
+|   |       ccae6f65030f4e27adb1d3d11c7d3f83.pdf
+|   |
+|   +---40c6b552-1efb-4e70-a030-9cd208b1307e
+|   |       28560f6b9dcc44758b2ef8a5d19d671b.pdf
+|   |
+|   +---41361f7a-3f73-401a-89a2-e0511afa3a63
+|   |       73e556593e4b450eb0d4a67153b0f4a3.pdf
+|   |
+|   +---442e5445-aa75-4009-bacd-5683895f5f60
+|   |       3d12926a800b4662a047ce08d6e44c9f.pdf
+|   |
+|   +---44c6a35a-f5cc-40cf-8dfd-85b01c26b89c
+|   |       abe4c60326a545d3a7cdf3d3232d917e.pdf
+|   |
+|   +---466bd885-cfac-4815-be07-2aa9dff5e9ca
+|   |       b8301e8dbd1f4422afb0758b757ac3fd.pdf
+|   |
+|   +---46b8c2c4-64ea-43b3-9f41-662afdece071
+|   |       166db801c4064b84bf5bdfe4b408cfed.pdf
+|   |
+|   +---4cd927a1-f6d0-4347-a905-357d879e12b9
+|   |       0060378898ed4256a5451f7db21a28cb.pdf
+|   |
+|   +---594616a0-5419-4032-8f33-c13514af6fc4
+|   |       5feaa44262ce456b919d5ac36a8116c6.pdf
+|   |
+|   +---59e199b6-63d8-4bee-b0e4-8607342562cd
+|   |       9c8b497476734a0f8b84db83d312fbc2.pdf
+|   |
+|   +---5a72b9e3-c721-444f-acc7-e929b65a4ba9
+|   |       262c8066d3174b80a680e6a31144dd01.pdf
+|   |
+|   +---5e0ea84e-1ada-48a4-9ba8-b6868647a3cd
+|   |       1525d41df6d845a5baf0b4f9dddde9a1.pdf
+|   |
+|   +---62b34608-4d9b-4476-b156-159f8bd358b0
+|   |       265004982bec416b9a6ac622dbc67db8.pdf
+|   |
+|   +---62d20c32-60f5-4656-a0e7-5eb3b55ec7df
+|   |       7db06432dc914f2a920fb18fd497c652.pdf
+|   |
+|   +---63a57770-a576-47ad-a03a-fd8158813996
+|   |       f580316cf14944f78eb49af98592688d.pdf
+|   |
+|   +---641f7e7b-e6bc-480c-bc45-7510662842ed
+|   |       aedb9325be3945f7b5abb0827489b773.pdf
+|   |
+|   +---667b6872-4ac2-4c10-8dca-4ce4d66cf899
+|   |       6d7d084c1978417a83c71a3d7c528f1f.pdf
+|   |
+|   +---6fbbcbad-9c0a-4061-abbc-c0ab52f0b716
+|   |       5ef4dada9897498fbe8548018ab10197.pdf
+|   |
+|   +---749f4a6b-a773-4887-9a6f-424471162c72
+|   |       9306c9e3fd8f4a9f840824cda7712ef3.pdf
+|   |
+|   +---75cd2f9a-3594-4523-b747-d5f9d866cc46
+|   |       d2a58b774f904597bb0bdc5b7e528d3b.pdf
+|   |
+|   +---852ef1fa-7b34-4879-afd8-f694fa2a57c0
+|   |       844ee722b4eb4cd5877553c0fe20ecb1.pdf
+|   |
+|   +---8e2b2e10-3a70-4298-b3e6-da3d30fe907e
+|   |       51ceac4d945d4dcda99c3ab809aaeb29.pdf
+|   |
+|   +---8ead4744-4bc4-468e-bed4-33fc8ab9ced5
+|   |       1e98a3812ed64337b2a96c63246c298b.pdf
+|   |
+|   +---9020131b-82df-4c6a-ad4b-8ae9422fb279
+|   |       09be0fb33b774eb487d02acf5bbfe82b.pdf
+|   |
+|   +---9e89edd7-37a8-47c0-8071-3b6d217f46de
+|   |       74989b59c8984e18ba323daef37328a4.pdf
+|   |
+|   +---a0a74ac3-1010-4472-b693-6bfa088559b1
+|   |       25c1fded0a724e61ad8f607c688c3f07.pdf
+|   |
+|   +---a1e0dc3b-cc7d-4bc4-8fd6-e06d3e5844eb
+|   |       e973bfdb6c5543cfbf21e4a59b167768.pdf
+|   |
+|   +---a6f9dea5-bed6-4b3d-a694-ed44edb3bfd8
+|   |       e229314bb5b540ca964efe6e71794cf5.pdf
+|   |
+|   +---b18dad2b-ff9a-4029-bae2-a7872269db97
+|   |       147c067512e045e3b16ac90d3a8e0767.pdf
+|   |
+|   +---b55eba76-939c-493e-953f-e6bfd358b73d
+|   |       dc385549670f454ba74c2607f125ce14.pdf
+|   |
+|   +---bbe40f97-6ea0-4c7a-9ff9-d676549fde70
+|   |       bc21db6b09524e93a19157186880e06f.pdf
+|   |
+|   +---c8c2e35e-41d4-4af4-88f1-25087a499759
+|   |       73525e8997b1431fadfcdbf174340ea3.pdf
+|   |
+|   +---cd1f19a3-d4aa-4a35-aac2-9b5201e07e03
+|   |       979e3828c7a44fe4a3ad6d625e6df7e4.pdf
+|   |
+|   +---cd540531-2fd6-414f-bfdd-c90b366283d6
+|   |       089f6f164f32493ca67c045cb90d95f0.pdf
+|   |
+|   +---cd6553bc-bebc-4721-99f1-04b237ee1083
+|   |       cfc063d01c4b4e1ca41e1f4f864e29ad.pdf
+|   |
+|   +---d08dc0e9-96ee-4ea7-87f2-fb3371c05c10
+|   |       1c9d0763c5bf4236922cafd97d497f7e.pdf
+|   |
+|   +---d0ee5b87-322c-4055-a2f1-8abdac751504
+|   |       4146f7706c6647bc901cca932a5a2ecf.pdf
+|   |
+|   +---d1bec6d1-6bc5-4a44-bb08-b2ded5db5b72
+|   |       8542180eb11542c889146bb8318ecff9.pdf
+|   |
+|   +---d49dd119-f042-42cd-a6ae-92960c9dc1e9
+|   |       57b0adfb658748cb8d69c2f7c42cebdc.pdf
+|   |
+|   +---d518cac3-dd67-4bf4-a661-03851839ebb0
+|   |       219e114334f64586ab7d77285eed07a7.pdf
+|   |
+|   +---d51e3a6e-3497-473a-8071-6cc5c4ed80bb
+|   |       43bdbf058d1647deb1099c294e4f37dd.pdf
+|   |
+|   +---d7941f18-f440-400b-911a-2003563c6ac7
+|   |       a99d484aeb784237b5ac2ee26043628f.pdf
+|   |
+|   +---d86312ce-b8fb-4a92-8687-1b58bfc6ab06
+|   |       06b8908671ef499bbf44f936335c7dff.pdf
+|   |
+|   +---e190d91e-f245-4da3-b662-92beb0ee969d
+|   |       87512ceedd5d451fbd17c8d5109c51a0.pdf
+|   |
+|   +---e2a85369-49be-4e13-9551-6a87daea319e
+|   |       468ae142749d48e6bde36a4ff031d251.pdf
+|   |
+|   +---e4861cde-23a2-46e1-aef7-9d3f20b1cd7d
+|   |       1f60a711b0cd4ef18dd86ea7d16c2f99.pdf
+|   |
+|   +---fa41f9cf-04a5-4675-a639-0464c6157d58
+|   |       19cd89416aa04394b3affe36c569954f.pdf
+|   |
+|   \---fab31e89-8ce9-4cd4-aba6-58672cf1fab2
+|           9a6c4e724bca4bf3a874b8c756dd59a4.pdf
+|
++---requirements
+|       base.txt
+|       development.txt
+|       lock.txt
+|       production.txt
+|       testing.txt
+|
++---scripts
+|       dev.ps1
+|       lint.ps1
+|       mypy.ps1
+|       quality.ps1
+|       test.ps1
+|
++---static
++---templates
+\---tests
+        test_kernel.py

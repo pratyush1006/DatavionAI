@@ -59,9 +59,15 @@ urlpatterns = [
         ),
     ),
     path(
+        "api/tenancy/",
+        include(
+            "apps.platform.tenancy.api.urls",
+        ),
+    ),
+    path(
         "api/platform/",
         include(
-            "apps.platform_core.api.urls",
+            "apps.datavionos.api.urls",
         ),
     ),
     # ==========================================================================
@@ -106,12 +112,6 @@ urlpatterns = [
             "apps.configuration.urls",
         ),
     ),
-    path(
-        "api/storage/",
-        include(
-            "apps.storage.urls",
-        ),
-    ),
     # ==========================================================================
     # Clinical APIs
     # ==========================================================================
@@ -119,6 +119,12 @@ urlpatterns = [
         "api/patients/",
         include(
             "apps.clinical.patients.urls",
+        ),
+    ),
+    path(
+        "api/patient-management/",
+        include(
+            "apps.patient_management.urls",
         ),
     ),
     path(
@@ -173,6 +179,42 @@ urlpatterns = [
         "api/laboratories/",
         include(
             "apps.clinical.laboratories.urls",
+        ),
+    ),
+    # ==========================================================================
+    # AI Platform APIs
+    # ==========================================================================
+    path(
+        "api/ai/",
+        include(
+            "apps.ai.urls",
+        ),
+    ),
+    path(
+        "api/search/",
+        include(
+            "apps.common.search.api.urls",
+        ),
+    ),
+    # ==========================================================================
+    # Imaging / Billing / Revenue
+    # ==========================================================================
+    path(
+        "api/imaging/",
+        include(
+            "apps.imaging.api.urls",
+        ),
+    ),
+    path(
+        "api/billing/",
+        include(
+            "apps.billing.urls",
+        ),
+    ),
+    path(
+        "api/revenue-cycle/",
+        include(
+            "apps.revenue_cycle.urls",
         ),
     ),
     # ==========================================================================

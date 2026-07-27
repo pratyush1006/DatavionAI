@@ -47,7 +47,7 @@ class ProviderModelTestCase(BaseTestCase):
 
         self.assertEqual(
             str(self.provider),
-            f"{self.employee.full_name} (PRV000001)",
+            self.provider.display_name,
         )
 
     def test_provider_full_name(
@@ -60,6 +60,30 @@ class ProviderModelTestCase(BaseTestCase):
         self.assertEqual(
             self.provider.full_name,
             self.employee.full_name,
+        )
+
+    def test_provider_display_name(
+        self,
+    ) -> None:
+        """
+        display_name should return the employee's full name.
+        """
+
+        self.assertEqual(
+            self.provider.display_name,
+            self.employee.full_name,
+        )
+
+    def test_provider_type(
+        self,
+    ) -> None:
+        """
+        Provider type should be stored correctly.
+        """
+
+        self.assertEqual(
+            self.provider.provider_type,
+            ProviderType.PHYSICIAN,
         )
 
     def test_default_status(

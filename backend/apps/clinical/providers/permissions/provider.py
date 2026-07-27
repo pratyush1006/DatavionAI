@@ -4,7 +4,21 @@ Provider permissions.
 
 from __future__ import annotations
 
-from rest_framework.permissions import BasePermission
+from apps.common.permissions import BasePermission
+
+
+class ProviderPermission:
+    """
+    Provider permission codes.
+    """
+
+    VIEW = "provider.view"
+
+    CREATE = "provider.create"
+
+    UPDATE = "provider.update"
+
+    DELETE = "provider.delete"
 
 
 class CanViewProvider(BasePermission):
@@ -12,16 +26,7 @@ class CanViewProvider(BasePermission):
     Permission to view providers.
     """
 
-    def has_permission(
-        self,
-        request,
-        view,
-    ) -> bool:
-        """
-        Return whether the user can view providers.
-        """
-
-        return request.user.is_authenticated
+    permission_code = ProviderPermission.VIEW
 
 
 class CanCreateProvider(BasePermission):
@@ -29,16 +34,7 @@ class CanCreateProvider(BasePermission):
     Permission to create providers.
     """
 
-    def has_permission(
-        self,
-        request,
-        view,
-    ) -> bool:
-        """
-        Return whether the user can create providers.
-        """
-
-        return request.user.is_authenticated
+    permission_code = ProviderPermission.CREATE
 
 
 class CanUpdateProvider(BasePermission):
@@ -46,16 +42,7 @@ class CanUpdateProvider(BasePermission):
     Permission to update providers.
     """
 
-    def has_permission(
-        self,
-        request,
-        view,
-    ) -> bool:
-        """
-        Return whether the user can update providers.
-        """
-
-        return request.user.is_authenticated
+    permission_code = ProviderPermission.UPDATE
 
 
 class CanDeleteProvider(BasePermission):
@@ -63,21 +50,13 @@ class CanDeleteProvider(BasePermission):
     Permission to delete providers.
     """
 
-    def has_permission(
-        self,
-        request,
-        view,
-    ) -> bool:
-        """
-        Return whether the user can delete providers.
-        """
-
-        return request.user.is_authenticated
+    permission_code = ProviderPermission.DELETE
 
 
 __all__ = [
-    "CanCreateProvider",
-    "CanDeleteProvider",
-    "CanUpdateProvider",
+    "ProviderPermission",
     "CanViewProvider",
+    "CanCreateProvider",
+    "CanUpdateProvider",
+    "CanDeleteProvider",
 ]

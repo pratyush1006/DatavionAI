@@ -10,17 +10,21 @@ from .base import UserBaseSerializer
 from .fields import LIST_FIELDS
 
 
-class UserListSerializer(UserBaseSerializer):
+class UserListSerializer(
+    UserBaseSerializer,
+):
     """
     Serializer for listing users.
     """
 
-    class Meta(UserBaseSerializer.Meta):
+    class Meta(
+        UserBaseSerializer.Meta,
+    ):
         model = User
+
         fields = LIST_FIELDS
+
         read_only_fields = LIST_FIELDS
 
 
-__all__ = [
-    "UserListSerializer",
-]
+__all__ = ("UserListSerializer",)

@@ -1,14 +1,14 @@
 """
-Serializer field definitions for the Organizations application.
+Serializer field definitions for Organization serializers.
 """
 
 from __future__ import annotations
 
 from typing import Final
 
-# ---------------------------------------------------------------------
+# ============================================================
 # Summary
-# ---------------------------------------------------------------------
+# ============================================================
 
 _SUMMARY_FIELDS: Final[tuple[str, ...]] = (
     "id",
@@ -18,9 +18,9 @@ _SUMMARY_FIELDS: Final[tuple[str, ...]] = (
 )
 
 
-# ---------------------------------------------------------------------
+# ============================================================
 # List
-# ---------------------------------------------------------------------
+# ============================================================
 
 _LIST_FIELDS: Final[tuple[str, ...]] = (
     "id",
@@ -31,13 +31,12 @@ _LIST_FIELDS: Final[tuple[str, ...]] = (
     "status",
     "city",
     "country",
-    "is_active",
 )
 
 
-# ---------------------------------------------------------------------
+# ============================================================
 # Detail
-# ---------------------------------------------------------------------
+# ============================================================
 
 _DETAIL_FIELDS: Final[tuple[str, ...]] = (
     "id",
@@ -66,17 +65,15 @@ _DETAIL_FIELDS: Final[tuple[str, ...]] = (
     "verification_status",
     "subscription_status",
     "description",
-    "is_verified",
     "is_demo",
-    "is_active",
     "created_at",
     "updated_at",
 )
 
 
-# ---------------------------------------------------------------------
+# ============================================================
 # Create
-# ---------------------------------------------------------------------
+# ============================================================
 
 _WRITE_FIELDS: Final[tuple[str, ...]] = (
     "name",
@@ -85,7 +82,6 @@ _WRITE_FIELDS: Final[tuple[str, ...]] = (
     "slug",
     "category",
     "organization_type",
-    "status",
     "size",
     "email",
     "support_email",
@@ -103,13 +99,12 @@ _WRITE_FIELDS: Final[tuple[str, ...]] = (
     "accreditation",
     "description",
     "is_demo",
-    "is_active",
 )
 
 
-# ---------------------------------------------------------------------
+# ============================================================
 # Update
-# ---------------------------------------------------------------------
+# ============================================================
 
 _UPDATE_FIELDS: Final[tuple[str, ...]] = (
     "name",
@@ -134,14 +129,13 @@ _UPDATE_FIELDS: Final[tuple[str, ...]] = (
     "accreditation",
     "description",
     "is_demo",
-    "is_active",
 )
 
 
-__all__ = [
-    "_SUMMARY_FIELDS",
-    "_LIST_FIELDS",
+__all__: tuple[str, ...] = (
     "_DETAIL_FIELDS",
-    "_WRITE_FIELDS",
+    "_LIST_FIELDS",
+    "_SUMMARY_FIELDS",
     "_UPDATE_FIELDS",
-]
+    "_WRITE_FIELDS",
+)

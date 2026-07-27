@@ -1,5 +1,7 @@
 """
 Role permission list/create API view.
+
+RBAC role permission management endpoint.
 """
 
 from __future__ import annotations
@@ -15,18 +17,12 @@ from apps.platform.rbac.api.role_permission.serializers import (
     RolePermissionCreateSerializer,
     RolePermissionListSerializer,
 )
-from apps.platform.rbac.models import (
-    RolePermission,
-)
 from apps.platform.rbac.permissions import (
     CanCreateRolePermission,
     CanViewRolePermission,
 )
 from apps.platform.rbac.selectors import (
     get_role_permissions,
-)
-from apps.platform.rbac.services import (
-    create_role_permission,
 )
 
 
@@ -39,39 +35,40 @@ class RolePermissionListCreateAPIView(
     BaseListCreateAPIView,
 ):
     """
-    API view for listing and creating role permissions.
+    List and create role permission assignments.
+
+    Supports:
+
+    - Permission assignment
+    - Permission listing
+    - RBAC authorization
+    - Audit integration through services
     """
-
-    queryset = RolePermission.objects.none()
-
-    # =========================================================================
-    # Services
-    # =========================================================================
-
-    create_service = staticmethod(create_role_permission)
 
     # =========================================================================
     # Queryset
     # =========================================================================
 
+    queryset = get_role_permissions()
+
     def get_queryset(
         self,
     ):
         """
-        Return the role permission queryset.
+        Return optimized queryset.
         """
 
         return get_role_permissions()
 
     # =========================================================================
-    # Serializers
+    # Serializer
     # =========================================================================
 
     def get_serializer_class(
         self,
     ):
         """
-        Return the serializer class.
+        Return serializer based on HTTP method.
         """
 
         if self.request.method == "POST":
@@ -83,23 +80,10 @@ class RolePermissionListCreateAPIView(
     # Permissions
     # =========================================================================
 
-    def get_permissions(
-        self,
-    ):
-        """
-        Return permission instances.
-        """
-
-        if self.request.method == "POST":
-            permission_classes = [
-                CanCreateRolePermission,
-            ]
-        else:
-            permission_classes = [
-                CanViewRolePermission,
-            ]
-
-        return [permission() for permission in permission_classes]
+    permission_classes_map = {
+        "GET": (CanViewRolePermission,),
+        "POST": (CanCreateRolePermission,),
+    }
 
 
 __all__ = [

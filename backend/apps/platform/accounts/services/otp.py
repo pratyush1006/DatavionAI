@@ -1,5 +1,17 @@
 """
 OTP service for the Accounts application.
+
+Responsible only for OTP lifecycle management.
+
+Responsibilities:
+
+- Generate OTPs
+- Securely store OTP hashes
+- Verify OTPs
+- Expire OTPs
+- Prevent OTP reuse
+
+Notification delivery is handled by the notification framework.
 """
 
 from __future__ import annotations
@@ -20,24 +32,23 @@ from apps.platform.accounts.models import (
     User,
 )
 
+from .results import (
+    OTPCreateResult,
+)
+
 
 class OTPService:
     """
-    Service responsible for OTP lifecycle management.
+    OTP lifecycle service.
 
-    Responsibilities:
-
-    - Generate OTPs
-    - Verify OTPs
-    - Retrieve active OTPs
-    - Resend OTPs
-    - Expire OTPs
+    This service has no dependency on email,
+    SMS, push, or notification providers.
     """
 
     @staticmethod
     def generate_code() -> str:
         """
-        Generate a secure six-digit OTP.
+        Generate a secure six digit OTP.
         """
 
         return f"{randbelow(1_000_000):06d}"
@@ -53,12 +64,12 @@ class OTPService:
         channel: OTPChannel = OTPChannel.EMAIL,
         ip_address: str | None = None,
         user_agent: str = "",
-    ) -> OTP:
+    ) -> OTPCreateResult:
         """
         Create a new OTP.
 
-        Any previous active OTP for the same
-        user and purpose is automatically expired.
+        Database stores only the hash.
+        Plain OTP is returned only for delivery.
         """
 
         OTP.objects.filter(
@@ -68,20 +79,35 @@ class OTPService:
         ).update(
             is_used=True,
             used_at=timezone.now(),
+            updated_at=timezone.now(),
         )
 
-        return OTP.objects.create(
+        code = cls.generate_code()
+
+        otp = OTP(
             user=user,
             recipient=recipient,
             channel=channel,
             purpose=purpose,
-            code=cls.generate_code(),
-            expires_at=timezone.now()
-            + timedelta(
-                minutes=OTP_EXPIRY_MINUTES,
+            expires_at=(
+                timezone.now()
+                + timedelta(
+                    minutes=OTP_EXPIRY_MINUTES,
+                )
             ),
             created_ip=ip_address,
             user_agent=user_agent,
+        )
+
+        otp.set_code(
+            code,
+        )
+
+        otp.save()
+
+        return OTPCreateResult(
+            otp=otp,
+            code=code,
         )
 
     @staticmethod
@@ -91,7 +117,7 @@ class OTPService:
         purpose: OTPPurpose,
     ) -> OTP | None:
         """
-        Return the latest active OTP.
+        Return latest active OTP.
         """
 
         return (
@@ -114,27 +140,12 @@ class OTPService:
         code: str,
     ) -> bool:
         """
-        Verify an OTP instance.
+        Verify OTP.
         """
 
-        if not otp.can_attempt():
-            return False
-
-        if otp.code != code:
-            otp.increment_attempts()
-
-            otp.save(
-                update_fields=[
-                    "attempts",
-                    "updated_at",
-                ],
-            )
-
-            return False
-
-        otp.mark_used()
-
-        return True
+        return otp.verify(
+            code,
+        )
 
     @classmethod
     @transaction.atomic
@@ -146,9 +157,7 @@ class OTPService:
         code: str,
     ) -> bool:
         """
-        Verify an OTP using user, purpose and code.
-
-        This is the preferred API for business services.
+        Verify OTP for a user.
         """
 
         otp = cls.get_active_otp(
@@ -171,7 +180,7 @@ class OTPService:
         otp: OTP,
     ) -> None:
         """
-        Expire an OTP immediately.
+        Expire OTP.
         """
 
         if otp.is_used:
@@ -194,9 +203,9 @@ class OTPService:
         cls,
         *,
         otp: OTP,
-    ) -> OTP:
+    ) -> OTPCreateResult:
         """
-        Generate a replacement OTP.
+        Create replacement OTP.
         """
 
         cls.expire(

@@ -9,13 +9,28 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
+from apps.platform.organizations.tests.factories import (
+    OrganizationFactory,
+)
 from apps.platform.rbac.constants import (
     PermissionAction,
     PermissionModule,
     PermissionScope,
 )
+from apps.platform.rbac.engines import (
+    user_has_permission,
+)
+from apps.platform.rbac.models import (
+    Role,
+)
+from apps.platform.rbac.tests.factories.organization_role import (
+    OrganizationRoleFactory,
+)
 from apps.platform.rbac.tests.factories.permission import (
     create_permission,
+)
+from apps.platform.rbac.tests.factories.role_permission import (
+    RolePermissionFactory,
 )
 
 User = get_user_model()
@@ -32,21 +47,101 @@ class PermissionAPITestCase(
         self,
     ) -> None:
         """
-        Test setup.
+        Setup RBAC authenticated user.
         """
 
-        self.user = User.objects.create_superuser(
+        self.user = User.objects.create_user(
             email="admin@datavion.ai",
             password="Password@123",
         )
 
+        self.organization = OrganizationFactory()
+
+        self.role = Role.objects.create(
+            name="Organization Owner",
+            code="organization_owner",
+            is_system=True,
+            is_active=True,
+            is_assignable=True,
+            is_editable=False,
+            is_deletable=False,
+        )
+
+        OrganizationRoleFactory(
+            organization=self.organization,
+            user=self.user,
+            role=self.role,
+            is_primary=True,
+        )
+
+        #
+        # Grant full permission lifecycle
+        #
+        # Required by:
+        #
+        # CanViewPermission
+        # CanCreatePermission
+        # CanUpdatePermission
+        # CanDeletePermission
+        #
+        for action in (
+            PermissionAction.VIEW,
+            PermissionAction.CREATE,
+            PermissionAction.UPDATE,
+            PermissionAction.DELETE,
+        ):
+            permission = create_permission(
+                module=PermissionModule.RBAC,
+                action=action,
+                scope=PermissionScope.ORGANIZATION,
+            )
+
+            RolePermissionFactory(
+                role=self.role,
+                permission=permission,
+            )
+
+        #
+        # Verify RBAC setup
+        #
+        assert (
+            user_has_permission(
+                user=self.user,
+                permission="rbac.create",
+                organization=self.organization,
+            )
+            is True
+        )
+
+        assert (
+            user_has_permission(
+                user=self.user,
+                permission="rbac.delete",
+                organization=self.organization,
+            )
+            is True
+        )
+
         self.client.force_authenticate(
-            self.user,
+            user=self.user,
         )
 
         self.list_url = reverse(
             "rbac-api:permissions:permission-list",
         )
+
+    def get_organization_headers(
+        self,
+    ) -> dict:
+        """
+        Return organization context headers.
+        """
+
+        return {
+            "HTTP_X_ORGANIZATION_ID": str(
+                self.organization.id,
+            ),
+        }
 
     def test_list_permissions(
         self,
@@ -59,6 +154,7 @@ class PermissionAPITestCase(
 
         response = self.client.get(
             self.list_url,
+            **self.get_organization_headers(),
         )
 
         self.assertEqual(
@@ -81,9 +177,8 @@ class PermissionAPITestCase(
                 "scope": PermissionScope.ORGANIZATION,
             },
             format="json",
+            **self.get_organization_headers(),
         )
-        print(response.status_code)
-        print(response.data)
 
         self.assertEqual(
             response.status_code,
@@ -108,6 +203,7 @@ class PermissionAPITestCase(
 
         response = self.client.get(
             url,
+            **self.get_organization_headers(),
         )
 
         self.assertEqual(
@@ -137,6 +233,7 @@ class PermissionAPITestCase(
                 "action": PermissionAction.UPDATE,
             },
             format="json",
+            **self.get_organization_headers(),
         )
 
         self.assertEqual(
@@ -162,6 +259,7 @@ class PermissionAPITestCase(
 
         response = self.client.delete(
             url,
+            **self.get_organization_headers(),
         )
 
         self.assertEqual(

@@ -1,5 +1,8 @@
 """
-Base model classes shared across the Datavion AI platform.
+Base model classes shared across the DatavionOS platform.
+
+Provides the standard persistence foundation used by all
+business entities.
 """
 
 from __future__ import annotations
@@ -13,18 +16,36 @@ from .uuid import UUIDModel
 class BaseModel(
     UUIDModel,
     TimeStampedModel,
-    ActiveModel,
     SoftDeleteModel,
+    ActiveModel,
 ):
     """
-    Base abstract model for business entities.
+    Enterprise persistence base model.
 
-    Combines:
+    Provides:
 
-    - UUID primary key
-    - Automatic timestamps
-    - Active/inactive state
-    - Soft delete support
+        - UUID identity
+        - Creation timestamp
+        - Update timestamp
+        - Soft deletion
+        - Active/inactive lifecycle
+
+    Design principles:
+
+        - Keep framework concerns isolated
+        - Avoid domain-specific fields
+        - Support multi-tenant SaaS architecture
+        - Preserve healthcare auditability
+
+    Domain-specific capabilities should be added using
+    dedicated abstract models.
+
+    Examples:
+
+        TenantAwareModel
+        AuditableModel
+        VersionedModel
+        SearchableModel
     """
 
     class Meta:
@@ -35,6 +56,4 @@ class BaseModel(
         abstract = True
 
 
-__all__ = [
-    "BaseModel",
-]
+__all__: tuple[str, ...] = ("BaseModel",)

@@ -1,22 +1,53 @@
 """
 Authentication serializers.
+
+Handles:
+
+- Registration
+- Password login
+- Login OTP verification
+- JWT refresh
+- Logout
 """
 
 from __future__ import annotations
 
-from typing import Any
+from typing import (
+    TYPE_CHECKING,
+    Any,
+)
 
-from django.contrib.auth.password_validation import validate_password
+from django.contrib.auth.password_validation import (
+    validate_password,
+)
 from rest_framework import serializers
 
-from apps.platform.accounts.models import User
-from apps.platform.accounts.selectors import get_user_by_email
-from apps.platform.accounts.services import AuthenticationService
+from apps.platform.accounts.selectors import (
+    get_user_by_email,
+)
+from apps.platform.accounts.services import (
+    AuthenticationService,
+)
+from apps.platform.tenancy.constants import (
+    TenantType,
+)
+
+if TYPE_CHECKING:
+    from apps.platform.accounts.models import User
 
 
-class RegisterSerializer(serializers.ModelSerializer):
+class RegisterSerializer(
+    serializers.ModelSerializer,
+):
     """
-    Serializer for user registration.
+    Serializer for SaaS user registration.
+
+    Creates:
+
+    - User
+    - Tenant
+    - Tenant owner membership
+    - Email verification OTP
     """
 
     password = serializers.CharField(
@@ -29,7 +60,21 @@ class RegisterSerializer(serializers.ModelSerializer):
         ],
     )
 
+    organization_name = serializers.CharField(
+        write_only=True,
+        required=True,
+        max_length=255,
+    )
+
+    organization_type = serializers.ChoiceField(
+        choices=TenantType.choices,
+        default=TenantType.CLINIC,
+        write_only=True,
+    )
+
     class Meta:
+        from apps.platform.accounts.models import User
+
         model = User
 
         fields = (
@@ -37,6 +82,8 @@ class RegisterSerializer(serializers.ModelSerializer):
             "password",
             "first_name",
             "last_name",
+            "organization_name",
+            "organization_type",
         )
 
         extra_kwargs = {
@@ -56,7 +103,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         value: str,
     ) -> str:
         """
-        Normalize and validate the email address.
+        Normalize email.
         """
 
         email = value.strip().lower()
@@ -73,12 +120,22 @@ class RegisterSerializer(serializers.ModelSerializer):
 
         return email
 
+    def validate_organization_name(
+        self,
+        value: str,
+    ) -> str:
+        """
+        Normalize organization name.
+        """
+
+        return value.strip()
+
     def create(
         self,
         validated_data: dict[str, Any],
     ) -> User:
         """
-        Register a new user.
+        Register SaaS user.
         """
 
         return AuthenticationService.register(
@@ -86,9 +143,13 @@ class RegisterSerializer(serializers.ModelSerializer):
         )
 
 
-class LoginSerializer(serializers.Serializer):
+class LoginSerializer(
+    serializers.Serializer,
+):
     """
-    Serializer for user login.
+    Request login OTP.
+
+    First step of OTP based authentication.
     """
 
     email = serializers.EmailField()
@@ -105,7 +166,7 @@ class LoginSerializer(serializers.Serializer):
         value: str,
     ) -> str:
         """
-        Normalize the email address.
+        Normalize email.
         """
 
         return value.strip().lower()
@@ -115,30 +176,59 @@ class LoginSerializer(serializers.Serializer):
         **kwargs: Any,
     ) -> dict[str, str]:
         """
-        Authenticate the user and issue JWT tokens.
+        Generate login OTP.
         """
 
-        return AuthenticationService.login(
+        return AuthenticationService.request_login_otp(
             email=self.validated_data["email"],
             password=self.validated_data["password"],
-            ip_address=self.context.get(
+        )
+
+
+class VerifyLoginOTPSerializer(
+    serializers.Serializer,
+):
+    """
+    Verify login OTP and issue JWT tokens.
+    """
+
+    otp_id = serializers.UUIDField()
+
+    otp = serializers.CharField(
+        max_length=10,
+    )
+
+    def save(
+        self,
+        **kwargs: Any,
+    ) -> dict[str, str]:
+        """
+        Verify OTP.
+        """
+
+        return AuthenticationService.verify_login_otp(
+            otp_id=self.validated_data["otp_id"],
+            code=self.validated_data["otp"],
+            ip_address=kwargs.get(
                 "ip_address",
                 "",
             ),
-            device=self.context.get(
+            device=kwargs.get(
                 "device",
                 "Unknown Device",
             ),
-            location=self.context.get(
+            location=kwargs.get(
                 "location",
                 "Unknown Location",
             ),
         )
 
 
-class LogoutSerializer(serializers.Serializer):
+class LogoutSerializer(
+    serializers.Serializer,
+):
     """
-    Serializer for user logout.
+    Logout serializer.
     """
 
     refresh = serializers.CharField()
@@ -148,7 +238,7 @@ class LogoutSerializer(serializers.Serializer):
         **kwargs: Any,
     ) -> None:
         """
-        Blacklist the supplied refresh token.
+        Logout user.
         """
 
         AuthenticationService.logout(
@@ -156,9 +246,11 @@ class LogoutSerializer(serializers.Serializer):
         )
 
 
-class RefreshSerializer(serializers.Serializer):
+class RefreshSerializer(
+    serializers.Serializer,
+):
     """
-    Serializer for refreshing JWT access tokens.
+    Refresh token serializer.
     """
 
     refresh = serializers.CharField()
@@ -168,7 +260,7 @@ class RefreshSerializer(serializers.Serializer):
         attrs: dict[str, Any],
     ) -> dict[str, str]:
         """
-        Generate a new access token.
+        Refresh JWT token.
         """
 
         return AuthenticationService.refresh(
@@ -176,9 +268,10 @@ class RefreshSerializer(serializers.Serializer):
         )
 
 
-__all__ = [
+__all__ = (
     "LoginSerializer",
     "LogoutSerializer",
     "RefreshSerializer",
     "RegisterSerializer",
-]
+    "VerifyLoginOTPSerializer",
+)

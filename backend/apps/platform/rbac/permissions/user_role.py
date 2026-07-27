@@ -1,16 +1,22 @@
 """
 RBAC user role permission classes.
+
+Uses DatavionOS RBAC authorization engine.
 """
 
 from __future__ import annotations
 
-from rest_framework.permissions import (
-    BasePermission,
+from apps.platform.rbac.permissions.base import (
+    RBACPermissionBase,
 )
+
+# =============================================================================
+# User Role API Permissions
+# =============================================================================
 
 
 class CanViewUserRole(
-    BasePermission,
+    RBACPermissionBase,
 ):
     """
     Permission to view user roles.
@@ -18,20 +24,11 @@ class CanViewUserRole(
 
     message = "You do not have permission to view user roles."
 
-    def has_permission(
-        self,
-        request,
-        view,
-    ) -> bool:
-        """
-        Return whether the user may view user roles.
-        """
-
-        return request.user.is_authenticated
+    permission_code = "rbac.view"
 
 
 class CanCreateUserRole(
-    BasePermission,
+    RBACPermissionBase,
 ):
     """
     Permission to create user roles.
@@ -39,20 +36,11 @@ class CanCreateUserRole(
 
     message = "You do not have permission to assign user roles."
 
-    def has_permission(
-        self,
-        request,
-        view,
-    ) -> bool:
-        """
-        Return whether the user may create user roles.
-        """
-
-        return request.user.is_authenticated
+    permission_code = "rbac.create"
 
 
 class CanUpdateUserRole(
-    BasePermission,
+    RBACPermissionBase,
 ):
     """
     Permission to update user roles.
@@ -60,20 +48,11 @@ class CanUpdateUserRole(
 
     message = "You do not have permission to update user roles."
 
-    def has_permission(
-        self,
-        request,
-        view,
-    ) -> bool:
-        """
-        Return whether the user may update user roles.
-        """
-
-        return request.user.is_authenticated
+    permission_code = "rbac.update"
 
 
 class CanDeleteUserRole(
-    BasePermission,
+    RBACPermissionBase,
 ):
     """
     Permission to delete user roles.
@@ -81,16 +60,7 @@ class CanDeleteUserRole(
 
     message = "You do not have permission to delete user roles."
 
-    def has_permission(
-        self,
-        request,
-        view,
-    ) -> bool:
-        """
-        Return whether the user may delete user roles.
-        """
-
-        return request.user.is_authenticated
+    permission_code = "rbac.delete"
 
 
 __all__ = [

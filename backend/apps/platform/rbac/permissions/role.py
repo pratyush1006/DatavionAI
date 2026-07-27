@@ -1,18 +1,22 @@
 """
 Role API permissions.
+
+Uses DatavionOS RBAC authorization engine.
 """
 
 from __future__ import annotations
 
-from rest_framework.permissions import (
-    BasePermission,
+from apps.platform.rbac.permissions.base import (
+    RBACPermissionBase,
 )
-from rest_framework.request import Request
-from rest_framework.views import APIView
+
+# =============================================================================
+# Role API Permissions
+# =============================================================================
 
 
 class CanViewRole(
-    BasePermission,
+    RBACPermissionBase,
 ):
     """
     Permission required to view roles.
@@ -20,20 +24,11 @@ class CanViewRole(
 
     message = "You do not have permission to view roles."
 
-    def has_permission(
-        self,
-        request: Request,
-        view: APIView,
-    ) -> bool:
-        """
-        Determine whether the request has permission.
-        """
-
-        return request.user.is_authenticated
+    permission_code = "rbac.view"
 
 
 class CanCreateRole(
-    BasePermission,
+    RBACPermissionBase,
 ):
     """
     Permission required to create roles.
@@ -41,20 +36,11 @@ class CanCreateRole(
 
     message = "You do not have permission to create roles."
 
-    def has_permission(
-        self,
-        request: Request,
-        view: APIView,
-    ) -> bool:
-        """
-        Determine whether the request has permission.
-        """
-
-        return request.user.is_authenticated
+    permission_code = "rbac.create"
 
 
 class CanUpdateRole(
-    BasePermission,
+    RBACPermissionBase,
 ):
     """
     Permission required to update roles.
@@ -62,20 +48,11 @@ class CanUpdateRole(
 
     message = "You do not have permission to update roles."
 
-    def has_permission(
-        self,
-        request: Request,
-        view: APIView,
-    ) -> bool:
-        """
-        Determine whether the request has permission.
-        """
-
-        return request.user.is_authenticated
+    permission_code = "rbac.update"
 
 
 class CanDeleteRole(
-    BasePermission,
+    RBACPermissionBase,
 ):
     """
     Permission required to delete roles.
@@ -83,16 +60,7 @@ class CanDeleteRole(
 
     message = "You do not have permission to delete roles."
 
-    def has_permission(
-        self,
-        request: Request,
-        view: APIView,
-    ) -> bool:
-        """
-        Determine whether the request has permission.
-        """
-
-        return request.user.is_authenticated
+    permission_code = "rbac.delete"
 
 
 __all__ = [

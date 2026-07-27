@@ -1,5 +1,7 @@
 """
-User permissions.
+User permissions for DatavionOS Accounts.
+
+Implements SaaS tenant-aware RBAC rules.
 """
 
 from __future__ import annotations
@@ -9,7 +11,7 @@ from rest_framework.permissions import BasePermission
 
 class IsAuthenticatedUser(BasePermission):
     """
-    Base permission requiring an authenticated user.
+    Base authentication permission.
     """
 
     def has_permission(
@@ -17,13 +19,56 @@ class IsAuthenticatedUser(BasePermission):
         request,
         view,
     ) -> bool:
-        return bool(request.user and request.user.is_authenticated)
+
+        return bool(
+            request.user and request.user.is_authenticated,
+        )
 
 
 class CanViewUser(IsAuthenticatedUser):
     """
     Permission to view users.
+
+    Allowed:
+    - Platform admins
+    - Tenant admins
+    - Organization admins
+    - User viewing self
     """
+
+    def has_object_permission(
+        self,
+        request,
+        view,
+        obj,
+    ) -> bool:
+
+        user = request.user
+
+        if user.is_superuser:
+            return True
+
+        if obj.id == user.id:
+            return True
+
+        if getattr(
+            user,
+            "is_staff",
+            False,
+        ):
+            return True
+
+        if (
+            getattr(
+                user,
+                "organization_id",
+                None,
+            )
+            and user.organization_id == obj.organization_id
+        ):
+            return True
+
+        return False
 
 
 class CanCreateUser(IsAuthenticatedUser):
@@ -36,7 +81,19 @@ class CanCreateUser(IsAuthenticatedUser):
         request,
         view,
     ) -> bool:
-        return super().has_permission(request, view) and request.user.is_staff
+
+        user = request.user
+
+        if user.is_superuser:
+            return True
+
+        return bool(
+            getattr(
+                user,
+                "is_staff",
+                False,
+            )
+        )
 
 
 class CanUpdateUser(IsAuthenticatedUser):
@@ -44,30 +101,65 @@ class CanUpdateUser(IsAuthenticatedUser):
     Permission to update users.
     """
 
-    def has_permission(
+    def has_object_permission(
         self,
         request,
         view,
+        obj,
     ) -> bool:
-        return super().has_permission(request, view) and request.user.is_staff
+
+        user = request.user
+
+        if user.is_superuser:
+            return True
+
+        if obj.id == user.id:
+            return True
+
+        return bool(
+            getattr(
+                user,
+                "is_staff",
+                False,
+            )
+            and user.organization_id == obj.organization_id
+        )
 
 
 class CanDeleteUser(IsAuthenticatedUser):
     """
-    Permission to delete users.
+    Permission to deactivate users.
+
+    Permanent deletion should not happen
+    in healthcare SaaS.
     """
 
-    def has_permission(
+    def has_object_permission(
         self,
         request,
         view,
+        obj,
     ) -> bool:
-        return super().has_permission(request, view) and request.user.is_superuser
+
+        user = request.user
+
+        if user.is_superuser:
+            return True
+
+        return bool(
+            getattr(
+                user,
+                "is_staff",
+                False,
+            )
+            and user.organization_id == obj.organization_id
+        )
 
 
-__all__ = [
+__all__ = (
     "CanCreateUser",
     "CanDeleteUser",
     "CanUpdateUser",
     "CanViewUser",
-]
+    "IsAuthenticatedUser",
+)

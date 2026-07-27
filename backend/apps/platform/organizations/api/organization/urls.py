@@ -12,7 +12,7 @@ from django.urls import path
 
 app_name = "organizations"
 
-urlpatterns = [
+urlpatterns = (
     path(
         "",
         OrganizationListCreateAPIView.as_view(),
@@ -23,9 +23,9 @@ urlpatterns = [
         OrganizationRetrieveUpdateDestroyAPIView.as_view(),
         name="retrieve-update-destroy",
     ),
-]
+)
 
-__all__ = [
-    "urlpatterns",
+__all__: tuple[str, ...] = (
     "app_name",
-]
+    "urlpatterns",
+)

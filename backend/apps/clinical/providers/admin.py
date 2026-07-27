@@ -2,6 +2,8 @@
 Admin configuration for the Providers app.
 """
 
+from __future__ import annotations
+
 from django.contrib import admin
 
 from apps.clinical.providers.models import Provider
@@ -15,7 +17,7 @@ class ProviderAdmin(admin.ModelAdmin):
 
     list_display = (
         "provider_number",
-        "full_name",
+        "display_name",
         "provider_type",
         "status",
         "is_accepting_patients",
@@ -33,6 +35,7 @@ class ProviderAdmin(admin.ModelAdmin):
         "provider_number",
         "license_number",
         "employee__first_name",
+        "employee__middle_name",
         "employee__last_name",
         "employee__email",
     )
@@ -43,3 +46,13 @@ class ProviderAdmin(admin.ModelAdmin):
         "organization",
         "employee",
     )
+
+    list_select_related = (
+        "organization",
+        "employee",
+    )
+
+
+__all__ = [
+    "ProviderAdmin",
+]

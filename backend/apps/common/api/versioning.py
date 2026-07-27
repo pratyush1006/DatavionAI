@@ -1,22 +1,27 @@
 """
-Reusable API versioning classes.
+Reusable API versioning classes for the DatavionAI framework.
 
-This module provides a centralized import location for the
-versioning strategies used across the Datavion AI platform.
+This module provides the framework-owned import surface for API
+versioning strategies used throughout the platform.
 
-Datavion currently uses DRF's default versioning strategies.
-Custom versioning implementations should only be introduced
-when a genuine cross-cutting requirement exists.
+DatavionAI currently relies on Django REST Framework's built-in
+versioning strategies. Feature applications should import
+versioning classes from this module rather than directly from DRF.
+
+Custom versioning implementations should only be introduced when a
+genuine cross-cutting framework requirement exists.
 """
 
 from __future__ import annotations
 
 from rest_framework.versioning import (
-    NamespaceVersioning,
-    URLPathVersioning,
+    NamespaceVersioning as DatavionNamespaceVersioning,
+)
+from rest_framework.versioning import (
+    URLPathVersioning as DatavionURLPathVersioning,
 )
 
-__all__ = [
-    "NamespaceVersioning",
-    "URLPathVersioning",
-]
+__all__: tuple[str, ...] = (
+    "DatavionNamespaceVersioning",
+    "DatavionURLPathVersioning",
+)

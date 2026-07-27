@@ -8,11 +8,9 @@ from apps.platform.organizations.api.organization_hierarchy.views import (
     OrganizationHierarchyListCreateAPIView,
     OrganizationHierarchyRetrieveUpdateDestroyAPIView,
 )
-from django.urls import (
-    path,
-)
+from django.urls import path
 
-app_name = "organization-hierarchy"
+app_name = "organization-hierarchy-api"
 
 urlpatterns = [
     path(
@@ -27,7 +25,7 @@ urlpatterns = [
     ),
 ]
 
-__all__ = [
+__all__: tuple[str, ...] = (
     "app_name",
     "urlpatterns",
-]
+)

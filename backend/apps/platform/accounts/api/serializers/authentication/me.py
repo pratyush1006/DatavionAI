@@ -4,19 +4,24 @@ Current user serializer.
 
 from __future__ import annotations
 
-from apps.platform.accounts.models import User
+from typing import TYPE_CHECKING
 
 from ..base import UserBaseSerializer
 
+if TYPE_CHECKING:
+    pass
 
-class MeSerializer(UserBaseSerializer):
+
+class MeSerializer(
+    UserBaseSerializer,
+):
     """
-    Serializer for the authenticated user.
+    Serializer for authenticated user.
     """
 
-    class Meta(UserBaseSerializer.Meta):
-        model = User
-
+    class Meta(
+        UserBaseSerializer.Meta,
+    ):
         fields = (
             "id",
             "email",
@@ -24,12 +29,9 @@ class MeSerializer(UserBaseSerializer):
             "last_name",
             "phone",
             "is_verified",
-            "organization",
         )
 
         read_only_fields = fields
 
 
-__all__ = [
-    "MeSerializer",
-]
+__all__ = ("MeSerializer",)

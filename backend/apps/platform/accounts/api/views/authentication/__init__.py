@@ -5,12 +5,16 @@ Public API for authentication views.
 from __future__ import annotations
 
 from .auth import (
+    ChangePasswordAPIView,
     LoginAPIView,
     LogoutAPIView,
     RefreshAPIView,
     RegisterAPIView,
+    VerifyLoginOTPAPIView,
 )
-from .me import MeAPIView
+from .me import (
+    MeAPIView,
+)
 from .oauth import (
     GoogleLoginAPIView,
     MicrosoftLoginAPIView,
@@ -20,12 +24,11 @@ from .otp import (
     VerifyOTPAPIView,
 )
 from .password import (
-    ChangePasswordAPIView,
     ForgotPasswordAPIView,
     ResetPasswordAPIView,
 )
 
-__all__ = [
+__all__ = (
     "ChangePasswordAPIView",
     "ForgotPasswordAPIView",
     "GoogleLoginAPIView",
@@ -37,5 +40,6 @@ __all__ = [
     "RegisterAPIView",
     "ResendOTPAPIView",
     "ResetPasswordAPIView",
+    "VerifyLoginOTPAPIView",
     "VerifyOTPAPIView",
-]
+)

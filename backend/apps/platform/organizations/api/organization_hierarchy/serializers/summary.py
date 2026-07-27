@@ -4,30 +4,26 @@ Summary serializer for OrganizationHierarchy.
 
 from __future__ import annotations
 
-from apps.platform.organizations.api.organization.serializers.fields import (
+from apps.platform.organizations.api.organization_hierarchy.serializers.base import (
+    OrganizationHierarchyBaseSerializer,
+)
+from apps.platform.organizations.api.organization_hierarchy.serializers.fields import (
     _SUMMARY_FIELDS,
 )
-from apps.platform.organizations.models import (
-    OrganizationHierarchy,
-)
-from rest_framework import serializers
 
 
 class OrganizationHierarchySummarySerializer(
-    serializers.ModelSerializer,
+    OrganizationHierarchyBaseSerializer,
 ):
     """
-    Summary serializer.
+    Summary serializer for organization hierarchy.
     """
 
-    class Meta:
-        model = OrganizationHierarchy
-
+    class Meta(
+        OrganizationHierarchyBaseSerializer.Meta,
+    ):
         fields = _SUMMARY_FIELDS
-
         read_only_fields = fields
 
 
-__all__ = [
-    "OrganizationHierarchySummarySerializer",
-]
+__all__: tuple[str, ...] = ("OrganizationHierarchySummarySerializer",)

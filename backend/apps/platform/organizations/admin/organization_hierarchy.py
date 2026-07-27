@@ -5,18 +5,14 @@ Admin configuration for the Organization Hierarchy application.
 from __future__ import annotations
 
 from django.contrib import admin
+from django.db.models import QuerySet
+from django.http import HttpRequest
 
-from apps.platform.organizations.models import (
-    OrganizationHierarchy,
-)
+from apps.platform.organizations.models import OrganizationHierarchy
 
 
-@admin.register(
-    OrganizationHierarchy,
-)
-class OrganizationHierarchyAdmin(
-    admin.ModelAdmin,
-):
+@admin.register(OrganizationHierarchy)
+class OrganizationHierarchyAdmin(admin.ModelAdmin):
     """
     Django admin configuration for OrganizationHierarchy.
     """
@@ -79,6 +75,8 @@ class OrganizationHierarchyAdmin(
 
     preserve_filters = True
 
+    save_on_top = True
+
     empty_value_display = "-"
 
     fieldsets = (
@@ -112,6 +110,7 @@ class OrganizationHierarchyAdmin(
         (
             "Audit",
             {
+                "classes": ("collapse",),
                 "fields": (
                     "id",
                     "created_at",
@@ -121,7 +120,21 @@ class OrganizationHierarchyAdmin(
         ),
     )
 
+    def get_queryset(
+        self,
+        request: HttpRequest,
+    ) -> QuerySet[OrganizationHierarchy]:
+        """
+        Return an optimized queryset for the admin.
+        """
+        return (
+            super()
+            .get_queryset(request)
+            .select_related(
+                "parent_organization",
+                "child_organization",
+            )
+        )
 
-__all__ = [
-    "OrganizationHierarchyAdmin",
-]
+
+__all__: tuple[str, ...] = ("OrganizationHierarchyAdmin",)

@@ -1,5 +1,7 @@
 """
 Read-only selectors for the Audit application.
+
+Provides tenant-aware audit access.
 """
 
 from __future__ import annotations
@@ -9,7 +11,12 @@ from datetime import datetime
 from django.db.models import QuerySet
 from django.shortcuts import get_object_or_404
 
-from apps.platform.audit.models import AuditLog
+from apps.platform.audit.models import (
+    AuditLog,
+)
+from apps.platform.tenancy.context import (
+    get_tenant_context,
+)
 
 type AuditLogQuerySet = QuerySet[AuditLog]
 
@@ -29,12 +36,33 @@ AUDIT_LIST_FIELDS = (
 
 def get_audit_logs() -> AuditLogQuerySet:
     """
-    Return all audit logs.
+    Return tenant scoped audit logs.
+
+    DatavionOS SaaS isolation:
+
+    User can only access audit
+    records belonging to their
+    active tenant organization.
     """
 
+    queryset = AuditLog.objects.active()
+
+    context = get_tenant_context()
+
+    if context:
+        organization = getattr(
+            context,
+            "organization",
+            None,
+        )
+
+        if organization:
+            queryset = queryset.for_organization(
+                organization,
+            )
+
     return (
-        AuditLog.objects.active()
-        .select_related(
+        queryset.select_related(
             "user",
             "organization",
         )
@@ -131,7 +159,7 @@ def get_audit_logs_between(
     end: datetime,
 ) -> AuditLogQuerySet:
     """
-    Return audit logs within a date range.
+    Return audit logs within date range.
     """
 
     return get_audit_logs().between(

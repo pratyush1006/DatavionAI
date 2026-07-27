@@ -1,5 +1,13 @@
 """
-OTP verification API views.
+OTP authentication API views.
+
+Handles:
+
+- Email verification OTP
+- OTP resend workflow
+- Future login/password OTP flows
+
+OTP lifecycle is delegated to services.
 """
 
 from __future__ import annotations
@@ -7,12 +15,19 @@ from __future__ import annotations
 from typing import Final
 
 from drf_spectacular.utils import extend_schema
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import (
+    AllowAny,
+)
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
-from apps.common.api.responses import success_response
+from apps.common.api.base_generics import (
+    BaseGenericAPIView,
+)
+from apps.common.http import (
+    get_client_device,
+    get_client_ip,
+)
 from apps.platform.accounts.api.serializers.authentication import (
     ResendOTPSerializer,
     VerifyOTPSerializer,
@@ -21,23 +36,52 @@ from apps.platform.accounts.api.serializers.authentication import (
 AUTH_TAG: Final = ("Authentication",)
 
 
-@extend_schema(
-    tags=AUTH_TAG,
-    summary="Verify Email",
-    description="Verify a user's email address using a one-time password.",
-    request=VerifyOTPSerializer,
-    responses={
-        200: None,
-    },
-)
-class VerifyOTPAPIView(APIView):
+class BaseOTPAPIView(
+    BaseGenericAPIView,
+):
     """
-    Verify a user's email address using an OTP.
+    Base OTP API.
+
+    Provides common security context.
     """
 
     permission_classes = (AllowAny,)
 
     authentication_classes = ()
+
+    def get_security_context(
+        self,
+        request: Request,
+    ) -> dict[str, str]:
+        """
+        Extract request security metadata.
+        """
+
+        return {
+            "ip_address": get_client_ip(
+                request,
+            ),
+            "device": get_client_device(
+                request,
+            ),
+        }
+
+
+@extend_schema(
+    tags=AUTH_TAG,
+    summary="Verify Email OTP",
+    description=("Verify a user's email address using OTP."),
+    request=VerifyOTPSerializer,
+    responses={
+        200: None,
+    },
+)
+class VerifyOTPAPIView(
+    BaseOTPAPIView,
+):
+    """
+    Verify email using OTP.
+    """
 
     serializer_class = VerifyOTPSerializer
 
@@ -46,11 +90,16 @@ class VerifyOTPAPIView(APIView):
         request: Request,
     ) -> Response:
         """
-        Verify the supplied OTP.
+        Verify OTP.
         """
 
-        serializer = self.serializer_class(
+        serializer = self.get_serializer(
             data=request.data,
+            context={
+                **self.get_security_context(
+                    request,
+                ),
+            },
         )
 
         serializer.is_valid(
@@ -59,8 +108,8 @@ class VerifyOTPAPIView(APIView):
 
         serializer.save()
 
-        return success_response(
-            message="Email verified successfully.",
+        return self.success_response(
+            message=("Email verified successfully."),
             data=None,
         )
 
@@ -68,20 +117,18 @@ class VerifyOTPAPIView(APIView):
 @extend_schema(
     tags=AUTH_TAG,
     summary="Resend Verification OTP",
-    description="Resend the email verification OTP.",
+    description=("Generate and resend email verification OTP."),
     request=ResendOTPSerializer,
     responses={
         200: None,
     },
 )
-class ResendOTPAPIView(APIView):
+class ResendOTPAPIView(
+    BaseOTPAPIView,
+):
     """
-    Resend an email verification OTP.
+    Resend email verification OTP.
     """
-
-    permission_classes = (AllowAny,)
-
-    authentication_classes = ()
 
     serializer_class = ResendOTPSerializer
 
@@ -90,11 +137,16 @@ class ResendOTPAPIView(APIView):
         request: Request,
     ) -> Response:
         """
-        Resend the verification OTP.
+        Resend OTP.
         """
 
-        serializer = self.serializer_class(
+        serializer = self.get_serializer(
             data=request.data,
+            context={
+                **self.get_security_context(
+                    request,
+                ),
+            },
         )
 
         serializer.is_valid(
@@ -103,13 +155,13 @@ class ResendOTPAPIView(APIView):
 
         serializer.save()
 
-        return success_response(
-            message="Verification OTP sent successfully.",
+        return self.success_response(
+            message=("Verification OTP sent successfully."),
             data=None,
         )
 
 
-__all__ = [
+__all__ = (
     "ResendOTPAPIView",
     "VerifyOTPAPIView",
-]
+)

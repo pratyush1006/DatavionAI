@@ -1,34 +1,45 @@
 """
 Organization manager.
+
+Provides manager entry points for the
+DatavionOS Organizations bounded context.
 """
 
 from __future__ import annotations
 
-from apps.core.models import BaseManager
-from apps.platform.organizations.querysets import (
+from typing import Any
+
+from apps.core.models.managers import BaseManager
+from apps.platform.organizations.querysets.organization import (
     OrganizationQuerySet,
 )
 
 
 class OrganizationManager(
-    BaseManager["Organization"],
+    BaseManager,
 ):
     """
-    Custom manager for Organization.
+    Manager for the Organization model.
+
+    Exposes reusable query helpers by
+    delegating to OrganizationQuerySet.
     """
 
     def get_queryset(
         self,
     ) -> OrganizationQuerySet:
         """
-        Return the custom Organization queryset.
+        Return the base organization queryset.
         """
 
         return OrganizationQuerySet(
-            model=self.model,
+            self.model,
             using=self._db,
-            hints=self._hints,
         )
+
+    # ------------------------------------------------------------------
+    # Lifecycle
+    # ------------------------------------------------------------------
 
     def active(
         self,
@@ -39,6 +50,19 @@ class OrganizationManager(
 
         return self.get_queryset().active()
 
+    def inactive(
+        self,
+    ) -> OrganizationQuerySet:
+        """
+        Return inactive organizations.
+        """
+
+        return self.get_queryset().inactive()
+
+    # ------------------------------------------------------------------
+    # Verification
+    # ------------------------------------------------------------------
+
     def verified(
         self,
     ) -> OrganizationQuerySet:
@@ -48,12 +72,50 @@ class OrganizationManager(
 
         return self.get_queryset().verified()
 
+    def unverified(
+        self,
+    ) -> OrganizationQuerySet:
+        """
+        Return unverified organizations.
+        """
+
+        return self.get_queryset().unverified()
+
+    def pending_verification(
+        self,
+    ) -> OrganizationQuerySet:
+        """
+        Return organizations awaiting verification.
+        """
+
+        return self.get_queryset().pending_verification()
+
+    # ------------------------------------------------------------------
+    # Tenant
+    # ------------------------------------------------------------------
+
+    def for_tenant(
+        self,
+        tenant: Any,
+    ) -> OrganizationQuerySet:
+        """
+        Return organizations for the given tenant.
+        """
+
+        return self.get_queryset().for_tenant(
+            tenant,
+        )
+
+    # ------------------------------------------------------------------
+    # Classification
+    # ------------------------------------------------------------------
+
     def by_category(
         self,
         category: str,
     ) -> OrganizationQuerySet:
         """
-        Return organizations for a category.
+        Filter organizations by category.
         """
 
         return self.get_queryset().by_category(
@@ -65,7 +127,7 @@ class OrganizationManager(
         organization_type: str,
     ) -> OrganizationQuerySet:
         """
-        Return organizations for a type.
+        Filter organizations by type.
         """
 
         return self.get_queryset().by_type(
@@ -77,7 +139,7 @@ class OrganizationManager(
         status: str,
     ) -> OrganizationQuerySet:
         """
-        Return organizations for a status.
+        Filter organizations by status.
         """
 
         return self.get_queryset().by_status(
@@ -89,48 +151,38 @@ class OrganizationManager(
         size: str,
     ) -> OrganizationQuerySet:
         """
-        Return organizations for a size.
+        Filter organizations by size.
         """
 
         return self.get_queryset().by_size(
             size,
         )
 
-    def for_country(
+    # ------------------------------------------------------------------
+    # Environment
+    # ------------------------------------------------------------------
+
+    def production(
         self,
-        country: str,
     ) -> OrganizationQuerySet:
         """
-        Return organizations for a country.
+        Return production organizations.
         """
 
-        return self.get_queryset().for_country(
-            country,
-        )
+        return self.get_queryset().production()
 
-    def for_state(
+    def demo(
         self,
-        state: str,
     ) -> OrganizationQuerySet:
         """
-        Return organizations for a state.
+        Return demo organizations.
         """
 
-        return self.get_queryset().for_state(
-            state,
-        )
+        return self.get_queryset().demo()
 
-    def for_city(
-        self,
-        city: str,
-    ) -> OrganizationQuerySet:
-        """
-        Return organizations for a city.
-        """
-
-        return self.get_queryset().for_city(
-            city,
-        )
+    # ------------------------------------------------------------------
+    # Search
+    # ------------------------------------------------------------------
 
     def search(
         self,
@@ -145,6 +197,4 @@ class OrganizationManager(
         )
 
 
-__all__ = [
-    "OrganizationManager",
-]
+__all__: tuple[str, ...] = ("OrganizationManager",)

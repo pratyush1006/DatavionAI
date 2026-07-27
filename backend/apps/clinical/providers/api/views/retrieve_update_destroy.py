@@ -18,10 +18,11 @@ from apps.clinical.providers.permissions import (
     CanUpdateProvider,
     CanViewProvider,
 )
-from apps.clinical.providers.selectors import get_provider_by_id
+from apps.clinical.providers.selectors import (
+    ProviderSelector,
+)
 from apps.clinical.providers.services import (
-    delete_provider,
-    update_provider,
+    ProviderService,
 )
 from apps.common.api.base_generics import (
     BaseRetrieveUpdateDestroyAPIView,
@@ -67,9 +68,9 @@ class ProviderRetrieveUpdateDestroyAPIView(
 
     detail_serializer_class = ProviderDetailSerializer
 
-    update_service = update_provider
+    update_service = ProviderService.update
 
-    delete_service = delete_provider
+    delete_service = ProviderService.delete
 
     update_success_message = "Provider updated successfully."
 
@@ -80,7 +81,7 @@ class ProviderRetrieveUpdateDestroyAPIView(
         Return the requested provider.
         """
 
-        return get_provider_by_id(
+        return ProviderSelector.get(
             provider_id=self.kwargs[self.lookup_url_kwarg],
         )
 

@@ -1,12 +1,22 @@
 """
 Organization hierarchy queryset.
+
+Reusable database query scopes for
+DatavionOS organization hierarchies.
 """
 
 from __future__ import annotations
 
-from django.db import models
+from typing import TYPE_CHECKING, Any
+
+from django.db.models import Q
 
 from apps.core.models import BaseQuerySet
+
+if TYPE_CHECKING:
+    from apps.platform.organizations.models import (
+        OrganizationHierarchy,
+    )
 
 
 class OrganizationHierarchyQuerySet(
@@ -14,7 +24,14 @@ class OrganizationHierarchyQuerySet(
 ):
     """
     Custom queryset for OrganizationHierarchy.
+
+    Provides reusable filtering and
+    query optimization helpers.
     """
+
+    # ------------------------------------------------------------------
+    # Status
+    # ------------------------------------------------------------------
 
     def active(
         self,
@@ -24,7 +41,7 @@ class OrganizationHierarchyQuerySet(
         """
 
         return self.filter(
-            status="active",
+            status=OrganizationHierarchy.Status.ACTIVE,
         )
 
     def inactive(
@@ -35,7 +52,7 @@ class OrganizationHierarchyQuerySet(
         """
 
         return self.filter(
-            status="inactive",
+            status=OrganizationHierarchy.Status.INACTIVE,
         )
 
     def by_status(
@@ -50,28 +67,32 @@ class OrganizationHierarchyQuerySet(
             status=status,
         )
 
+    # ------------------------------------------------------------------
+    # Relationships
+    # ------------------------------------------------------------------
+
     def by_parent(
         self,
-        parent_organization_id,
+        parent_organization: Any,
     ) -> OrganizationHierarchyQuerySet:
         """
         Filter by parent organization.
         """
 
         return self.filter(
-            parent_organization_id=parent_organization_id,
+            parent_organization=parent_organization,
         )
 
     def by_child(
         self,
-        child_organization_id,
+        child_organization: Any,
     ) -> OrganizationHierarchyQuerySet:
         """
         Filter by child organization.
         """
 
         return self.filter(
-            child_organization_id=child_organization_id,
+            child_organization=child_organization,
         )
 
     def by_relationship_type(
@@ -85,6 +106,10 @@ class OrganizationHierarchyQuerySet(
         return self.filter(
             relationship_type=relationship_type,
         )
+
+    # ------------------------------------------------------------------
+    # Tree helpers
+    # ------------------------------------------------------------------
 
     def roots(
         self,
@@ -108,6 +133,10 @@ class OrganizationHierarchyQuerySet(
             child_organization__child_hierarchies__isnull=True,
         )
 
+    # ------------------------------------------------------------------
+    # Optimization
+    # ------------------------------------------------------------------
+
     def with_related(
         self,
     ) -> OrganizationHierarchyQuerySet:
@@ -120,12 +149,16 @@ class OrganizationHierarchyQuerySet(
             "child_organization",
         )
 
+    # ------------------------------------------------------------------
+    # Search
+    # ------------------------------------------------------------------
+
     def search(
         self,
         query: str,
     ) -> OrganizationHierarchyQuerySet:
         """
-        Search hierarchy.
+        Search hierarchy relationships by organization name.
         """
 
         query = query.strip()
@@ -134,15 +167,13 @@ class OrganizationHierarchyQuerySet(
             return self
 
         return self.filter(
-            models.Q(
+            Q(
                 parent_organization__name__icontains=query,
             )
-            | models.Q(
+            | Q(
                 child_organization__name__icontains=query,
             )
         ).distinct()
 
 
-__all__ = [
-    "OrganizationHierarchyQuerySet",
-]
+__all__: tuple[str, ...] = ("OrganizationHierarchyQuerySet",)

@@ -1,37 +1,78 @@
 """
-Public exception API for the Datavion AI platform.
+DatavionAI Exception Framework.
 
-Feature applications should import framework exceptions and
-error codes from this package instead of importing individual
-modules directly.
+Enterprise exception framework for the DatavionAI platform.
+
+Provides:
+
+- Base exception hierarchy
+- Standardized error contracts
+- Error codes
+- Exception utilities
+- DRF integration
+
+Public application imports should use this package.
 """
 
 from __future__ import annotations
 
-from .base import (
-    AuthenticationException,
-    ConfigurationException,
-    DatavionException,
-    DuplicateResourceException,
-    ExternalServiceException,
-    FeatureDisabledException,
-    FileValidationException,
-    PermissionDeniedException,
-    ResourceNotFoundException,
-    ValidationException,
+from . import (
+    base,
+    builders,
+    codes,
+    handlers,
+    messages,
+    mixins,
+    registry,
+    utils,
 )
-from .codes import ErrorCode
+from .base import (
+    AuditException,
+    AuthenticationException,
+    AuthorizationException,
+    CacheException,
+    ClientException,
+    ConfigurationException,
+    DatabaseException,
+    DatavionException,
+    IntegrationException,
+    ResourceConflictException,
+    ResourceNotFoundException,
+    ServerException,
+    ValidationException,
+    WorkflowException,
+)
+from .codes import (
+    ErrorCode,
+)
 
-__all__ = [
+__all__ = (
+    # Modules
+    "base",
+    "builders",
+    "codes",
+    "handlers",
+    "messages",
+    "mixins",
+    "registry",
+    "utils",
+    # Error Codes
     "ErrorCode",
+    # Base Exceptions
     "DatavionException",
+    "ClientException",
+    "ServerException",
+    # Client Exceptions
     "ValidationException",
     "AuthenticationException",
-    "PermissionDeniedException",
+    "AuthorizationException",
     "ResourceNotFoundException",
-    "DuplicateResourceException",
+    "ResourceConflictException",
+    # Server Exceptions
+    "DatabaseException",
+    "CacheException",
+    "IntegrationException",
     "ConfigurationException",
-    "FeatureDisabledException",
-    "FileValidationException",
-    "ExternalServiceException",
-]
+    "WorkflowException",
+    "AuditException",
+)

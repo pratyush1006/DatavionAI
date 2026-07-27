@@ -6,30 +6,27 @@ from __future__ import annotations
 
 from datetime import date
 
+from django.core.exceptions import ValidationError
+
 from apps.clinical.patients.constants import (
     PatientGender,
     PatientStatus,
 )
 from apps.clinical.patients.models import Patient
-from apps.clinical.patients.services import (
-    create_patient,
-    delete_patient,
-    update_patient,
-)
+from apps.clinical.patients.services import PatientService
+from apps.clinical.patients.tests.factories import PatientFactory
 from apps.common.tests.base import BaseTestCase
 
 
 class PatientServiceTestCase(BaseTestCase):
     """
-    Test cases for patient services.
+    Test cases for PatientService.
     """
 
-    def setUp(
-        self,
-    ) -> None:
+    def setUp(self) -> None:
         super().setUp()
 
-        self.patient = Patient.objects.create(
+        self.patient = PatientFactory(
             organization=self.organization,
             mrn="MRN000001",
             first_name="John",
@@ -42,14 +39,12 @@ class PatientServiceTestCase(BaseTestCase):
             gender=PatientGender.MALE,
         )
 
-    def test_create_patient(
-        self,
-    ) -> None:
+    def test_create_patient(self) -> None:
         """
         Patient should be created successfully.
         """
 
-        patient = create_patient(
+        patient = PatientService.create(
             validated_data={
                 "organization": self.organization,
                 "mrn": "MRN000002",
@@ -90,86 +85,14 @@ class PatientServiceTestCase(BaseTestCase):
             "Smith",
         )
 
-    def test_update_patient(
-        self,
-    ) -> None:
-        """
-        Patient should be updated successfully.
-        """
-
-        updated_patient = update_patient(
-            instance=self.patient,
-            validated_data={
-                "first_name": "Jonathan",
-                "status": PatientStatus.INACTIVE,
-            },
-        )
-
-        updated_patient.refresh_from_db()
-
-        self.assertEqual(
-            updated_patient.first_name,
-            "Jonathan",
-        )
-
-        self.assertEqual(
-            updated_patient.status,
-            PatientStatus.INACTIVE,
-        )
-
-    def test_delete_patient(
-        self,
-    ) -> None:
-        """
-        Patient should be deleted successfully.
-        """
-
-        patient_id = self.patient.id
-
-        delete_patient(
-            instance=self.patient,
-        )
-
-        self.assertFalse(
-            Patient.objects.filter(
-                id=patient_id,
-            ).exists(),
-        )
-
-    def test_update_patient_returns_same_instance(
-        self,
-    ) -> None:
-        """
-        Update service should return the updated patient.
-        """
-
-        updated_patient = update_patient(
-            instance=self.patient,
-            validated_data={
-                "last_name": "Williams",
-            },
-        )
-
-        self.assertEqual(
-            updated_patient.pk,
-            self.patient.pk,
-        )
-
-        self.assertEqual(
-            updated_patient.last_name,
-            "Williams",
-        )
-
-    def test_create_patient_persists_to_database(
-        self,
-    ) -> None:
+    def test_create_patient_persists_to_database(self) -> None:
         """
         Created patient should be persisted.
         """
 
         initial_count = Patient.objects.count()
 
-        create_patient(
+        PatientService.create(
             validated_data={
                 "organization": self.organization,
                 "mrn": "MRN000003",
@@ -189,6 +112,153 @@ class PatientServiceTestCase(BaseTestCase):
             Patient.objects.count(),
             initial_count + 1,
         )
+
+    def test_create_duplicate_mrn_raises_error(self) -> None:
+        """
+        Duplicate MRN within an organization should fail.
+        """
+
+        with self.assertRaises(
+            ValidationError,
+        ):
+            PatientService.create(
+                validated_data={
+                    "organization": self.organization,
+                    "mrn": "MRN000001",
+                    "first_name": "Duplicate",
+                    "last_name": "Patient",
+                    "date_of_birth": date(
+                        1990,
+                        1,
+                        1,
+                    ),
+                    "gender": PatientGender.MALE,
+                },
+            )
+
+    def test_update_patient(self) -> None:
+        """
+        Patient should be updated successfully.
+        """
+
+        updated_patient = PatientService.update(
+            instance=self.patient,
+            validated_data={
+                "first_name": "Jonathan",
+                "status": PatientStatus.INACTIVE,
+            },
+        )
+
+        updated_patient.refresh_from_db()
+
+        self.assertEqual(
+            updated_patient.first_name,
+            "Jonathan",
+        )
+
+        self.assertEqual(
+            updated_patient.status,
+            PatientStatus.INACTIVE,
+        )
+
+    def test_update_patient_returns_same_instance(self) -> None:
+        """
+        Update should return the same patient instance.
+        """
+
+        updated_patient = PatientService.update(
+            instance=self.patient,
+            validated_data={
+                "last_name": "Williams",
+            },
+        )
+
+        self.assertEqual(
+            updated_patient.pk,
+            self.patient.pk,
+        )
+
+        self.assertEqual(
+            updated_patient.last_name,
+            "Williams",
+        )
+
+    def test_delete_patient(self) -> None:
+        """
+        Patient should be deleted successfully.
+        """
+
+        patient_id = self.patient.pk
+
+        PatientService.delete(
+            instance=self.patient,
+        )
+
+        self.assertFalse(
+            Patient.objects.filter(
+                pk=patient_id,
+            ).exists(),
+        )
+
+    def test_archive_patient(self) -> None:
+        """
+        Patient should be archived successfully.
+        """
+
+        archived_patient = PatientService.archive(
+            instance=self.patient,
+        )
+
+        archived_patient.refresh_from_db()
+
+        self.assertFalse(
+            archived_patient.is_active,
+        )
+
+    def test_restore_patient(self) -> None:
+        """
+        Archived patient should be restored successfully.
+        """
+
+        PatientService.archive(
+            instance=self.patient,
+        )
+
+        restored_patient = PatientService.restore(
+            instance=self.patient,
+        )
+
+        restored_patient.refresh_from_db()
+
+        self.assertTrue(
+            restored_patient.is_active,
+        )
+
+    def test_create_patient_invalid_phone_raises_validation_error(
+        self,
+    ) -> None:
+        """
+        Invalid phone number should fail validation.
+        """
+
+        with self.assertRaises(
+            ValidationError,
+        ):
+            PatientService.create(
+                validated_data={
+                    "organization": self.organization,
+                    "mrn": "MRN000010",
+                    "first_name": "Jane",
+                    "last_name": "Smith",
+                    "phone": "123",
+                    "date_of_birth": date(
+                        1999,
+                        1,
+                        1,
+                    ),
+                    "gender": PatientGender.FEMALE,
+                },
+            )
 
 
 __all__ = [

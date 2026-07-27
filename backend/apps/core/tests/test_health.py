@@ -37,6 +37,27 @@ class HealthAPITestCase(APITestCase):
         )
 
         self.assertEqual(
+            response["Content-Type"].split(";")[0],
+            "application/json",
+        )
+
+        self.assertIn(
+            "no-store",
+            response["Cache-Control"],
+        )
+
+        self.assertSetEqual(
+            set(response.data.keys()),
+            {
+                "application",
+                "version",
+                "status",
+                "checks",
+                "timestamp",
+            },
+        )
+
+        self.assertEqual(
             response.data["application"],
             APP_NAME,
         )
@@ -52,13 +73,34 @@ class HealthAPITestCase(APITestCase):
         )
 
         self.assertIn(
-            "checks",
-            response.data,
+            "database",
+            response.data["checks"],
+        )
+
+        database = response.data["checks"]["database"]
+
+        self.assertIn(
+            "healthy",
+            database,
         )
 
         self.assertIn(
-            "database",
-            response.data["checks"],
+            "status",
+            database,
+        )
+
+    def test_health_endpoint_only_allows_get(self) -> None:
+        """
+        Ensure only GET is allowed.
+        """
+
+        response = self.client.post(
+            reverse("core:health:health"),
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_405_METHOD_NOT_ALLOWED,
         )
 
     def test_liveness_endpoint_returns_alive(self) -> None:
@@ -76,8 +118,32 @@ class HealthAPITestCase(APITestCase):
         )
 
         self.assertEqual(
+            response["Content-Type"].split(";")[0],
+            "application/json",
+        )
+
+        self.assertIn(
+            "no-store",
+            response["Cache-Control"],
+        )
+
+        self.assertEqual(
             response.data["status"],
             ALIVE,
+        )
+
+    def test_liveness_endpoint_only_allows_get(self) -> None:
+        """
+        Ensure only GET is allowed.
+        """
+
+        response = self.client.post(
+            reverse("core:health:liveness"),
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_405_METHOD_NOT_ALLOWED,
         )
 
     def test_readiness_endpoint_returns_ready(self) -> None:
@@ -92,6 +158,27 @@ class HealthAPITestCase(APITestCase):
         self.assertEqual(
             response.status_code,
             status.HTTP_200_OK,
+        )
+
+        self.assertEqual(
+            response["Content-Type"].split(";")[0],
+            "application/json",
+        )
+
+        self.assertIn(
+            "no-store",
+            response["Cache-Control"],
+        )
+
+        self.assertSetEqual(
+            set(response.data.keys()),
+            {
+                "application",
+                "version",
+                "status",
+                "checks",
+                "timestamp",
+            },
         )
 
         self.assertEqual(
@@ -110,11 +197,32 @@ class HealthAPITestCase(APITestCase):
         )
 
         self.assertIn(
-            "checks",
-            response.data,
+            "database",
+            response.data["checks"],
+        )
+
+        database = response.data["checks"]["database"]
+
+        self.assertIn(
+            "healthy",
+            database,
         )
 
         self.assertIn(
-            "database",
-            response.data["checks"],
+            "status",
+            database,
+        )
+
+    def test_readiness_endpoint_only_allows_get(self) -> None:
+        """
+        Ensure only GET is allowed.
+        """
+
+        response = self.client.post(
+            reverse("core:health:readiness"),
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_405_METHOD_NOT_ALLOWED,
         )

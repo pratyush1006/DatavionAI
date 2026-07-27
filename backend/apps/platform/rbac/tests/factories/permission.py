@@ -1,5 +1,20 @@
 """
 Permission test factories.
+
+Creates RBAC permissions for testing.
+
+Permission code convention:
+
+    module.action
+
+Examples:
+
+    rbac.create
+    patients.view
+    appointments.update
+
+Scope is stored separately and is NOT part
+of the permission code.
 """
 
 from __future__ import annotations
@@ -82,13 +97,22 @@ class PermissionFactory(
         self,
     ) -> str:
         """
-        Generate the permission code.
+        Generate permission code.
+
+        Scope is not included.
+
+        Example:
+
+            rbac.create
+
+        not:
+
+            rbac.create.organization
         """
 
         return PermissionBuilder.build(
             module=self.module,
             action=self.action,
-            scope=self.scope,
         )
 
     @factory.lazy_attribute
@@ -96,7 +120,7 @@ class PermissionFactory(
         self,
     ) -> str:
         """
-        Generate the permission name.
+        Generate permission display name.
         """
 
         return PermissionBuilder.build_name(
@@ -107,7 +131,7 @@ class PermissionFactory(
 
 
 # ============================================================================
-# Backward compatibility
+# Backward compatibility helpers
 # ============================================================================
 
 
@@ -115,7 +139,7 @@ def create_permission(
     **kwargs,
 ) -> Permission:
     """
-    Backward-compatible helper.
+    Create permission.
     """
 
     return PermissionFactory(
@@ -127,7 +151,7 @@ def create_system_permission(
     **kwargs,
 ) -> Permission:
     """
-    Create a built-in system permission.
+    Create system permission.
     """
 
     kwargs.setdefault(

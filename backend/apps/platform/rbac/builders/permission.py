@@ -1,7 +1,8 @@
 """
 Permission builder.
 
-Responsible for generating standardized permission codes.
+Responsible for generating standardized permission codes
+and display names.
 """
 
 from __future__ import annotations
@@ -17,42 +18,46 @@ class PermissionBuilder:
         *,
         module: str,
         action: str,
-        scope: str,
     ) -> str:
         """
         Build a permission code.
 
-        Example:
-            patients.view.self
+        Permission codes are scope independent.
+
+        Examples:
+
+            patients.view
+            rbac.create
         """
 
         return ".".join(
             (
                 module,
                 action,
-                scope,
             )
-        )
+        ).lower()
 
     @staticmethod
     def build_name(
         *,
         action: str,
         module: str,
-        scope: str,
+        scope: str | None = None,
     ) -> str:
         """
         Build a human-readable permission name.
 
         Example:
+
             View Patients (Organization)
         """
 
-        return (
-            f"{action.replace('_', ' ').title()} "
-            f"{module.replace('_', ' ').title()} "
-            f"({scope.replace('_', ' ').title()})"
-        )
+        name = f"{action.replace('_', ' ').title()} {module.replace('_', ' ').title()}"
+
+        if scope:
+            name += f" ({scope.replace('_', ' ').title()})"
+
+        return name
 
 
 __all__ = [

@@ -1,13 +1,7 @@
-"""
-Organization admin registrations.
-"""
+"""Register Organization admin models when Django autodiscovers this package."""
 
 from .organization import OrganizationAdmin
-from .organization_hierarchy import (
-    OrganizationHierarchyAdmin,
-)
 
 __all__ = [
     "OrganizationAdmin",
-    "OrganizationHierarchyAdmin",
 ]

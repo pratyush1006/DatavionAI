@@ -4,8 +4,13 @@ Create serializer for the Patients application.
 
 from __future__ import annotations
 
+from apps.clinical.patients.services import PatientService
+
 from .base import PatientBaseSerializer
-from .fields import _WRITE_FIELDS
+from .fields import (
+    READ_ONLY_FIELDS,
+    WRITE_FIELDS,
+)
 
 
 class PatientCreateSerializer(PatientBaseSerializer):
@@ -14,17 +19,20 @@ class PatientCreateSerializer(PatientBaseSerializer):
     """
 
     class Meta(PatientBaseSerializer.Meta):
-        fields = _WRITE_FIELDS
+        fields = WRITE_FIELDS
+        read_only_fields = READ_ONLY_FIELDS
 
-    def validate_mrn(
+    def create(
         self,
-        value: str,
-    ) -> str:
+        validated_data: dict[str, object],
+    ):
         """
-        Normalize the Medical Record Number.
+        Create a patient.
         """
 
-        return value.strip().upper()
+        return PatientService.create(
+            validated_data=validated_data,
+        )
 
 
 __all__ = [

@@ -14,6 +14,7 @@ from apps.clinical.patients.constants import (
     PatientStatus,
 )
 from apps.clinical.patients.models import Patient
+from apps.clinical.patients.tests.factories import PatientFactory
 from apps.common.tests.base import BaseAPITestCase
 
 
@@ -25,7 +26,7 @@ class PatientAPITestCase(BaseAPITestCase):
     def setUp(self) -> None:
         super().setUp()
 
-        self.patient = Patient.objects.create(
+        self.patient = PatientFactory(
             organization=self.organization,
             mrn="MRN000001",
             first_name="John",
@@ -45,7 +46,7 @@ class PatientAPITestCase(BaseAPITestCase):
         self.detail_url = reverse(
             "patients:detail",
             kwargs={
-                "patient_id": self.patient.id,
+                "patient_id": self.patient.pk,
             },
         )
 
@@ -83,7 +84,7 @@ class PatientAPITestCase(BaseAPITestCase):
         """
 
         payload = {
-            "organization": str(self.organization.id),
+            "organization": str(self.organization.pk),
             "mrn": "MRN000002",
             "first_name": "Jane",
             "last_name": "Smith",
@@ -111,7 +112,7 @@ class PatientAPITestCase(BaseAPITestCase):
 
     def test_update_patient(self) -> None:
         """
-        Update endpoint should update the patient.
+        PUT should update the patient.
         """
 
         response = self.client.put(
@@ -140,7 +141,7 @@ class PatientAPITestCase(BaseAPITestCase):
 
     def test_partial_update_patient(self) -> None:
         """
-        PATCH should update a subset of fields.
+        PATCH should update selected fields.
         """
 
         response = self.client.patch(
@@ -165,7 +166,7 @@ class PatientAPITestCase(BaseAPITestCase):
 
     def test_delete_patient(self) -> None:
         """
-        Delete endpoint should remove the patient.
+        DELETE should remove the patient.
         """
 
         response = self.client.delete(
@@ -179,11 +180,11 @@ class PatientAPITestCase(BaseAPITestCase):
 
         self.assertFalse(
             Patient.objects.filter(
-                id=self.patient.id,
+                pk=self.patient.pk,
             ).exists(),
         )
 
-    def test_create_patient_validation_error(self) -> None:
+    def test_invalid_create_returns_bad_request(self) -> None:
         """
         Invalid payload should return HTTP 400.
         """
@@ -199,9 +200,53 @@ class PatientAPITestCase(BaseAPITestCase):
             status.HTTP_400_BAD_REQUEST,
         )
 
+    def test_duplicate_mrn_returns_bad_request(self) -> None:
+        """
+        Duplicate MRN should fail.
+        """
+
+        payload = {
+            "organization": str(self.organization.pk),
+            "mrn": "MRN000001",
+            "first_name": "Jane",
+            "last_name": "Smith",
+            "date_of_birth": "1998-08-15",
+            "gender": PatientGender.FEMALE,
+        }
+
+        response = self.client.post(
+            self.list_url,
+            payload,
+            format="json",
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_400_BAD_REQUEST,
+        )
+
+    def test_unknown_patient_returns_not_found(self) -> None:
+        """
+        Unknown patient should return HTTP 404.
+        """
+
+        response = self.client.get(
+            reverse(
+                "patients:detail",
+                kwargs={
+                    "patient_id": "00000000-0000-0000-0000-000000000000",
+                },
+            ),
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_404_NOT_FOUND,
+        )
+
     def test_requires_authentication(self) -> None:
         """
-        Endpoints should require authentication.
+        API should require authentication.
         """
 
         self.client.force_authenticate(
@@ -215,6 +260,21 @@ class PatientAPITestCase(BaseAPITestCase):
         self.assertEqual(
             response.status_code,
             status.HTTP_401_UNAUTHORIZED,
+        )
+
+    def test_list_contains_patient(self) -> None:
+        """
+        Patient should be present in the list response.
+        """
+
+        response = self.client.get(
+            self.list_url,
+        )
+
+        self.assertContains(
+            response,
+            self.patient.mrn,
+            status_code=status.HTTP_200_OK,
         )
 
 

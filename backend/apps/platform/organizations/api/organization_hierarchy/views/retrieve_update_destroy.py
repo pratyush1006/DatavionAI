@@ -97,6 +97,4 @@ class OrganizationHierarchyRetrieveUpdateDestroyAPIView(
         )
 
 
-__all__ = [
-    "OrganizationHierarchyRetrieveUpdateDestroyAPIView",
-]
+__all__: tuple[str, ...] = ("OrganizationHierarchyRetrieveUpdateDestroyAPIView",)

@@ -2,6 +2,8 @@
 Provider serializer exports.
 """
 
+from __future__ import annotations
+
 from .base import ProviderBaseSerializer
 from .create import ProviderCreateSerializer
 from .detail import ProviderDetailSerializer

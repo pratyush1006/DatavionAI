@@ -1,80 +1,93 @@
 """
-Enterprise logging configuration for DatavionAI.
+Enterprise logging configuration for DatavionOS.
+
+Centralized Django logging configuration built on top of the
+apps.common.logging framework.
 """
+
+from __future__ import annotations
 
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 LOG_DIR = BASE_DIR / "logs"
-LOG_DIR.mkdir(parents=True, exist_ok=True)
+LOG_DIR.mkdir(
+    parents=True,
+    exist_ok=True,
+)
 
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
     "filters": {
-        "request_id": {
-            "()": "apps.common.logging.RequestIDFilter",
+        "request_context": {
+            "()": ("apps.common.logging.RequestContextFilter"),
+        },
+        "health_check": {
+            "()": ("apps.common.logging.HealthCheckFilter"),
         },
     },
     "formatters": {
-        "standard": {
-            "format": (
-                "[{asctime}] {levelname:<8} {name:<20} [{request_id}] {message}"
-            ),
-            "style": "{",
-            "datefmt": "%Y-%m-%dT%H:%M:%S%z",
+        "console": {
+            "()": ("apps.common.logging.ConsoleFormatter"),
         },
-        "verbose": {
-            "format": (
-                "[{asctime}] "
-                "{levelname:<8} "
-                "{name:<20} "
-                "[{request_id}] "
-                "{module}:{lineno} "
-                "{message}"
-            ),
-            "style": "{",
-            "datefmt": "%Y-%m-%dT%H:%M:%S%z",
+        "json": {
+            "()": ("apps.common.logging.JSONFormatter"),
         },
     },
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
-            "formatter": "standard",
-            "filters": ["request_id"],
+            "formatter": "console",
+            "filters": [
+                "request_context",
+                "health_check",
+            ],
         },
         "application_file": {
             "class": "logging.handlers.RotatingFileHandler",
-            "filename": LOG_DIR / "application.log",
-            "maxBytes": 10 * 1024 * 1024,  # 10 MB
+            "filename": str(
+                LOG_DIR / "application.log",
+            ),
+            "maxBytes": 10 * 1024 * 1024,
             "backupCount": 5,
-            "formatter": "verbose",
             "encoding": "utf-8",
-            "filters": ["request_id"],
+            "formatter": "json",
+            "filters": [
+                "request_context",
+            ],
         },
         "error_file": {
             "class": "logging.handlers.RotatingFileHandler",
-            "filename": LOG_DIR / "error.log",
+            "filename": str(
+                LOG_DIR / "error.log",
+            ),
             "maxBytes": 10 * 1024 * 1024,
             "backupCount": 5,
-            "formatter": "verbose",
             "encoding": "utf-8",
             "level": "ERROR",
-            "filters": ["request_id"],
+            "formatter": "json",
+            "filters": [
+                "request_context",
+            ],
         },
         "audit_file": {
             "class": "logging.handlers.RotatingFileHandler",
-            "filename": LOG_DIR / "audit.log",
+            "filename": str(
+                LOG_DIR / "audit.log",
+            ),
             "maxBytes": 10 * 1024 * 1024,
-            "backupCount": 5,
-            "formatter": "verbose",
+            "backupCount": 10,
             "encoding": "utf-8",
-            "filters": ["request_id"],
+            "formatter": "json",
+            "filters": [
+                "request_context",
+            ],
         },
     },
     "loggers": {
-        "application": {
+        "apps": {
             "handlers": [
                 "console",
                 "application_file",
@@ -88,14 +101,6 @@ LOGGING = {
                 "audit_file",
             ],
             "level": "INFO",
-            "propagate": False,
-        },
-        "error": {
-            "handlers": [
-                "console",
-                "error_file",
-            ],
-            "level": "ERROR",
             "propagate": False,
         },
         "django": {

@@ -68,6 +68,11 @@ class OrganizationHierarchyListCreateAPIView(
 
     create_success_message = "Organization hierarchy created successfully."
 
+    search_fields = (
+        "parent_organization__name",
+        "child_organization__name",
+    )
+
     ordering = ("display_order",)
 
     ordering_fields = (
@@ -90,6 +95,4 @@ class OrganizationHierarchyListCreateAPIView(
         return get_organization_hierarchies()
 
 
-__all__ = [
-    "OrganizationHierarchyListCreateAPIView",
-]
+__all__: tuple[str, ...] = ("OrganizationHierarchyListCreateAPIView",)

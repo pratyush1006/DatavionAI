@@ -1,5 +1,5 @@
 """
-Base middleware implementations for the Datavion AI platform.
+Base middleware implementations for the DatavionAI framework.
 """
 
 from __future__ import annotations
@@ -8,47 +8,99 @@ from collections.abc import Callable
 
 from django.http import (
     HttpRequest,
-    HttpResponse,
+    HttpResponseBase,
 )
+
+MiddlewareHandler = Callable[
+    [HttpRequest],
+    HttpResponseBase,
+]
 
 
 class BaseMiddleware:
     """
-    Base class for Datavion middleware.
+    Base class for DatavionAI middleware.
 
-    Subclasses should override ``__call__`` when request processing
-    is required.
+    Subclasses should override lifecycle hooks instead of
+    implementing ``__call__`` directly.
     """
 
     def __init__(
         self,
-        get_response: Callable[
-            [HttpRequest],
-            HttpResponse,
-        ],
+        get_response: MiddlewareHandler,
     ) -> None:
         """
-        Initialize the middleware.
+        Initialize middleware.
         """
 
         self.get_response = get_response
 
+    def process_request(
+        self,
+        request: HttpRequest,
+    ) -> None:
+        """
+        Process incoming request.
+
+        Executed before the view.
+        """
+
+    def process_response(
+        self,
+        request: HttpRequest,
+        response: HttpResponseBase,
+    ) -> HttpResponseBase:
+        """
+        Process outgoing response.
+        """
+
+        return response
+
+    def process_exception(
+        self,
+        request: HttpRequest,
+        exception: Exception,
+    ) -> HttpResponseBase | None:
+        """
+        Process request exceptions.
+
+        Returning a response prevents exception propagation.
+        """
+
+        return None
+
     def __call__(
         self,
         request: HttpRequest,
-    ) -> HttpResponse:
+    ) -> HttpResponseBase:
         """
-        Process the incoming request.
-
-        Subclasses may override this method to implement custom
-        request/response behavior.
+        Execute middleware lifecycle.
         """
 
-        return self.get_response(
+        self.process_request(
             request,
         )
 
+        try:
+            response = self.get_response(
+                request,
+            )
 
-__all__ = [
-    "BaseMiddleware",
-]
+        except Exception as exception:
+            handled_response = self.process_exception(
+                request,
+                exception,
+            )
+
+            if handled_response is not None:
+                return handled_response
+
+            raise
+
+        return self.process_response(
+            request,
+            response,
+        )
+
+
+__all__: tuple[str, ...] = ("BaseMiddleware",)

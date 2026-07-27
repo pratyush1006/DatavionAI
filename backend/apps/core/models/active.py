@@ -1,8 +1,8 @@
 """
-Reusable active/inactive model.
+Reusable active state model.
 
-Provides an abstract model with an active/inactive flag
-for business models across the Datavion AI platform.
+Provides an abstract active/inactive lifecycle flag for
+DatavionOS business entities.
 """
 
 from __future__ import annotations
@@ -14,15 +14,33 @@ class ActiveModel(
     models.Model,
 ):
     """
-    Abstract model providing an active/inactive flag.
+    Abstract model providing active state management.
 
-    Models inheriting from this class can be enabled or
-    disabled without being deleted.
+    Active state represents operational availability.
+
+    This is independent from:
+        - Soft deletion
+        - Archiving
+        - Suspension
+        - Compliance retention
+
+    Examples:
+
+        Active:
+            Entity can participate in business operations.
+
+        Inactive:
+            Entity is temporarily unavailable but retained.
+
+    Business models should inherit from this model instead of
+    defining their own active flag.
     """
 
     is_active = models.BooleanField(
         default=True,
         db_index=True,
+        verbose_name="Active",
+        help_text=("Indicates whether the entity is available for normal operations."),
     )
 
     class Meta:
@@ -33,6 +51,4 @@ class ActiveModel(
         abstract = True
 
 
-__all__ = [
-    "ActiveModel",
-]
+__all__: tuple[str, ...] = ("ActiveModel",)

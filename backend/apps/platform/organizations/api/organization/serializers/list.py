@@ -5,9 +5,7 @@ List serializer for the Organizations application.
 from __future__ import annotations
 
 from .base import OrganizationBaseSerializer
-from .fields import (
-    _LIST_FIELDS,
-)
+from .fields import _LIST_FIELDS
 
 
 class OrganizationListSerializer(
@@ -15,6 +13,9 @@ class OrganizationListSerializer(
 ):
     """
     Serializer used for listing organizations.
+
+    This serializer is optimized for collection endpoints and
+    exposes a minimal read-only representation.
     """
 
     class Meta(
@@ -24,6 +25,4 @@ class OrganizationListSerializer(
         read_only_fields = _LIST_FIELDS
 
 
-__all__ = [
-    "OrganizationListSerializer",
-]
+__all__: tuple[str, ...] = ("OrganizationListSerializer",)

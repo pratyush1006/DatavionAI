@@ -25,10 +25,28 @@ SECRET_KEY = config(
     default="django-insecure-local-development-key",
 )
 
+
+def _parse_debug(value: str | bool) -> bool:
+    """Parse boolean and conventional deployment-mode DEBUG values safely."""
+    if isinstance(value, bool):
+        return value
+
+    normalized = value.strip().lower()
+    if normalized in {"1", "true", "yes", "on", "development", "dev"}:
+        return True
+    if normalized in {"", "0", "false", "no", "off", "production", "prod", "release"}:
+        return False
+
+    raise ValueError(
+        "DEBUG must be a boolean or a supported deployment mode "
+        "(development, production, or release)."
+    )
+
+
 DEBUG = config(
     "DEBUG",
     default=False,
-    cast=bool,
+    cast=_parse_debug,
 )
 
 ALLOWED_HOSTS = config(
@@ -60,6 +78,7 @@ INSTALLED_APPS = [
     "django_celery_results",
     "django_celery_beat",
     # Local Apps
+    "apps.platform.tenancy",
     "apps.core.apps.CoreConfig",
     "apps.common.apps.CommonConfig",
     "apps.platform.accounts.apps.AccountsConfig",
@@ -69,8 +88,15 @@ INSTALLED_APPS = [
     "apps.organization.teams.apps.TeamsConfig",
     "apps.organization.employees.apps.EmployeesConfig",
     "apps.platform.audit.apps.AuditConfig",
-    "apps.storage.apps.StorageConfig",
+    "apps.platform.saas_billing.apps.SaaSBillingConfig",
     "apps.configuration.apps.ConfigurationConfig",
+    "apps.billing.apps.BillingConfig",
+    "apps.billing.general_ledger.apps.GeneralLedgerConfig",
+    "apps.billing.accounts_payable.apps.AccountsPayableConfig",
+    "apps.billing.accounts_receivable.apps.AccountsReceivableConfig",
+    "apps.billing.cash_management.apps.CashManagementConfig",
+    "apps.billing.tax_gst.apps.TaxGstConfig",
+    "apps.billing.financial_management.apps.FinancialManagementConfig",
     "apps.clinical.patients.apps.PatientsConfig",
     "apps.clinical.providers.apps.ProvidersConfig",
     "apps.clinical.appointments.apps.AppointmentsConfig",
@@ -81,7 +107,17 @@ INSTALLED_APPS = [
     "apps.clinical.allergies.apps.AllergiesConfig",
     "apps.clinical.vitals.apps.VitalsConfig",
     "apps.clinical.laboratories.apps.LaboratoriesConfig",
-    "apps.platform_core.apps.PlatformCoreConfig",
+    "apps.notes.apps.NotesConfig",
+    "apps.telemedicine.apps.TelemedicineConfig",
+    "apps.ai.apps.AIConfig",
+    "apps.imaging.apps.ImagingConfig",
+    "apps.insurance.apps.InsuranceConfig",
+    "apps.transcription.apps.TranscriptionConfig",
+    "apps.interoperability.apps.InteroperabilityConfig",
+    "apps.revenue_cycle.apps.RevenueCycleConfig",
+    "apps.patient_management.apps.PatientManagementConfig",
+    "apps.compliance.apps.ComplianceConfig",
+    "apps.datavionos.apps.DatavionOSConfig",
     "apps.platform.subscriptions.apps.SubscriptionsConfig",
     "apps.platform.feature_flags.apps.FeatureFlagsConfig",
     "apps.platform.module_registry.apps.ModuleRegistryConfig",
@@ -96,11 +132,15 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "corsheaders.middleware.CorsMiddleware",
+    # Request tracing
     "apps.common.middleware.RequestIDMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
+    # Authentication must run before tenant resolution
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    # DatavionOS SaaS tenant context
+    "apps.platform.tenancy.middleware.TenantMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -298,7 +338,7 @@ DEFAULT_TIMEZONE = "Asia/Kolkata"
 REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "apps.platform.tenancy.authentication.TenantJWTAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
@@ -308,7 +348,8 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_PAGINATION_CLASS": "apps.common.api.pagination.DatavionPagination",
     "PAGE_SIZE": DEFAULT_PAGE_SIZE,
-    "EXCEPTION_HANDLER": "apps.common.exceptions.handlers.custom_exception_handler",
+    # Enterprise exception handler
+    "EXCEPTION_HANDLER": ("apps.common.exceptions.handlers.datavion_exception_handler"),
     "DEFAULT_RENDERER_CLASSES": [
         "rest_framework.renderers.JSONRenderer",
     ],

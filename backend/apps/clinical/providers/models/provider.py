@@ -11,7 +11,10 @@ from apps.clinical.providers.constants import (
     ProviderStatus,
     ProviderType,
 )
-from apps.core.models import BaseManager, BaseModel
+from apps.core.models import (
+    BaseManager,
+    BaseModel,
+)
 from apps.organization.employees.models import Employee
 from apps.platform.organizations.models import Organization
 
@@ -88,21 +91,19 @@ class Provider(BaseModel):
         indexes = [
             models.Index(
                 fields=[
-                    "provider_number",
-                ],
-            ),
-            models.Index(
-                fields=[
+                    "organization",
                     "provider_type",
                 ],
             ),
             models.Index(
                 fields=[
+                    "organization",
                     "status",
                 ],
             ),
             models.Index(
                 fields=[
+                    "organization",
                     "is_accepting_patients",
                 ],
             ),
@@ -135,14 +136,24 @@ class Provider(BaseModel):
 
         return self.employee.full_name
 
-    def __str__(
+    @property
+    def display_name(
         self,
     ) -> str:
         """
         Return the provider display name.
         """
 
-        return f"{self.employee.full_name} ({self.provider_number})"
+        return self.employee.full_name
+
+    def __str__(
+        self,
+    ) -> str:
+        """
+        Return the provider string representation.
+        """
+
+        return f"{self.display_name} ({self.provider_number})"
 
 
 __all__ = [

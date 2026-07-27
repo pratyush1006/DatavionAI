@@ -1,9 +1,14 @@
 """
 RBAC constants exports.
+
+Central export registry for DatavionOS RBAC constants.
 """
 
 from __future__ import annotations
 
+# ============================================================================
+# Organization Role
+# ============================================================================
 from .organization_role import (
     DEFAULT_ORGANIZATION_ROLE_ASSIGNMENT_SOURCE,
     OrganizationRoleAssignmentSource,
@@ -44,6 +49,10 @@ from .role import (
     RoleScope,
     RoleType,
 )
+
+# ============================================================================
+# Role Hierarchy
+# ============================================================================
 from .role_hierarchy import (
     DEFAULT_ROLE_HIERARCHY_ASSIGNMENT_SOURCE,
     DEFAULT_ROLE_HIERARCHY_TYPE,
@@ -99,6 +108,14 @@ __all__ = [
     "RoleScope",
     "RoleType",
     # =========================================================================
+    # Role Hierarchy
+    # =========================================================================
+    "DEFAULT_ROLE_HIERARCHY_ASSIGNMENT_SOURCE",
+    "DEFAULT_ROLE_HIERARCHY_TYPE",
+    "MAX_ROLE_HIERARCHY_DEPTH",
+    "RoleHierarchyAssignmentSource",
+    "RoleHierarchyType",
+    # =========================================================================
     # Role Permission
     # =========================================================================
     "DEFAULT_ROLE_PERMISSION_SOURCE",
@@ -110,11 +127,9 @@ __all__ = [
     # =========================================================================
     "DEFAULT_USER_ROLE_ASSIGNMENT_SOURCE",
     "UserRoleAssignmentSource",
+    # =========================================================================
+    # Organization Role
+    # =========================================================================
     "DEFAULT_ORGANIZATION_ROLE_ASSIGNMENT_SOURCE",
     "OrganizationRoleAssignmentSource",
-    "DEFAULT_ROLE_HIERARCHY_ASSIGNMENT_SOURCE",
-    "DEFAULT_ROLE_HIERARCHY_TYPE",
-    "MAX_ROLE_HIERARCHY_DEPTH",
-    "RoleHierarchyAssignmentSource",
-    "RoleHierarchyType",
 ]

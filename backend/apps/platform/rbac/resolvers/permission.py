@@ -1,5 +1,12 @@
 """
 Permission resolution helpers.
+
+Resolves effective permissions from:
+
+1. Platform roles
+2. Organization roles
+3. Role hierarchy
+4. Role permissions
 """
 
 from __future__ import annotations
@@ -10,6 +17,7 @@ from apps.platform.organizations.models import (
 )
 from apps.platform.rbac.models import (
     Permission,
+    Role,
 )
 
 from .hierarchy import (
@@ -29,40 +37,78 @@ def resolve_permissions(
     organization: Organization | None = None,
 ) -> set[str]:
     """
-    Resolve the effective permission codes for a user.
+       Resolve effective permission codes.
 
-    Resolution order:
+       Resolution:
 
-    1. Direct user roles
-    2. Organization roles
-    3. Role hierarchy inheritance
-    4. Role permissions
+       User
+         |
+         +----------------+
+         |                |
+         v                v
+    Platform RBAC   Organization RBAC
+         |                |
+         +----------------+
+                  |
+                  v
+           Role Hierarchy
+                  |
+                  v
+           Role Permissions
+                  |
+                  v
+           Permission Codes
     """
 
     #
-    # Direct user roles.
+    # Collect role IDs.
     #
-    roles = resolve_user_roles(
-        user=user,
+    # Keep QuerySet compatibility for hierarchy resolver.
+    #
+    role_ids: set[str] = set(
+        resolve_user_roles(
+            user=user,
+        ).values_list(
+            "id",
+            flat=True,
+        )
     )
 
     #
-    # Organization-specific roles.
+    # Organization scoped roles.
     #
     if organization is not None:
-        roles = roles.union(
+        role_ids.update(
             resolve_organization_roles(
                 user=user,
                 organization=organization,
-            ),
+            ).values_list(
+                "id",
+                flat=True,
+            )
         )
 
+    if not role_ids:
+        return set()
+
     #
-    # Expand inherited roles.
+    # Rebuild QuerySet.
+    #
+    # Required by hierarchy resolver.
+    #
+    roles = Role.objects.filter(
+        id__in=role_ids,
+    )
+
+    #
+    # Resolve inherited roles.
     #
     roles = resolve_inherited_roles(
         roles=roles,
     )
+
+    if not roles.exists():
+        return set()
 
     #
     # Resolve permissions.
@@ -74,13 +120,14 @@ def resolve_permissions(
             role_permissions__is_active=True,
         )
         .distinct()
+        .values_list(
+            "code",
+            flat=True,
+        )
     )
 
     return set(
-        permissions.values_list(
-            "code",
-            flat=True,
-        ),
+        permissions,
     )
 
 

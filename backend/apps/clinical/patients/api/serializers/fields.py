@@ -6,18 +6,17 @@ from __future__ import annotations
 
 from typing import Final
 
-_LIST_FIELDS: Final[tuple[str, ...]] = (
+LIST_FIELDS: Final[tuple[str, ...]] = (
     "id",
     "mrn",
-    "first_name",
-    "last_name",
+    "display_name",
     "gender",
     "phone",
     "status",
     "is_active",
 )
 
-_DETAIL_FIELDS: Final[tuple[str, ...]] = (
+DETAIL_FIELDS: Final[tuple[str, ...]] = (
     "id",
     "organization",
     "mrn",
@@ -25,6 +24,8 @@ _DETAIL_FIELDS: Final[tuple[str, ...]] = (
     "middle_name",
     "last_name",
     "preferred_name",
+    "display_name",
+    "age",
     "date_of_birth",
     "gender",
     "marital_status",
@@ -42,7 +43,7 @@ _DETAIL_FIELDS: Final[tuple[str, ...]] = (
     "updated_at",
 )
 
-_WRITE_FIELDS: Final[tuple[str, ...]] = (
+WRITE_FIELDS: Final[tuple[str, ...]] = (
     "organization",
     "mrn",
     "first_name",
@@ -64,7 +65,7 @@ _WRITE_FIELDS: Final[tuple[str, ...]] = (
     "is_active",
 )
 
-_UPDATE_FIELDS: Final[tuple[str, ...]] = (
+UPDATE_FIELDS: Final[tuple[str, ...]] = (
     "first_name",
     "middle_name",
     "last_name",
@@ -84,9 +85,18 @@ _UPDATE_FIELDS: Final[tuple[str, ...]] = (
     "is_active",
 )
 
+READ_ONLY_FIELDS: Final[tuple[str, ...]] = (
+    "id",
+    "display_name",
+    "age",
+    "created_at",
+    "updated_at",
+)
+
 __all__ = [
-    "_DETAIL_FIELDS",
-    "_LIST_FIELDS",
-    "_UPDATE_FIELDS",
-    "_WRITE_FIELDS",
+    "DETAIL_FIELDS",
+    "LIST_FIELDS",
+    "READ_ONLY_FIELDS",
+    "UPDATE_FIELDS",
+    "WRITE_FIELDS",
 ]

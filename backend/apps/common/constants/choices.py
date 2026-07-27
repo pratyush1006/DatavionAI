@@ -1,52 +1,108 @@
 """
-Reusable framework choice definitions.
+DatavionAI Choice Constants.
 
-Only generic, framework-wide choice helpers belong here.
-Business-specific choices should live inside their
-respective feature applications.
+Shared Django model choices used across the platform.
+
+Design Principles
+-----------------
+- Reusable
+- Immutable
+- Type-safe
+- Framework independent
 """
 
 from __future__ import annotations
 
-from django.db import models
+from django.db.models import TextChoices
 
 
-class TextChoices(
-    models.TextChoices,
-):
+class ActiveStatus(TextChoices):
     """
-    Base TextChoices class for Datavion AI.
-
-    Feature applications should inherit from this class when
-    defining string-based choices.
+    Generic active status.
     """
 
+    ACTIVE = "ACTIVE", "Active"
+    INACTIVE = "INACTIVE", "Inactive"
 
-class IntegerChoices(
-    models.IntegerChoices,
-):
+
+class RecordStatus(TextChoices):
     """
-    Base IntegerChoices class for Datavion AI.
-
-    Feature applications should inherit from this class when
-    defining integer-based choices.
+    Generic record lifecycle.
     """
 
+    ACTIVE = "ACTIVE", "Active"
+    INACTIVE = "INACTIVE", "Inactive"
+    ARCHIVED = "ARCHIVED", "Archived"
+    DELETED = "DELETED", "Deleted"
 
-YES_NO: tuple[tuple[bool, str], ...] = (
-    (
-        True,
-        "Yes",
-    ),
-    (
-        False,
-        "No",
-    ),
+
+class YesNo(TextChoices):
+    """
+    Generic yes/no choices.
+    """
+
+    YES = "YES", "Yes"
+    NO = "NO", "No"
+
+
+class Gender(TextChoices):
+    """
+    Generic gender choices.
+    """
+
+    MALE = "MALE", "Male"
+    FEMALE = "FEMALE", "Female"
+    OTHER = "OTHER", "Other"
+    UNKNOWN = "UNKNOWN", "Unknown"
+
+
+class Priority(TextChoices):
+    """
+    Generic priority levels.
+    """
+
+    LOW = "LOW", "Low"
+    MEDIUM = "MEDIUM", "Medium"
+    HIGH = "HIGH", "High"
+    CRITICAL = "CRITICAL", "Critical"
+
+
+class Severity(TextChoices):
+    """
+    Generic severity levels.
+    """
+
+    LOW = "LOW", "Low"
+    MEDIUM = "MEDIUM", "Medium"
+    HIGH = "HIGH", "High"
+    CRITICAL = "CRITICAL", "Critical"
+
+
+class Language(TextChoices):
+    """
+    Common language choices.
+    """
+
+    ENGLISH = "en", "English"
+    HINDI = "hi", "Hindi"
+
+
+class BooleanChoice(TextChoices):
+    """
+    Boolean-like string choices.
+    """
+
+    TRUE = "TRUE", "True"
+    FALSE = "FALSE", "False"
+
+
+__all__ = (
+    "ActiveStatus",
+    "BooleanChoice",
+    "Gender",
+    "Language",
+    "Priority",
+    "RecordStatus",
+    "Severity",
+    "YesNo",
 )
-
-
-__all__ = [
-    "IntegerChoices",
-    "TextChoices",
-    "YES_NO",
-]

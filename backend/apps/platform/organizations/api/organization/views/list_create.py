@@ -31,7 +31,7 @@ from django.db.models import QuerySet
 from drf_spectacular.utils import extend_schema
 from rest_framework.permissions import IsAuthenticated
 
-ORGANIZATION_TAG: Final = ("Organizations",)
+ORGANIZATION_TAG: Final[tuple[str, ...]] = ("Organizations",)
 
 
 @extend_schema(
@@ -41,7 +41,14 @@ class OrganizationListCreateAPIView(
     BaseListCreateAPIView,
 ):
     """
-    List existing organizations or create a new organization.
+    API endpoint for listing and creating organizations.
+
+    GET
+        Returns organizations visible to the current user.
+
+    POST
+        Creates a new organization through the Organization
+        service layer.
     """
 
     permission_classes_map = {
@@ -85,26 +92,28 @@ class OrganizationListCreateAPIView(
         "code",
         "city",
         "created_at",
+        "updated_at",
     )
 
     filterset_fields = (
         "category",
         "organization_type",
         "status",
+        "verification_status",
+        "subscription_status",
         "country",
-        "is_active",
     )
 
     def get_queryset(
         self,
     ) -> QuerySet[Organization]:
         """
-        Return the organizations queryset.
+        Return organizations visible to the current request.
+
+        Read operations are delegated to the selector layer.
         """
 
         return get_organizations()
 
 
-__all__ = [
-    "OrganizationListCreateAPIView",
-]
+__all__: tuple[str, ...] = ("OrganizationListCreateAPIView",)

@@ -1,132 +1,168 @@
 """
 Reusable QuerySet classes.
 
-Provides reusable QuerySet implementations shared across the
-Datavion AI platform.
+Provides reusable database query abstractions shared across
+the DatavionOS platform.
 """
 
 from __future__ import annotations
 
-from typing import Self
+from collections.abc import Iterator
+from datetime import datetime
+from typing import TypeAlias, TypeVar
 
-from django.db import models
+from django.db import models, transaction
 from django.utils import timezone
+
+ModelType = TypeVar(
+    "ModelType",
+    bound=models.Model,
+)
+
+
+DeleteResult: TypeAlias = tuple[
+    int,
+    dict[str, int],
+]
 
 
 class BaseQuerySet(
-    models.QuerySet,
+    models.QuerySet[ModelType],
 ):
     """
-    Base queryset shared across business models.
+    Base queryset for DatavionOS models.
     """
 
-    def newest(
-        self,
-    ) -> Self:
-        """
-        Return records ordered by newest first.
-        """
-
+    def newest(self):
         return self.order_by(
             "-created_at",
         )
 
-    def oldest(
-        self,
-    ) -> Self:
-        """
-        Return records ordered by oldest first.
-        """
-
+    def oldest(self):
         return self.order_by(
             "created_at",
         )
 
+    def recent(
+        self,
+        *,
+        days: int,
+    ):
+        since = timezone.now() - timezone.timedelta(
+            days=days,
+        )
+
+        return self.filter(
+            created_at__gte=since,
+        )
+
+    def created_between(
+        self,
+        *,
+        start: datetime,
+        end: datetime,
+    ):
+        return self.filter(
+            created_at__range=(
+                start,
+                end,
+            ),
+        )
+
+    def updated_between(
+        self,
+        *,
+        start: datetime,
+        end: datetime,
+    ):
+        return self.filter(
+            updated_at__range=(
+                start,
+                end,
+            ),
+        )
+
+    def exists_by_pk(
+        self,
+        pk: object,
+    ) -> bool:
+        return self.filter(
+            pk=pk,
+        ).exists()
+
+    def chunked(
+        self,
+        *,
+        size: int = 1000,
+    ) -> Iterator[list[ModelType]]:
+
+        if size <= 0:
+            raise ValueError(
+                "Chunk size must be greater than zero.",
+            )
+
+        batch = []
+
+        for obj in self.iterator(
+            chunk_size=size,
+        ):
+            batch.append(obj)
+
+            if len(batch) >= size:
+                yield batch
+                batch = []
+
+        if batch:
+            yield batch
+
 
 class ActiveQuerySet(
-    BaseQuerySet,
+    BaseQuerySet[ModelType],
 ):
-    """
-    QuerySet for models implementing ActiveMixin.
-    """
-
-    def active(
-        self,
-    ) -> Self:
-        """
-        Return only active records.
-        """
-
+    def active(self):
         return self.filter(
             is_active=True,
         )
 
-    def inactive(
-        self,
-    ) -> Self:
-        """
-        Return only inactive records.
-        """
-
+    def inactive(self):
         return self.filter(
             is_active=False,
         )
 
 
 class SoftDeleteQuerySet(
-    BaseQuerySet,
+    BaseQuerySet[ModelType],
 ):
-    """
-    QuerySet for models implementing SoftDeleteMixin.
-    """
-
-    def alive(
-        self,
-    ) -> Self:
-        """
-        Return only non-deleted records.
-        """
-
+    def alive(self):
         return self.filter(
             is_deleted=False,
         )
 
-    def deleted(
-        self,
-    ) -> Self:
-        """
-        Return only soft-deleted records.
-        """
-
+    def deleted(self):
         return self.filter(
             is_deleted=True,
         )
 
-    def restore(
-        self,
-    ) -> int:
-        """
-        Restore all soft-deleted records.
-        """
+    @transaction.atomic
+    def restore(self) -> int:
 
         return self.update(
-            is_active=True,
             is_deleted=False,
             deleted_at=None,
-            deleted_by=None,
+            deleted_by_id=None,
         )
 
+    @transaction.atomic
     def delete(
         self,
-    ) -> tuple[int, dict[str, int]]:
-        """
-        Soft delete all records in the queryset.
-        """
+        *,
+        user_id=None,
+    ) -> DeleteResult:
 
         count = self.update(
-            is_active=False,
             is_deleted=True,
             deleted_at=timezone.now(),
+            deleted_by_id=user_id,
         )
 
         return (
@@ -136,18 +172,16 @@ class SoftDeleteQuerySet(
             },
         )
 
-    def hard_delete(
-        self,
-    ) -> tuple[int, dict[str, int]]:
-        """
-        Permanently delete all records.
-        """
+    def alive_count(self):
+        return self.alive().count()
 
-        return super().delete()
+    def deleted_count(self):
+        return self.deleted().count()
 
 
-__all__ = [
-    "BaseQuerySet",
+__all__: tuple[str, ...] = (
     "ActiveQuerySet",
+    "BaseQuerySet",
+    "DeleteResult",
     "SoftDeleteQuerySet",
-]
+)

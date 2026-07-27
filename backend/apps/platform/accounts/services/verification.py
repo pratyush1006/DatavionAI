@@ -1,23 +1,45 @@
 """
 Verification services.
+
+Handles:
+
+- Email verification
+- OTP verification workflow
+- Verification notifications
+
+Notification delivery is delegated to the DatavionOS
+common notification framework.
 """
 
 from __future__ import annotations
 
 from django.db import transaction
 
-from apps.common.exceptions import ValidationException
+from apps.common.exceptions import (
+    ValidationException,
+)
+from apps.common.notifications.constants import (
+    CHANNEL_EMAIL,
+)
+from apps.common.notifications.models import (
+    Notification,
+    NotificationRecipient,
+)
+from apps.common.notifications.services import (
+    notification_service,
+)
 from apps.platform.accounts.constants import (
     OTPChannel,
     OTPPurpose,
 )
-from apps.platform.accounts.models import User
+from apps.platform.accounts.models import (
+    User,
+)
 from apps.platform.accounts.selectors.account import (
     get_user_by_email,
 )
-from apps.platform.accounts.services.otp import OTPService
-from apps.platform.notifications.services import (
-    NotificationService,
+from apps.platform.accounts.services.otp import (
+    OTPService,
 )
 
 
@@ -27,6 +49,33 @@ class VerificationService:
     """
 
     @staticmethod
+    def _send_email_verification_notification(
+        *,
+        user: User,
+        code: str,
+    ) -> None:
+        """
+        Send email verification OTP notification.
+        """
+
+        notification_service.send(
+            Notification(
+                name="EMAIL_VERIFICATION_OTP",
+                channel=CHANNEL_EMAIL,
+                recipient=NotificationRecipient(
+                    recipient_id=str(user.id),
+                    address=user.email,
+                    name=(user.get_full_name() or user.email),
+                ),
+                template="verification_otp",
+                payload={
+                    "otp": code,
+                    "email": user.email,
+                },
+            ),
+        )
+
+    @staticmethod
     @transaction.atomic
     def verify_email(
         *,
@@ -34,7 +83,7 @@ class VerificationService:
         otp: str,
     ) -> User:
         """
-        Verify a user's email address using an OTP.
+        Verify email address using OTP.
         """
 
         user = get_user_by_email(
@@ -78,15 +127,21 @@ class VerificationService:
             ],
         )
 
-        #
-        # Send the welcome email only after the
-        # verification transaction commits.
-        #
         transaction.on_commit(
-            lambda: NotificationService.send_welcome_email(
-                user=user,
-                email=user.email,
-                name=user.get_full_name() or user.email,
+            lambda: notification_service.send(
+                Notification(
+                    name="WELCOME_EMAIL",
+                    channel=CHANNEL_EMAIL,
+                    recipient=NotificationRecipient(
+                        recipient_id=str(user.id),
+                        address=user.email,
+                        name=(user.get_full_name() or user.email),
+                    ),
+                    template="welcome",
+                    payload={
+                        "name": (user.get_full_name() or user.email),
+                    },
+                ),
             ),
         )
 
@@ -99,7 +154,7 @@ class VerificationService:
         email: str,
     ) -> None:
         """
-        Generate and resend an email verification OTP.
+        Generate and resend email verification OTP.
         """
 
         user = get_user_by_email(
@@ -116,7 +171,7 @@ class VerificationService:
                 message="Email is already verified.",
             )
 
-        otp = OTPService.create(
+        result = OTPService.create(
             user=user,
             purpose=OTPPurpose.EMAIL_VERIFICATION,
             recipient=user.email,
@@ -124,11 +179,9 @@ class VerificationService:
         )
 
         transaction.on_commit(
-            lambda: NotificationService.send_verification_otp(
+            lambda: VerificationService._send_email_verification_notification(
                 user=user,
-                email=user.email,
-                name=user.get_full_name() or user.email,
-                otp=otp.code,
+                code=result.code,
             ),
         )
 

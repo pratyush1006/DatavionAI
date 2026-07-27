@@ -51,6 +51,4 @@ class UserBaseSerializer(serializers.ModelSerializer):
         return value.strip()
 
 
-__all__ = [
-    "UserBaseSerializer",
-]
+__all__ = ("UserBaseSerializer",)

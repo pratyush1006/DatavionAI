@@ -20,15 +20,23 @@ from apps.clinical.providers.permissions import (
     CanCreateProvider,
     CanViewProvider,
 )
-from apps.clinical.providers.selectors import get_providers
-from apps.clinical.providers.services import create_provider
-from apps.common.api.base_generics import BaseListCreateAPIView
+from apps.clinical.providers.selectors import (
+    ProviderSelector,
+)
+from apps.clinical.providers.services import (
+    ProviderService,
+)
+from apps.common.api.base_generics import (
+    BaseListCreateAPIView,
+)
 
 PROVIDER_TAG: Final[tuple[str, ...]] = ("Providers",)
 
 
 @extend_schema(tags=PROVIDER_TAG)
-class ProviderListCreateAPIView(BaseListCreateAPIView):
+class ProviderListCreateAPIView(
+    BaseListCreateAPIView,
+):
     """
     List existing providers or create a new provider.
     """
@@ -51,7 +59,7 @@ class ProviderListCreateAPIView(BaseListCreateAPIView):
 
     detail_serializer_class = ProviderDetailSerializer
 
-    create_service = create_provider
+    create_service = ProviderService.create
 
     create_success_message = "Provider created successfully."
 
@@ -81,10 +89,10 @@ class ProviderListCreateAPIView(BaseListCreateAPIView):
         self,
     ) -> QuerySet[Provider]:
         """
-        Return the providers queryset.
+        Return the provider queryset.
         """
 
-        return get_providers()
+        return ProviderSelector.queryset()
 
 
 __all__ = [

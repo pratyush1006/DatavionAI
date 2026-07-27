@@ -1,49 +1,67 @@
 """
-Organization permission classes.
+Organization permissions.
+
+Centralized RBAC permissions for Organization APIs.
 """
 
 from __future__ import annotations
 
-from typing import Final
+from apps.platform.rbac.permissions import (
+    RBACPermissionBase,
+)
 
-from apps.common.permissions import DatavionPermission
 
-
-class CanViewOrganization(DatavionPermission):
+class CanViewOrganization(
+    RBACPermissionBase,
+):
     """
-    Permission required to view organizations.
-    """
-
-    permission_code: Final[str] = "organization.view"
-
-
-class CanCreateOrganization(DatavionPermission):
-    """
-    Permission required to create organizations.
+    Permission to view organizations.
     """
 
-    permission_code: Final[str] = "organization.create"
+    permission_code = "organizations.view"
+
+    message = "You do not have permission to view organizations."
 
 
-class CanUpdateOrganization(DatavionPermission):
+class CanCreateOrganization(
+    RBACPermissionBase,
+):
     """
-    Permission required to update organizations.
-    """
-
-    permission_code: Final[str] = "organization.update"
-
-
-class CanDeleteOrganization(DatavionPermission):
-    """
-    Permission required to delete organizations.
+    Permission to create organizations.
     """
 
-    permission_code: Final[str] = "organization.delete"
+    permission_code = "organizations.create"
+
+    message = "You do not have permission to create organizations."
 
 
-__all__ = [
-    "CanCreateOrganization",
-    "CanDeleteOrganization",
-    "CanUpdateOrganization",
+class CanUpdateOrganization(
+    RBACPermissionBase,
+):
+    """
+    Permission to update organizations.
+    """
+
+    permission_code = "organizations.update"
+
+    message = "You do not have permission to update organizations."
+
+
+class CanDeleteOrganization(
+    RBACPermissionBase,
+):
+    """
+    Permission to delete organizations.
+    """
+
+    permission_code = "organizations.delete"
+
+    message = "You do not have permission to delete organizations."
+
+
+__all__: tuple[str, ...] = (
     "CanViewOrganization",
-]
+    "CanCreateOrganization",
+    "CanUpdateOrganization",
+    "CanDeleteOrganization",
+)

@@ -1,10 +1,15 @@
 """
-Reusable serializer mixins.
+Reusable serializer mixins for the DatavionAI platform.
 
-Serializer mixins shared across the Datavion AI platform should be
-implemented here.
+This module serves as the central location for platform-wide serializer
+mixins.
+
+The module is intentionally empty until reusable serializer mixins are
+introduced. Application-specific mixins should remain within their
+respective feature modules unless they become broadly reusable across
+the platform.
 """
 
 from __future__ import annotations
 
-__all__: list[str] = []
+__all__: tuple[str, ...] = ()

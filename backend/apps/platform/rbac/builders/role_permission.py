@@ -1,5 +1,8 @@
 """
 Role permission builder.
+
+Normalizes RolePermission assignment data
+for DatavionOS RBAC workflows.
 """
 
 from __future__ import annotations
@@ -17,6 +20,26 @@ class RolePermissionBuilder:
     Builder for RolePermission data.
     """
 
+    @staticmethod
+    def _normalize_choice(
+        value,
+    ):
+        """
+        Normalize TextChoices values.
+
+        Supports:
+        - Enum instance
+        - Raw string
+        """
+
+        if hasattr(
+            value,
+            "value",
+        ):
+            return value.value
+
+        return value
+
     @classmethod
     def build_create(
         cls,
@@ -24,20 +47,28 @@ class RolePermissionBuilder:
         validated_data: dict[str, Any],
     ) -> dict[str, Any]:
         """
-        Build normalized data for creating a role permission.
+        Build normalized data for creation.
         """
 
-        return {
+        data = {
             **validated_data,
-            "assignment_type": validated_data.get(
+        }
+
+        data["assignment_type"] = cls._normalize_choice(
+            data.get(
                 "assignment_type",
                 DEFAULT_ROLE_PERMISSION_TYPE,
-            ),
-            "assignment_source": validated_data.get(
+            )
+        )
+
+        data["assignment_source"] = cls._normalize_choice(
+            data.get(
                 "assignment_source",
                 DEFAULT_ROLE_PERMISSION_SOURCE,
-            ),
-        }
+            )
+        )
+
+        return data
 
     @classmethod
     def build_update(
@@ -46,12 +77,24 @@ class RolePermissionBuilder:
         validated_data: dict[str, Any],
     ) -> dict[str, Any]:
         """
-        Build normalized data for updating a role permission.
+        Build normalized data for update.
         """
 
-        return {
+        data = {
             **validated_data,
         }
+
+        if "assignment_type" in data:
+            data["assignment_type"] = cls._normalize_choice(
+                data["assignment_type"],
+            )
+
+        if "assignment_source" in data:
+            data["assignment_source"] = cls._normalize_choice(
+                data["assignment_source"],
+            )
+
+        return data
 
     @classmethod
     def build(

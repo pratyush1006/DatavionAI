@@ -17,8 +17,7 @@ class PatientAdmin(admin.ModelAdmin):
 
     list_display = (
         "mrn",
-        "first_name",
-        "last_name",
+        "display_name",
         "organization",
         "gender",
         "phone",
@@ -30,7 +29,9 @@ class PatientAdmin(admin.ModelAdmin):
     search_fields = (
         "mrn",
         "first_name",
+        "middle_name",
         "last_name",
+        "preferred_name",
         "phone",
         "email",
     )
@@ -45,8 +46,8 @@ class PatientAdmin(admin.ModelAdmin):
     )
 
     ordering = (
-        "first_name",
         "last_name",
+        "first_name",
     )
 
     readonly_fields = (
@@ -54,6 +55,10 @@ class PatientAdmin(admin.ModelAdmin):
         "created_at",
         "updated_at",
     )
+
+    autocomplete_fields = ("organization",)
+
+    list_select_related = ("organization",)
 
     list_per_page = 25
 

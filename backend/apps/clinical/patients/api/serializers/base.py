@@ -11,22 +11,44 @@ from apps.clinical.patients.models import Patient
 
 class PatientBaseSerializer(serializers.ModelSerializer):
     """
-    Base serializer containing shared validation logic.
+    Base serializer containing shared normalization logic for patient serializers.
     """
 
     class Meta:
         model = Patient
         fields: tuple[str, ...] = ()
 
+    @staticmethod
+    def _normalize_text(
+        value: str,
+    ) -> str:
+        """
+        Normalize a text value.
+        """
+
+        return value.strip()
+
+    @staticmethod
+    def _normalize_email(
+        value: str,
+    ) -> str:
+        """
+        Normalize an email address.
+        """
+
+        return value.strip().lower()
+
     def validate_mrn(
         self,
         value: str,
     ) -> str:
         """
-        Normalize the Medical Record Number.
+        Normalize the Medical Record Number (MRN).
         """
 
-        return value.strip().upper()
+        return self._normalize_text(
+            value,
+        ).upper()
 
     def validate_first_name(
         self,
@@ -36,7 +58,9 @@ class PatientBaseSerializer(serializers.ModelSerializer):
         Normalize the patient's first name.
         """
 
-        return value.strip()
+        return self._normalize_text(
+            value,
+        )
 
     def validate_middle_name(
         self,
@@ -46,7 +70,9 @@ class PatientBaseSerializer(serializers.ModelSerializer):
         Normalize the patient's middle name.
         """
 
-        return value.strip()
+        return self._normalize_text(
+            value,
+        )
 
     def validate_last_name(
         self,
@@ -56,7 +82,9 @@ class PatientBaseSerializer(serializers.ModelSerializer):
         Normalize the patient's last name.
         """
 
-        return value.strip()
+        return self._normalize_text(
+            value,
+        )
 
     def validate_preferred_name(
         self,
@@ -66,20 +94,24 @@ class PatientBaseSerializer(serializers.ModelSerializer):
         Normalize the patient's preferred name.
         """
 
-        return value.strip()
+        return self._normalize_text(
+            value,
+        )
 
     def validate_email(
         self,
         value: str,
     ) -> str:
         """
-        Normalize the patient's email.
+        Normalize the patient's email address.
         """
 
         if not value:
             return value
 
-        return value.strip().lower()
+        return self._normalize_email(
+            value,
+        )
 
 
 __all__ = [

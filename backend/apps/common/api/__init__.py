@@ -1,10 +1,10 @@
 """
-Common API framework exports for the Datavion AI platform.
+Public API exports for the DatavionOS API framework.
 
-Only stable, public helper functions should be exported from this package.
-Framework implementation classes (such as base generic views, workflow
-views, pagination classes, and service mixins) should be imported directly
-from their respective modules.
+Only lightweight exports are loaded here.
+
+Heavy DRF dependent modules should be imported
+directly to avoid circular imports during startup.
 """
 
 from __future__ import annotations
@@ -16,9 +16,17 @@ from .responses import (
     success_response,
 )
 
-__all__ = [
+# ============================================================================
+# Generic API Views
+# ============================================================================
+
+
+__all__: tuple[str, ...] = (
     "created_response",
     "error_response",
     "no_content_response",
     "success_response",
-]
+    # ------------------------------------------------------------------------
+    # Generic API Views
+    # ------------------------------------------------------------------------
+)

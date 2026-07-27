@@ -8,20 +8,30 @@ from typing import Final
 
 from django.db.models import QuerySet
 from drf_spectacular.utils import extend_schema
-from rest_framework.permissions import IsAuthenticated
 
-from apps.common.api.base_generics import BaseListCreateAPIView
+from apps.common.api.base_generics import (
+    BaseListCreateAPIView,
+)
+from apps.common.permissions import (
+    IsAuthenticatedAndActive,
+)
 from apps.platform.accounts.api.serializers import (
     UserCreateSerializer,
     UserListSerializer,
 )
-from apps.platform.accounts.models import User
+from apps.platform.accounts.models import (
+    User,
+)
 from apps.platform.accounts.permissions import (
     CanCreateUser,
     CanViewUser,
 )
-from apps.platform.accounts.selectors import get_users
-from apps.platform.accounts.services import UserService
+from apps.platform.accounts.selectors import (
+    get_users,
+)
+from apps.platform.accounts.services import (
+    UserService,
+)
 
 ACCOUNT_TAG: Final = ("Accounts",)
 
@@ -29,55 +39,43 @@ ACCOUNT_TAG: Final = ("Accounts",)
 @extend_schema(
     tags=ACCOUNT_TAG,
 )
-class UserListCreateAPIView(BaseListCreateAPIView):
+class UserListCreateAPIView(
+    BaseListCreateAPIView,
+):
     """
-    List existing users or create a new user.
+    List users or create a user.
     """
 
-    #
-    # Default serializer used by DRF, Browsable API,
-    # and drf-spectacular.
-    #
     serializer_class = UserListSerializer
 
-    #
-    # HTTP method specific serializers.
-    #
     serializer_classes = {
         "GET": UserListSerializer,
         "POST": UserCreateSerializer,
     }
 
-    #
-    # HTTP method specific permissions.
-    #
     permission_classes_map = {
         "GET": (
-            IsAuthenticated,
+            IsAuthenticatedAndActive,
             CanViewUser,
         ),
         "POST": (
-            IsAuthenticated,
+            IsAuthenticatedAndActive,
             CanCreateUser,
         ),
     }
 
-    #
-    # Service used by POST requests.
-    #
     create_service = UserService.create
 
     search_fields = (
-        "username",
         "email",
         "first_name",
         "last_name",
+        "phone",
     )
 
     ordering = ("email",)
 
     ordering_fields = (
-        "username",
         "email",
         "created_at",
     )
@@ -86,12 +84,12 @@ class UserListCreateAPIView(BaseListCreateAPIView):
         self,
     ) -> QuerySet[User]:
         """
-        Return the users queryset.
+        Return users scoped to current tenant.
         """
 
-        return get_users()
+        return get_users(
+            tenant=self.current_tenant,
+        )
 
 
-__all__ = [
-    "UserListCreateAPIView",
-]
+__all__ = ("UserListCreateAPIView",)

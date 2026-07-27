@@ -1,17 +1,15 @@
 """
 Reusable soft delete model.
 
-Provides an abstract model implementing soft delete
-functionality for business models across the Datavion AI
-platform.
+Provides recoverable deletion support for DatavionOS
+business entities.
 """
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TypeAlias
 
-from django.conf import settings
-from django.db import models
+from django.db import models, transaction
 from django.utils import timezone
 
 from .managers import (
@@ -20,35 +18,43 @@ from .managers import (
     SoftDeleteManager,
 )
 
+DeleteResult: TypeAlias = tuple[int, dict[str, int]]
+
 
 class SoftDeleteModel(
     models.Model,
 ):
     """
-    Abstract model implementing soft delete functionality.
+    Abstract soft delete model.
 
-    Instead of permanently deleting records, models inheriting
-    from this class are marked as deleted and can later be
-    restored.
+    Provides recoverable deletion without physical removal.
+
+    Designed for:
+        - Healthcare entities
+        - SaaS resources
+        - Compliance workflows
+        - Historical reporting
     """
 
     is_deleted = models.BooleanField(
         default=False,
+        editable=False,
         db_index=True,
+        verbose_name="Deleted",
     )
 
     deleted_at = models.DateTimeField(
         null=True,
         blank=True,
+        editable=False,
+        verbose_name="Deleted At",
     )
 
-    deleted_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
+    deleted_by_id = models.UUIDField(
         null=True,
         blank=True,
-        related_name="deleted_%(class)ss",
         editable=False,
+        verbose_name="Deleted By",
     )
 
     objects = SoftDeleteManager()
@@ -58,86 +64,73 @@ class SoftDeleteModel(
     deleted_objects = DeletedObjectsManager()
 
     class Meta:
-        """
-        Django model metadata.
-        """
-
         abstract = True
 
+    @transaction.atomic
     def delete(
         self,
         *,
-        user: Any | None = None,
-        using: str | None = None,
-        keep_parents: bool = False,
-    ) -> None:
-        """
-        Soft delete this object.
-
-        Overrides Django's default delete behavior.
-        """
-
-        self.soft_delete(
-            user=user,
+        user_id=None,
+        **kwargs,
+    ) -> DeleteResult:
+        return self.soft_delete(
+            user_id=user_id,
         )
 
+    @transaction.atomic
     def soft_delete(
         self,
         *,
-        user: Any | None = None,
-    ) -> None:
-        """
-        Mark this object as deleted.
-        """
-        self.is_active = False
+        user_id=None,
+    ) -> DeleteResult:
+
+        if self.is_deleted:
+            return (
+                0,
+                {
+                    self._meta.label: 0,
+                },
+            )
+
         self.is_deleted = True
         self.deleted_at = timezone.now()
-        self.deleted_by = user
+        self.deleted_by_id = user_id
 
         self.save(
             update_fields=[
-                "is_active",
                 "is_deleted",
                 "deleted_at",
-                "deleted_by",
+                "deleted_by_id",
             ],
         )
 
-    def restore(
-        self,
-    ) -> None:
-        """
-        Restore a previously deleted object.
-        """
-        self.is_active = True
+        return (
+            1,
+            {
+                self._meta.label: 1,
+            },
+        )
+
+    @transaction.atomic
+    def restore(self) -> None:
+
+        if not self.is_deleted:
+            return
+
         self.is_deleted = False
         self.deleted_at = None
-        self.deleted_by = None
+        self.deleted_by_id = None
 
         self.save(
             update_fields=[
-                "is_active",
                 "is_deleted",
                 "deleted_at",
-                "deleted_by",
+                "deleted_by_id",
             ],
         )
 
-    def hard_delete(
-        self,
-        using: str | None = None,
-        keep_parents: bool = False,
-    ) -> tuple[int, dict[str, int]]:
-        """
-        Permanently delete this object.
-        """
 
-        return super().delete(
-            using=using,
-            keep_parents=keep_parents,
-        )
-
-
-__all__ = [
+__all__: tuple[str, ...] = (
+    "DeleteResult",
     "SoftDeleteModel",
-]
+)

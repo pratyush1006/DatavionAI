@@ -12,7 +12,10 @@ class OrganizationSummarySerializer(
     OrganizationBaseSerializer,
 ):
     """
-    Serializer used for organization summary responses.
+    Serializer used for lightweight organization representations.
+
+    Intended for nested serializers, dropdowns, autocomplete,
+    relationship references, and other compact responses.
     """
 
     class Meta(
@@ -22,6 +25,4 @@ class OrganizationSummarySerializer(
         read_only_fields = _SUMMARY_FIELDS
 
 
-__all__ = [
-    "OrganizationSummarySerializer",
-]
+__all__: tuple[str, ...] = ("OrganizationSummarySerializer",)

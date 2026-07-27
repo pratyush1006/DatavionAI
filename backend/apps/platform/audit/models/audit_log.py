@@ -1,26 +1,69 @@
 """
 Audit log model.
+
+Enterprise audit trail for DatavionOS.
+
+Supports:
+
+- Multi-tenant SaaS isolation
+- Organization tracking
+- User activity tracking
+- Healthcare PHI auditing
+- Security compliance
+- Immutable append-only records
 """
 
 from __future__ import annotations
 
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models import Q
 
 from apps.core.models import BaseModel
-from apps.platform.audit.constants import AuditAction
-from apps.platform.audit.managers import AuditManager
+from apps.platform.audit.constants import (
+    AuditAction,
+)
+from apps.platform.audit.managers import (
+    AuditManager,
+)
 
 
-class AuditLog(BaseModel):
+class AuditLog(
+    BaseModel,
+):
     """
     Immutable audit log entry.
 
-    Stores a complete audit trail for every
-    business action performed within the platform.
+    Every important platform action
+    creates an audit record.
+
+    Audit hierarchy:
+
+        Tenant
+            |
+        Organization
+            |
+        User
+            |
+        Action
+            |
+        Resource
     """
 
     objects = AuditManager()
+
+    # ======================================================================
+    # Ownership / Tenant Context
+    # ======================================================================
+
+    tenant = models.ForeignKey(
+        "tenancy.Tenant",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="audit_logs",
+    )
 
     organization = models.ForeignKey(
         "organizations.Organization",
@@ -38,8 +81,12 @@ class AuditLog(BaseModel):
         related_name="audit_logs",
     )
 
+    # ======================================================================
+    # Audit Event
+    # ======================================================================
+
     action = models.CharField(
-        max_length=20,
+        max_length=30,
         choices=AuditAction.choices,
         db_index=True,
     )
@@ -59,6 +106,10 @@ class AuditLog(BaseModel):
         db_index=True,
     )
 
+    # ======================================================================
+    # Data Snapshot
+    # ======================================================================
+
     old_values = models.JSONField(
         null=True,
         blank=True,
@@ -68,6 +119,10 @@ class AuditLog(BaseModel):
         null=True,
         blank=True,
     )
+
+    # ======================================================================
+    # Request / Security Context
+    # ======================================================================
 
     request_id = models.CharField(
         max_length=100,
@@ -112,6 +167,10 @@ class AuditLog(BaseModel):
         default="",
     )
 
+    # ======================================================================
+    # Execution Result
+    # ======================================================================
+
     status_code = models.PositiveSmallIntegerField(
         null=True,
         blank=True,
@@ -127,7 +186,7 @@ class AuditLog(BaseModel):
 
     class Meta:
         """
-        Django model metadata.
+        Django metadata.
         """
 
         db_table = "audit_logs"
@@ -139,6 +198,13 @@ class AuditLog(BaseModel):
         ordering = ("-created_at",)
 
         indexes = [
+            models.Index(
+                fields=[
+                    "tenant",
+                    "created_at",
+                ],
+                name="audit_tenant_created_idx",
+            ),
             models.Index(
                 fields=[
                     "organization",
@@ -186,30 +252,97 @@ class AuditLog(BaseModel):
                 ],
                 name="audit_corr_idx",
             ),
-            models.Index(
-                fields=[
-                    "session_key",
-                ],
-                name="audit_session_idx",
+        ]
+
+        constraints = [
+            models.CheckConstraint(
+                condition=~Q(
+                    module="",
+                ),
+                name="audit_module_required",
+            ),
+            models.CheckConstraint(
+                condition=~Q(
+                    object_type="",
+                ),
+                name="audit_object_type_required",
             ),
         ]
+
+    # ======================================================================
+    # Properties
+    # ======================================================================
 
     @property
     def is_successful(
         self,
     ) -> bool:
         """
-        Return whether the audited action succeeded.
+        Return execution status.
         """
 
         return self.success
 
+    # ======================================================================
+    # Immutable Protection
+    # ======================================================================
+
+    def save(
+        self,
+        *args,
+        **kwargs,
+    ):
+        """
+        Audit logs are append-only.
+
+        Existing records cannot be modified.
+        """
+
+        if self.pk:
+            exists = (
+                type(self)
+                .objects.filter(
+                    pk=self.pk,
+                )
+                .exists()
+            )
+
+            if exists:
+                raise ValidationError(
+                    "Audit logs are immutable and cannot be modified.",
+                )
+
+        return super().save(
+            *args,
+            **kwargs,
+        )
+
+    def delete(
+        self,
+        *args,
+        **kwargs,
+    ):
+        """
+        Audit logs cannot be deleted.
+
+        Required for:
+
+        - HIPAA compliance
+        - SOC2 compliance
+        - ISO 27001 auditability
+        """
+
+        raise ValidationError(
+            "Audit logs cannot be deleted.",
+        )
+
+    # ======================================================================
+    # Representation
+    # ======================================================================
+
     def __str__(
         self,
     ) -> str:
-        """
-        Return a readable representation.
-        """
 
         return f"{self.action} {self.module} ({self.created_at:%Y-%m-%d %H:%M:%S})"
 

@@ -4,29 +4,57 @@ Core application configuration.
 
 from __future__ import annotations
 
+import logging
+
 from django.apps import AppConfig
+
+logger = logging.getLogger(__name__)
 
 
 class CoreConfig(AppConfig):
     """
-    Application configuration for the Core module.
+    Django application configuration for the DatavionOS Core module.
+
+    Provides foundational platform components:
+
+    - Base models
+    - System checks
+    - Registries
+    - Lifecycle hooks
+    - Platform metadata
     """
+
+    default_auto_field = "django.db.models.BigAutoField"
 
     name = "apps.core"
 
     label = "core"
 
-    verbose_name = "Core"
+    verbose_name = "DatavionOS Core"
 
     def ready(
         self,
     ) -> None:
         """
-        Perform application startup initialization.
+        Perform lightweight startup initialization.
 
-        Imports modules that register Django system checks and
-        other application startup hooks.
+        Only imports registration modules.
+        No database queries, cache calls,
+        or network operations allowed.
         """
 
-        # Import for side effects (system check registration).
-        from apps.core.health import checks  # noqa: F401
+        # Register Django system checks
+        # Register signals
+        from apps.core import (
+            checks,  # noqa: F401
+            signals,  # noqa: F401
+        )
+
+        logger.debug(
+            "DatavionOS Core application initialized.",
+        )
+
+
+__all__ = [
+    "CoreConfig",
+]

@@ -10,6 +10,7 @@ from apps.clinical.providers.constants import (
 )
 from apps.clinical.providers.models import Provider
 from apps.clinical.providers.services import (
+    ProviderService,
     create_provider,
     delete_provider,
     update_provider,
@@ -88,76 +89,6 @@ class ProviderServiceTestCase(BaseTestCase):
             employee,
         )
 
-    def test_update_provider(
-        self,
-    ) -> None:
-        """
-        Provider should be updated successfully.
-        """
-
-        updated_provider = update_provider(
-            instance=self.provider,
-            validated_data={
-                "years_of_experience": 15,
-                "status": ProviderStatus.INACTIVE,
-            },
-        )
-
-        updated_provider.refresh_from_db()
-
-        self.assertEqual(
-            updated_provider.years_of_experience,
-            15,
-        )
-
-        self.assertEqual(
-            updated_provider.status,
-            ProviderStatus.INACTIVE,
-        )
-
-    def test_delete_provider(
-        self,
-    ) -> None:
-        """
-        Provider should be deleted successfully.
-        """
-
-        provider_id = self.provider.id
-
-        delete_provider(
-            instance=self.provider,
-        )
-
-        self.assertFalse(
-            Provider.objects.filter(
-                id=provider_id,
-            ).exists(),
-        )
-
-    def test_update_provider_returns_same_instance(
-        self,
-    ) -> None:
-        """
-        Update service should return the updated provider.
-        """
-
-        updated_provider = update_provider(
-            instance=self.provider,
-            validated_data={
-                "provider_type": ProviderType.THERAPIST,
-            },
-        )
-
-        self.assertEqual(
-            updated_provider.pk,
-            self.provider.pk,
-        )
-
-        self.assertEqual(
-            updated_provider.provider_type,
-            ProviderType.THERAPIST,
-        )
-
     def test_create_provider_persists_to_database(
         self,
     ) -> None:
@@ -191,6 +122,114 @@ class ProviderServiceTestCase(BaseTestCase):
         self.assertEqual(
             Provider.objects.count(),
             initial_count + 1,
+        )
+
+    def test_update_provider(
+        self,
+    ) -> None:
+        """
+        Provider should be updated successfully.
+        """
+
+        updated_provider = update_provider(
+            instance=self.provider,
+            validated_data={
+                "years_of_experience": 15,
+                "status": ProviderStatus.INACTIVE,
+            },
+        )
+
+        updated_provider.refresh_from_db()
+
+        self.assertEqual(
+            updated_provider.years_of_experience,
+            15,
+        )
+
+        self.assertEqual(
+            updated_provider.status,
+            ProviderStatus.INACTIVE,
+        )
+
+    def test_update_provider_returns_same_instance(
+        self,
+    ) -> None:
+        """
+        Update service should return the same provider instance.
+        """
+
+        updated_provider = update_provider(
+            instance=self.provider,
+            validated_data={
+                "provider_type": ProviderType.THERAPIST,
+            },
+        )
+
+        self.assertEqual(
+            updated_provider.pk,
+            self.provider.pk,
+        )
+
+        self.assertEqual(
+            updated_provider.provider_type,
+            ProviderType.THERAPIST,
+        )
+
+    def test_archive_provider(
+        self,
+    ) -> None:
+        """
+        Provider should be archived.
+        """
+
+        ProviderService.archive(
+            self.provider,
+        )
+
+        self.provider.refresh_from_db()
+
+        self.assertFalse(
+            self.provider.is_active,
+        )
+
+    def test_restore_provider(
+        self,
+    ) -> None:
+        """
+        Archived provider should be restored.
+        """
+
+        ProviderService.archive(
+            self.provider,
+        )
+
+        ProviderService.restore(
+            self.provider,
+        )
+
+        self.provider.refresh_from_db()
+
+        self.assertTrue(
+            self.provider.is_active,
+        )
+
+    def test_delete_provider(
+        self,
+    ) -> None:
+        """
+        Provider should be deleted successfully.
+        """
+
+        provider_id = self.provider.pk
+
+        delete_provider(
+            instance=self.provider,
+        )
+
+        self.assertFalse(
+            Provider.objects.filter(
+                pk=provider_id,
+            ).exists(),
         )
 
 

@@ -4,48 +4,44 @@ Permission classes for the Departments application.
 
 from __future__ import annotations
 
-from rest_framework.permissions import BasePermission
+from apps.common.permissions.base import DatavionPermission
 
 
-class CanViewDepartment(BasePermission):
+class CanViewDepartment(DatavionPermission):
     """
     Allows viewing departments.
     """
 
-    def has_permission(self, request, view):
-        return request.user.is_authenticated
+    required_permission = "organization.department.view"
 
 
-class CanCreateDepartment(BasePermission):
+class CanCreateDepartment(DatavionPermission):
     """
     Allows creating departments.
     """
 
-    def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.is_staff
+    required_permission = "organization.department.create"
 
 
-class CanUpdateDepartment(BasePermission):
+class CanUpdateDepartment(DatavionPermission):
     """
     Allows updating departments.
     """
 
-    def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.is_staff
+    required_permission = "organization.department.update"
 
 
-class CanDeleteDepartment(BasePermission):
+class CanDeleteDepartment(DatavionPermission):
     """
     Allows deleting departments.
     """
 
-    def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.is_staff
+    required_permission = "organization.department.delete"
 
 
-__all__ = [
+__all__ = (
     "CanViewDepartment",
     "CanCreateDepartment",
     "CanUpdateDepartment",
     "CanDeleteDepartment",
-]
+)

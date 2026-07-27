@@ -1,68 +1,37 @@
 """
-Reusable service mixins for the Datavion AI platform.
+Reusable service mixins for the DatavionOS platform.
 
-These mixins connect DRF generic views with the application's
-service layer while keeping business logic outside the API layer.
+Connects DRF generic views with application
+service layers.
+
+Responsibilities:
+
+- Service execution
+- Request context injection
+- Tenant propagation
+- Organization propagation
+- Lifecycle hooks
 """
 
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import Any
+from typing import Any, TypeAlias
 
 from django.core.exceptions import ImproperlyConfigured
 from rest_framework.serializers import BaseSerializer
 
-type Service = Callable[..., Any]
+Service: TypeAlias = Callable[..., Any]
 
 
 class BaseServiceMixin:
     """
-    Base mixin for invoking application services.
+    Base service execution mixin.
     """
 
     create_service: Service | None = None
-
     update_service: Service | None = None
-
     delete_service: Service | None = None
-
-    def get_create_service_kwargs(
-        self,
-        serializer: BaseSerializer,
-    ) -> dict[str, Any]:
-        """
-        Return keyword arguments passed to the create service.
-        """
-
-        return {
-            "validated_data": serializer.validated_data,
-        }
-
-    def get_update_service_kwargs(
-        self,
-        serializer: BaseSerializer,
-    ) -> dict[str, Any]:
-        """
-        Return keyword arguments passed to the update service.
-        """
-
-        return {
-            "instance": self.get_object(),
-            "validated_data": serializer.validated_data,
-        }
-
-    def get_delete_service_kwargs(
-        self,
-        instance: Any,
-    ) -> dict[str, Any]:
-        """
-        Return keyword arguments passed to the delete service.
-        """
-
-        return {
-            "instance": instance,
-        }
 
     @staticmethod
     def _require_service(
@@ -71,41 +40,222 @@ class BaseServiceMixin:
         name: str,
     ) -> Service:
         """
-        Return the configured service or raise an error.
+        Validate service configuration.
         """
 
         if service is None:
             raise ImproperlyConfigured(
-                f"{name} must be configured.",
+                f"'{name}' must be configured.",
             )
 
         return service
+
+    @staticmethod
+    def _execute_service(
+        service: Service,
+        **kwargs: Any,
+    ) -> Any:
+        """
+        Execute configured service.
+        """
+
+        return service(
+            **kwargs,
+        )
+
+    def get_service_context(
+        self,
+    ) -> dict[str, Any]:
+        """
+        Return common DatavionOS request context.
+        """
+
+        request = getattr(
+            self,
+            "request",
+            None,
+        )
+
+        return {
+            "request_user": getattr(
+                request,
+                "user",
+                None,
+            ),
+            "tenant": getattr(
+                request,
+                "tenant",
+                None,
+            ),
+            "organization": getattr(
+                request,
+                "organization",
+                None,
+            ),
+        }
+
+    # ==========================================================
+    # Lifecycle hooks
+    # ==========================================================
+
+    def before_create(
+        self,
+        serializer: BaseSerializer,
+    ) -> None:
+        """
+        Hook executed before create service.
+        """
+
+    def after_create(
+        self,
+        instance: Any,
+        serializer: BaseSerializer,
+    ) -> None:
+        """
+        Hook executed after create service.
+        """
+
+    def before_update(
+        self,
+        serializer: BaseSerializer,
+    ) -> None:
+        """
+        Hook executed before update service.
+        """
+
+    def after_update(
+        self,
+        instance: Any,
+        serializer: BaseSerializer,
+    ) -> None:
+        """
+        Hook executed after update service.
+        """
+
+    def before_destroy(
+        self,
+        instance: Any,
+    ) -> None:
+        """
+        Hook executed before delete service.
+        """
+
+    def after_destroy(
+        self,
+        instance: Any,
+    ) -> None:
+        """
+        Hook executed after delete service.
+        """
+
+    # ==========================================================
+    # Service arguments
+    # ==========================================================
+
+    def get_create_service_kwargs(
+        self,
+        serializer: BaseSerializer,
+    ) -> dict[str, Any]:
+        """
+        Build arguments for create services.
+
+        Standard service signature:
+
+            create_xxx(
+                *,
+                validated_data,
+                request_user,
+                tenant,
+                organization,
+            )
+        """
+
+        return {
+            "validated_data": serializer.validated_data,
+            **self.get_service_context(),
+        }
+
+    def get_update_service_kwargs(
+        self,
+        serializer: BaseSerializer,
+    ) -> dict[str, Any]:
+        """
+        Build arguments for update services.
+
+        Standard service signature:
+
+            update_xxx(
+                *,
+                instance,
+                validated_data,
+                request_user,
+                tenant,
+                organization,
+            )
+        """
+
+        return {
+            "instance": self.get_object(),
+            "validated_data": serializer.validated_data,
+            **self.get_service_context(),
+        }
+
+    def get_delete_service_kwargs(
+        self,
+        instance: Any,
+    ) -> dict[str, Any]:
+        """
+        Build arguments for delete services.
+
+        Standard service signature:
+
+            delete_xxx(
+                *,
+                instance,
+                request_user,
+                tenant,
+                organization,
+            )
+        """
+
+        return {
+            "instance": instance,
+            **self.get_service_context(),
+        }
 
 
 class CreateServiceMixin(
     BaseServiceMixin,
 ):
     """
-    Execute the configured create service.
+    Execute create operations using the configured service layer.
     """
 
     def perform_create(
         self,
         serializer: BaseSerializer,
     ) -> None:
-        """
-        Create an object using the configured service.
-        """
+        self.before_create(
+            serializer,
+        )
 
         service = self._require_service(
-            self.create_service,
+            type(self).create_service,
             name="create_service",
         )
 
-        serializer.instance = service(
+        instance = self._execute_service(
+            service,
             **self.get_create_service_kwargs(
                 serializer,
             ),
+        )
+
+        serializer.instance = instance
+
+        self.after_create(
+            instance,
+            serializer,
         )
 
 
@@ -113,26 +263,34 @@ class UpdateServiceMixin(
     BaseServiceMixin,
 ):
     """
-    Execute the configured update service.
+    Execute update operations using the configured service layer.
     """
 
     def perform_update(
         self,
         serializer: BaseSerializer,
     ) -> None:
-        """
-        Update an object using the configured service.
-        """
+        self.before_update(
+            serializer,
+        )
 
         service = self._require_service(
-            self.update_service,
+            type(self).update_service,
             name="update_service",
         )
 
-        serializer.instance = service(
+        instance = self._execute_service(
+            service,
             **self.get_update_service_kwargs(
                 serializer,
             ),
+        )
+
+        serializer.instance = instance
+
+        self.after_update(
+            instance,
+            serializer,
         )
 
 
@@ -140,32 +298,37 @@ class DestroyServiceMixin(
     BaseServiceMixin,
 ):
     """
-    Execute the configured delete service.
+    Execute delete operations using the configured service layer.
     """
 
     def perform_destroy(
         self,
         instance: Any,
     ) -> None:
-        """
-        Delete an object using the configured service.
-        """
+        self.before_destroy(
+            instance,
+        )
 
         service = self._require_service(
-            self.delete_service,
+            type(self).delete_service,
             name="delete_service",
         )
 
-        service(
+        self._execute_service(
+            service,
             **self.get_delete_service_kwargs(
                 instance,
             ),
         )
 
+        self.after_destroy(
+            instance,
+        )
 
-__all__ = [
+
+__all__: tuple[str, ...] = (
     "BaseServiceMixin",
     "CreateServiceMixin",
-    "UpdateServiceMixin",
     "DestroyServiceMixin",
-]
+    "UpdateServiceMixin",
+)

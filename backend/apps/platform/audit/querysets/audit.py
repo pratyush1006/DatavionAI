@@ -1,5 +1,8 @@
 """
 Audit queryset.
+
+Provides reusable audit filtering
+and tenant isolation.
 """
 
 from __future__ import annotations
@@ -27,6 +30,23 @@ class AuditQuerySet(
         return self.filter(
             is_active=True,
             is_deleted=False,
+        )
+
+    def for_tenant(
+        self,
+        tenant,
+    ):
+        """
+        Filter audit records by tenant.
+
+        DatavionOS SaaS isolation rule:
+
+        Tenant A can never access
+        Tenant B audit history.
+        """
+
+        return self.filter(
+            tenant=tenant,
         )
 
     def for_organization(
@@ -70,7 +90,7 @@ class AuditQuerySet(
         module: str,
     ):
         """
-        Filter by module.
+        Filter by audit module.
         """
 
         return self.filter(
@@ -96,7 +116,7 @@ class AuditQuerySet(
         self,
     ):
         """
-        Return successful audit events.
+        Return successful events.
         """
 
         return self.filter(
@@ -107,7 +127,7 @@ class AuditQuerySet(
         self,
     ):
         """
-        Return failed audit events.
+        Return failed events.
         """
 
         return self.filter(
@@ -118,7 +138,7 @@ class AuditQuerySet(
         self,
     ):
         """
-        Return today's audit events.
+        Return today's events.
         """
 
         today = timezone.localdate()
@@ -134,7 +154,7 @@ class AuditQuerySet(
         end: datetime,
     ):
         """
-        Return audit events within a date range.
+        Return events in date range.
         """
 
         return self.filter(
@@ -148,7 +168,7 @@ class AuditQuerySet(
         self,
     ):
         """
-        Return newest audit events first.
+        Return newest first.
         """
 
         return self.order_by(
@@ -177,3 +197,8 @@ class AuditQuerySet(
                 request_id__icontains=query,
             )
         )
+
+
+__all__ = [
+    "AuditQuerySet",
+]

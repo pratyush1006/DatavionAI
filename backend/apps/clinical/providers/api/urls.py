@@ -11,6 +11,8 @@ from apps.clinical.providers.api.views import (
     ProviderRetrieveUpdateDestroyAPIView,
 )
 
+app_name = "providers-api"
+
 urlpatterns = [
     path(
         "",
@@ -25,5 +27,6 @@ urlpatterns = [
 ]
 
 __all__ = [
+    "app_name",
     "urlpatterns",
 ]

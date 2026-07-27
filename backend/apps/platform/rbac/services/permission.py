@@ -20,36 +20,54 @@ from apps.platform.rbac.validators import (
 @transaction.atomic
 def create_permission(
     *,
-    validated_data: dict,
+    module: str,
+    action: str,
+    scope: str,
+    name: str | None = None,
+    request_user=None,
+    tenant=None,
+    organization=None,
+    **kwargs,
 ) -> Permission:
     """
     Create a permission.
+
+    Service layer entry point.
+
+    Context parameters:
+    - request_user
+    - tenant
+    - organization
+
+    are injected automatically by
+    CreateServiceMixin.
     """
 
     code = PermissionBuilder.build(
-        module=validated_data["module"],
-        action=validated_data["action"],
-        scope=validated_data["scope"],
+        module=module,
+        action=action,
     )
 
     validate_permission(
-        module=validated_data["module"],
-        action=validated_data["action"],
-        scope=validated_data["scope"],
+        module=module,
+        action=action,
+        scope=scope,
         code=code,
     )
 
-    validated_data["code"] = code
-
-    if not validated_data.get("name"):
-        validated_data["name"] = PermissionBuilder.build_name(
-            module=validated_data["module"],
-            action=validated_data["action"],
-            scope=validated_data["scope"],
+    if not name:
+        name = PermissionBuilder.build_name(
+            module=module,
+            action=action,
+            scope=scope,
         )
 
     return Permission.objects.create(
-        **validated_data,
+        module=module,
+        action=action,
+        scope=scope,
+        code=code,
+        name=name,
     )
 
 
@@ -57,31 +75,28 @@ def create_permission(
 def update_permission(
     *,
     instance: Permission,
-    validated_data: dict,
+    module: str | None = None,
+    action: str | None = None,
+    scope: str | None = None,
+    name: str | None = None,
+    request_user=None,
+    tenant=None,
+    organization=None,
+    **kwargs,
 ) -> Permission:
     """
     Update a permission.
     """
 
-    module = validated_data.get(
-        "module",
-        instance.module,
-    )
+    module = module or instance.module
 
-    action = validated_data.get(
-        "action",
-        instance.action,
-    )
+    action = action or instance.action
 
-    scope = validated_data.get(
-        "scope",
-        instance.scope,
-    )
+    scope = scope or instance.scope
 
     code = PermissionBuilder.build(
         module=module,
         action=action,
-        scope=scope,
     )
 
     validate_permission(
@@ -92,20 +107,22 @@ def update_permission(
         exclude_id=instance.id,
     )
 
-    validated_data["code"] = code
+    instance.module = module
 
-    if not validated_data.get("name"):
-        validated_data["name"] = PermissionBuilder.build_name(
+    instance.action = action
+
+    instance.scope = scope
+
+    instance.code = code
+
+    if name:
+        instance.name = name
+
+    else:
+        instance.name = PermissionBuilder.build_name(
             module=module,
             action=action,
             scope=scope,
-        )
-
-    for field, value in validated_data.items():
-        setattr(
-            instance,
-            field,
-            value,
         )
 
     instance.save()
@@ -117,6 +134,10 @@ def update_permission(
 def delete_permission(
     *,
     instance: Permission,
+    request_user=None,
+    tenant=None,
+    organization=None,
+    **kwargs,
 ) -> None:
     """
     Soft delete a permission.
@@ -129,9 +150,13 @@ def delete_permission(
 def restore_permission(
     *,
     instance: Permission,
+    request_user=None,
+    tenant=None,
+    organization=None,
+    **kwargs,
 ) -> Permission:
     """
-    Restore a soft-deleted permission.
+    Restore a permission.
     """
 
     instance.restore()

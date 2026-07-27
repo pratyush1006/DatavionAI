@@ -4,7 +4,6 @@
 
 import type {
   AuthSession,
-  AuthTokens,
   User,
 } from "../domain/types";
 

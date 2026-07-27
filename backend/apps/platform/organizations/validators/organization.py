@@ -1,23 +1,23 @@
 """
-Reusable organization validators.
+Organization validators.
 
-Provides validators shared across the DatavionAI platform
-for organization-related fields.
+Business validation helpers for organizations.
 """
 
 from __future__ import annotations
 
 import re
+from typing import TYPE_CHECKING, Any
 
+from django.apps import apps
 from django.core.exceptions import ValidationError
-from django.utils.translation import gettext_lazy as _
 
-MIN_ORGANIZATION_CODE_LENGTH = 2
+if TYPE_CHECKING:
+    from apps.platform.organizations.models import Organization
 
-MAX_ORGANIZATION_CODE_LENGTH = 20
 
-ORGANIZATION_CODE_PATTERN = re.compile(
-    r"^[A-Z0-9]+$",
+CODE_PATTERN = re.compile(
+    r"^[A-Z0-9]{1,20}$",
 )
 
 
@@ -25,56 +25,99 @@ def validate_organization_code(
     value: str,
 ) -> None:
     """
-    Validate an organization code.
-
-    Rules
-    -----
-    - Required.
-    - 2–20 characters.
-    - Uppercase letters (A-Z) and digits (0-9) only.
-    - No spaces.
-    - No special characters.
+    Validate organization code format.
     """
 
-    value = value.strip()
+    value = value.strip().upper()
 
-    if not value:
+    if not CODE_PATTERN.fullmatch(value):
         raise ValidationError(
-            _(
-                "Organization code cannot be empty.",
-            ),
-        )
-
-    if len(value) < MIN_ORGANIZATION_CODE_LENGTH:
-        raise ValidationError(
-            _("Organization code must contain at least %(length)s characters."),
-            params={
-                "length": MIN_ORGANIZATION_CODE_LENGTH,
-            },
-        )
-
-    if len(value) > MAX_ORGANIZATION_CODE_LENGTH:
-        raise ValidationError(
-            _("Organization code cannot exceed %(length)s characters."),
-            params={
-                "length": MAX_ORGANIZATION_CODE_LENGTH,
-            },
-        )
-
-    if not ORGANIZATION_CODE_PATTERN.fullmatch(
-        value,
-    ):
-        raise ValidationError(
-            _(
-                "Organization code may contain only "
-                "uppercase letters (A-Z) and digits (0-9)."
-            ),
+            "Organization code must contain 1–20 uppercase letters or digits.",
         )
 
 
-__all__ = [
-    "MAX_ORGANIZATION_CODE_LENGTH",
-    "MIN_ORGANIZATION_CODE_LENGTH",
-    "ORGANIZATION_CODE_PATTERN",
+def validate_unique_organization_code(
+    tenant: Any,
+    code: str,
+    *,
+    exclude_id: Any = None,
+) -> None:
+    """
+    Validate tenant-scoped organization code uniqueness.
+    """
+
+    Organization = apps.get_model(
+        "organizations",
+        "Organization",
+    )
+
+    code = code.strip().upper()
+
+    queryset = Organization.objects.filter(
+        tenant=tenant,
+        code=code,
+    )
+
+    if exclude_id is not None:
+        queryset = queryset.exclude(
+            id=exclude_id,
+        )
+
+    if queryset.exists():
+        raise ValidationError(
+            "Organization code already exists.",
+        )
+
+
+def validate_unique_organization_slug(
+    tenant: Any,
+    slug: str,
+    *,
+    exclude_id: Any = None,
+) -> None:
+    """
+    Validate tenant-scoped organization slug uniqueness.
+    """
+
+    Organization = apps.get_model(
+        "organizations",
+        "Organization",
+    )
+
+    slug = slug.strip().lower()
+
+    queryset = Organization.objects.filter(
+        tenant=tenant,
+        slug=slug,
+    )
+
+    if exclude_id is not None:
+        queryset = queryset.exclude(
+            id=exclude_id,
+        )
+
+    if queryset.exists():
+        raise ValidationError(
+            "Organization slug already exists.",
+        )
+
+
+def validate_organization_active(
+    organization: Organization,
+) -> None:
+    """
+    Ensure the organization is active.
+    """
+
+    if not organization.is_active:
+        raise ValidationError(
+            "Organization is inactive.",
+        )
+
+
+__all__: tuple[str, ...] = (
+    "validate_organization_active",
     "validate_organization_code",
-]
+    "validate_unique_organization_code",
+    "validate_unique_organization_slug",
+)

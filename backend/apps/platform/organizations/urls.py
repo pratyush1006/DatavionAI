@@ -17,3 +17,5 @@ urlpatterns = [
         ),
     ),
 ]
+
+app_name = "organizations"

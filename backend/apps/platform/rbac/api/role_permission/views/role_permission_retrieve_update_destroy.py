@@ -1,8 +1,18 @@
 """
 Role permission retrieve/update/destroy API view.
+
+Handles:
+
+- Retrieve role permission
+- Update role permission
+- Delete role permission
+- RBAC authorization
+- Audit integration through services
 """
 
 from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 from drf_spectacular.utils import (
     extend_schema,
@@ -14,9 +24,6 @@ from apps.common.api.base_generics import (
 from apps.platform.rbac.api.role_permission.serializers import (
     RolePermissionDetailSerializer,
     RolePermissionUpdateSerializer,
-)
-from apps.platform.rbac.models import (
-    RolePermission,
 )
 from apps.platform.rbac.permissions import (
     CanDeleteRolePermission,
@@ -31,6 +38,9 @@ from apps.platform.rbac.services import (
     update_role_permission,
 )
 
+if TYPE_CHECKING:
+    from apps.platform.rbac.models import RolePermission
+
 
 @extend_schema(
     tags=[
@@ -41,10 +51,24 @@ class RolePermissionRetrieveUpdateDestroyAPIView(
     BaseRetrieveUpdateDestroyAPIView,
 ):
     """
-    API view for retrieving, updating, and deleting a role permission.
+    Retrieve, update, and delete role permission assignments.
+
+    Flow:
+
+        API
+         |
+        Serializer
+         |
+        Service
+         |
+        Validator
+         |
+        Model
+         |
+        AuditLog
     """
 
-    queryset = RolePermission.objects.none()
+    queryset = None
 
     lookup_field = "id"
 
@@ -52,19 +76,23 @@ class RolePermissionRetrieveUpdateDestroyAPIView(
     # Services
     # =========================================================================
 
-    update_service = staticmethod(update_role_permission)
+    update_service = staticmethod(
+        update_role_permission,
+    )
 
-    delete_service = staticmethod(delete_role_permission)
+    delete_service = staticmethod(
+        delete_role_permission,
+    )
 
     # =========================================================================
-    # Object
+    # Object retrieval
     # =========================================================================
 
     def get_object(
         self,
     ) -> RolePermission:
         """
-        Return the requested role permission.
+        Return role permission instance.
         """
 
         return get_role_permission_by_id(
@@ -79,7 +107,7 @@ class RolePermissionRetrieveUpdateDestroyAPIView(
         self,
     ):
         """
-        Return the serializer class.
+        Return serializer by action.
         """
 
         if self.request.method in (
@@ -94,34 +122,12 @@ class RolePermissionRetrieveUpdateDestroyAPIView(
     # Permissions
     # =========================================================================
 
-    def get_permissions(
-        self,
-    ):
-        """
-        Return permission instances.
-        """
-
-        permission_map = {
-            "GET": [
-                CanViewRolePermission,
-            ],
-            "PUT": [
-                CanUpdateRolePermission,
-            ],
-            "PATCH": [
-                CanUpdateRolePermission,
-            ],
-            "DELETE": [
-                CanDeleteRolePermission,
-            ],
-        }
-
-        permission_classes = permission_map.get(
-            self.request.method,
-            [],
-        )
-
-        return [permission() for permission in permission_classes]
+    permission_classes_map = {
+        "GET": (CanViewRolePermission,),
+        "PUT": (CanUpdateRolePermission,),
+        "PATCH": (CanUpdateRolePermission,),
+        "DELETE": (CanDeleteRolePermission,),
+    }
 
 
 __all__ = [

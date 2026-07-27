@@ -5,6 +5,10 @@ OTP model for the Accounts application.
 from __future__ import annotations
 
 from django.conf import settings
+from django.contrib.auth.hashers import (
+    check_password,
+    make_password,
+)
 from django.db import models
 from django.utils import timezone
 
@@ -19,20 +23,45 @@ from apps.platform.accounts.constants import (
 )
 
 
+class OTPDeliveryStatus(models.TextChoices):
+    """
+    OTP delivery lifecycle.
+    """
+
+    PENDING = (
+        "pending",
+        "Pending",
+    )
+
+    SENT = (
+        "sent",
+        "Sent",
+    )
+
+    FAILED = (
+        "failed",
+        "Failed",
+    )
+
+    DELIVERED = (
+        "delivered",
+        "Delivered",
+    )
+
+
 class OTP(
     UUIDModel,
     TimeStampedModel,
 ):
     """
-    One-Time Password (OTP).
+    Secure One-Time Password model.
 
-    Used for:
+    Supports:
 
-    - Login verification
     - Email verification
+    - Login MFA
     - Password reset
-    - MFA
-    - Sensitive account actions
+    - Sensitive actions
     """
 
     user = models.ForeignKey(
@@ -43,7 +72,6 @@ class OTP(
 
     recipient = models.CharField(
         max_length=255,
-        help_text="Destination where the OTP was delivered.",
     )
 
     channel = models.CharField(
@@ -51,16 +79,22 @@ class OTP(
         choices=OTPChannel.choices,
         default=OTPChannel.EMAIL,
         db_index=True,
-        help_text="Delivery channel.",
     )
 
-    code = models.CharField(
-        max_length=10,
+    code_hash = models.CharField(
+        max_length=255,
     )
 
     purpose = models.CharField(
         max_length=30,
         choices=OTPPurpose.choices,
+        db_index=True,
+    )
+
+    delivery_status = models.CharField(
+        max_length=20,
+        choices=OTPDeliveryStatus.choices,
+        default=OTPDeliveryStatus.PENDING,
         db_index=True,
     )
 
@@ -72,6 +106,15 @@ class OTP(
 
     max_attempts = models.PositiveSmallIntegerField(
         default=OTP_MAX_ATTEMPTS,
+    )
+
+    resend_count = models.PositiveSmallIntegerField(
+        default=0,
+    )
+
+    locked_until = models.DateTimeField(
+        null=True,
+        blank=True,
     )
 
     is_used = models.BooleanField(
@@ -109,16 +152,7 @@ class OTP(
                 fields=[
                     "user",
                     "purpose",
-                ],
-            ),
-            models.Index(
-                fields=[
-                    "recipient",
-                ],
-            ),
-            models.Index(
-                fields=[
-                    "channel",
+                    "is_used",
                 ],
             ),
             models.Index(
@@ -126,49 +160,75 @@ class OTP(
                     "expires_at",
                 ],
             ),
-            models.Index(
-                fields=[
-                    "is_used",
-                ],
-            ),
         ]
 
-    def is_expired(self) -> bool:
+    def set_code(
+        self,
+        code: str,
+    ) -> None:
         """
-        Return whether the OTP has expired.
+        Securely hash OTP.
         """
 
+        self.code_hash = make_password(
+            code,
+        )
+
+    def verify_code(
+        self,
+        code: str,
+    ) -> bool:
+        """
+        Verify supplied OTP.
+        """
+
+        return check_password(
+            code,
+            self.code_hash,
+        )
+
+    def is_expired(
+        self,
+    ) -> bool:
         return timezone.now() >= self.expires_at
 
-    def can_attempt(self) -> bool:
-        """
-        Return whether another verification attempt is allowed.
-        """
+    def is_locked(
+        self,
+    ) -> bool:
+        return self.locked_until is not None and timezone.now() < self.locked_until
 
+    def can_attempt(
+        self,
+    ) -> bool:
         return (
             not self.is_used
             and not self.is_expired()
+            and not self.is_locked()
             and self.attempts < self.max_attempts
         )
 
-    def increment_attempts(self) -> None:
+    def increment_failed_attempt(
+        self,
+    ) -> None:
         """
-        Increment the failed verification attempt counter.
+        Increase failed attempts.
         """
 
         self.attempts += 1
 
+        self.failure_reason = "INVALID_CODE"
+
         self.save(
             update_fields=[
                 "attempts",
+                "failure_reason",
                 "updated_at",
             ],
         )
 
-    def mark_used(self) -> None:
-        """
-        Mark the OTP as successfully used.
-        """
+    def mark_used(
+        self,
+    ) -> None:
 
         self.is_used = True
         self.used_at = timezone.now()
@@ -186,25 +246,29 @@ class OTP(
         code: str,
     ) -> bool:
         """
-        Verify the supplied OTP.
+        Verify OTP.
         """
 
         if not self.can_attempt():
             return False
 
-        if self.code != code:
-            self.increment_attempts()
-            self.failure_reason = "INVALID_CODE"
-            self.save(update_fields=["failure_reason"])
+        if not self.verify_code(code):
+            self.increment_failed_attempt()
+
             return False
 
         self.mark_used()
+
         return True
 
-    def __str__(self) -> str:
-        return f"{self.user.email} [{self.channel}] ({self.purpose})"
+    def __str__(
+        self,
+    ) -> str:
+
+        return f"{self.user.email} [{self.channel}] {self.purpose}"
 
 
-__all__ = [
+__all__ = (
     "OTP",
-]
+    "OTPDeliveryStatus",
+)

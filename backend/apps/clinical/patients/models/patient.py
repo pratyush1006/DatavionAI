@@ -4,6 +4,8 @@ Patient model.
 
 from __future__ import annotations
 
+from datetime import date
+
 from django.db import models
 
 from apps.clinical.patients.constants import (
@@ -140,26 +142,32 @@ class Patient(BaseModel):
         verbose_name_plural = "Patients"
 
         ordering = (
-            "first_name",
             "last_name",
+            "first_name",
         )
 
         indexes = [
             models.Index(
                 fields=[
+                    "organization",
+                    "status",
+                ],
+                name="patient_org_status_idx",
+            ),
+            models.Index(
+                fields=[
+                    "organization",
                     "last_name",
                     "first_name",
                 ],
+                name="patient_org_name_idx",
             ),
             models.Index(
                 fields=[
-                    "status",
-                ],
-            ),
-            models.Index(
-                fields=[
+                    "organization",
                     "is_active",
                 ],
+                name="patient_org_active_idx",
             ),
         ]
 
@@ -178,7 +186,7 @@ class Patient(BaseModel):
         self,
     ) -> str:
         """
-        Return the patient's complete name.
+        Return the patient's legal full name.
         """
 
         return " ".join(
@@ -191,6 +199,39 @@ class Patient(BaseModel):
             if part
         )
 
+    @property
+    def display_name(
+        self,
+    ) -> str:
+        """
+        Return the preferred display name if available,
+        otherwise return the patient's legal full name.
+        """
+
+        return self.preferred_name or self.full_name
+
+    @property
+    def age(
+        self,
+    ) -> int:
+        """
+        Return the patient's age in completed years.
+        """
+
+        today = date.today()
+
+        return (
+            today.year
+            - self.date_of_birth.year
+            - (
+                (today.month, today.day)
+                < (
+                    self.date_of_birth.month,
+                    self.date_of_birth.day,
+                )
+            )
+        )
+
     def __str__(
         self,
     ) -> str:
@@ -198,7 +239,7 @@ class Patient(BaseModel):
         Return the patient display name.
         """
 
-        return f"{self.full_name} ({self.mrn})"
+        return f"{self.display_name} ({self.mrn})"
 
 
 __all__ = [

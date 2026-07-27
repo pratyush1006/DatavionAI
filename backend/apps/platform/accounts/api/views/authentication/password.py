@@ -1,5 +1,13 @@
 """
-Password management API views.
+Password authentication API views.
+
+Handles:
+
+- Forgot password
+- Reset password
+- Change password
+
+Business logic is delegated to PasswordService.
 """
 
 from __future__ import annotations
@@ -13,9 +21,10 @@ from rest_framework.permissions import (
 )
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
-from apps.common.api.responses import success_response
+from apps.common.api.base_generics import (
+    BaseGenericAPIView,
+)
 from apps.platform.accounts.api.serializers.authentication import (
     ChangePasswordSerializer,
     ForgotPasswordSerializer,
@@ -28,15 +37,18 @@ AUTH_TAG: Final = ("Authentication",)
 @extend_schema(
     tags=AUTH_TAG,
     summary="Forgot Password",
-    description="Generate and email a password reset OTP.",
+    description=(
+        "Generate password reset OTP. "
+        "For security reasons the response "
+        "does not reveal whether an account exists."
+    ),
     request=ForgotPasswordSerializer,
-    responses={
-        200: None,
-    },
 )
-class ForgotPasswordAPIView(APIView):
+class ForgotPasswordAPIView(
+    BaseGenericAPIView,
+):
     """
-    Generate a password reset OTP.
+    Request password reset OTP.
     """
 
     permission_classes = (AllowAny,)
@@ -50,10 +62,10 @@ class ForgotPasswordAPIView(APIView):
         request: Request,
     ) -> Response:
         """
-        Generate a password reset OTP.
+        Generate password reset OTP.
         """
 
-        serializer = self.serializer_class(
+        serializer = self.get_serializer(
             data=request.data,
         )
 
@@ -63,23 +75,23 @@ class ForgotPasswordAPIView(APIView):
 
         serializer.save()
 
-        return success_response(
-            message="Password reset OTP sent successfully.",
+        return self.success_response(
+            message=("If the account exists, a password reset OTP has been sent."),
+            data=None,
         )
 
 
 @extend_schema(
     tags=AUTH_TAG,
     summary="Reset Password",
-    description="Reset a user's password using the emailed OTP.",
+    description=("Reset password using OTP verification."),
     request=ResetPasswordSerializer,
-    responses={
-        200: None,
-    },
 )
-class ResetPasswordAPIView(APIView):
+class ResetPasswordAPIView(
+    BaseGenericAPIView,
+):
     """
-    Reset a user's password using an OTP.
+    Reset password using OTP.
     """
 
     permission_classes = (AllowAny,)
@@ -93,10 +105,10 @@ class ResetPasswordAPIView(APIView):
         request: Request,
     ) -> Response:
         """
-        Reset password.
+        Reset user password.
         """
 
-        serializer = self.serializer_class(
+        serializer = self.get_serializer(
             data=request.data,
         )
 
@@ -106,23 +118,23 @@ class ResetPasswordAPIView(APIView):
 
         serializer.save()
 
-        return success_response(
-            message="Password reset successfully.",
+        return self.success_response(
+            message=("Password reset successfully."),
+            data=None,
         )
 
 
 @extend_schema(
     tags=AUTH_TAG,
     summary="Change Password",
-    description="Change the authenticated user's password.",
+    description=("Change password for authenticated user."),
     request=ChangePasswordSerializer,
-    responses={
-        200: None,
-    },
 )
-class ChangePasswordAPIView(APIView):
+class ChangePasswordAPIView(
+    BaseGenericAPIView,
+):
     """
-    Change the authenticated user's password.
+    Change authenticated user password.
     """
 
     permission_classes = (IsAuthenticated,)
@@ -137,7 +149,7 @@ class ChangePasswordAPIView(APIView):
         Change password.
         """
 
-        serializer = self.serializer_class(
+        serializer = self.get_serializer(
             data=request.data,
         )
 
@@ -149,13 +161,14 @@ class ChangePasswordAPIView(APIView):
             user=request.user,
         )
 
-        return success_response(
-            message="Password changed successfully.",
+        return self.success_response(
+            message=("Password changed successfully."),
+            data=None,
         )
 
 
-__all__ = [
+__all__ = (
     "ChangePasswordAPIView",
     "ForgotPasswordAPIView",
     "ResetPasswordAPIView",
-]
+)

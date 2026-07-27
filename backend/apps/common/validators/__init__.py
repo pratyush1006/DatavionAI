@@ -1,40 +1,81 @@
 """
-Public validator API for the Datavion AI platform.
+DatavionOS reusable validators.
 
-Feature applications should import reusable framework
-validators from this package.
+Provides the public validation API used across the platform.
+
+Application modules should import validators from this package
+instead of internal validator modules.
 """
 
 from __future__ import annotations
 
-from .email import (
-    DEFAULT_EMAIL_MESSAGE,
+from .base import (
+    BaseValidator,
+)
+from .fields.email import (
     email_validator,
+    validate_email,
 )
-from .phone import (
+from .fields.file import (
+    file_extension_validator,
+    file_size_validator,
+)
+from .fields.name import (
+    name_validator,
+    validate_name,
+)
+from .fields.password import (
+    password_validator,
+    validate_password,
+)
+from .fields.phone import (
     DEFAULT_PHONE_NUMBER_MESSAGE,
-    PHONE_NUMBER_REGEX,
+    normalize_phone_number,
     phone_number_validator,
+    phone_validator,
+    validate_phone_number,
 )
-from .slug import (
-    DEFAULT_SLUG_MESSAGE,
-    SLUG_REGEX,
+from .fields.slug import (
+    slug_validator,
+    validate_slug,
 )
-from .slug import (
-    slug_validator as slug_validator,
+from .fields.url import (
+    url_validator,
+    validate_url,
+)
+from .fields.uuid import (
+    uuid_validator,
+    validate_uuid,
 )
 
-# Backward compatibility
-phone_validator = phone_number_validator
-
-__all__ = [
-    "DEFAULT_EMAIL_MESSAGE",
-    "DEFAULT_PHONE_NUMBER_MESSAGE",
-    "DEFAULT_SLUG_MESSAGE",
-    "PHONE_NUMBER_REGEX",
-    "SLUG_REGEX",
+__all__: tuple[str, ...] = (
+    # Base
+    "BaseValidator",
+    # Email
     "email_validator",
+    "validate_email",
+    # File
+    "file_extension_validator",
+    "file_size_validator",
+    # Name
+    "name_validator",
+    "validate_name",
+    # Password
+    "password_validator",
+    "validate_password",
+    # Phone
+    "DEFAULT_PHONE_NUMBER_MESSAGE",
+    "normalize_phone_number",
     "phone_number_validator",
-    "phone_validatorslug_validator",
+    "phone_validator",
+    "validate_phone_number",
+    # Slug
     "slug_validator",
-]
+    "validate_slug",
+    # URL
+    "url_validator",
+    "validate_url",
+    # UUID
+    "uuid_validator",
+    "validate_uuid",
+)

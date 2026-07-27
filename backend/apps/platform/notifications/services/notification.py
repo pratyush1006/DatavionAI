@@ -6,6 +6,9 @@ from __future__ import annotations
 
 from django.db import transaction
 
+from apps.common.notifications.provider_registry import (
+    NotificationProviderRegistry,
+)
 from apps.platform.accounts.models import User
 from apps.platform.notifications.constants import (
     DEFAULT_CHANNEL,
@@ -25,9 +28,6 @@ from apps.platform.notifications.dispatch import (
 from apps.platform.notifications.models import Notification
 from apps.platform.notifications.services.notification_log import (
     NotificationLogService,
-)
-from apps.platform.notifications.services.registry import (
-    NotificationProviderRegistry,
 )
 
 

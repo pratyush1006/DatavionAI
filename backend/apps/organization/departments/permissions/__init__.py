@@ -2,7 +2,9 @@
 Department permission exports.
 """
 
-from .department import (
+from __future__ import annotations
+
+from apps.organization.departments.permissions.department import (
     CanCreateDepartment,
     CanDeleteDepartment,
     CanUpdateDepartment,

@@ -42,13 +42,13 @@ class ProviderAPITestCase(BaseAPITestCase):
         )
 
         self.list_url = reverse(
-            "providers:list-create",
+            "providers-api:list-create",
         )
 
         self.detail_url = reverse(
-            "providers:detail",
+            "providers-api:detail",
             kwargs={
-                "provider_id": self.provider.id,
+                "provider_id": self.provider.pk,
             },
         )
 
@@ -84,6 +84,27 @@ class ProviderAPITestCase(BaseAPITestCase):
             status.HTTP_200_OK,
         )
 
+    def test_retrieve_provider_not_found(
+        self,
+    ) -> None:
+        """
+        Retrieving a non-existent provider should return HTTP 404.
+        """
+
+        response = self.client.get(
+            reverse(
+                "providers-api:detail",
+                kwargs={
+                    "provider_id": "00000000-0000-0000-0000-000000000000",
+                },
+            ),
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_404_NOT_FOUND,
+        )
+
     def test_create_provider(
         self,
     ) -> None:
@@ -103,8 +124,8 @@ class ProviderAPITestCase(BaseAPITestCase):
         )
 
         payload = {
-            "organization": str(self.organization.id),
-            "employee": str(employee.id),
+            "organization": str(self.organization.pk),
+            "employee": str(employee.pk),
             "provider_number": "PRV000002",
             "license_number": "LIC000002",
             "provider_type": ProviderType.SURGEON,
@@ -121,6 +142,12 @@ class ProviderAPITestCase(BaseAPITestCase):
         self.assertEqual(
             response.status_code,
             status.HTTP_201_CREATED,
+        )
+
+        self.assertTrue(
+            Provider.objects.filter(
+                provider_number="PRV000002",
+            ).exists(),
         )
 
     def test_create_provider_validation_error(
@@ -151,8 +178,8 @@ class ProviderAPITestCase(BaseAPITestCase):
         response = self.client.put(
             self.detail_url,
             {
-                "organization": str(self.organization.id),
-                "employee": str(self.employee.id),
+                "organization": str(self.organization.pk),
+                "employee": str(self.employee.pk),
                 "provider_number": "PRV000001",
                 "license_number": "LIC000001",
                 "provider_type": ProviderType.SURGEON,
@@ -165,6 +192,18 @@ class ProviderAPITestCase(BaseAPITestCase):
         self.assertEqual(
             response.status_code,
             status.HTTP_200_OK,
+        )
+
+        self.provider.refresh_from_db()
+
+        self.assertEqual(
+            self.provider.provider_type,
+            ProviderType.SURGEON,
+        )
+
+        self.assertEqual(
+            self.provider.years_of_experience,
+            12,
         )
 
     def test_partial_update_provider(
@@ -187,6 +226,13 @@ class ProviderAPITestCase(BaseAPITestCase):
             status.HTTP_200_OK,
         )
 
+        self.provider.refresh_from_db()
+
+        self.assertEqual(
+            self.provider.years_of_experience,
+            20,
+        )
+
     def test_delete_provider(
         self,
     ) -> None:
@@ -201,6 +247,12 @@ class ProviderAPITestCase(BaseAPITestCase):
         self.assertEqual(
             response.status_code,
             status.HTTP_204_NO_CONTENT,
+        )
+
+        self.assertFalse(
+            Provider.objects.filter(
+                pk=self.provider.pk,
+            ).exists(),
         )
 
     def test_requires_authentication(

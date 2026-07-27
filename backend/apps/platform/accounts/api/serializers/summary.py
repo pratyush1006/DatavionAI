@@ -10,17 +10,21 @@ from .base import UserBaseSerializer
 from .fields import SUMMARY_FIELDS
 
 
-class UserSummarySerializer(UserBaseSerializer):
+class UserSummarySerializer(
+    UserBaseSerializer,
+):
     """
     Serializer for user summary responses.
     """
 
-    class Meta(UserBaseSerializer.Meta):
+    class Meta(
+        UserBaseSerializer.Meta,
+    ):
         model = User
+
         fields = SUMMARY_FIELDS
+
         read_only_fields = SUMMARY_FIELDS
 
 
-__all__ = [
-    "UserSummarySerializer",
-]
+__all__ = ("UserSummarySerializer",)

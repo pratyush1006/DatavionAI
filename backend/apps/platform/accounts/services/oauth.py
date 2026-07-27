@@ -1,26 +1,49 @@
 """
 OAuth authentication services.
+
+Handles:
+
+- OAuth token validation
+- OAuth account linking
+- OAuth login
+- OAuth identity lifecycle
+
+Provider-specific validation is delegated
+to OAuth adapters.
 """
 
 from __future__ import annotations
 
-from django.db import transaction
+from typing import Any
 
-from apps.common.exceptions import ValidationException
-from apps.platform.accounts.constants import OAuthProvider
+from django.db import transaction
+from django.utils import timezone
+
+from apps.common.exceptions import (
+    ValidationException,
+)
+from apps.platform.accounts.constants import (
+    OAuthProvider,
+)
 from apps.platform.accounts.models import (
     OAuthAccount,
     User,
+)
+from apps.platform.accounts.services.authentication import (
+    AuthenticationService,
 )
 
 
 class OAuthService:
     """
-    Business services for OAuth authentication.
+    OAuth authentication business service.
 
-    This service orchestrates OAuth authentication workflows.
-    Provider-specific token validation should be implemented
-    by dedicated provider adapters.
+    Responsibilities:
+
+    - Resolve OAuth identity
+    - Link provider accounts
+    - Issue authentication tokens
+    - Maintain OAuth lifecycle
     """
 
     @staticmethod
@@ -28,16 +51,16 @@ class OAuthService:
         *,
         provider: OAuthProvider,
         token: str,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """
-        Validate an OAuth token.
+        Validate OAuth token.
 
-        Provider-specific validation will be implemented
-        later.
+        Provider adapters implement
+        actual verification.
         """
 
         raise NotImplementedError(
-            f"{provider.label} OAuth validation is not implemented.",
+            (f"{provider.label} OAuth validation adapter is not configured."),
         )
 
     @staticmethod
@@ -47,7 +70,7 @@ class OAuthService:
         provider_user_id: str,
     ) -> OAuthAccount | None:
         """
-        Return an OAuth account.
+        Retrieve active OAuth identity.
         """
 
         return (
@@ -56,7 +79,9 @@ class OAuthService:
                 provider_user_id=provider_user_id,
                 is_active=True,
             )
-            .select_related("user")
+            .select_related(
+                "user",
+            )
             .first()
         )
 
@@ -67,9 +92,12 @@ class OAuthService:
         *,
         provider: OAuthProvider,
         token: str,
-    ) -> User:
+        ip_address: str = "",
+        device: str = "Unknown Device",
+        location: str = "Unknown Location",
+    ) -> dict[str, str]:
         """
-        Authenticate using an OAuth provider.
+        Authenticate using OAuth provider.
         """
 
         profile = cls.validate_token(
@@ -77,17 +105,62 @@ class OAuthService:
             token=token,
         )
 
+        provider_user_id = profile.get(
+            "provider_user_id",
+        )
+
+        if not provider_user_id:
+            raise ValidationException(
+                message=("OAuth provider identity is missing."),
+            )
+
         account = cls.get_oauth_account(
             provider=provider,
-            provider_user_id=profile["provider_user_id"],
+            provider_user_id=provider_user_id,
         )
 
         if account is None:
             raise ValidationException(
-                "OAuth account is not linked.",
+                message=("OAuth account is not linked to a DatavionOS account."),
             )
 
-        return account.user
+        if not account.user.is_active:
+            raise ValidationException(
+                message=("User account is inactive."),
+            )
+
+        now = timezone.now()
+
+        account.last_login_at = now
+
+        account.save(
+            update_fields=[
+                "last_login_at",
+                "updated_at",
+            ],
+        )
+
+        account.user.last_login = now
+
+        account.user.save(
+            update_fields=[
+                "last_login",
+                "updated_at",
+            ],
+        )
+
+        transaction.on_commit(
+            lambda: AuthenticationService._send_login_alert(
+                user=account.user,
+                ip_address=ip_address,
+                device=device,
+                location=location,
+            ),
+        )
+
+        return AuthenticationService.issue_tokens(
+            user=account.user,
+        )
 
     @staticmethod
     @transaction.atomic
@@ -97,24 +170,23 @@ class OAuthService:
         provider: OAuthProvider,
         provider_user_id: str,
         email: str,
-        metadata: dict | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> OAuthAccount:
         """
-        Link an OAuth account to a user.
+        Link OAuth identity with user.
         """
 
-        account, _ = OAuthAccount.objects.update_or_create(
+        return OAuthAccount.objects.update_or_create(
             provider=provider,
             provider_user_id=provider_user_id,
             defaults={
                 "user": user,
-                "email": email,
+                "email": email.strip().lower(),
                 "metadata": metadata or {},
                 "is_active": True,
+                "last_synced_at": timezone.now(),
             },
-        )
-
-        return account
+        )[0]
 
     @staticmethod
     @transaction.atomic
@@ -123,7 +195,7 @@ class OAuthService:
         account: OAuthAccount,
     ) -> None:
         """
-        Deactivate an OAuth account.
+        Disable OAuth identity.
         """
 
         account.is_active = False
@@ -136,6 +208,4 @@ class OAuthService:
         )
 
 
-__all__ = [
-    "OAuthService",
-]
+__all__ = ("OAuthService",)

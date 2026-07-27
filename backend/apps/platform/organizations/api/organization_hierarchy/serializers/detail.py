@@ -4,24 +4,26 @@ Detail serializer for OrganizationHierarchy.
 
 from __future__ import annotations
 
-from apps.platform.organizations.models import (
-    OrganizationHierarchy,
+from apps.platform.organizations.api.organization_hierarchy.serializers.base import (
+    OrganizationHierarchyBaseSerializer,
 )
-from rest_framework import serializers
-
-from .fields import _DETAIL_FIELDS
+from apps.platform.organizations.api.organization_hierarchy.serializers.fields import (
+    _DETAIL_FIELDS,
+)
 
 
 class OrganizationHierarchyDetailSerializer(
-    serializers.ModelSerializer,
+    OrganizationHierarchyBaseSerializer,
 ):
     """
-    Detail serializer.
+    Serializer for retrieving organization hierarchy details.
     """
 
-    class Meta:
-        model = OrganizationHierarchy
-
+    class Meta(
+        OrganizationHierarchyBaseSerializer.Meta,
+    ):
         fields = _DETAIL_FIELDS
-
         read_only_fields = fields
+
+
+__all__: tuple[str, ...] = ("OrganizationHierarchyDetailSerializer",)

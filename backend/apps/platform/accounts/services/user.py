@@ -4,51 +4,104 @@ User business services.
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from typing import Any
 
 from django.db import transaction
 from django.utils import timezone
 
 from apps.platform.accounts.models import User
 
-type UserData = Mapping[str, object]
-
 
 class UserService:
     """
     Business services for user lifecycle management.
+
+    Handles:
+
+    - User creation
+    - User updates
+    - Activation/deactivation
+    - Login tracking
+    - Account lifecycle operations
     """
+
+    @staticmethod
+    def _extract_platform_context(
+        validated_data: dict[str, Any],
+    ) -> dict[str, Any]:
+        """
+        Remove platform context injected by API layer.
+
+        These fields belong to request context,
+        not the User model.
+        """
+
+        return {
+            "request_user": validated_data.pop(
+                "request_user",
+                None,
+            ),
+            "tenant": validated_data.pop(
+                "tenant",
+                None,
+            ),
+            "organization": validated_data.pop(
+                "organization",
+                None,
+            ),
+        }
 
     @staticmethod
     @transaction.atomic
     def create(
-        **validated_data: object,
+        **validated_data: Any,
     ) -> User:
         """
         Create a new user.
+
+        Platform context is accepted from
+        DatavionOS service layer but is not
+        passed directly to the model.
         """
 
-        validated_data = dict(validated_data)
+        validated_data = dict(
+            validated_data,
+        )
 
-        password = validated_data.pop("password")
+        UserService._extract_platform_context(
+            validated_data,
+        )
 
-        return User.objects.create_user(
+        password = validated_data.pop(
+            "password",
+            None,
+        )
+
+        user = User.objects.create_user(
             password=password,
             **validated_data,
         )
+
+        return user
 
     @staticmethod
     @transaction.atomic
     def update(
         *,
         user: User,
-        **validated_data: object,
+        **validated_data: Any,
     ) -> User:
         """
-        Update a user.
+        Update an existing user.
         """
 
-        validated_data = dict(validated_data)
+        validated_data = dict(
+            validated_data,
+        )
+
+        UserService._extract_platform_context(
+            validated_data,
+        )
 
         password = validated_data.pop(
             "password",
@@ -58,16 +111,33 @@ class UserService:
         update_fields: list[str] = []
 
         for field, value in validated_data.items():
-            setattr(user, field, value)
-            update_fields.append(field)
+            setattr(
+                user,
+                field,
+                value,
+            )
+
+            update_fields.append(
+                field,
+            )
 
         if password:
-            user.set_password(password)
-            update_fields.append("password")
+            user.set_password(
+                password,
+            )
+
+            update_fields.append(
+                "password",
+            )
 
         if update_fields:
-            update_fields.append("updated_at")
-            user.save(update_fields=update_fields)
+            update_fields.append(
+                "updated_at",
+            )
+
+            user.save(
+                update_fields=update_fields,
+            )
 
         return user
 
@@ -76,9 +146,12 @@ class UserService:
     def deactivate(
         *,
         user: User,
+        **kwargs: Any,
     ) -> User:
         """
-        Deactivate a user.
+        Soft deactivate a user.
+
+        Preserves audit history.
         """
 
         user.is_active = False
@@ -97,6 +170,7 @@ class UserService:
     def activate(
         *,
         user: User,
+        **kwargs: Any,
     ) -> User:
         """
         Activate a user.
@@ -120,7 +194,7 @@ class UserService:
         user: User,
     ) -> None:
         """
-        Record a successful login.
+        Record successful login.
         """
 
         user.last_login = timezone.now()
@@ -128,6 +202,7 @@ class UserService:
         user.save(
             update_fields=[
                 "last_login",
+                "updated_at",
             ],
         )
 
@@ -136,16 +211,15 @@ class UserService:
     def delete(
         *,
         user: User,
+        **kwargs: Any,
     ) -> None:
         """
         Permanently delete a user.
 
-        Reserved for administrative cleanup only.
+        Reserved for platform cleanup only.
         """
 
         user.delete()
 
 
-__all__ = [
-    "UserService",
-]
+__all__ = ("UserService",)

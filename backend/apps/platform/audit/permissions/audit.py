@@ -1,91 +1,82 @@
 """
 Audit permission classes.
+
+Uses DatavionOS RBAC authorization engine.
 """
 
 from __future__ import annotations
 
-from rest_framework.permissions import BasePermission
+from rest_framework.permissions import (
+    BasePermission,
+)
+
+from apps.platform.rbac.engines import (
+    user_has_permission,
+)
 
 
-class CanViewAudit(
+class AuditBasePermission(
     BasePermission,
 ):
     """
-    Permission required to view audit logs.
+    Base permission for Audit module.
 
-    This is a temporary implementation. Once the
-    RBAC module exposes a centralized permission
-    service, this class should delegate permission
-    evaluation to it.
+    Delegates authorization to
+    DatavionOS RBAC engine.
+    """
+
+    permission_code: str = ""
+
+    def has_permission(
+        self,
+        request,
+        view,
+    ) -> bool:
+        """
+        Validate audit permission.
+        """
+
+        user = getattr(
+            request,
+            "user",
+            None,
+        )
+
+        if not user or not user.is_authenticated:
+            return False
+
+        return user_has_permission(
+            user=user,
+            permission=self.permission_code,
+        )
+
+
+class CanViewAudit(
+    AuditBasePermission,
+):
+    """
+    Permission required to view audit logs.
     """
 
     message = "You do not have permission to view audit logs."
 
-    def has_permission(
-        self,
-        request,
-        view,
-    ) -> bool:
-        """
-        Determine whether the request is permitted.
-        """
-
-        user = getattr(
-            request,
-            "user",
-            None,
-        )
-
-        #
-        # TODO:
-        # Replace with RBAC permission check.
-        #
-        # Example:
-        #
-        # return PermissionService.has_permission(
-        #     user=user,
-        #     permission="audit.view",
-        # )
-        #
-
-        return bool(user and user.is_authenticated)
+    permission_code = "audit.view"
 
 
 class CanExportAudit(
-    BasePermission,
+    AuditBasePermission,
 ):
     """
     Permission required to export audit logs.
-
-    Reserved for future RBAC integration.
     """
 
     message = "You do not have permission to export audit logs."
 
-    def has_permission(
-        self,
-        request,
-        view,
-    ) -> bool:
-        """
-        Determine whether export is permitted.
-        """
-
-        user = getattr(
-            request,
-            "user",
-            None,
-        )
-
-        #
-        # TODO:
-        # Replace with RBAC permission check.
-        #
-
-        return bool(user and user.is_authenticated)
+    permission_code = "audit.export"
 
 
 __all__ = [
+    "AuditBasePermission",
     "CanViewAudit",
     "CanExportAudit",
 ]

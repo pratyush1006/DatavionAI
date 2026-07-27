@@ -28,6 +28,7 @@ class OrganizationFactory(
 
     class Meta:
         model = Organization
+        exclude = ("unique",)
 
     unique = factory.LazyFunction(
         lambda: uuid.uuid4().hex[:8].upper(),

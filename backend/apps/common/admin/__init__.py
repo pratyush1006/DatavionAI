@@ -2,10 +2,6 @@
 Common admin exports.
 """
 
-from .base import (
-    BaseAdmin,
-)
+from .base import BaseAdmin
 
-__all__ = [
-    "BaseAdmin",
-]
+__all__ = ("BaseAdmin",)

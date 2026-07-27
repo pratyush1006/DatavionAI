@@ -8,6 +8,9 @@ from .organization import (
     OrganizationFactory,
     create_organization,
 )
+from .organization_branding import (
+    create_organization_branding,
+)
 from .organization_hierarchy import (
     create_organization_hierarchy,
 )
@@ -15,5 +18,6 @@ from .organization_hierarchy import (
 __all__ = [
     "OrganizationFactory",
     "create_organization",
+    "create_organization_branding",
     "create_organization_hierarchy",
 ]

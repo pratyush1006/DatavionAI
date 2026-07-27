@@ -1,25 +1,44 @@
 """
-OTP verification serializers.
+OTP authentication serializers.
+
+Handles:
+
+- OTP verification
+- OTP resend validation
+
+Business logic is delegated to services.
 """
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING, Any
+
 from rest_framework import serializers
 
-from apps.platform.accounts.models import User
-from apps.platform.accounts.selectors import get_user_by_email
-from apps.platform.accounts.services import VerificationService
+from apps.platform.accounts.services import (
+    VerificationService,
+)
+
+if TYPE_CHECKING:
+    from apps.platform.accounts.models import User
 
 
-class VerifyOTPSerializer(serializers.Serializer):
+class VerifyOTPSerializer(
+    serializers.Serializer,
+):
     """
-    Serializer for verifying an email verification OTP.
+    Serializer for OTP verification.
     """
 
-    email = serializers.EmailField()
+    email = serializers.EmailField(
+        required=True,
+    )
 
     otp = serializers.CharField(
-        max_length=10,
+        write_only=True,
+        min_length=6,
+        max_length=6,
+        trim_whitespace=True,
     )
 
     def validate_email(
@@ -27,17 +46,34 @@ class VerifyOTPSerializer(serializers.Serializer):
         value: str,
     ) -> str:
         """
-        Normalize the email.
+        Normalize email.
         """
 
         return value.strip().lower()
 
+    def validate_otp(
+        self,
+        value: str,
+    ) -> str:
+        """
+        Validate OTP format.
+        """
+
+        otp = value.strip()
+
+        if not otp.isdigit():
+            raise serializers.ValidationError(
+                "OTP must contain only digits.",
+            )
+
+        return otp
+
     def save(
         self,
-        **kwargs,
+        **kwargs: Any,
     ) -> User:
         """
-        Verify the supplied OTP.
+        Verify email OTP.
         """
 
         return VerificationService.verify_email(
@@ -46,41 +82,37 @@ class VerifyOTPSerializer(serializers.Serializer):
         )
 
 
-class ResendOTPSerializer(serializers.Serializer):
+class ResendOTPSerializer(
+    serializers.Serializer,
+):
     """
-    Serializer for resending an email verification OTP.
+    Serializer for resending verification OTP.
     """
 
-    email = serializers.EmailField()
+    email = serializers.EmailField(
+        required=True,
+    )
 
     def validate_email(
         self,
         value: str,
     ) -> str:
         """
-        Normalize the email.
+        Normalize email.
+
+        User existence validation is intentionally
+        performed in service layer to avoid
+        account enumeration.
         """
 
-        email = value.strip().lower()
-
-        if (
-            get_user_by_email(
-                email=email,
-            )
-            is None
-        ):
-            raise serializers.ValidationError(
-                "User not found.",
-            )
-
-        return email
+        return value.strip().lower()
 
     def save(
         self,
-        **kwargs,
+        **kwargs: Any,
     ) -> None:
         """
-        Resend an email verification OTP.
+        Resend verification OTP.
         """
 
         VerificationService.resend_email_verification(
@@ -88,7 +120,7 @@ class ResendOTPSerializer(serializers.Serializer):
         )
 
 
-__all__ = [
+__all__ = (
     "ResendOTPSerializer",
     "VerifyOTPSerializer",
-]
+)

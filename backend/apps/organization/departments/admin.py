@@ -16,8 +16,10 @@ class DepartmentAdmin(admin.ModelAdmin):
 
     list_display = (
         "name",
-        "organization",
         "code",
+        "organization",
+        "department_type",
+        "status",
         "is_active",
         "created_at",
     )
@@ -30,18 +32,32 @@ class DepartmentAdmin(admin.ModelAdmin):
 
     list_filter = (
         "organization",
+        "department_type",
+        "status",
         "is_active",
         "created_at",
     )
 
     ordering = (
-        "organization__name",
+        "organization",
         "name",
     )
 
     readonly_fields = (
+        "id",
         "created_at",
         "updated_at",
+        "deleted_at",
+    )
+
+    autocomplete_fields = (
+        "organization",
+        "head",
+    )
+
+    list_select_related = (
+        "organization",
+        "head",
     )
 
     list_per_page = 25
@@ -53,6 +69,4 @@ class DepartmentAdmin(admin.ModelAdmin):
     empty_value_display = "-"
 
 
-__all__ = [
-    "DepartmentAdmin",
-]
+__all__ = ("DepartmentAdmin",)
