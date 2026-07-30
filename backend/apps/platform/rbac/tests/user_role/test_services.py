@@ -4,6 +4,8 @@ Tests for the UserRole services.
 
 from __future__ import annotations
 
+from django.test import TestCase
+
 from apps.platform.rbac.models import (
     UserRole,
 )
@@ -21,7 +23,6 @@ from apps.platform.rbac.tests.factories import (
 from apps.platform.rbac.tests.factories.user_role import (
     UserFactory,
 )
-from django.test import TestCase
 
 
 class UserRoleServiceTestCase(

@@ -193,11 +193,7 @@ class PlatformBootstrapSerializer(
         Converts frozenset into stable JSON list.
         """
 
-        return sorted(
-            list(
-                obj.context.permissions,
-            )
-        )
+        return sorted(obj.context.permissions)
 
     def get_organization(
         self,

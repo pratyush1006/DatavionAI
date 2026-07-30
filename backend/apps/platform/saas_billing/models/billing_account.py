@@ -1,9 +1,22 @@
 """
 SaaS billing account model.
 
-Stores billing identity and payment
-provider information for DatavionOS
-organizations.
+Stores billing identity, payment provider
+configuration and enterprise billing lifecycle.
+
+Architecture:
+
+Tenant
+    |
+Organization
+    |
+BillingAccount
+    |
+Subscription
+    |
+Invoice
+    |
+Payment
 """
 
 from __future__ import annotations
@@ -12,25 +25,34 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from apps.core.models import BaseModel
+from apps.platform.saas_billing.managers.billing import (
+    BillingAccountManager,
+)
 
 
 class BillingAccount(BaseModel):
     """
-    Billing profile for a SaaS organization.
+    Enterprise SaaS billing profile.
 
-    Used for:
+    Supports:
 
-    - subscription billing
-    - invoices
-    - payment providers
-    - tax information
+    - Hospitals
+    - Clinics
+    - Pharmacies
+    - Medical stores
+    - Laboratories
+    - Diagnostic centers
+    - Healthcare networks
+    - Enterprise healthcare groups
     """
 
-    class Currency(models.TextChoices):
-        """
-        Supported billing currencies.
-        """
+    objects = BillingAccountManager()
 
+    # ------------------------------------------------------------------
+    # Choices
+    # ------------------------------------------------------------------
+
+    class Currency(models.TextChoices):
         USD = (
             "USD",
             _("US Dollar"),
@@ -51,6 +73,56 @@ class BillingAccount(BaseModel):
             _("British Pound"),
         )
 
+    class BillingStatus(models.TextChoices):
+        ACTIVE = (
+            "ACTIVE",
+            _("Active"),
+        )
+
+        SUSPENDED = (
+            "SUSPENDED",
+            _("Suspended"),
+        )
+
+        CLOSED = (
+            "CLOSED",
+            _("Closed"),
+        )
+
+    class PaymentTerms(models.TextChoices):
+        IMMEDIATE = (
+            "IMMEDIATE",
+            _("Immediate Payment"),
+        )
+
+        NET_15 = (
+            "NET_15",
+            _("Net 15 Days"),
+        )
+
+        NET_30 = (
+            "NET_30",
+            _("Net 30 Days"),
+        )
+
+        NET_60 = (
+            "NET_60",
+            _("Net 60 Days"),
+        )
+
+    # ------------------------------------------------------------------
+    # Ownership
+    # ------------------------------------------------------------------
+
+    tenant = models.ForeignKey(
+        "tenancy.Tenant",
+        on_delete=models.CASCADE,
+        related_name="billing_accounts",
+        help_text=_(
+            "Tenant owning billing account.",
+        ),
+    )
+
     organization = models.OneToOneField(
         "organizations.Organization",
         on_delete=models.CASCADE,
@@ -61,13 +133,13 @@ class BillingAccount(BaseModel):
     )
 
     # ------------------------------------------------------------------
-    # Legal Billing Identity
+    # Legal Identity
     # ------------------------------------------------------------------
 
     legal_name = models.CharField(
         max_length=255,
         help_text=_(
-            "Legal billing entity name.",
+            "Registered legal billing entity name.",
         ),
     )
 
@@ -80,54 +152,87 @@ class BillingAccount(BaseModel):
     billing_phone = models.CharField(
         max_length=30,
         blank=True,
-        help_text=_(
-            "Billing contact phone number.",
-        ),
+    )
+
+    billing_contact_name = models.CharField(
+        max_length=255,
+        blank=True,
     )
 
     tax_id = models.CharField(
         max_length=100,
         blank=True,
-        help_text=_(
-            "Tax identification number.",
-        ),
     )
 
     gst_number = models.CharField(
         max_length=100,
         blank=True,
-        help_text=_(
-            "GST registration number.",
-        ),
     )
 
     vat_number = models.CharField(
         max_length=100,
         blank=True,
-        help_text=_(
-            "VAT registration number.",
-        ),
     )
 
     # ------------------------------------------------------------------
-    # Currency
+    # Billing Configuration
     # ------------------------------------------------------------------
 
     currency = models.CharField(
         max_length=10,
         choices=Currency.choices,
-        default=Currency.USD,
-        help_text=_(
-            "Billing currency.",
-        ),
+        default=Currency.INR,
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=BillingStatus.choices,
+        default=BillingStatus.ACTIVE,
+        db_index=True,
+    )
+
+    payment_terms = models.CharField(
+        max_length=20,
+        choices=PaymentTerms.choices,
+        default=PaymentTerms.IMMEDIATE,
     )
 
     billing_address = models.JSONField(
         default=dict,
         blank=True,
-        help_text=_(
-            "Billing address information.",
-        ),
+    )
+
+    tax_configuration = models.JSONField(
+        default=dict,
+        blank=True,
+    )
+
+    # ------------------------------------------------------------------
+    # Enterprise Billing
+    # ------------------------------------------------------------------
+
+    purchase_order_required = models.BooleanField(
+        default=False,
+    )
+
+    purchase_order_number = models.CharField(
+        max_length=100,
+        blank=True,
+    )
+
+    credit_limit = models.DecimalField(
+        max_digits=14,
+        decimal_places=2,
+        default=0,
+    )
+
+    grace_period_days = models.PositiveIntegerField(
+        default=7,
+    )
+
+    accounting_reference = models.CharField(
+        max_length=255,
+        blank=True,
     )
 
     # ------------------------------------------------------------------
@@ -137,42 +242,40 @@ class BillingAccount(BaseModel):
     payment_provider = models.CharField(
         max_length=50,
         blank=True,
-        help_text=_(
-            "Payment provider name.",
-        ),
     )
 
     payment_customer_id = models.CharField(
         max_length=255,
         blank=True,
         db_index=True,
-        help_text=_(
-            "External payment customer ID.",
-        ),
     )
 
     default_payment_method_id = models.CharField(
         max_length=255,
         blank=True,
-        help_text=_(
-            "Default payment method reference.",
-        ),
     )
 
     auto_charge_enabled = models.BooleanField(
         default=False,
-        help_text=_(
-            "Enable automatic payment collection.",
-        ),
     )
+
+    # ------------------------------------------------------------------
+    # Extension
+    # ------------------------------------------------------------------
 
     configuration = models.JSONField(
         default=dict,
         blank=True,
-        help_text=_(
-            "Additional billing configuration.",
-        ),
     )
+
+    metadata = models.JSONField(
+        default=dict,
+        blank=True,
+    )
+
+    # ------------------------------------------------------------------
+    # Meta
+    # ------------------------------------------------------------------
 
     class Meta:
         db_table = "saas_billing_accounts"
@@ -188,6 +291,16 @@ class BillingAccount(BaseModel):
         indexes = [
             models.Index(
                 fields=[
+                    "tenant",
+                ],
+            ),
+            models.Index(
+                fields=[
+                    "status",
+                ],
+            ),
+            models.Index(
+                fields=[
                     "payment_customer_id",
                 ],
             ),
@@ -196,7 +309,7 @@ class BillingAccount(BaseModel):
     def __str__(
         self,
     ) -> str:
-        return f"Billing Account - {self.organization}"
+        return f"{self.organization} Billing Account"
 
 
 __all__ = [

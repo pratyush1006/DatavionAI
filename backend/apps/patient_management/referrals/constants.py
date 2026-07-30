@@ -4,11 +4,12 @@ Constants for the Referrals module.
 
 from __future__ import annotations
 
+from django.db import models
+
 from apps.patient_management.constants import (
     ReferralPriority,
     ReferralStatus,
 )
-from django.db import models
 
 
 class ReferralUrgency(models.TextChoices):

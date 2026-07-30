@@ -17,7 +17,7 @@ Supports:
 
 from __future__ import annotations
 
-from typing import Any, Generic, TypeVar
+from typing import Any, TypeVar
 
 from django.db.models import Model, QuerySet
 
@@ -32,9 +32,7 @@ ModelType = TypeVar(
 )
 
 
-class FilterMixin(
-    Generic[ModelType],
-):
+class FilterMixin[ModelType: Model]:
     """
     Generic filtering support.
     """
@@ -57,9 +55,7 @@ class FilterMixin(
         )
 
 
-class SearchMixin(
-    Generic[ModelType],
-):
+class SearchMixin[ModelType: Model]:
     """
     Generic search support.
     """
@@ -79,9 +75,7 @@ class SearchMixin(
         )
 
 
-class OrderingMixin(
-    Generic[ModelType],
-):
+class OrderingMixin[ModelType: Model]:
     """
     Query ordering support.
     """
@@ -104,9 +98,7 @@ class OrderingMixin(
         )
 
 
-class PaginationMixin(
-    Generic[ModelType],
-):
+class PaginationMixin[ModelType: Model]:
     """
     Pagination support.
     """
@@ -126,9 +118,7 @@ class PaginationMixin(
         )
 
 
-class TenantScopeMixin(
-    Generic[ModelType],
-):
+class TenantScopeMixin[ModelType: Model]:
     """
     DatavionOS multi tenant scope.
 
@@ -153,9 +143,7 @@ class TenantScopeMixin(
         return queryset
 
 
-class UserScopeMixin(
-    Generic[ModelType],
-):
+class UserScopeMixin[ModelType: Model]:
     """
     User based access filtering.
     """
@@ -170,9 +158,7 @@ class UserScopeMixin(
         return queryset
 
 
-class SoftDeleteMixin(
-    Generic[ModelType],
-):
+class SoftDeleteMixin[ModelType: Model]:
     """
     Exclude deleted records.
     """
@@ -193,9 +179,7 @@ class SoftDeleteMixin(
         return queryset
 
 
-class OptimizationMixin(
-    Generic[ModelType],
-):
+class OptimizationMixin[ModelType: Model]:
     """
     Query optimization hooks.
     """

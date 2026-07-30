@@ -4,8 +4,9 @@ Serializers for the PriorAuthorizationRequest module.
 
 from __future__ import annotations
 
-from apps.revenue_cycle.prior_authorization.models import PriorAuthorizationRequest
 from rest_framework import serializers
+
+from apps.revenue_cycle.prior_authorization.models import PriorAuthorizationRequest
 
 WRITE_FIELDS: tuple[str, ...] = (
     "patient",

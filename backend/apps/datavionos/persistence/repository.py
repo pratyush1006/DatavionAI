@@ -5,7 +5,6 @@ Repository contracts.
 from __future__ import annotations
 
 from typing import (
-    Generic,
     Protocol,
     TypeVar,
     runtime_checkable,
@@ -21,9 +20,8 @@ TIdentifier = TypeVar("TIdentifier")
 
 
 @runtime_checkable
-class Repository(
+class Repository[TEntity, TIdentifier](
     Protocol,
-    Generic[TEntity, TIdentifier],
 ):
     """
     Generic repository contract.

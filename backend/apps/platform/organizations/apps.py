@@ -20,12 +20,23 @@ class OrganizationsConfig(
 
     verbose_name = "Organizations"
 
+    _initialized = False
+
     def ready(
         self,
     ) -> None:
         """
         Initialize organization integrations.
+
+        Registers:
+
+        - Organization workflows
         """
+
+        if self._initialized:
+            return
+
+        self._initialized = True
 
         from apps.platform.organizations.workflow_registry import (
             register_organization_workflows,

@@ -4,6 +4,9 @@ Tests for UserRole validators.
 
 from __future__ import annotations
 
+from django.core.exceptions import ValidationError
+from django.test import TestCase
+
 from apps.platform.rbac.tests.factories import (
     RoleFactory,
     UserRoleFactory,
@@ -12,8 +15,6 @@ from apps.platform.rbac.validators import (
     validate_unique_user_role,
     validate_user_role,
 )
-from django.core.exceptions import ValidationError
-from django.test import TestCase
 
 
 class UserRoleValidatorTestCase(

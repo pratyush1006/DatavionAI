@@ -7,8 +7,6 @@ business entities.
 
 from __future__ import annotations
 
-from typing import TypeAlias
-
 from django.db import models, transaction
 from django.utils import timezone
 
@@ -18,7 +16,7 @@ from .managers import (
     SoftDeleteManager,
 )
 
-DeleteResult: TypeAlias = tuple[int, dict[str, int]]
+type DeleteResult = tuple[int, dict[str, int]]
 
 
 class SoftDeleteModel(

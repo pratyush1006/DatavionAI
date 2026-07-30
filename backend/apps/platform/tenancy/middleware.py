@@ -168,11 +168,9 @@ class TenantMiddleware:
         )
 
         try:
-            response = self.get_response(
+            return self.get_response(
                 request,
             )
-
-            return response
 
         finally:
             clear_current_tenant()

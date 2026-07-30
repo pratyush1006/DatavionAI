@@ -4,11 +4,12 @@ URL patterns for the Portal Account module.
 
 from __future__ import annotations
 
+from django.urls import path
+
 from apps.patient_management.portal.api.views import (
     PatientPortalAccountListCreateAPIView,
     PatientPortalAccountRetrieveUpdateDestroyAPIView,
 )
-from django.urls import path
 
 app_name = "portal_accounts"
 

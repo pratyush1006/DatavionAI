@@ -27,11 +27,9 @@ def create_family_member(
     """
     Create a family member.
     """
-    family_member = FamilyMember.objects.create(
+    return FamilyMember.objects.create(
         **validated_data,
     )
-
-    return family_member
 
 
 @transaction.atomic

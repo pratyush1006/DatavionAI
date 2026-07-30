@@ -15,6 +15,7 @@ Provides enterprise API foundations:
 - Dynamic serializers
 - Standardized responses
 - Service-layer integration
+- Workflow-layer integration
 """
 
 from __future__ import annotations
@@ -44,14 +45,23 @@ from apps.common.api.mixins.services import (
     DestroyServiceMixin,
     UpdateServiceMixin,
 )
-from apps.common.api.pagination import DatavionPagination
+from apps.common.api.mixins.workflows import (
+    WorkflowCreateMixin,
+    WorkflowDestroyMixin,
+    WorkflowUpdateMixin,
+)
+from apps.common.api.pagination import (
+    DatavionPagination,
+)
 from apps.common.api.responses import (
     created_response,
     error_response,
     no_content_response,
     success_response,
 )
-from apps.common.permissions import IsAuthenticatedAndActive
+from apps.common.permissions import (
+    IsAuthenticatedAndActive,
+)
 
 HTTP_GET: Final[str] = "GET"
 
@@ -65,18 +75,6 @@ HTTP_PATCH: Final[str] = "PATCH"
 class BaseAPIViewMixin:
     """
     Common defaults shared by all DatavionOS API views.
-
-    Every API endpoint automatically receives:
-
-    - Authentication
-    - Permission handling
-    - Object permission handling
-    - Filtering
-    - Searching
-    - Ordering
-    - Pagination
-    - Tenant context
-    - Organization context
     """
 
     permission_classes: ClassVar[tuple[type[BasePermission], ...]] = (
@@ -157,8 +155,6 @@ class BaseAPIViewMixin:
     ) -> list[BasePermission]:
         """
         Return permission instances.
-
-        Supports HTTP method based permissions.
         """
 
         permission_classes = self.permission_classes_map.get(
@@ -174,10 +170,6 @@ class BaseAPIViewMixin:
     ) -> None:
         """
         Execute object-level permissions.
-
-        Required because DatavionOS uses
-        selector-based object retrieval instead
-        of always relying on DRF get_object().
         """
 
         for permission in self.get_permissions():
@@ -236,7 +228,7 @@ class BaseAPIViewMixin:
         self,
     ) -> type[Serializer] | None:
         """
-        Resolve serializer from mapping.
+        Resolve serializer mapping.
         """
 
         if not self.serializer_classes:
@@ -260,9 +252,6 @@ class BaseAPIViewMixin:
     def _resolve_serializer_class(
         self,
     ) -> type[Serializer] | None:
-        """
-        Resolve serializer class.
-        """
 
         return (
             self._get_action_serializer()
@@ -277,9 +266,6 @@ class BaseAPIViewMixin:
     def get_serializer_class(
         self,
     ) -> type[Serializer]:
-        """
-        Return serializer class.
-        """
 
         serializer = self._resolve_serializer_class()
 
@@ -294,13 +280,14 @@ class BaseGenericAPIView(
     GenericAPIView,
 ):
     """
-    Base class shared by all generic API views.
+    Base class shared by all generic views.
     """
 
     def success_response(
         self,
         **kwargs: Any,
     ) -> Response:
+
         return success_response(
             request=self.request,
             **kwargs,
@@ -310,6 +297,7 @@ class BaseGenericAPIView(
         self,
         **kwargs: Any,
     ) -> Response:
+
         return created_response(
             request=self.request,
             **kwargs,
@@ -319,6 +307,7 @@ class BaseGenericAPIView(
         self,
         **kwargs: Any,
     ) -> Response:
+
         return error_response(
             request=self.request,
             **kwargs,
@@ -327,20 +316,45 @@ class BaseGenericAPIView(
     def no_content_response(
         self,
     ) -> Response:
+
         return no_content_response()
 
 
 class BaseListCreateAPIView(
+    WorkflowCreateMixin,
     CreateServiceMixin,
     BaseGenericAPIView,
     ListCreateAPIView,
 ):
     """
     Base class for list/create endpoints.
+
+    Supports:
+
+    1. Service driven create
+
+        API
+         |
+         Service
+
+
+    2. Workflow driven create
+
+        API
+         |
+         Workflow
+         |
+         Service
+         |
+         Event
+         |
+         Tasks
     """
 
 
 class BaseRetrieveUpdateDestroyAPIView(
+    WorkflowUpdateMixin,
+    WorkflowDestroyMixin,
     UpdateServiceMixin,
     DestroyServiceMixin,
     BaseGenericAPIView,
@@ -353,9 +367,6 @@ class BaseRetrieveUpdateDestroyAPIView(
     def get_object(
         self,
     ):
-        """
-        Retrieve object and enforce object permissions.
-        """
 
         obj = super().get_object()
 

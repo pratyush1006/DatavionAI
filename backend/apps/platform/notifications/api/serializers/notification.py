@@ -4,8 +4,9 @@ Notification serializers.
 
 from __future__ import annotations
 
-from apps.platform.notifications.models import Notification
 from rest_framework import serializers
+
+from apps.platform.notifications.models import Notification
 
 
 class NotificationSerializer(

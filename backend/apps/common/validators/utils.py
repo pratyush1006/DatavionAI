@@ -63,7 +63,7 @@ def normalize_upper(
     ).upper()
 
 
-def ensure_list(
+def ensure_list[T](
     value: T | Iterable[T],
 ) -> list[T]:
     """

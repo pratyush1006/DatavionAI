@@ -7,8 +7,9 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
-from apps.billing.accounts_receivable.models import CustomerInvoice
 from django.db import transaction
+
+from apps.billing.accounts_receivable.models import CustomerInvoice
 
 
 class CustomerInvoiceService:

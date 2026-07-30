@@ -11,40 +11,63 @@ LIST_FIELDS: Final[tuple[str, ...]] = (
     "organization",
     "name",
     "code",
+    "department_type",
     "is_active",
 )
+
 
 DETAIL_FIELDS: Final[tuple[str, ...]] = (
     "id",
     "organization",
+    "organization_name",
     "name",
     "code",
     "description",
+    "department_type",
+    "head",
+    "phone",
+    "email",
+    "location",
+    "status",
     "is_active",
     "created_at",
     "updated_at",
 )
+
 
 WRITE_FIELDS: Final[tuple[str, ...]] = (
     "organization",
     "name",
     "code",
     "description",
+    "department_type",
+    "head",
+    "phone",
+    "email",
+    "location",
     "is_active",
 )
 
+
 UPDATE_FIELDS: Final[tuple[str, ...]] = (
-    "organization",
     "name",
     "description",
+    "department_type",
+    "head",
+    "phone",
+    "email",
+    "location",
     "is_active",
 )
+
 
 READ_ONLY_FIELDS: Final[tuple[str, ...]] = (
     "id",
+    "organization_name",
     "created_at",
     "updated_at",
 )
+
 
 __all__ = [
     "LIST_FIELDS",

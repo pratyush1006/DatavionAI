@@ -2,11 +2,12 @@
 Reusable service mixins for the DatavionOS platform.
 
 Connects DRF generic views with application
-service layers.
+service layers and workflow orchestration.
 
 Responsibilities:
 
 - Service execution
+- Workflow execution delegation
 - Request context injection
 - Tenant propagation
 - Organization propagation
@@ -16,12 +17,12 @@ Responsibilities:
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import Any, TypeAlias
+from typing import Any
 
 from django.core.exceptions import ImproperlyConfigured
 from rest_framework.serializers import BaseSerializer
 
-Service: TypeAlias = Callable[..., Any]
+type Service = Callable[..., Any]
 
 
 class BaseServiceMixin:
@@ -30,7 +31,9 @@ class BaseServiceMixin:
     """
 
     create_service: Service | None = None
+
     update_service: Service | None = None
+
     delete_service: Service | None = None
 
     @staticmethod
@@ -103,7 +106,7 @@ class BaseServiceMixin:
         serializer: BaseSerializer,
     ) -> None:
         """
-        Hook executed before create service.
+        Hook executed before create.
         """
 
     def after_create(
@@ -112,7 +115,7 @@ class BaseServiceMixin:
         serializer: BaseSerializer,
     ) -> None:
         """
-        Hook executed after create service.
+        Hook executed after create.
         """
 
     def before_update(
@@ -120,7 +123,7 @@ class BaseServiceMixin:
         serializer: BaseSerializer,
     ) -> None:
         """
-        Hook executed before update service.
+        Hook executed before update.
         """
 
     def after_update(
@@ -129,7 +132,7 @@ class BaseServiceMixin:
         serializer: BaseSerializer,
     ) -> None:
         """
-        Hook executed after update service.
+        Hook executed after update.
         """
 
     def before_destroy(
@@ -137,7 +140,7 @@ class BaseServiceMixin:
         instance: Any,
     ) -> None:
         """
-        Hook executed before delete service.
+        Hook executed before destroy.
         """
 
     def after_destroy(
@@ -145,7 +148,7 @@ class BaseServiceMixin:
         instance: Any,
     ) -> None:
         """
-        Hook executed after delete service.
+        Hook executed after destroy.
         """
 
     # ==========================================================
@@ -157,17 +160,7 @@ class BaseServiceMixin:
         serializer: BaseSerializer,
     ) -> dict[str, Any]:
         """
-        Build arguments for create services.
-
-        Standard service signature:
-
-            create_xxx(
-                *,
-                validated_data,
-                request_user,
-                tenant,
-                organization,
-            )
+        Build create service arguments.
         """
 
         return {
@@ -180,18 +173,7 @@ class BaseServiceMixin:
         serializer: BaseSerializer,
     ) -> dict[str, Any]:
         """
-        Build arguments for update services.
-
-        Standard service signature:
-
-            update_xxx(
-                *,
-                instance,
-                validated_data,
-                request_user,
-                tenant,
-                organization,
-            )
+        Build update service arguments.
         """
 
         return {
@@ -205,17 +187,7 @@ class BaseServiceMixin:
         instance: Any,
     ) -> dict[str, Any]:
         """
-        Build arguments for delete services.
-
-        Standard service signature:
-
-            delete_xxx(
-                *,
-                instance,
-                request_user,
-                tenant,
-                organization,
-            )
+        Build delete service arguments.
         """
 
         return {
@@ -228,16 +200,40 @@ class CreateServiceMixin(
     BaseServiceMixin,
 ):
     """
-    Execute create operations using the configured service layer.
+    Execute create operations.
+
+    Supports:
+
+    - Workflow execution
+    - Service execution
     """
 
     def perform_create(
         self,
         serializer: BaseSerializer,
     ) -> None:
+
         self.before_create(
             serializer,
         )
+
+        if (
+            hasattr(
+                self,
+                "has_create_workflow",
+            )
+            and self.has_create_workflow()
+        ):
+            self.perform_workflow_create(
+                serializer,
+            )
+
+            self.after_create(
+                serializer.instance,
+                serializer,
+            )
+
+            return
 
         service = self._require_service(
             type(self).create_service,
@@ -263,16 +259,40 @@ class UpdateServiceMixin(
     BaseServiceMixin,
 ):
     """
-    Execute update operations using the configured service layer.
+    Execute update operations.
+
+    Supports:
+
+    - Workflow execution
+    - Service execution
     """
 
     def perform_update(
         self,
         serializer: BaseSerializer,
     ) -> None:
+
         self.before_update(
             serializer,
         )
+
+        if (
+            hasattr(
+                self,
+                "has_update_workflow",
+            )
+            and self.has_update_workflow()
+        ):
+            self.perform_workflow_update(
+                serializer,
+            )
+
+            self.after_update(
+                serializer.instance,
+                serializer,
+            )
+
+            return
 
         service = self._require_service(
             type(self).update_service,
@@ -298,16 +318,39 @@ class DestroyServiceMixin(
     BaseServiceMixin,
 ):
     """
-    Execute delete operations using the configured service layer.
+    Execute delete operations.
+
+    Supports:
+
+    - Workflow execution
+    - Service execution
     """
 
     def perform_destroy(
         self,
         instance: Any,
     ) -> None:
+
         self.before_destroy(
             instance,
         )
+
+        if (
+            hasattr(
+                self,
+                "has_delete_workflow",
+            )
+            and self.has_delete_workflow()
+        ):
+            self.perform_workflow_destroy(
+                instance,
+            )
+
+            self.after_destroy(
+                instance,
+            )
+
+            return
 
         service = self._require_service(
             type(self).delete_service,
@@ -329,6 +372,6 @@ class DestroyServiceMixin(
 __all__: tuple[str, ...] = (
     "BaseServiceMixin",
     "CreateServiceMixin",
-    "DestroyServiceMixin",
     "UpdateServiceMixin",
+    "DestroyServiceMixin",
 )

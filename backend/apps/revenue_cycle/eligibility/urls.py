@@ -4,11 +4,12 @@ URL patterns for the Eligibility Check module.
 
 from __future__ import annotations
 
+from django.urls import path
+
 from apps.revenue_cycle.eligibility.api.views import (
     EligibilityCheckListCreateAPIView,
     EligibilityCheckRetrieveUpdateDestroyAPIView,
 )
-from django.urls import path
 
 app_name = "eligibility_checks"
 

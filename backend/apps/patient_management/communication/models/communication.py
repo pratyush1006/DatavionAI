@@ -4,6 +4,8 @@ Communication models.
 
 from __future__ import annotations
 
+from django.db import models
+
 from apps.clinical.patients.models import Patient
 from apps.core.models import BaseManager, BaseModel
 from apps.patient_management.communication.constants import (
@@ -12,7 +14,6 @@ from apps.patient_management.communication.constants import (
     CommunicationStatus,
 )
 from apps.platform.organizations.models import Organization
-from django.db import models
 
 
 class PatientCommunication(BaseModel):

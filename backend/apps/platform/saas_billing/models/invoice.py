@@ -1,8 +1,17 @@
 """
 SaaS invoice model.
 
-Stores invoices generated for
-DatavionOS organization subscriptions.
+Enterprise billing document generated
+for DatavionOS subscriptions.
+
+Supports:
+
+- Hospitals
+- Clinics
+- Pharmacies
+- Medical stores
+- Laboratories
+- Healthcare networks
 """
 
 from __future__ import annotations
@@ -11,50 +20,104 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from apps.core.models import BaseModel
+from apps.platform.saas_billing.managers.invoice import (
+    InvoiceManager,
+)
 
 
 class Invoice(BaseModel):
     """
-    SaaS subscription invoice.
+    SaaS billing invoice.
 
-    Represents billing from DatavionOS
-    to tenant organizations.
+    Represents financial obligation
+    from DatavionOS to customer organizations.
     """
 
-    class Status(models.TextChoices):
-        """
-        Invoice lifecycle states.
-        """
+    objects = InvoiceManager()
 
+    # ------------------------------------------------------------------
+    # Choices
+    # ------------------------------------------------------------------
+
+    class Status(models.TextChoices):
         DRAFT = (
-            "draft",
+            "DRAFT",
             _("Draft"),
         )
 
         ISSUED = (
-            "issued",
+            "ISSUED",
             _("Issued"),
         )
 
+        SENT = (
+            "SENT",
+            _("Sent"),
+        )
+
+        PARTIALLY_PAID = (
+            "PARTIALLY_PAID",
+            _("Partially Paid"),
+        )
+
         PAID = (
-            "paid",
+            "PAID",
             _("Paid"),
         )
 
+        OVERDUE = (
+            "OVERDUE",
+            _("Overdue"),
+        )
+
         FAILED = (
-            "failed",
+            "FAILED",
             _("Failed"),
         )
 
         CANCELLED = (
-            "cancelled",
+            "CANCELLED",
             _("Cancelled"),
         )
 
         REFUNDED = (
-            "refunded",
+            "REFUNDED",
             _("Refunded"),
         )
+
+    class InvoiceType(models.TextChoices):
+        SUBSCRIPTION = (
+            "SUBSCRIPTION",
+            _("Subscription"),
+        )
+
+        USAGE = (
+            "USAGE",
+            _("Usage Based"),
+        )
+
+        ADDON = (
+            "ADDON",
+            _("Addon"),
+        )
+
+        CREDIT_NOTE = (
+            "CREDIT_NOTE",
+            _("Credit Note"),
+        )
+
+    # ------------------------------------------------------------------
+    # Ownership
+    # ------------------------------------------------------------------
+
+    tenant = models.ForeignKey(
+        "tenancy.Tenant",
+        on_delete=models.CASCADE,
+        related_name="invoices",
+        help_text=_(
+            "Tenant owning invoice.",
+        ),
+    )
 
     organization = models.ForeignKey(
         "organizations.Organization",
@@ -70,56 +133,96 @@ class Invoice(BaseModel):
         on_delete=models.PROTECT,
         related_name="invoices",
         help_text=_(
-            "Subscription related to invoice.",
+            "Subscription associated with invoice.",
         ),
     )
+
+    # ------------------------------------------------------------------
+    # Identity
+    # ------------------------------------------------------------------
 
     invoice_number = models.CharField(
         max_length=100,
         unique=True,
-        help_text=_(
-            "Unique invoice number.",
-        ),
+        db_index=True,
+    )
+
+    invoice_type = models.CharField(
+        max_length=30,
+        choices=InvoiceType.choices,
+        default=InvoiceType.SUBSCRIPTION,
     )
 
     status = models.CharField(
-        max_length=20,
+        max_length=30,
         choices=Status.choices,
         default=Status.DRAFT,
         db_index=True,
     )
 
     # ------------------------------------------------------------------
-    # Amount
+    # Billing Period
+    # ------------------------------------------------------------------
+
+    billing_period_start = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    billing_period_end = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    # ------------------------------------------------------------------
+    # Amounts
     # ------------------------------------------------------------------
 
     subtotal = models.DecimalField(
-        max_digits=12,
+        max_digits=14,
         decimal_places=2,
         default=0,
     )
 
     tax_amount = models.DecimalField(
-        max_digits=12,
+        max_digits=14,
         decimal_places=2,
         default=0,
     )
 
     discount_amount = models.DecimalField(
-        max_digits=12,
+        max_digits=14,
         decimal_places=2,
         default=0,
     )
 
     total_amount = models.DecimalField(
-        max_digits=12,
+        max_digits=14,
+        decimal_places=2,
+        default=0,
+    )
+
+    paid_amount = models.DecimalField(
+        max_digits=14,
         decimal_places=2,
         default=0,
     )
 
     currency = models.CharField(
         max_length=10,
-        default="USD",
+        default="INR",
+    )
+
+    # ------------------------------------------------------------------
+    # Tax Information
+    # ------------------------------------------------------------------
+
+    tax_details = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text=_(
+            "GST/VAT breakdown.",
+        ),
     )
 
     # ------------------------------------------------------------------
@@ -142,24 +245,51 @@ class Invoice(BaseModel):
     )
 
     # ------------------------------------------------------------------
-    # Payment
+    # Payment Gateway
     # ------------------------------------------------------------------
 
     payment_reference = models.CharField(
         max_length=255,
         blank=True,
-        help_text=_(
-            "External payment reference.",
-        ),
+    )
+
+    payment_provider = models.CharField(
+        max_length=50,
+        blank=True,
+    )
+
+    external_invoice_id = models.CharField(
+        max_length=255,
+        blank=True,
+        db_index=True,
+    )
+
+    # ------------------------------------------------------------------
+    # Documents
+    # ------------------------------------------------------------------
+
+    pdf_file = models.FileField(
+        upload_to="billing/invoices/",
+        blank=True,
+        null=True,
     )
 
     invoice_data = models.JSONField(
         default=dict,
         blank=True,
         help_text=_(
-            "Invoice metadata and line items.",
+            "Invoice lines and metadata.",
         ),
     )
+
+    metadata = models.JSONField(
+        default=dict,
+        blank=True,
+    )
+
+    # ------------------------------------------------------------------
+    # Meta
+    # ------------------------------------------------------------------
 
     class Meta:
         db_table = "saas_invoices"
@@ -177,6 +307,12 @@ class Invoice(BaseModel):
         indexes = [
             models.Index(
                 fields=[
+                    "tenant",
+                    "status",
+                ],
+            ),
+            models.Index(
+                fields=[
                     "organization",
                     "status",
                 ],
@@ -188,7 +324,7 @@ class Invoice(BaseModel):
             ),
             models.Index(
                 fields=[
-                    "issued_at",
+                    "external_invoice_id",
                 ],
             ),
         ]
@@ -196,6 +332,7 @@ class Invoice(BaseModel):
     def __str__(
         self,
     ) -> str:
+
         return f"{self.invoice_number} - {self.organization}"
 
 

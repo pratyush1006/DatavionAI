@@ -4,14 +4,12 @@ JSON type aliases for the Datavion AI platform.
 
 from __future__ import annotations
 
-from typing import TypeAlias
+type JSONPrimitive = str | int | float | bool | None
 
-JSONPrimitive: TypeAlias = str | int | float | bool | None
+type JSONValue = JSONPrimitive | dict[str, "JSONValue"] | list["JSONValue"]
 
-JSONValue: TypeAlias = JSONPrimitive | dict[str, "JSONValue"] | list["JSONValue"]
-
-JSONObject: TypeAlias = dict[str, JSONValue]
-JSONArray: TypeAlias = list[JSONValue]
+type JSONObject = dict[str, JSONValue]
+type JSONArray = list[JSONValue]
 
 __all__ = [
     "JSONArray",

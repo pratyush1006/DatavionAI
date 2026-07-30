@@ -4,11 +4,12 @@ Admin configuration for the Accounts Payable application.
 
 from __future__ import annotations
 
+from django.contrib import admin
+
 from apps.billing.accounts_payable.models import (
     Vendor,
     VendorInvoice,
 )
-from django.contrib import admin
 
 
 @admin.register(Vendor)

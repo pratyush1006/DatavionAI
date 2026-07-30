@@ -5,21 +5,21 @@ Common type aliases for the Datavion AI platform.
 from __future__ import annotations
 
 from collections.abc import Mapping, MutableMapping, Sequence
-from typing import Any, Final, TypeAlias
+from typing import Any, Final
 
-AnyDict: TypeAlias = dict[str, Any]
-AnyList: TypeAlias = list[Any]
-AnyTuple: TypeAlias = tuple[Any, ...]
+type AnyDict = dict[str, Any]
+type AnyList = list[Any]
+type AnyTuple = tuple[Any, ...]
 
-StringDict: TypeAlias = dict[str, str]
-StringList: TypeAlias = list[str]
+type StringDict = dict[str, str]
+type StringList = list[str]
 
-ImmutableMapping: TypeAlias = Mapping[str, Any]
-MutableStringMapping: TypeAlias = MutableMapping[str, Any]
+type ImmutableMapping = Mapping[str, Any]
+type MutableStringMapping = MutableMapping[str, Any]
 
-StringSequence: TypeAlias = Sequence[str]
+type StringSequence = Sequence[str]
 
-Headers: TypeAlias = Mapping[str, str]
+type Headers = Mapping[str, str]
 
 DEFAULT_ENCODING: Final[str] = "utf-8"
 

@@ -4,6 +4,8 @@ URL configuration for the Master Patient Index API.
 
 from __future__ import annotations
 
+from django.urls import path
+
 from apps.patient_management.mpi.api.views import (
     MPICreateAPIView,
     MPIDestroyAPIView,
@@ -11,7 +13,6 @@ from apps.patient_management.mpi.api.views import (
     MPIRetrieveAPIView,
     MPIUpdateAPIView,
 )
-from django.urls import path
 
 app_name = "patient-mpi"
 

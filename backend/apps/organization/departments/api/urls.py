@@ -1,8 +1,9 @@
+from django.urls import path
+
 from apps.organization.departments.api.views import (
     DepartmentListCreateAPIView,
     DepartmentRetrieveUpdateDestroyAPIView,
 )
-from django.urls import path
 
 urlpatterns = [
     path(
@@ -11,7 +12,7 @@ urlpatterns = [
         name="department-list-create",
     ),
     path(
-        "<int:department_id>/",
+        "<uuid:department_id>/",
         DepartmentRetrieveUpdateDestroyAPIView.as_view(),
         name="department-detail",
     ),

@@ -12,7 +12,7 @@ import time
 from abc import ABC, abstractmethod
 from collections.abc import Callable
 from dataclasses import replace
-from typing import Any, Generic, TypeVar
+from typing import Any, TypeVar
 
 from django.db import transaction
 
@@ -26,9 +26,8 @@ T = TypeVar("T")
 logger = logging.getLogger(__name__)
 
 
-class BaseWorkflow(
+class BaseWorkflow[T](
     ABC,
-    Generic[T],
 ):
     """
     Base workflow.

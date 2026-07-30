@@ -12,28 +12,27 @@ from collections.abc import (
 )
 from typing import (
     Any,
-    TypeAlias,
 )
 
 ###############################################################################
 # Storage Paths
 ###############################################################################
 
-StoragePath: TypeAlias = str
+type StoragePath = str
 
 
 ###############################################################################
 # File Content
 ###############################################################################
 
-FileContent: TypeAlias = bytes | bytearray
+type FileContent = bytes | bytearray
 
 
 ###############################################################################
 # File Metadata
 ###############################################################################
 
-FileMetadata: TypeAlias = Mapping[
+type FileMetadata = Mapping[
     str,
     Any,
 ]
@@ -43,7 +42,7 @@ FileMetadata: TypeAlias = Mapping[
 # File Identifiers
 ###############################################################################
 
-FileID: TypeAlias = str
+type FileID = str
 
 
 ###############################################################################

@@ -58,17 +58,10 @@ class CanViewUser(IsAuthenticatedUser):
         ):
             return True
 
-        if (
-            getattr(
-                user,
-                "organization_id",
-                None,
-            )
+        return bool(
+            getattr(user, "organization_id", None)
             and user.organization_id == obj.organization_id
-        ):
-            return True
-
-        return False
+        )
 
 
 class CanCreateUser(IsAuthenticatedUser):

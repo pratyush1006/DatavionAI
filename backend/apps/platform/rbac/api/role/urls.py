@@ -4,11 +4,12 @@ Role API URLs.
 
 from __future__ import annotations
 
+from django.urls import path
+
 from apps.platform.rbac.api.role.views import (
     RoleListCreateAPIView,
     RoleRetrieveUpdateDestroyAPIView,
 )
-from django.urls import path
 
 app_name = "roles"
 

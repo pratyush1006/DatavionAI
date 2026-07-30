@@ -31,6 +31,9 @@ from apps.platform.organizations.workflows import (
 logger = logging.getLogger(__name__)
 
 
+_registered = False
+
+
 def register_organization_workflows() -> int:
     """
     Register organization workflows.
@@ -40,6 +43,11 @@ def register_organization_workflows() -> int:
     int
         Number of workflows registered.
     """
+
+    global _registered
+
+    if _registered:
+        return 0
 
     workflows = {
         "organization.create": OrganizationCreationWorkflow,
@@ -72,13 +80,14 @@ def register_organization_workflows() -> int:
 
         registered_count += 1
 
-        logger.info(
-            "Organization workflow registered.",
-            extra={
-                "workflow": name,
-                "handler": workflow.__name__,
-            },
-        )
+    _registered = True
+
+    logger.info(
+        "Organization workflows registered.",
+        extra={
+            "count": registered_count,
+        },
+    )
 
     return registered_count
 

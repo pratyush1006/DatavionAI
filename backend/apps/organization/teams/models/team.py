@@ -1,15 +1,32 @@
-from apps.core.models import TimeStampedModel
-from apps.organization.departments.models import Department
+"""
+Team domain model.
+
+Organization level operational teams.
+"""
+
+from __future__ import annotations
+
 from django.db import models
 
+from apps.core.models import TimeStampedModel
+from apps.platform.organizations.models import Organization
 
-class Team(TimeStampedModel):
+
+class Team(
+    TimeStampedModel,
+):
     """
-    Represents a team within a department.
+    Represents an operational team.
+
+    Examples:
+        Nursing Team
+        Billing Team
+        IT Team
+        Administration Team
     """
 
-    department = models.ForeignKey(
-        Department,
+    organization = models.ForeignKey(
+        Organization,
         on_delete=models.CASCADE,
         related_name="teams",
     )
@@ -19,11 +36,21 @@ class Team(TimeStampedModel):
     )
 
     code = models.CharField(
-        max_length=20,
+        max_length=50,
     )
 
     description = models.TextField(
         blank=True,
+    )
+
+    team_type = models.CharField(
+        max_length=50,
+        blank=True,
+    )
+
+    status = models.CharField(
+        max_length=50,
+        default="ACTIVE",
     )
 
     is_active = models.BooleanField(
@@ -31,14 +58,39 @@ class Team(TimeStampedModel):
     )
 
     class Meta:
-        ordering = ["name"]
+        ordering = ("name",)
 
         constraints = [
             models.UniqueConstraint(
-                fields=["department", "code"],
-                name="unique_team_code_per_department",
+                fields=(
+                    "organization",
+                    "code",
+                ),
+                name=("uq_team_org_code"),
             ),
         ]
 
-    def __str__(self):
-        return f"{self.department.name} - {self.name}"
+        indexes = [
+            models.Index(
+                fields=[
+                    "organization",
+                ],
+                name="idx_team_org",
+            ),
+            models.Index(
+                fields=[
+                    "organization",
+                    "is_active",
+                ],
+                name="idx_team_org_active",
+            ),
+        ]
+
+    def __str__(
+        self,
+    ) -> str:
+
+        return f"{self.organization.name} - {self.name}"
+
+
+__all__ = ("Team",)

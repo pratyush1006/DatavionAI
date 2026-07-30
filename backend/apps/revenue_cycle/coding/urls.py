@@ -4,11 +4,12 @@ URL patterns for the Coding Entry module.
 
 from __future__ import annotations
 
+from django.urls import path
+
 from apps.revenue_cycle.coding.api.views import (
     ChargeCodingListCreateAPIView,
     ChargeCodingRetrieveUpdateDestroyAPIView,
 )
-from django.urls import path
 
 app_name = "coding_entries"
 

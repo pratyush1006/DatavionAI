@@ -5,7 +5,6 @@ Domain repository contracts.
 from __future__ import annotations
 
 from typing import (
-    Generic,
     Protocol,
     TypeVar,
     runtime_checkable,
@@ -24,12 +23,8 @@ TIdentity = TypeVar("TIdentity")
 
 
 @runtime_checkable
-class Repository(
+class Repository[TAggregate: AggregateRoot, TIdentity](
     Protocol,
-    Generic[
-        TAggregate,
-        TIdentity,
-    ],
 ):
     """
     Repository contract for aggregate roots.

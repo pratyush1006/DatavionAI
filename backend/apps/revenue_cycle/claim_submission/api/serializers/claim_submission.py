@@ -4,8 +4,9 @@ Serializers for the ClaimSubmission module.
 
 from __future__ import annotations
 
-from apps.revenue_cycle.claim_submission.models import ClaimSubmission
 from rest_framework import serializers
+
+from apps.revenue_cycle.claim_submission.models import ClaimSubmission
 
 WRITE_FIELDS: tuple[str, ...] = (
     "patient",

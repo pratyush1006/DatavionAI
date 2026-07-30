@@ -5,7 +5,6 @@ Domain specification abstractions.
 from __future__ import annotations
 
 from typing import (
-    Generic,
     Protocol,
     TypeVar,
     runtime_checkable,
@@ -15,9 +14,8 @@ T = TypeVar("T")
 
 
 @runtime_checkable
-class Specification(
+class Specification[T](
     Protocol,
-    Generic[T],
 ):
     """
     Domain specification contract.
@@ -33,9 +31,7 @@ class Specification(
         """
 
 
-class AndSpecification(
-    Generic[T],
-):
+class AndSpecification[T]:
     """
     Logical AND specification.
     """
@@ -57,9 +53,7 @@ class AndSpecification(
         )
 
 
-class OrSpecification(
-    Generic[T],
-):
+class OrSpecification[T]:
     """
     Logical OR specification.
     """
@@ -81,9 +75,7 @@ class OrSpecification(
         )
 
 
-class NotSpecification(
-    Generic[T],
-):
+class NotSpecification[T]:
     """
     Logical NOT specification.
     """

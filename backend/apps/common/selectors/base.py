@@ -16,7 +16,7 @@ Design Principles
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Any, Generic, TypeVar
+from typing import Any, TypeVar
 
 from django.db.models import Model, QuerySet
 
@@ -26,9 +26,8 @@ ModelType = TypeVar(
 )
 
 
-class BaseSelector(
+class BaseSelector[ModelType: Model](
     ABC,
-    Generic[ModelType],
 ):
     """
     Base selector for DatavionOS applications.
@@ -82,11 +81,9 @@ class BaseSelector(
             queryset,
         )
 
-        queryset = self.optimize(
+        return self.optimize(
             queryset,
         )
-
-        return queryset
 
     def apply_tenant_filter(
         self,

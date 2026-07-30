@@ -47,11 +47,9 @@ class AuditMiddleware:
         response = None
 
         try:
-            response = self.get_response(
+            return self.get_response(
                 request,
             )
-
-            return response
 
         except Exception as exc:
             self._log_request_failure(

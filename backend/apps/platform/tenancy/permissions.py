@@ -104,10 +104,7 @@ class HasTenantAccess(
             None,
         )
 
-        if membership is None:
-            return False
-
-        return True
+        return membership is not None
 
 
 class IsTenantAdmin(

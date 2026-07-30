@@ -15,7 +15,7 @@ business logic.
 from __future__ import annotations
 
 from threading import RLock
-from typing import Generic, TypeVar
+from typing import TypeVar
 
 T = TypeVar(
     "T",
@@ -38,9 +38,7 @@ class RegistryNotFoundError(
     """
 
 
-class Registry(
-    Generic[T],
-):
+class Registry[T]:
     """
     Generic enterprise registry.
 

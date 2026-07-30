@@ -1,5 +1,8 @@
 """
-Business services for the Departments application.
+Department domain services.
+
+Business rules for department lifecycle
+and management operations.
 """
 
 from __future__ import annotations
@@ -7,17 +10,27 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
-from apps.organization.departments.models import Department
-from apps.platform.accounts.models import User
 from django.db import transaction
+
+from apps.organization.departments.constants import (
+    DepartmentStatus,
+)
+from apps.organization.departments.models import (
+    Department,
+)
+from apps.platform.accounts.models import User
 
 type DepartmentData = Mapping[str, Any]
 
 
 class DepartmentService:
     """
-    Business services for Department.
+    Domain services for Department management.
     """
+
+    # ==========================================================
+    # Creation
+    # ==========================================================
 
     @staticmethod
     @transaction.atomic
@@ -26,7 +39,7 @@ class DepartmentService:
         validated_data: DepartmentData,
     ) -> Department:
         """
-        Create a department.
+        Create department.
         """
 
         department = Department(
@@ -39,6 +52,10 @@ class DepartmentService:
 
         return department
 
+    # ==========================================================
+    # Update
+    # ==========================================================
+
     @staticmethod
     @transaction.atomic
     def update(
@@ -47,7 +64,7 @@ class DepartmentService:
         validated_data: DepartmentData,
     ) -> Department:
         """
-        Update a department.
+        Update department fields.
         """
 
         update_fields: list[str] = []
@@ -58,7 +75,10 @@ class DepartmentService:
                 field,
                 value,
             )
-            update_fields.append(field)
+
+            update_fields.append(
+                field,
+            )
 
         instance.full_clean()
 
@@ -68,6 +88,128 @@ class DepartmentService:
 
         return instance
 
+    # ==========================================================
+    # Activation
+    # ==========================================================
+
+    @staticmethod
+    @transaction.atomic
+    def activate(
+        *,
+        instance: Department,
+    ) -> Department:
+        """
+        Activate department.
+
+        INACTIVE/CLOSED
+                |
+                v
+              ACTIVE
+        """
+
+        instance.status = DepartmentStatus.ACTIVE
+
+        instance.is_active = True
+
+        instance.full_clean()
+
+        instance.save(
+            update_fields=[
+                "status",
+                "is_active",
+            ],
+        )
+
+        return instance
+
+    # ==========================================================
+    # Deactivation
+    # ==========================================================
+
+    @staticmethod
+    @transaction.atomic
+    def deactivate(
+        *,
+        instance: Department,
+    ) -> Department:
+        """
+        Deactivate department.
+        """
+
+        instance.status = DepartmentStatus.INACTIVE
+
+        instance.is_active = False
+
+        instance.full_clean()
+
+        instance.save(
+            update_fields=[
+                "status",
+                "is_active",
+            ],
+        )
+
+        return instance
+
+    # ==========================================================
+    # Maintenance
+    # ==========================================================
+
+    @staticmethod
+    @transaction.atomic
+    def put_under_maintenance(
+        *,
+        instance: Department,
+    ) -> Department:
+        """
+        Put department under maintenance.
+        """
+
+        instance.status = DepartmentStatus.UNDER_MAINTENANCE
+
+        instance.full_clean()
+
+        instance.save(
+            update_fields=[
+                "status",
+            ],
+        )
+
+        return instance
+
+    # ==========================================================
+    # Closure
+    # ==========================================================
+
+    @staticmethod
+    @transaction.atomic
+    def close(
+        *,
+        instance: Department,
+    ) -> Department:
+        """
+        Permanently close department operationally.
+        """
+
+        instance.status = DepartmentStatus.CLOSED
+
+        instance.is_active = False
+
+        instance.full_clean()
+
+        instance.save(
+            update_fields=[
+                "status",
+                "is_active",
+            ],
+        )
+
+        return instance
+
+    # ==========================================================
+    # Archive / Delete
+    # ==========================================================
+
     @staticmethod
     @transaction.atomic
     def archive(
@@ -76,28 +218,12 @@ class DepartmentService:
         user: User | None = None,
     ) -> Department:
         """
-        Archive (soft delete) a department.
+        Soft delete department.
         """
 
         instance.delete(
             user=user,
         )
-
-        instance.refresh_from_db()
-
-        return instance
-
-    @staticmethod
-    @transaction.atomic
-    def restore(
-        *,
-        instance: Department,
-    ) -> Department:
-        """
-        Restore a department.
-        """
-
-        instance.restore()
 
         instance.refresh_from_db()
 
@@ -111,7 +237,7 @@ class DepartmentService:
         user: User | None = None,
     ) -> Department:
         """
-        Backward-compatible alias for archive().
+        Delete alias.
         """
 
         return DepartmentService.archive(
@@ -119,14 +245,47 @@ class DepartmentService:
             user=user,
         )
 
+    # ==========================================================
+    # Restore
+    # ==========================================================
+
+    @staticmethod
+    @transaction.atomic
+    def restore(
+        *,
+        instance: Department,
+    ) -> Department:
+        """
+        Restore deleted department.
+        """
+
+        instance.restore()
+
+        instance.status = DepartmentStatus.ACTIVE
+
+        instance.is_active = True
+
+        instance.save(
+            update_fields=[
+                "status",
+                "is_active",
+            ],
+        )
+
+        instance.refresh_from_db()
+
+        return instance
+
+
+# ==============================================================
+# Compatibility functions
+# ==============================================================
+
 
 def create_department(
     *,
     validated_data: DepartmentData,
 ) -> Department:
-    """
-    Legacy alias for DepartmentService.create().
-    """
 
     return DepartmentService.create(
         validated_data=validated_data,
@@ -138,9 +297,6 @@ def update_department(
     instance: Department,
     validated_data: DepartmentData,
 ) -> Department:
-    """
-    Legacy alias for DepartmentService.update().
-    """
 
     return DepartmentService.update(
         instance=instance,
@@ -153,9 +309,6 @@ def delete_department(
     instance: Department,
     user: User | None = None,
 ) -> Department:
-    """
-    Legacy alias for DepartmentService.delete().
-    """
 
     return DepartmentService.delete(
         instance=instance,

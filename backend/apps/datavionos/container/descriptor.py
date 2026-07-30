@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, TypeAlias, TypeVar
+from typing import Any, TypeVar
 
 from apps.datavionos.container.lifetime import (
     ServiceLifetime,
@@ -14,7 +14,7 @@ from apps.datavionos.container.lifetime import (
 
 TService = TypeVar("TService")
 
-FactoryType: TypeAlias = Callable[..., Any]
+type FactoryType = Callable[..., Any]
 
 
 @dataclass(

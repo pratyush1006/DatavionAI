@@ -12,36 +12,35 @@ from collections.abc import (
 )
 from typing import (
     Any,
-    TypeAlias,
 )
 
 ###############################################################################
 # Notification Identity
 ###############################################################################
 
-NotificationID: TypeAlias = str
+type NotificationID = str
 
-NotificationName: TypeAlias = str
+type NotificationName = str
 
 
 ###############################################################################
 # Notification Channels
 ###############################################################################
 
-NotificationChannel: TypeAlias = str
+type NotificationChannel = str
 
 
 ###############################################################################
 # Notification Payload
 ###############################################################################
 
-NotificationPayload: TypeAlias = Mapping[
+type NotificationPayload = Mapping[
     str,
     Any,
 ]
 
 
-NotificationMetadata: TypeAlias = Mapping[
+type NotificationMetadata = Mapping[
     str,
     Any,
 ]
@@ -51,17 +50,17 @@ NotificationMetadata: TypeAlias = Mapping[
 # Recipient Types
 ###############################################################################
 
-RecipientID: TypeAlias = str | int
+type RecipientID = str | int
 
 
-RecipientAddress: TypeAlias = str
+type RecipientAddress = str
 
 
 ###############################################################################
 # Template Types
 ###############################################################################
 
-TemplateName: TypeAlias = str
+type TemplateName = str
 
 
 ###############################################################################

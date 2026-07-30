@@ -19,11 +19,9 @@ def create_patient_identifier(
     """
     Create a patient identifier.
     """
-    identifier = PatientIdentifier.objects.create(
+    return PatientIdentifier.objects.create(
         **validated_data,
     )
-
-    return identifier
 
 
 @transaction.atomic

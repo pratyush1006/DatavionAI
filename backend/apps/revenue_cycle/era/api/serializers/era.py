@@ -4,8 +4,9 @@ Serializers for the RemittanceAdvice module.
 
 from __future__ import annotations
 
-from apps.revenue_cycle.era.models import RemittanceAdvice
 from rest_framework import serializers
+
+from apps.revenue_cycle.era.models import RemittanceAdvice
 
 WRITE_FIELDS: tuple[str, ...] = (
     "patient",

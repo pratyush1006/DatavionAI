@@ -4,11 +4,12 @@ Tests for the UserRole queryset.
 
 from __future__ import annotations
 
+from django.test import TestCase
+
 from apps.platform.rbac.tests.factories import (
     RoleFactory,
     UserRoleFactory,
 )
-from django.test import TestCase
 
 
 class UserRoleQuerySetTestCase(

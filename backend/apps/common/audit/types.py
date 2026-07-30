@@ -7,51 +7,51 @@ Provides reusable type aliases shared across the audit framework.
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import Any, TypeAlias
+from typing import Any
 
 ###############################################################################
 # Audit Identity
 ###############################################################################
 
-AuditID: TypeAlias = str
+type AuditID = str
 
-AuditAction: TypeAlias = str
+type AuditAction = str
 
-AuditCategory: TypeAlias = str
+type AuditCategory = str
 
-AuditResource: TypeAlias = str
+type AuditResource = str
 
 
 ###############################################################################
 # Actor Identity
 ###############################################################################
 
-ActorID: TypeAlias = str | int | None
+type ActorID = str | int | None
 
 
-TenantID: TypeAlias = str | int | None
+type TenantID = str | int | None
 
 
-OrganizationID: TypeAlias = str | int | None
+type OrganizationID = str | int | None
 
 
 ###############################################################################
 # Audit Data
 ###############################################################################
 
-AuditMetadata: TypeAlias = Mapping[
+type AuditMetadata = Mapping[
     str,
     Any,
 ]
 
 
-AuditChanges: TypeAlias = Mapping[
+type AuditChanges = Mapping[
     str,
     Any,
 ]
 
 
-AuditContext: TypeAlias = Mapping[
+type AuditContext = Mapping[
     str,
     Any,
 ]

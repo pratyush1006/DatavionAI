@@ -5,7 +5,6 @@ Domain factory contracts.
 from __future__ import annotations
 
 from typing import (
-    Generic,
     Protocol,
     TypeVar,
     runtime_checkable,
@@ -15,9 +14,8 @@ TAggregate = TypeVar("TAggregate")
 
 
 @runtime_checkable
-class Factory(
+class Factory[TAggregate](
     Protocol,
-    Generic[TAggregate],
 ):
     """
     Domain factory contract.

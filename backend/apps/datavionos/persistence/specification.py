@@ -10,7 +10,6 @@ from dataclasses import (
 )
 from typing import (
     Any,
-    Generic,
     Protocol,
     TypeVar,
     runtime_checkable,
@@ -51,9 +50,7 @@ class Pagination:
     frozen=True,
     slots=True,
 )
-class Specification(
-    Generic[TEntity],
-):
+class Specification[TEntity]:
     """
     Immutable query specification.
     """
@@ -72,9 +69,8 @@ class Specification(
 
 
 @runtime_checkable
-class SpecificationEvaluator(
+class SpecificationEvaluator[TEntity](
     Protocol,
-    Generic[TEntity],
 ):
     """
     Evaluates query specifications.

@@ -99,12 +99,10 @@ class VectorSearchService:
             filters=filters,
         )
 
-        result = vector_engine.search(
+        return vector_engine.search(
             request,
             provider=provider,
         )
-
-        return result
 
 
 vector_search_service = VectorSearchService()

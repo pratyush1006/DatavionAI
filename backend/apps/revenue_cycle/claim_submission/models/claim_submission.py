@@ -4,6 +4,8 @@ Claim Submission models.
 
 from __future__ import annotations
 
+from django.db import models
+
 from apps.clinical.patients.models import Patient
 from apps.core.models import BaseManager, BaseModel
 from apps.insurance.models import Claim
@@ -12,7 +14,6 @@ from apps.revenue_cycle.constants import (
     ClaimPriority,
     SubmissionMethod,
 )
-from django.db import models
 
 
 class ClaimSubmission(BaseModel):

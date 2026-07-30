@@ -4,8 +4,9 @@ Serializers for the Referrals module.
 
 from __future__ import annotations
 
-from apps.patient_management.referrals.models import PatientReferral
 from rest_framework import serializers
+
+from apps.patient_management.referrals.models import PatientReferral
 
 WRITE_FIELDS: tuple[str, ...] = (
     "organization",

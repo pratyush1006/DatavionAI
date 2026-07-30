@@ -5,23 +5,22 @@ Shared type definitions for the event framework.
 from __future__ import annotations
 
 from collections.abc import Awaitable, Callable
-from typing import TypeAlias
 
 from apps.core.events.base import DomainEvent
 
-EventType: TypeAlias = type[DomainEvent]
+type EventType = type[DomainEvent]
 
-EventHandlerCallable: TypeAlias = Callable[
+type EventHandlerCallable = Callable[
     [DomainEvent],
     None,
 ]
 
-AsyncEventHandlerCallable: TypeAlias = Callable[
+type AsyncEventHandlerCallable = Callable[
     [DomainEvent],
     Awaitable[None],
 ]
 
-EventName: TypeAlias = str
+type EventName = str
 
 __all__: tuple[str, ...] = (
     "AsyncEventHandlerCallable",

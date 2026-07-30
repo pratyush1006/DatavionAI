@@ -7,30 +7,28 @@ DatavionOS APIs.
 
 from __future__ import annotations
 
-from typing import TypeAlias
-
 from .json import JSONValue
 
 # ============================================================================
 # Pagination Primitive Types
 # ============================================================================
 
-PageNumber: TypeAlias = int
+type PageNumber = int
 
-PageSize: TypeAlias = int
+type PageSize = int
 
-Offset: TypeAlias = int
+type Offset = int
 
-Limit: TypeAlias = int
+type Limit = int
 
-Cursor: TypeAlias = str
+type Cursor = str
 
 
 # ============================================================================
 # Pagination Request Types
 # ============================================================================
 
-PaginationParams: TypeAlias = dict[
+type PaginationParams = dict[
     str,
     PageNumber | PageSize | Offset | Limit | Cursor,
 ]
@@ -40,7 +38,7 @@ PaginationParams: TypeAlias = dict[
 # Pagination Response Types
 # ============================================================================
 
-PaginatedResponse: TypeAlias = dict[
+type PaginatedResponse = dict[
     str,
     JSONValue,
 ]

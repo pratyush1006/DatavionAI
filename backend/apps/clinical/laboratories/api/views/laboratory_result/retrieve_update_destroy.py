@@ -4,6 +4,8 @@ API views for laboratory results.
 
 from __future__ import annotations
 
+from drf_spectacular.utils import extend_schema
+
 from apps.clinical.laboratories.api.serializers import (
     LaboratoryResultDetailSerializer,
     LaboratoryResultUpdateSerializer,
@@ -17,7 +19,6 @@ from apps.clinical.laboratories.selectors import (
 from apps.common.api.base_generics import (
     BaseRetrieveUpdateDestroyAPIView,
 )
-from drf_spectacular.utils import extend_schema
 
 
 @extend_schema(

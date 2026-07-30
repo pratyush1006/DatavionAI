@@ -16,13 +16,14 @@ Subscription entitlements are the source of truth.
 
 from __future__ import annotations
 
+from django.contrib.auth import get_user_model
+
 from apps.datavionos.registries.module import (
     module_registry,
 )
 from apps.platform.subscriptions.models import (
     FeatureEntitlement,
 )
-from django.contrib.auth import get_user_model
 
 User = get_user_model()
 

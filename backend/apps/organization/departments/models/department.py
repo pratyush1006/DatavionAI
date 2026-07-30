@@ -1,8 +1,15 @@
 """
 Department model.
+
+Enterprise department management entity.
 """
 
 from __future__ import annotations
+
+from django.core.exceptions import ValidationError
+from django.core.validators import RegexValidator
+from django.db import models
+from django.utils.text import slugify
 
 from apps.core.models import BaseModel
 from apps.organization.departments.constants import (
@@ -12,17 +19,18 @@ from apps.organization.departments.constants import (
     DepartmentType,
 )
 from apps.platform.organizations.models import Organization
-from django.core.validators import RegexValidator
-from django.db import models
 
 
 class Department(BaseModel):
     """
-    Represents an organizational department.
+    Represents an organization department.
 
-    Departments are organization-scoped resources used across the
-    healthcare platform by employees, providers, appointments,
-    scheduling, reporting, and RBAC.
+    Supports:
+    - hierarchy
+    - lifecycle management
+    - RBAC scope
+    - configuration
+    - healthcare operations
     """
 
     organization = models.ForeignKey(
@@ -31,8 +39,21 @@ class Department(BaseModel):
         related_name="departments",
     )
 
+    parent = models.ForeignKey(
+        "self",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="children",
+    )
+
     name = models.CharField(
         max_length=255,
+    )
+
+    slug = models.SlugField(
+        max_length=255,
+        blank=True,
     )
 
     code = models.CharField(
@@ -80,6 +101,16 @@ class Department(BaseModel):
         blank=True,
     )
 
+    settings = models.JSONField(
+        default=dict,
+        blank=True,
+    )
+
+    metadata = models.JSONField(
+        default=dict,
+        blank=True,
+    )
+
     status = models.CharField(
         max_length=30,
         choices=DepartmentStatus.choices,
@@ -87,10 +118,6 @@ class Department(BaseModel):
     )
 
     class Meta:
-        """
-        Django model metadata.
-        """
-
         ordering = (
             "organization",
             "name",
@@ -107,6 +134,12 @@ class Department(BaseModel):
                 fields=[
                     "organization",
                     "department_type",
+                ],
+            ),
+            models.Index(
+                fields=[
+                    "organization",
+                    "parent",
                 ],
             ),
             models.Index(
@@ -132,47 +165,63 @@ class Department(BaseModel):
                 ],
                 name="department_unique_name_per_organization",
             ),
+            models.UniqueConstraint(
+                fields=[
+                    "organization",
+                    "slug",
+                ],
+                name="department_unique_slug_per_organization",
+            ),
         ]
 
-    def clean(
-        self,
-    ) -> None:
-        """
-        Normalize model fields.
-        """
-
+    def clean(self):
         super().clean()
 
         self.code = self.code.upper()
 
-    @property
-    def display_name(
-        self,
-    ) -> str:
-        """
-        Return the department display name.
-        """
+        if not self.slug:
+            self.slug = slugify(
+                self.name,
+            )
 
+        if self.parent:
+            if self.parent_id == self.id:
+                raise ValidationError(
+                    {"parent": ("Department cannot be its own parent.")}
+                )
+
+            if self.parent.organization_id != self.organization_id:
+                raise ValidationError(
+                    {"parent": ("Parent department must belong to same organization.")}
+                )
+
+    @property
+    def display_name(self):
         return self.name
 
     @property
-    def is_operational(
-        self,
-    ) -> bool:
-        """
-        Return whether the department is operational.
-        """
+    def full_path(self):
+        path = [
+            self.name,
+        ]
 
+        parent = self.parent
+
+        while parent:
+            path.insert(
+                0,
+                parent.name,
+            )
+            parent = parent.parent
+
+        return " / ".join(path)
+
+    @property
+    def is_operational(self):
         return self.is_active and self.status == DepartmentStatus.ACTIVE
 
-    def __str__(
-        self,
-    ) -> str:
-        """
-        Return the department display name.
-        """
-
-        return self.display_name
+    def __str__(self):
+        return self.full_path
 
 
 __all__ = ("Department",)

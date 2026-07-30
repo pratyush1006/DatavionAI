@@ -4,8 +4,9 @@ Serializers for the ChargeCoding module.
 
 from __future__ import annotations
 
-from apps.revenue_cycle.coding.models import ChargeCoding
 from rest_framework import serializers
+
+from apps.revenue_cycle.coding.models import ChargeCoding
 
 WRITE_FIELDS: tuple[str, ...] = (
     "patient",

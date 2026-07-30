@@ -5,7 +5,7 @@ DatavionOS Query Dispatcher Contract.
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Generic, TypeVar
+from typing import TypeVar
 
 from apps.datavionos.queries.query import (
     Query,
@@ -21,12 +21,8 @@ TResult = TypeVar(
 )
 
 
-class QueryDispatcher(
+class QueryDispatcher[TQuery: Query, TResult](
     ABC,
-    Generic[
-        TQuery,
-        TResult,
-    ],
 ):
     """
     Base contract for all query

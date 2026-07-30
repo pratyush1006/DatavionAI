@@ -4,7 +4,7 @@ Domain aggregate root abstractions.
 
 from __future__ import annotations
 
-from typing import Generic, TypeVar
+from typing import TypeVar
 
 from apps.domain.common.domain_event import DomainEvent
 from apps.domain.common.entity import Entity
@@ -12,9 +12,8 @@ from apps.domain.common.entity import Entity
 TIdentity = TypeVar("TIdentity")
 
 
-class AggregateRoot(
+class AggregateRoot[TIdentity](
     Entity[TIdentity],
-    Generic[TIdentity],
 ):
     """
     Base class for aggregate roots.

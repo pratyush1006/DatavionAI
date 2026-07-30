@@ -4,9 +4,10 @@ Customer model.
 
 from __future__ import annotations
 
+from django.db import models
+
 from apps.core.models import BaseManager, BaseModel
 from apps.platform.organizations.models import Organization
-from django.db import models
 
 
 class Customer(BaseModel):

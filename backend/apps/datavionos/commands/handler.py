@@ -5,7 +5,7 @@ DatavionOS Command Handler Contract.
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Generic, TypeVar
+from typing import TypeVar
 
 from apps.datavionos.commands.command import (
     Command,
@@ -21,13 +21,7 @@ TResult = TypeVar(
 )
 
 
-class CommandHandler(
-    Generic[
-        TCommand,
-        TResult,
-    ],
-    ABC,
-):
+class CommandHandler[TCommand, TResult](ABC):
     """
     Base command handler.
 

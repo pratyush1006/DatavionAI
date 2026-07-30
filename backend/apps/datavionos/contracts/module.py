@@ -264,17 +264,15 @@ class ModuleContract(
                 "Duplicate module dependencies are not allowed.",
             )
 
-        if self.navigation:
-            if not self.navigation.title.strip():
-                raise ValueError(
-                    "Navigation title cannot be empty.",
-                )
+        if self.navigation and not self.navigation.title.strip():
+            raise ValueError(
+                "Navigation title cannot be empty.",
+            )
 
-        if self.dashboard:
-            if self.dashboard.order < 0:
-                raise ValueError(
-                    "Dashboard order cannot be negative.",
-                )
+        if self.dashboard and self.dashboard.order < 0:
+            raise ValueError(
+                "Dashboard order cannot be negative.",
+            )
 
     # ------------------------------------------------------------------
     # Properties

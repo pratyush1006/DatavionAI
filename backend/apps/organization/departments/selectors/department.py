@@ -1,80 +1,166 @@
 """
-Selectors for the Departments application.
+Department selectors.
+
+Read/query operations for departments.
 """
 
 from __future__ import annotations
 
 from uuid import UUID
 
-from apps.organization.departments.models import Department
 from django.db.models import QuerySet
+
+from apps.organization.departments.models import (
+    Department,
+)
 
 
 class DepartmentSelector:
     """
-    Read-only selectors for Department.
+    Department query services.
     """
 
     @staticmethod
-    def queryset() -> QuerySet[Department]:
-        """
-        Return the base department queryset.
-        """
-
-        return Department.objects.select_related(
-            "organization",
-        )
-
-    @staticmethod
-    def list() -> QuerySet[Department]:
-        """
-        Return all departments.
-        """
-
-        return DepartmentSelector.queryset().order_by(
-            "name",
-        )
-
-    @staticmethod
-    def get_by_id(
+    def get(
         *,
         department_id: UUID,
     ) -> Department:
         """
-        Return a department by its identifier.
-
-        Raises:
-            Department.DoesNotExist
+        Get department by ID.
         """
 
-        return DepartmentSelector.queryset().get(
-            pk=department_id,
+        return Department.objects.select_related(
+            "organization",
+            "head",
+        ).get(
+            id=department_id,
+        )
+
+    @staticmethod
+    def list(
+        *,
+        organization_id: UUID,
+    ) -> QuerySet[Department]:
+        """
+        List organization departments.
+        """
+
+        return (
+            Department.objects.filter(
+                organization_id=organization_id,
+            )
+            .select_related(
+                "organization",
+                "head",
+            )
+            .order_by(
+                "name",
+            )
+        )
+
+    @staticmethod
+    def active(
+        *,
+        organization_id: UUID,
+    ) -> QuerySet[Department]:
+        """
+        Active departments.
+        """
+
+        return Department.objects.filter(
+            organization_id=organization_id,
+            is_active=True,
+        ).order_by(
+            "name",
+        )
+
+    @staticmethod
+    def search(
+        *,
+        organization_id: UUID,
+        query: str,
+    ) -> QuerySet[Department]:
+        """
+        Search departments.
+        """
+
+        return Department.objects.filter(
+            organization_id=organization_id,
+            name__icontains=query,
+        ).order_by(
+            "name",
         )
 
 
-def get_departments() -> QuerySet[Department]:
+# ============================================================
+# Backward compatibility selectors
+# ============================================================
+
+
+def get_departments(
+    *,
+    organization_id: UUID,
+):
     """
-    Legacy alias for DepartmentSelector.list().
+    Legacy selector.
+
+    Get all departments.
     """
 
-    return DepartmentSelector.list()
+    return DepartmentSelector.list(
+        organization_id=organization_id,
+    )
+
+
+def get_department(
+    *,
+    department_id: UUID,
+):
+    """
+    Legacy selector.
+
+    Get single department.
+    """
+
+    return DepartmentSelector.get(
+        department_id=department_id,
+    )
 
 
 def get_department_by_id(
     *,
     department_id: UUID,
-) -> Department:
+):
     """
-    Legacy alias for DepartmentSelector.get_by_id().
+    Legacy selector.
+
+    Alias for get_department().
     """
 
-    return DepartmentSelector.get_by_id(
+    return DepartmentSelector.get(
         department_id=department_id,
     )
 
 
-__all__ = [
+def get_active_departments(
+    *,
+    organization_id: UUID,
+):
+    """
+    Legacy selector.
+
+    Get active departments.
+    """
+
+    return DepartmentSelector.active(
+        organization_id=organization_id,
+    )
+
+
+__all__ = (
     "DepartmentSelector",
     "get_departments",
+    "get_department",
     "get_department_by_id",
-]
+    "get_active_departments",
+)

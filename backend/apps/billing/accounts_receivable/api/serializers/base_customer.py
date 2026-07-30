@@ -4,8 +4,9 @@ Base serializer for the Customer model.
 
 from __future__ import annotations
 
-from apps.billing.accounts_receivable.models import Customer
 from rest_framework import serializers
+
+from apps.billing.accounts_receivable.models import Customer
 
 
 class CustomerBaseSerializer(serializers.ModelSerializer):

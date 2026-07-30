@@ -6,15 +6,15 @@ Shared type definitions for embedding providers.
 
 from __future__ import annotations
 
-from typing import Any, TypeAlias
+from typing import Any
 
-EmbeddingVector: TypeAlias = list[float]
-
-
-EmbeddingBatch: TypeAlias = list[EmbeddingVector]
+type EmbeddingVector = list[float]
 
 
-EmbeddingMetadata: TypeAlias = dict[
+type EmbeddingBatch = list[EmbeddingVector]
+
+
+type EmbeddingMetadata = dict[
     str,
     Any,
 ]

@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from collections.abc import Iterator
 from datetime import datetime
-from typing import TypeAlias, TypeVar
+from typing import TypeVar
 
 from django.db import models, transaction
 from django.utils import timezone
@@ -20,7 +20,7 @@ ModelType = TypeVar(
 )
 
 
-DeleteResult: TypeAlias = tuple[
+type DeleteResult = tuple[
     int,
     dict[str, int],
 ]

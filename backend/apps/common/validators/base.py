@@ -15,14 +15,13 @@ Design Principles
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Any, Generic, TypeVar
+from typing import Any, TypeVar
 
 T = TypeVar("T")
 
 
-class BaseValidator(
+class BaseValidator[T](
     ABC,
-    Generic[T],
 ):
     """
     Base class for all validators.

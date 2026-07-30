@@ -13,39 +13,38 @@ from collections.abc import (
 )
 from typing import (
     Any,
-    TypeAlias,
 )
 
 ###############################################################################
 # Workflow Identity
 ###############################################################################
 
-WorkflowName: TypeAlias = str
+type WorkflowName = str
 
-WorkflowID: TypeAlias = str
+type WorkflowID = str
 
 
 ###############################################################################
 # Workflow State
 ###############################################################################
 
-StateName: TypeAlias = str
+type StateName = str
 
 
-TransitionName: TypeAlias = str
+type TransitionName = str
 
 
 ###############################################################################
 # Workflow Context
 ###############################################################################
 
-WorkflowContext: TypeAlias = Mapping[
+type WorkflowContext = Mapping[
     str,
     Any,
 ]
 
 
-MutableWorkflowContext: TypeAlias = dict[
+type MutableWorkflowContext = dict[
     str,
     Any,
 ]
@@ -55,10 +54,10 @@ MutableWorkflowContext: TypeAlias = dict[
 # Workflow Execution
 ###############################################################################
 
-WorkflowResult: TypeAlias = Any
+type WorkflowResult = Any
 
 
-TransitionCondition: TypeAlias = Callable[
+type TransitionCondition = Callable[
     [
         WorkflowContext,
     ],
@@ -66,7 +65,7 @@ TransitionCondition: TypeAlias = Callable[
 ]
 
 
-TransitionAction: TypeAlias = Callable[
+type TransitionAction = Callable[
     [
         WorkflowContext,
     ],

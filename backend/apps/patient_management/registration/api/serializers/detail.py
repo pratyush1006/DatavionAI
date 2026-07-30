@@ -4,10 +4,11 @@ Detail serializer for the Patient Registration module.
 
 from __future__ import annotations
 
+from rest_framework import serializers
+
 from apps.patient_management.registration.models import (
     PatientRegistration,
 )
-from rest_framework import serializers
 
 
 class PatientRegistrationDetailSerializer(

@@ -1,58 +1,150 @@
 """
-Admin configuration for the Teams application.
+Admin configuration for Teams module.
 """
 
-from __future__ import annotations
-
-from apps.organization.teams.models import Team
 from django.contrib import admin
 
+from apps.organization.teams.models import (
+    Team,
+    TeamDepartmentAssignment,
+    TeamMember,
+    TeamRole,
+)
 
-@admin.register(Team)
-class TeamAdmin(admin.ModelAdmin):
+
+@admin.register(
+    Team,
+)
+class TeamAdmin(
+    admin.ModelAdmin,
+):
     """
-    Admin configuration for the Team model.
+    Team administration.
     """
 
     list_display = (
         "name",
-        "department",
+        "organization",
         "code",
+        "team_type",
+        "status",
         "is_active",
         "created_at",
+    )
+
+    list_filter = (
+        "organization",
+        "team_type",
+        "status",
+        "is_active",
     )
 
     search_fields = (
         "name",
         "code",
-        "department__name",
+        "organization__name",
     )
 
-    list_filter = (
-        "department",
+    ordering = ("name",)
+
+
+@admin.register(
+    TeamRole,
+)
+class TeamRoleAdmin(
+    admin.ModelAdmin,
+):
+    """
+    Team role administration.
+    """
+
+    list_display = (
+        "name",
+        "team",
+        "code",
+        "is_lead",
         "is_active",
         "created_at",
     )
 
-    ordering = (
-        "department__name",
+    list_filter = (
+        "is_lead",
+        "is_active",
+    )
+
+    search_fields = (
         "name",
+        "code",
+        "team__name",
     )
 
-    readonly_fields = (
+    ordering = ("name",)
+
+
+@admin.register(
+    TeamMember,
+)
+class TeamMemberAdmin(
+    admin.ModelAdmin,
+):
+    """
+    Team member administration.
+
+    Team membership is user based.
+    Employee integration will be handled
+    through HR/Employee bounded context.
+    """
+
+    list_display = (
+        "team",
+        "user",
+        "role",
+        "status",
+        "is_primary",
         "created_at",
-        "updated_at",
     )
 
-    list_per_page = 25
+    list_filter = (
+        "status",
+        "is_primary",
+        "team",
+    )
 
-    date_hierarchy = "created_at"
+    search_fields = (
+        "team__name",
+        "user__email",
+    )
 
-    preserve_filters = True
-
-    empty_value_display = "-"
+    ordering = ("team",)
 
 
-__all__ = [
-    "TeamAdmin",
-]
+@admin.register(
+    TeamDepartmentAssignment,
+)
+class TeamDepartmentAssignmentAdmin(
+    admin.ModelAdmin,
+):
+    """
+    Team department assignment administration.
+    """
+
+    list_display = (
+        "team",
+        "department",
+        "created_at",
+    )
+
+    list_filter = (
+        "team",
+        "department",
+    )
+
+    search_fields = (
+        "team__name",
+        "department__name",
+    )
+
+    ordering = (
+        "team",
+        "department",
+    )

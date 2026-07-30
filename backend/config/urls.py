@@ -1,5 +1,18 @@
 """
 Root URL configuration for DatavionAI.
+
+DatavionOS API Gateway routing layer.
+
+Responsibilities:
+
+- Admin
+- API Documentation
+- Platform modules
+- Identity & Access
+- SaaS Platform
+- Clinical modules
+- AI Platform
+- Infrastructure
 """
 
 from __future__ import annotations
@@ -85,6 +98,31 @@ urlpatterns = [
             "apps.platform.organizations.urls",
         ),
     ),
+    # ==========================================================================
+    # SaaS Platform Billing
+    #
+    # DatavionOS SaaS lifecycle:
+    #
+    # Organization
+    #       |
+    #       Subscription
+    #       |
+    #       Invoice
+    #       |
+    #       Payment
+    #       |
+    #       Usage
+    #
+    # ==========================================================================
+    path(
+        "api/saas-billing/",
+        include(
+            "apps.platform.saas_billing.urls",
+        ),
+    ),
+    # ==========================================================================
+    # Organization Operations
+    # ==========================================================================
     path(
         "api/departments/",
         include(
@@ -197,7 +235,17 @@ urlpatterns = [
         ),
     ),
     # ==========================================================================
-    # Imaging / Billing / Revenue
+    # Imaging / Healthcare Billing / Revenue Cycle
+    #
+    # Note:
+    # This is separate from SaaS subscription billing.
+    #
+    # SaaS Billing:
+    #   DatavionOS subscription revenue
+    #
+    # Billing:
+    #   Healthcare operational billing
+    #
     # ==========================================================================
     path(
         "api/imaging/",

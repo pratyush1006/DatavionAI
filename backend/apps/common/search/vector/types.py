@@ -23,11 +23,11 @@ Designed for:
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, TypeAlias
+from typing import Any
 
-Vector: TypeAlias = list[float]
+type Vector = list[float]
 
-VectorMetadata: TypeAlias = dict[str, Any]
+type VectorMetadata = dict[str, Any]
 
 
 @dataclass(

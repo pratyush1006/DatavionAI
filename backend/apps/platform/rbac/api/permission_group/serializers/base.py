@@ -4,10 +4,11 @@ Base serializer for PermissionGroup.
 
 from __future__ import annotations
 
+from rest_framework import serializers
+
 from apps.platform.rbac.models import (
     PermissionGroup,
 )
-from rest_framework import serializers
 
 
 class PermissionGroupBaseSerializer(

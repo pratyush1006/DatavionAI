@@ -6,6 +6,9 @@ from __future__ import annotations
 
 from typing import Final
 
+from drf_spectacular.utils import extend_schema
+from rest_framework.permissions import IsAuthenticated
+
 from apps.common.api.base_generics import (
     BaseRetrieveUpdateDestroyAPIView,
 )
@@ -21,12 +24,12 @@ from apps.organization.departments.permissions import (
 from apps.organization.departments.selectors import (
     get_department_by_id,
 )
-from apps.organization.departments.services import (
-    delete_department,
-    update_department,
+from apps.organization.departments.workflows import (
+    DepartmentDeletionRequest,
+    DepartmentDeletionWorkflow,
+    DepartmentUpdateRequest,
+    DepartmentUpdateWorkflow,
 )
-from drf_spectacular.utils import extend_schema
-from rest_framework.permissions import IsAuthenticated
 
 DEPARTMENT_TAG: Final[tuple[str, ...]] = ("Departments",)
 
@@ -39,6 +42,15 @@ class DepartmentRetrieveUpdateDestroyAPIView(
 ):
     """
     Retrieve, update, or delete a department.
+
+    GET:
+        Selector driven.
+
+    PUT/PATCH:
+        Workflow driven.
+
+    DELETE:
+        Workflow driven.
     """
 
     lookup_url_kwarg = "department_id"
@@ -70,21 +82,49 @@ class DepartmentRetrieveUpdateDestroyAPIView(
 
     detail_serializer_class = DepartmentDetailSerializer
 
-    update_service = update_department
+    update_workflow = DepartmentUpdateWorkflow
 
-    delete_service = delete_department
+    delete_workflow = DepartmentDeletionWorkflow
 
     update_success_message = "Department updated successfully."
+
+    delete_success_message = "Department deleted successfully."
 
     def get_object(
         self,
     ):
         """
-        Return the requested department.
+        Return requested department.
         """
 
         return get_department_by_id(
             department_id=self.kwargs[self.lookup_url_kwarg],
+        )
+
+    def build_update_workflow_request(
+        self,
+        instance,
+        validated_data,
+    ) -> DepartmentUpdateRequest:
+        """
+        Build department update workflow request.
+        """
+
+        return DepartmentUpdateRequest(
+            department_id=instance.id,
+            data=validated_data,
+        )
+
+    def build_delete_workflow_request(
+        self,
+        instance,
+    ) -> DepartmentDeletionRequest:
+        """
+        Build department deletion workflow request.
+        """
+
+        return DepartmentDeletionRequest(
+            department_id=instance.id,
         )
 
 

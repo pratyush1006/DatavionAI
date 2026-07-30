@@ -4,6 +4,8 @@ List/Create API for PermissionGroup.
 
 from __future__ import annotations
 
+from rest_framework.permissions import IsAuthenticated
+
 from apps.common.api.base_generics import (
     BaseListCreateAPIView,
 )
@@ -21,7 +23,6 @@ from apps.platform.rbac.permissions import (
 from apps.platform.rbac.services import (
     create_permission_group,
 )
-from rest_framework.permissions import IsAuthenticated
 
 
 class PermissionGroupListCreateAPIView(

@@ -13,6 +13,7 @@ Design Principles
 
 from __future__ import annotations
 
+import traceback
 from http import HTTPStatus
 from typing import Any
 
@@ -38,15 +39,28 @@ def datavion_exception_handler(
         context,
     )
 
-    request = context.get("request")
+    request = context.get(
+        "request",
+    )
 
-    request_id = getattr(request, "request_id", None) if request is not None else None
+    request_id = (
+        getattr(
+            request,
+            "request_id",
+            None,
+        )
+        if request is not None
+        else None
+    )
 
     # ------------------------------------------------------------------
     # Datavion Exceptions
     # ------------------------------------------------------------------
 
-    if isinstance(exc, DatavionException):
+    if isinstance(
+        exc,
+        DatavionException,
+    ):
         payload = {
             "success": False,
             "status": "error",
@@ -87,11 +101,17 @@ def datavion_exception_handler(
         }
 
         response.data = payload
+
         return response
 
     # ------------------------------------------------------------------
     # Unhandled Exceptions
     # ------------------------------------------------------------------
+
+    # Temporary diagnostic logging.
+    # Remove stack trace printing after API stabilization.
+
+    traceback.print_exc()
 
     payload = {
         "success": False,
@@ -100,7 +120,7 @@ def datavion_exception_handler(
         "message": get_error_message(
             ErrorCode.INTERNAL_SERVER_ERROR,
         ),
-        "detail": None,
+        "detail": str(exc),
         "meta": {
             "timestamp": timezone.now().isoformat(),
             "request_id": request_id,

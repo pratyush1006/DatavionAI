@@ -6,6 +6,10 @@ from __future__ import annotations
 
 from typing import Final
 
+from django.db.models import QuerySet
+from drf_spectacular.utils import extend_schema
+from rest_framework.permissions import IsAuthenticated
+
 from apps.billing.accounts_receivable.api.serializers import (
     CustomerCreateSerializer,
     CustomerDetailSerializer,
@@ -19,9 +23,6 @@ from apps.billing.accounts_receivable.permissions import (
 from apps.billing.accounts_receivable.selectors import CustomerSelector
 from apps.billing.accounts_receivable.services import CustomerService
 from apps.common.api.base_generics import BaseListCreateAPIView
-from django.db.models import QuerySet
-from drf_spectacular.utils import extend_schema
-from rest_framework.permissions import IsAuthenticated
 
 CUSTOMER_TAG: Final[tuple[str, ...]] = ("Accounts Receivable",)
 

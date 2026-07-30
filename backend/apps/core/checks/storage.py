@@ -60,37 +60,35 @@ def storage_check(
     # S3 validation
     # ------------------------------------------------------------------
 
-    if "s3" in storage_backend.lower():
-        if not getattr(
-            settings,
-            "AWS_ACCESS_KEY_ID",
-            None,
-        ):
-            messages.append(
-                Warning(
-                    "AWS_ACCESS_KEY_ID is not configured.",
-                    hint="Configure AWS credentials for S3 storage.",
-                    id="datavion.W014",
-                )
+    if "s3" in storage_backend.lower() and not getattr(
+        settings,
+        "AWS_ACCESS_KEY_ID",
+        None,
+    ):
+        messages.append(
+            Warning(
+                "AWS_ACCESS_KEY_ID is not configured.",
+                hint="Configure AWS credentials for S3 storage.",
+                id="datavion.W014",
             )
+        )
 
     # ------------------------------------------------------------------
     # Azure validation
     # ------------------------------------------------------------------
 
-    if "azure" in storage_backend.lower():
-        if not getattr(
-            settings,
-            "AZURE_ACCOUNT_NAME",
-            None,
-        ):
-            messages.append(
-                Warning(
-                    "AZURE_ACCOUNT_NAME is not configured.",
-                    hint="Configure Azure Blob Storage settings.",
-                    id="datavion.W015",
-                )
+    if "azure" in storage_backend.lower() and not getattr(
+        settings,
+        "AZURE_ACCOUNT_NAME",
+        None,
+    ):
+        messages.append(
+            Warning(
+                "AZURE_ACCOUNT_NAME is not configured.",
+                hint="Configure Azure Blob Storage settings.",
+                id="datavion.W015",
             )
+        )
 
     return messages
 

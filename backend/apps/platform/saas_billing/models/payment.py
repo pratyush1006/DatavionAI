@@ -1,8 +1,9 @@
 """
 SaaS payment model.
 
-Tracks payments received for
-DatavionOS subscriptions.
+Tracks payments, refunds,
+gateway transactions and reconciliation
+for DatavionOS subscriptions.
 """
 
 from __future__ import annotations
@@ -11,90 +12,148 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from apps.core.models import BaseModel
+from apps.platform.saas_billing.managers.payment import (
+    PaymentManager,
+)
 
 
 class Payment(BaseModel):
     """
-    Payment record for SaaS invoices.
+    Enterprise SaaS payment transaction.
 
-    Represents payment made by an organization
-    towards DatavionOS subscription invoices.
+    Supports:
+
+    - Stripe
+    - Razorpay
+    - PayPal
+    - Bank transfer
+    - Enterprise invoices
+    - Refund workflows
     """
 
-    class Status(models.TextChoices):
-        """
-        Payment lifecycle states.
-        """
+    objects = PaymentManager()
 
+    # ------------------------------------------------------------------
+    # Choices
+    # ------------------------------------------------------------------
+
+    class Status(models.TextChoices):
         PENDING = (
-            "pending",
+            "PENDING",
             _("Pending"),
         )
 
+        PROCESSING = (
+            "PROCESSING",
+            _("Processing"),
+        )
+
         SUCCESS = (
-            "success",
+            "SUCCESS",
             _("Success"),
         )
 
         FAILED = (
-            "failed",
+            "FAILED",
             _("Failed"),
         )
 
+        CANCELLED = (
+            "CANCELLED",
+            _("Cancelled"),
+        )
+
         REFUNDED = (
-            "refunded",
+            "REFUNDED",
             _("Refunded"),
         )
 
-    class Provider(models.TextChoices):
-        """
-        Supported payment providers.
-        """
+        PARTIALLY_REFUNDED = (
+            "PARTIALLY_REFUNDED",
+            _("Partially Refunded"),
+        )
 
+    class Provider(models.TextChoices):
         STRIPE = (
-            "stripe",
+            "STRIPE",
             _("Stripe"),
         )
 
         RAZORPAY = (
-            "razorpay",
+            "RAZORPAY",
             _("Razorpay"),
         )
 
         PAYPAL = (
-            "paypal",
+            "PAYPAL",
             _("PayPal"),
         )
 
         BANK = (
-            "bank",
+            "BANK",
             _("Bank Transfer"),
+        )
+
+        MANUAL = (
+            "MANUAL",
+            _("Manual"),
+        )
+
+    class PaymentMethod(models.TextChoices):
+        CARD = (
+            "CARD",
+            _("Card"),
+        )
+
+        UPI = (
+            "UPI",
+            _("UPI"),
+        )
+
+        NET_BANKING = (
+            "NET_BANKING",
+            _("Net Banking"),
+        )
+
+        BANK_TRANSFER = (
+            "BANK_TRANSFER",
+            _("Bank Transfer"),
+        )
+
+        WALLET = (
+            "WALLET",
+            _("Wallet"),
+        )
+
+        OTHER = (
+            "OTHER",
+            _("Other"),
         )
 
     # ------------------------------------------------------------------
     # Relations
     # ------------------------------------------------------------------
 
+    tenant = models.ForeignKey(
+        "tenancy.Tenant",
+        on_delete=models.CASCADE,
+        related_name="payments",
+    )
+
     organization = models.ForeignKey(
         "organizations.Organization",
         on_delete=models.CASCADE,
         related_name="saas_payments",
-        help_text=_(
-            "Organization making payment.",
-        ),
     )
 
     invoice = models.ForeignKey(
         "saas_billing.Invoice",
         on_delete=models.PROTECT,
         related_name="payments",
-        help_text=_(
-            "Invoice being paid.",
-        ),
     )
 
     # ------------------------------------------------------------------
-    # Payment Information
+    # Payment Details
     # ------------------------------------------------------------------
 
     provider = models.CharField(
@@ -103,48 +162,112 @@ class Payment(BaseModel):
         blank=True,
     )
 
+    payment_method = models.CharField(
+        max_length=50,
+        choices=PaymentMethod.choices,
+        blank=True,
+    )
+
     transaction_id = models.CharField(
         max_length=255,
         blank=True,
         db_index=True,
+    )
+
+    gateway_payment_id = models.CharField(
+        max_length=255,
+        blank=True,
+        db_index=True,
         help_text=_(
-            "External transaction identifier.",
+            "Payment gateway payment identifier.",
         ),
     )
 
+    gateway_order_id = models.CharField(
+        max_length=255,
+        blank=True,
+        db_index=True,
+    )
+
+    # ------------------------------------------------------------------
+    # Amount
+    # ------------------------------------------------------------------
+
     amount = models.DecimalField(
-        max_digits=12,
+        max_digits=14,
         decimal_places=2,
         default=0,
-        help_text=_(
-            "Payment amount.",
-        ),
+    )
+
+    refunded_amount = models.DecimalField(
+        max_digits=14,
+        decimal_places=2,
+        default=0,
     )
 
     currency = models.CharField(
         max_length=10,
-        default="USD",
+        default="INR",
     )
 
     status = models.CharField(
-        max_length=20,
+        max_length=30,
         choices=Status.choices,
         default=Status.PENDING,
         db_index=True,
     )
+
+    # ------------------------------------------------------------------
+    # Lifecycle
+    # ------------------------------------------------------------------
 
     paid_at = models.DateTimeField(
         null=True,
         blank=True,
     )
 
-    metadata = models.JSONField(
+    failed_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    refunded_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    failure_reason = models.TextField(
+        blank=True,
+    )
+
+    # ------------------------------------------------------------------
+    # Gateway / Accounting
+    # ------------------------------------------------------------------
+
+    gateway_response = models.JSONField(
         default=dict,
         blank=True,
         help_text=_(
-            "Additional payment metadata.",
+            "Raw payment gateway response.",
         ),
     )
+
+    reconciliation_data = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text=_(
+            "Accounting reconciliation information.",
+        ),
+    )
+
+    metadata = models.JSONField(
+        default=dict,
+        blank=True,
+    )
+
+    # ------------------------------------------------------------------
+    # Meta
+    # ------------------------------------------------------------------
 
     class Meta:
         db_table = "saas_payments"
@@ -162,8 +285,19 @@ class Payment(BaseModel):
         indexes = [
             models.Index(
                 fields=[
+                    "tenant",
+                    "status",
+                ],
+            ),
+            models.Index(
+                fields=[
                     "organization",
                     "status",
+                ],
+            ),
+            models.Index(
+                fields=[
+                    "invoice",
                 ],
             ),
             models.Index(
@@ -173,7 +307,7 @@ class Payment(BaseModel):
             ),
             models.Index(
                 fields=[
-                    "invoice",
+                    "gateway_payment_id",
                 ],
             ),
         ]
@@ -181,7 +315,8 @@ class Payment(BaseModel):
     def __str__(
         self,
     ) -> str:
-        return f"{self.organization} - {self.amount}"
+
+        return f"{self.organization} - {self.amount} {self.currency}"
 
 
 __all__ = [

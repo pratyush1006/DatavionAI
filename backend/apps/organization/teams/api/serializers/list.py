@@ -1,5 +1,5 @@
 """
-List serializer for the Teams application.
+List serializer for Teams.
 """
 
 from __future__ import annotations
@@ -10,29 +10,24 @@ from .base import TeamBaseSerializer
 from .fields import LIST_FIELDS
 
 
-class TeamListSerializer(TeamBaseSerializer):
+class TeamListSerializer(
+    TeamBaseSerializer,
+):
     """
-    Serializer used for listing teams.
+    Serializer used for team listing.
     """
-
-    department = serializers.CharField(
-        source="department.name",
-        read_only=True,
-    )
 
     organization = serializers.CharField(
-        source="department.organization.name",
+        source="organization.name",
         read_only=True,
     )
 
-    class Meta(TeamBaseSerializer.Meta):
-        fields = (
-            *LIST_FIELDS,
-            "organization",
-        )
+    class Meta(
+        TeamBaseSerializer.Meta,
+    ):
+        fields = (*LIST_FIELDS,)
+
         read_only_fields = fields
 
 
-__all__ = [
-    "TeamListSerializer",
-]
+__all__ = ("TeamListSerializer",)

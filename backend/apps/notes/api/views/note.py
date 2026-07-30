@@ -292,18 +292,14 @@ class NoteListCreateAPIView(BaseListCreateAPIView):
         queryset = NoteSelector.queryset()
 
         if patient_id:
-            queryset = NoteSelector.list_by_patient(
+            return NoteSelector.list_by_patient(
                 patient_id=patient_id,
             )
 
-            return queryset
-
         if encounter_id:
-            queryset = NoteSelector.list_by_encounter(
+            return NoteSelector.list_by_encounter(
                 encounter_id=encounter_id,
             )
-
-            return queryset
 
         return queryset
 

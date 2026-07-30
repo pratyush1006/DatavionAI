@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from datetime import UTC, datetime
-from typing import Any, Final, TypeAlias
+from typing import Any, Final
 
 from django.conf import settings
 from rest_framework import status
@@ -22,11 +22,11 @@ CREATED_MESSAGE: Final[str] = "Created successfully."
 VALIDATION_ERROR_MESSAGE: Final[str] = "Validation failed."
 
 
-JSONDict: TypeAlias = dict[str, Any]
+type JSONDict = dict[str, Any]
 
-Headers: TypeAlias = Mapping[str, str]
+type Headers = Mapping[str, str]
 
-Meta: TypeAlias = Mapping[str, Any]
+type Meta = Mapping[str, Any]
 
 
 def _timestamp() -> str:

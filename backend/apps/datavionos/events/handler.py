@@ -5,7 +5,7 @@ DatavionOS Event Handler Contract.
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Generic, TypeVar
+from typing import TypeVar
 
 from apps.datavionos.events.event import (
     Event,
@@ -17,9 +17,8 @@ TEvent = TypeVar(
 )
 
 
-class EventHandler(
+class EventHandler[TEvent: Event](
     ABC,
-    Generic[TEvent],
 ):
     """
     Base class for all event handlers.

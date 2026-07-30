@@ -17,7 +17,6 @@ from typing import (
     Any,
     Literal,
     NewType,
-    TypeAlias,
 )
 
 # ============================================================================
@@ -44,32 +43,32 @@ FeatureFlag = NewType("FeatureFlag", str)
 # Collection Types
 # ============================================================================
 
-Metadata: TypeAlias = dict[str, Any]
+type Metadata = dict[str, Any]
 
-Context: TypeAlias = dict[str, Any]
+type Context = dict[str, Any]
 
-Properties: TypeAlias = dict[str, Any]
+type Properties = dict[str, Any]
 
-Labels: TypeAlias = dict[str, str]
+type Labels = dict[str, str]
 
-TagSet: TypeAlias = set[str]
+type TagSet = set[str]
 
-ReadonlyMetadata: TypeAlias = Mapping[str, Any]
+type ReadonlyMetadata = Mapping[str, Any]
 
-ReadonlyContext: TypeAlias = Mapping[str, Any]
+type ReadonlyContext = Mapping[str, Any]
 
 # ============================================================================
 # Common Literal Types
 # ============================================================================
 
-Environment: TypeAlias = Literal[
+type Environment = Literal[
     "development",
     "testing",
     "staging",
     "production",
 ]
 
-LifecycleState: TypeAlias = Literal[
+type LifecycleState = Literal[
     "registered",
     "initialized",
     "starting",
@@ -79,7 +78,7 @@ LifecycleState: TypeAlias = Literal[
     "failed",
 ]
 
-PluginStatus: TypeAlias = Literal[
+type PluginStatus = Literal[
     "discovered",
     "registered",
     "loaded",
@@ -88,7 +87,7 @@ PluginStatus: TypeAlias = Literal[
     "failed",
 ]
 
-CapabilityStatus: TypeAlias = Literal[
+type CapabilityStatus = Literal[
     "enabled",
     "disabled",
 ]

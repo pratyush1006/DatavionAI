@@ -6,6 +6,11 @@ from __future__ import annotations
 
 from typing import Final
 
+from drf_spectacular.utils import extend_schema
+from rest_framework.request import Request
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
 from apps.common.api.responses import success_response
 from apps.platform.notifications.api.serializers import (
     NotificationLogSerializer,
@@ -16,10 +21,6 @@ from apps.platform.notifications.permissions import (
 from apps.platform.notifications.selectors import (
     get_notification_logs,
 )
-from drf_spectacular.utils import extend_schema
-from rest_framework.request import Request
-from rest_framework.response import Response
-from rest_framework.views import APIView
 
 NOTIFICATION_TAG: Final = ("Notifications",)
 

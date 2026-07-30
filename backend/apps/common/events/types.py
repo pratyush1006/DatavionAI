@@ -17,28 +17,27 @@ from collections.abc import (
 from typing import (
     Any,
     Protocol,
-    TypeAlias,
 )
 
 ###############################################################################
 # Event Names
 ###############################################################################
 
-EventName: TypeAlias = str
+type EventName = str
 
 
 ###############################################################################
 # Event Identifiers
 ###############################################################################
 
-EventID: TypeAlias = str
+type EventID = str
 
 
 ###############################################################################
 # Event Payloads
 ###############################################################################
 
-EventPayload: TypeAlias = Mapping[
+type EventPayload = Mapping[
     str,
     Any,
 ]
@@ -48,7 +47,7 @@ EventPayload: TypeAlias = Mapping[
 # Event Metadata
 ###############################################################################
 
-EventMetadata: TypeAlias = Mapping[
+type EventMetadata = Mapping[
     str,
     Any,
 ]
@@ -82,7 +81,7 @@ class EventHandler(
 # Event Callback
 ###############################################################################
 
-EventCallback: TypeAlias = Callable[
+type EventCallback = Callable[
     [Any],
     Any,
 ]

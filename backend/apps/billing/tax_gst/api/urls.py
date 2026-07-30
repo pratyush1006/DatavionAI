@@ -4,13 +4,14 @@ Tax and GST API URL patterns.
 
 from __future__ import annotations
 
+from django.urls import path
+
 from apps.billing.tax_gst.api.views import (
     TaxFilingListCreateAPIView,
     TaxFilingRetrieveUpdateDestroyAPIView,
     TaxRateListCreateAPIView,
     TaxRateRetrieveUpdateDestroyAPIView,
 )
-from django.urls import path
 
 app_name = "tax_gst"
 

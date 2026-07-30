@@ -23,12 +23,11 @@ class OrganizationFactory(
     factory.django.DjangoModelFactory,
 ):
     """
-    Factory for Organization.
+    Factory for Organization model.
     """
 
     class Meta:
         model = Organization
-        exclude = ("unique",)
 
     unique = factory.LazyFunction(
         lambda: uuid.uuid4().hex[:8].upper(),
@@ -92,18 +91,12 @@ class OrganizationFactory(
 
     description = "Test organization."
 
-    is_verified = False
-
-    is_demo = False
-
-    is_active = True
-
 
 def create_organization(
     **kwargs,
 ) -> Organization:
     """
-    Create an organization for testing.
+    Create organization for tests.
     """
 
     return OrganizationFactory(

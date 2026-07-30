@@ -4,11 +4,12 @@ URL patterns for the Timeline Event module.
 
 from __future__ import annotations
 
+from django.urls import path
+
 from apps.patient_management.timeline.api.views import (
     PatientTimelineEventListCreateAPIView,
     PatientTimelineEventRetrieveUpdateDestroyAPIView,
 )
-from django.urls import path
 
 app_name = "timeline_events"
 

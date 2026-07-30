@@ -4,10 +4,11 @@ Notification log serializers.
 
 from __future__ import annotations
 
+from rest_framework import serializers
+
 from apps.platform.notifications.models import (
     NotificationLog,
 )
-from rest_framework import serializers
 
 
 class NotificationLogSerializer(

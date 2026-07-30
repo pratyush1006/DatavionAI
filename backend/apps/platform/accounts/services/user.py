@@ -77,12 +77,10 @@ class UserService:
             None,
         )
 
-        user = User.objects.create_user(
+        return User.objects.create_user(
             password=password,
             **validated_data,
         )
-
-        return user
 
     @staticmethod
     @transaction.atomic

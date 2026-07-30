@@ -5,33 +5,33 @@ Cache type definitions.
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import Any, TypeAlias
+from typing import Any
 
 ###############################################################################
 # Cache Keys
 ###############################################################################
 
-CacheKey: TypeAlias = str
+type CacheKey = str
 
-CachePrefix: TypeAlias = str
+type CachePrefix = str
 
 ###############################################################################
 # Cache Values
 ###############################################################################
 
-CacheValue: TypeAlias = Any
+type CacheValue = Any
 
 ###############################################################################
 # Time-to-Live
 ###############################################################################
 
-CacheTTL: TypeAlias = int | float | None
+type CacheTTL = int | float | None
 
 ###############################################################################
 # Cache Mapping
 ###############################################################################
 
-CacheMapping: TypeAlias = Mapping[
+type CacheMapping = Mapping[
     CacheKey,
     CacheValue,
 ]

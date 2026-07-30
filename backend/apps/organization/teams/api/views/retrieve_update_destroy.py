@@ -1,10 +1,13 @@
 """
-API views for retrieving, updating and deleting teams.
+API views for retrieving, updating, and deleting teams.
 """
 
 from __future__ import annotations
 
 from typing import Final
+
+from drf_spectacular.utils import extend_schema
+from rest_framework.permissions import IsAuthenticated
 
 from apps.common.api.base_generics import (
     BaseRetrieveUpdateDestroyAPIView,
@@ -18,23 +21,36 @@ from apps.organization.teams.permissions import (
     CanUpdateTeam,
     CanViewTeam,
 )
-from apps.organization.teams.selectors import get_team_by_id
-from apps.organization.teams.services import (
-    delete_team,
-    update_team,
+from apps.organization.teams.selectors import (
+    get_team_by_id,
 )
-from drf_spectacular.utils import extend_schema
-from rest_framework.permissions import IsAuthenticated
+from apps.organization.teams.workflows import (
+    TeamDeletionRequest,
+    TeamDeletionWorkflow,
+    TeamUpdateRequest,
+    TeamUpdateWorkflow,
+)
 
 TEAM_TAG: Final[tuple[str, ...]] = ("Teams",)
 
 
-@extend_schema(tags=TEAM_TAG)
+@extend_schema(
+    tags=TEAM_TAG,
+)
 class TeamRetrieveUpdateDestroyAPIView(
     BaseRetrieveUpdateDestroyAPIView,
 ):
     """
-    Retrieve, update or delete a team.
+    Retrieve, update, or delete a team.
+
+    GET:
+        Selector driven.
+
+    PUT/PATCH:
+        Workflow driven.
+
+    DELETE:
+        Workflow driven.
     """
 
     lookup_url_kwarg = "team_id"
@@ -66,19 +82,49 @@ class TeamRetrieveUpdateDestroyAPIView(
 
     detail_serializer_class = TeamDetailSerializer
 
-    update_service = update_team
+    update_workflow = TeamUpdateWorkflow
 
-    delete_service = delete_team
+    delete_workflow = TeamDeletionWorkflow
 
     update_success_message = "Team updated successfully."
 
-    def get_object(self):
+    delete_success_message = "Team deleted successfully."
+
+    def get_object(
+        self,
+    ):
         """
-        Return the requested team.
+        Return requested team.
         """
 
         return get_team_by_id(
             team_id=self.kwargs[self.lookup_url_kwarg],
+        )
+
+    def build_update_workflow_request(
+        self,
+        instance,
+        validated_data,
+    ) -> TeamUpdateRequest:
+        """
+        Build team update workflow request.
+        """
+
+        return TeamUpdateRequest(
+            team_id=instance.id,
+            data=validated_data,
+        )
+
+    def build_delete_workflow_request(
+        self,
+        instance,
+    ) -> TeamDeletionRequest:
+        """
+        Build team deletion workflow request.
+        """
+
+        return TeamDeletionRequest(
+            team_id=instance.id,
         )
 
 

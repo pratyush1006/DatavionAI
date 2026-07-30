@@ -180,9 +180,7 @@ class OrganizationAdmin(admin.ModelAdmin):
         Add select_related() here if any of the displayed fields become
         ForeignKey relationships in the future.
         """
-        queryset = super().get_queryset(request)
-
-        return queryset
+        return super().get_queryset(request)
 
     @admin.action(description="Activate selected organizations")
     def activate_organizations(

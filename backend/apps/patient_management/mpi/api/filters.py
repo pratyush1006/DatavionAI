@@ -5,6 +5,7 @@ Filters for the Master Patient Index API.
 from __future__ import annotations
 
 import django_filters
+
 from apps.patient_management.mpi.models import (
     MasterPatientIndex,
 )

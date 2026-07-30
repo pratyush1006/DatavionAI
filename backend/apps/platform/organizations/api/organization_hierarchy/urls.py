@@ -4,11 +4,12 @@ Organization Hierarchy API URL configuration.
 
 from __future__ import annotations
 
+from django.urls import path
+
 from apps.platform.organizations.api.organization_hierarchy.views import (
     OrganizationHierarchyListCreateAPIView,
     OrganizationHierarchyRetrieveUpdateDestroyAPIView,
 )
-from django.urls import path
 
 app_name = "organization-hierarchy-api"
 

@@ -1,8 +1,9 @@
 """
 SaaS subscription model.
 
-Manages organization subscriptions
-against DatavionOS plans.
+Manages DatavionOS organization subscriptions,
+plan assignment, lifecycle, renewal,
+feature entitlements and billing state.
 """
 
 from __future__ import annotations
@@ -11,68 +12,115 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from apps.core.models import BaseModel
+from apps.platform.saas_billing.managers.subscription import (
+    SubscriptionManager,
+)
 
 
 class Subscription(BaseModel):
     """
-    Represents an organization's SaaS subscription.
+    Organization SaaS subscription.
 
-    Relationship:
+    Architecture:
 
-        Organization
-              |
-              |
-        Subscription
-              |
-              |
-             Plan
+        Tenant
+          |
+     Organization
+          |
+     BillingAccount
+          |
+     Subscription
+          |
+          Plan
+          |
+     Feature Entitlements
     """
+
+    objects = SubscriptionManager()
+
+    # ------------------------------------------------------------------
+    # Choices
+    # ------------------------------------------------------------------
 
     class Status(models.TextChoices):
         """
-        Subscription lifecycle states.
+        Subscription lifecycle.
         """
 
         TRIAL = (
-            "trial",
+            "TRIAL",
             _("Trial"),
         )
 
         ACTIVE = (
-            "active",
+            "ACTIVE",
             _("Active"),
         )
 
         PAST_DUE = (
-            "past_due",
+            "PAST_DUE",
             _("Past Due"),
         )
 
         SUSPENDED = (
-            "suspended",
+            "SUSPENDED",
             _("Suspended"),
         )
 
         CANCELLED = (
-            "cancelled",
+            "CANCELLED",
             _("Cancelled"),
         )
 
         EXPIRED = (
-            "expired",
+            "EXPIRED",
             _("Expired"),
+        )
+
+    class CancellationReason(models.TextChoices):
+        """
+        Subscription cancellation reasons.
+        """
+
+        CUSTOMER_REQUEST = (
+            "CUSTOMER_REQUEST",
+            _("Customer Request"),
+        )
+
+        PAYMENT_FAILURE = (
+            "PAYMENT_FAILURE",
+            _("Payment Failure"),
+        )
+
+        PLAN_CHANGE = (
+            "PLAN_CHANGE",
+            _("Plan Change"),
+        )
+
+        OTHER = (
+            "OTHER",
+            _("Other"),
         )
 
     # ------------------------------------------------------------------
     # Ownership
     # ------------------------------------------------------------------
 
+    tenant = models.ForeignKey(
+        "tenancy.Tenant",
+        on_delete=models.CASCADE,
+        related_name="subscriptions",
+        help_text=_(
+            "Tenant owning subscription.",
+        ),
+    )
+
     organization = models.OneToOneField(
         "organizations.Organization",
         on_delete=models.CASCADE,
         related_name="saas_subscription",
         help_text=_(
-            "Organization owning this subscription.",
+            "Organization subscription.",
         ),
     )
 
@@ -94,9 +142,6 @@ class Subscription(BaseModel):
         choices=Status.choices,
         default=Status.TRIAL,
         db_index=True,
-        help_text=_(
-            "Current subscription status.",
-        ),
     )
 
     trial_start = models.DateTimeField(
@@ -112,21 +157,36 @@ class Subscription(BaseModel):
     started_at = models.DateTimeField(
         null=True,
         blank=True,
-        help_text=_(
-            "Subscription activation date.",
-        ),
+    )
+
+    current_period_start = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    current_period_end = models.DateTimeField(
+        null=True,
+        blank=True,
     )
 
     expires_at = models.DateTimeField(
         null=True,
         blank=True,
-        help_text=_(
-            "Subscription expiry date.",
-        ),
+    )
+
+    grace_period_end = models.DateTimeField(
+        null=True,
+        blank=True,
     )
 
     cancelled_at = models.DateTimeField(
         null=True,
+        blank=True,
+    )
+
+    cancellation_reason = models.CharField(
+        max_length=50,
+        choices=CancellationReason.choices,
         blank=True,
     )
 
@@ -142,33 +202,61 @@ class Subscription(BaseModel):
     )
 
     # ------------------------------------------------------------------
+    # Plan Snapshot
+    # ------------------------------------------------------------------
+
+    plan_snapshot = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text=_(
+            "Frozen plan configuration at purchase time.",
+        ),
+    )
+
+    feature_snapshot = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text=_(
+            "Feature entitlement snapshot.",
+        ),
+    )
+
+    # ------------------------------------------------------------------
+    # Usage
+    # ------------------------------------------------------------------
+
+    seats_used = models.PositiveIntegerField(
+        default=0,
+    )
+
+    usage_snapshot = models.JSONField(
+        default=dict,
+        blank=True,
+    )
+
+    # ------------------------------------------------------------------
     # External Billing
     # ------------------------------------------------------------------
 
     provider = models.CharField(
         max_length=50,
         blank=True,
-        help_text=_(
-            "Payment provider name.",
-        ),
     )
 
     external_subscription_id = models.CharField(
         max_length=255,
         blank=True,
         db_index=True,
-        help_text=_(
-            "External payment provider subscription ID.",
-        ),
     )
 
     metadata = models.JSONField(
         default=dict,
         blank=True,
-        help_text=_(
-            "Additional subscription metadata.",
-        ),
     )
+
+    # ------------------------------------------------------------------
+    # Meta
+    # ------------------------------------------------------------------
 
     class Meta:
         db_table = "saas_subscriptions"
@@ -186,7 +274,17 @@ class Subscription(BaseModel):
         indexes = [
             models.Index(
                 fields=[
+                    "tenant",
+                ],
+            ),
+            models.Index(
+                fields=[
                     "status",
+                ],
+            ),
+            models.Index(
+                fields=[
+                    "current_period_end",
                 ],
             ),
             models.Index(
@@ -204,6 +302,7 @@ class Subscription(BaseModel):
     def __str__(
         self,
     ) -> str:
+
         return f"{self.organization} - {self.plan.name}"
 
 

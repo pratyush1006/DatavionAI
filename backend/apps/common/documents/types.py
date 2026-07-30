@@ -8,43 +8,43 @@ framework.
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import Any, TypeAlias
+from typing import Any
 
 ###############################################################################
 # Document Identity
 ###############################################################################
 
-DocumentID: TypeAlias = str | int
+type DocumentID = str | int
 
-DocumentName: TypeAlias = str
+type DocumentName = str
 
-DocumentType: TypeAlias = str
+type DocumentType = str
 
 
 ###############################################################################
 # File Information
 ###############################################################################
 
-FileName: TypeAlias = str
+type FileName = str
 
-FilePath: TypeAlias = str
+type FilePath = str
 
-MimeType: TypeAlias = str
+type MimeType = str
 
-StorageKey: TypeAlias = str
+type StorageKey = str
 
 
 ###############################################################################
 # Context and Metadata
 ###############################################################################
 
-DocumentMetadata: TypeAlias = Mapping[
+type DocumentMetadata = Mapping[
     str,
     Any,
 ]
 
 
-DocumentContext: TypeAlias = Mapping[
+type DocumentContext = Mapping[
     str,
     Any,
 ]
@@ -54,16 +54,16 @@ DocumentContext: TypeAlias = Mapping[
 # Tenant Context
 ###############################################################################
 
-TenantID: TypeAlias = str | int | None
+type TenantID = str | int | None
 
-OrganizationID: TypeAlias = str | int | None
+type OrganizationID = str | int | None
 
 
 ###############################################################################
 # Versioning
 ###############################################################################
 
-DocumentVersion: TypeAlias = int
+type DocumentVersion = int
 
 
 ###############################################################################

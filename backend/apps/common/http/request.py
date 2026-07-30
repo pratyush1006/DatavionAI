@@ -122,7 +122,7 @@ def get_request_headers(
     Return normalized request headers.
     """
 
-    return {key: value for key, value in request.headers.items()}
+    return dict(request.headers.items())
 
 
 def get_client_location(

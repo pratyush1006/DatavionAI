@@ -5,6 +5,7 @@ Unit tests for the DatavionOS kernel.
 from __future__ import annotations
 
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import suppress
 
 import pytest
 
@@ -204,14 +205,14 @@ def test_thread_safe_initialize() -> None:
     manager = KernelManager()
 
     def initialize() -> None:
-        try:
+        with suppress(KernelError):
             manager.initialize()
-        except KernelError:
-            # Expected if another thread already initialized first.
-            pass
 
     with ThreadPoolExecutor(max_workers=4) as executor:
-        futures = [executor.submit(initialize) for _ in range(4)]
+        futures = [
+            executor.submit(initialize)
+            for _ in range(4)
+        ]
 
         for future in futures:
             future.result()
@@ -231,14 +232,14 @@ def test_thread_safe_start() -> None:
     manager.initialize()
 
     def start() -> None:
-        try:
+        with suppress(KernelError):
             manager.start()
-        except KernelError:
-            # Expected if another thread starts first.
-            pass
 
     with ThreadPoolExecutor(max_workers=4) as executor:
-        futures = [executor.submit(start) for _ in range(4)]
+        futures = [
+            executor.submit(start)
+            for _ in range(4)
+        ]
 
         for future in futures:
             future.result()

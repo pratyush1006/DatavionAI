@@ -9,7 +9,7 @@ throughout the platform.
 from __future__ import annotations
 
 from collections.abc import Hashable, Mapping
-from typing import Generic, TypeVar
+from typing import TypeVar
 
 from apps.datavionos.exceptions import RegistryError
 
@@ -23,9 +23,8 @@ K = TypeVar(
 T = TypeVar("T")
 
 
-class Registry(
+class Registry[K: Hashable, T](
     BaseRegistry[K, T],
-    Generic[K, T],
 ):
     """
     Default registry implementation.

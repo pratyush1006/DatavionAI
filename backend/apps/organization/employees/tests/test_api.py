@@ -1,11 +1,12 @@
-from apps.organization.departments.models import Department
-from apps.organization.employees.models import Employee
-from apps.organization.teams.models import Team
-from apps.platform.organizations.models import Organization
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APIClient
+
+from apps.organization.departments.models import Department
+from apps.organization.employees.models import Employee
+from apps.organization.teams.models import Team
+from apps.platform.organizations.models import Organization
 
 User = get_user_model()
 

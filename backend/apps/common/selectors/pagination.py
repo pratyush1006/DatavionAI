@@ -18,7 +18,7 @@ import base64
 import json
 from dataclasses import dataclass
 from math import ceil
-from typing import Generic, TypeVar
+from typing import TypeVar
 
 from django.db.models import Model, QuerySet
 
@@ -37,9 +37,7 @@ ModelType = TypeVar(
     frozen=True,
     slots=True,
 )
-class PaginationResult(
-    Generic[ModelType],
-):
+class PaginationResult[ModelType: Model]:
     """
     Offset pagination result.
     """
@@ -130,9 +128,7 @@ class Pagination:
     frozen=True,
     slots=True,
 )
-class CursorPaginationResult(
-    Generic[ModelType],
-):
+class CursorPaginationResult[ModelType: Model]:
     """
     Cursor pagination result.
 

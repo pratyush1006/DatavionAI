@@ -4,13 +4,14 @@ Cash Management API URL patterns.
 
 from __future__ import annotations
 
+from django.urls import path
+
 from apps.billing.cash_management.api.views import (
     BankAccountListCreateAPIView,
     BankAccountRetrieveUpdateDestroyAPIView,
     CashTransactionListCreateAPIView,
     CashTransactionRetrieveUpdateDestroyAPIView,
 )
-from django.urls import path
 
 app_name = "cash_management"
 

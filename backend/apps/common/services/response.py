@@ -14,7 +14,7 @@ Design Principles
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Generic, TypeVar
+from typing import Any, TypeVar
 
 T = TypeVar("T")
 
@@ -23,9 +23,7 @@ T = TypeVar("T")
     frozen=True,
     slots=True,
 )
-class ServiceResponse(
-    Generic[T],
-):
+class ServiceResponse[T]:
     """
     Standard service response.
     """
@@ -51,7 +49,7 @@ class ServiceResponse(
         return not self.success
 
 
-def success(
+def success[T](
     data: T | None = None,
     *,
     message: str | None = None,

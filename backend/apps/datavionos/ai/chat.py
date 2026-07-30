@@ -4,6 +4,7 @@ Chat model contracts.
 
 from __future__ import annotations
 
+from collections.abc import AsyncIterator
 from dataclasses import (
     dataclass,
     field,
@@ -113,7 +114,7 @@ class ChatModel(
         """
 
 
-from collections.abc import AsyncIterator
+
 
 __all__ = [
     "ChatMessage",

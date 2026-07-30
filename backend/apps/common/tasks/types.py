@@ -10,22 +10,22 @@ from Celery, Redis, RQ, or any queue implementation.
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import Any, TypeAlias
+from typing import Any
 
 ###############################################################################
 # Task Identity
 ###############################################################################
 
-TaskName: TypeAlias = str
+type TaskName = str
 
-TaskID: TypeAlias = str
+type TaskID = str
 
 
 ###############################################################################
 # Task Payload
 ###############################################################################
 
-TaskPayload: TypeAlias = dict[
+type TaskPayload = dict[
     str,
     Any,
 ]
@@ -35,7 +35,7 @@ TaskPayload: TypeAlias = dict[
 # Task Result
 ###############################################################################
 
-TaskResult: TypeAlias = dict[
+type TaskResult = dict[
     str,
     Any,
 ]
@@ -45,7 +45,7 @@ TaskResult: TypeAlias = dict[
 # Task Function
 ###############################################################################
 
-TaskCallable: TypeAlias = Callable[
+type TaskCallable = Callable[
     [
         TaskPayload,
     ],
@@ -57,7 +57,7 @@ TaskCallable: TypeAlias = Callable[
 # Task Status
 ###############################################################################
 
-TaskStatus: TypeAlias = str
+type TaskStatus = str
 
 
 ###############################################################################

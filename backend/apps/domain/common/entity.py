@@ -9,16 +9,14 @@ from abc import (
     abstractmethod,
 )
 from typing import (
-    Generic,
     TypeVar,
 )
 
 TIdentity = TypeVar("TIdentity")
 
 
-class Entity(
+class Entity[TIdentity](
     ABC,
-    Generic[TIdentity],
 ):
     """
     Base class for all domain entities.

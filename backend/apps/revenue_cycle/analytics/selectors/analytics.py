@@ -6,10 +6,11 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from apps.platform.organizations.models import Organization
-from apps.revenue_cycle.analytics.models import RcmMetric
 from django.db.models import QuerySet
 from django.shortcuts import get_object_or_404
+
+from apps.platform.organizations.models import Organization
+from apps.revenue_cycle.analytics.models import RcmMetric
 
 
 class RcmMetricSelector:

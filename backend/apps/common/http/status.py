@@ -8,11 +8,10 @@ HTTP framework.
 from __future__ import annotations
 
 from http import HTTPStatus
-from typing import TypeAlias
 
-Status: TypeAlias = HTTPStatus
+type Status = HTTPStatus
 
-StatusCode: TypeAlias = int | HTTPStatus
+type StatusCode = int | HTTPStatus
 
 
 def _value(

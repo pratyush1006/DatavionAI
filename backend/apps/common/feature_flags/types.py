@@ -12,30 +12,29 @@ from collections.abc import (
 )
 from typing import (
     Any,
-    TypeAlias,
 )
 
 ###############################################################################
 # Feature Identity
 ###############################################################################
 
-FeatureKey: TypeAlias = str
+type FeatureKey = str
 
-FeatureName: TypeAlias = str
+type FeatureName = str
 
 
 ###############################################################################
 # Feature Value
 ###############################################################################
 
-FeatureValue: TypeAlias = bool | str | int | float | None
+type FeatureValue = bool | str | int | float | None
 
 
 ###############################################################################
 # Evaluation Context
 ###############################################################################
 
-FeatureContext: TypeAlias = Mapping[
+type FeatureContext = Mapping[
     str,
     Any,
 ]
@@ -45,9 +44,9 @@ FeatureContext: TypeAlias = Mapping[
 # Tenant / Organization Identifiers
 ###############################################################################
 
-TenantID: TypeAlias = str | int
+type TenantID = str | int
 
-OrganizationID: TypeAlias = str | int
+type OrganizationID = str | int
 
 
 ###############################################################################

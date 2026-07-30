@@ -43,7 +43,7 @@ def normalize_ordering(
     return ordering or None
 
 
-def is_valid_field(
+def is_valid_field[ModelType: Model](
     model: type[ModelType],
     field: str,
 ) -> bool:
@@ -59,7 +59,7 @@ def is_valid_field(
         return False
 
 
-def validate_fields(
+def validate_fields[ModelType: Model](
     model: type[ModelType],
     fields: Iterable[str],
 ) -> tuple[str, ...]:
@@ -77,7 +77,7 @@ def validate_fields(
     )
 
 
-def apply_select_related(
+def apply_select_related[ModelType: Model](
     queryset: QuerySet[ModelType],
     *fields: str,
 ) -> QuerySet[ModelType]:
@@ -93,7 +93,7 @@ def apply_select_related(
     )
 
 
-def apply_prefetch_related(
+def apply_prefetch_related[ModelType: Model](
     queryset: QuerySet[ModelType],
     *fields: str,
 ) -> QuerySet[ModelType]:
@@ -109,7 +109,7 @@ def apply_prefetch_related(
     )
 
 
-def apply_only(
+def apply_only[ModelType: Model](
     queryset: QuerySet[ModelType],
     *fields: str,
 ) -> QuerySet[ModelType]:
@@ -125,7 +125,7 @@ def apply_only(
     )
 
 
-def apply_defer(
+def apply_defer[ModelType: Model](
     queryset: QuerySet[ModelType],
     *fields: str,
 ) -> QuerySet[ModelType]:
@@ -141,7 +141,7 @@ def apply_defer(
     )
 
 
-def queryset_metadata(
+def queryset_metadata[ModelType: Model](
     queryset: QuerySet[ModelType],
 ) -> dict[str, Any]:
     """

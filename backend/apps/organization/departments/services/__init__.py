@@ -1,8 +1,8 @@
 """
-Department business services.
-"""
+Department services.
 
-from __future__ import annotations
+Public service API for Departments bounded context.
+"""
 
 from apps.organization.departments.services.department import (
     DepartmentService,
@@ -10,10 +10,26 @@ from apps.organization.departments.services.department import (
     delete_department,
     update_department,
 )
+from apps.organization.departments.services.hierarchy import (
+    DepartmentHierarchyService,
+)
+from apps.organization.departments.services.member import (
+    DepartmentMemberService,
+)
+from apps.organization.departments.services.role import (
+    DepartmentRoleService,
+)
+from apps.organization.departments.services.settings import (
+    DepartmentSettingsService,
+)
 
-__all__ = [
+__all__ = (
     "DepartmentService",
+    "DepartmentMemberService",
+    "DepartmentRoleService",
+    "DepartmentHierarchyService",
+    "DepartmentSettingsService",
     "create_department",
     "update_department",
     "delete_department",
-]
+)

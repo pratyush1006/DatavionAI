@@ -1,8 +1,9 @@
+from django.urls import path
+
 from apps.organization.employees.api.views import (
     EmployeeListCreateAPIView,
     EmployeeRetrieveUpdateDestroyAPIView,
 )
-from django.urls import path
 
 urlpatterns = [
     path(

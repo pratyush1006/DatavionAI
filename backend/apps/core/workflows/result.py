@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field, replace
 from datetime import UTC, datetime
-from typing import Any, Generic, TypeVar
+from typing import Any, TypeVar
 
 from apps.core.workflows.context import WorkflowContext
 from apps.core.workflows.exceptions import WorkflowError
@@ -23,9 +23,7 @@ U = TypeVar("U")
     slots=True,
     kw_only=True,
 )
-class WorkflowResult(
-    Generic[T],
-):
+class WorkflowResult[T]:
     """
     Standard workflow result.
 

@@ -7,12 +7,12 @@ Shared contracts for all search implementations.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, TypeAlias
+from typing import Any
 
-SearchMetadata: TypeAlias = dict[str, Any]
+type SearchMetadata = dict[str, Any]
 
 
-SearchFilters: TypeAlias = dict[str, Any]
+type SearchFilters = dict[str, Any]
 
 
 @dataclass(

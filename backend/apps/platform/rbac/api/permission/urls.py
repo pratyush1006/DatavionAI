@@ -4,11 +4,12 @@ Permission API URL configuration.
 
 from __future__ import annotations
 
+from django.urls import path
+
 from apps.platform.rbac.api.permission.views import (
     PermissionListCreateAPIView,
     PermissionRetrieveUpdateDestroyAPIView,
 )
-from django.urls import path
 
 app_name = "permissions"
 

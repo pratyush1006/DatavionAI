@@ -12,7 +12,7 @@ from collections import OrderedDict
 from collections.abc import Hashable, Iterable, Iterator, Mapping
 from threading import RLock
 from types import MappingProxyType
-from typing import Generic, TypeVar
+from typing import TypeVar
 
 from apps.datavionos.exceptions import RegistryError
 from apps.datavionos.types import Metadata
@@ -25,9 +25,8 @@ K = TypeVar(
 T = TypeVar("T")
 
 
-class BaseRegistry(
+class BaseRegistry[K: Hashable, T](
     ABC,
-    Generic[K, T],
 ):
     """
     Generic thread-safe registry.

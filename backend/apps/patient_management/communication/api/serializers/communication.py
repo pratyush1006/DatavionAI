@@ -4,10 +4,11 @@ Serializers for the Communication module.
 
 from __future__ import annotations
 
+from rest_framework import serializers
+
 from apps.patient_management.communication.models import (
     PatientCommunication,
 )
-from rest_framework import serializers
 
 WRITE_FIELDS: tuple[str, ...] = (
     "organization",

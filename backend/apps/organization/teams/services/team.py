@@ -1,67 +1,146 @@
 """
-Business services for the Teams app.
+Team services.
+
+Business operations for Team domain.
 """
 
 from __future__ import annotations
 
 from collections.abc import Mapping
 
-from apps.organization.teams.models import Team
 from django.db import transaction
+
+from apps.organization.teams.models import (
+    Team,
+)
 
 type TeamData = Mapping[str, object]
 
 
-@transaction.atomic
+class TeamService:
+    """
+    Team business service layer.
+    """
+
+    @staticmethod
+    @transaction.atomic
+    def create(
+        *,
+        validated_data: TeamData,
+    ) -> Team:
+        """
+        Create a team.
+        """
+
+        team = Team(
+            **validated_data,
+        )
+
+        team.full_clean()
+
+        team.save()
+
+        team.refresh_from_db()
+
+        return team
+
+    @staticmethod
+    @transaction.atomic
+    def update(
+        *,
+        instance: Team,
+        validated_data: TeamData,
+    ) -> Team:
+        """
+        Update existing team.
+        """
+
+        if not validated_data:
+            return instance
+
+        for field, value in validated_data.items():
+            setattr(
+                instance,
+                field,
+                value,
+            )
+
+        instance.full_clean()
+
+        instance.save(
+            update_fields=tuple(
+                validated_data.keys(),
+            ),
+        )
+
+        instance.refresh_from_db()
+
+        return instance
+
+    @staticmethod
+    @transaction.atomic
+    def delete(
+        *,
+        instance: Team,
+    ) -> Team:
+        """
+        Delete team.
+
+        Returns deleted instance snapshot
+        for workflows/events.
+        """
+
+        deleted_team = instance
+
+        instance.delete()
+
+        return deleted_team
+
+
 def create_team(
     *,
     validated_data: TeamData,
 ) -> Team:
     """
-    Create a new team.
+    Backward compatible create wrapper.
     """
 
-    return Team.objects.create(
-        **validated_data,
+    return TeamService.create(
+        validated_data=validated_data,
     )
 
 
-@transaction.atomic
 def update_team(
     *,
     instance: Team,
     validated_data: TeamData,
 ) -> Team:
     """
-    Update an existing team.
+    Backward compatible update wrapper.
     """
 
-    if not validated_data:
-        return instance
-
-    for field, value in validated_data.items():
-        setattr(
-            instance,
-            field,
-            value,
-        )
-
-    instance.save(
-        update_fields=tuple(validated_data.keys()),
+    return TeamService.update(
+        instance=instance,
+        validated_data=validated_data,
     )
 
-    instance.refresh_from_db()
 
-    return instance
-
-
-@transaction.atomic
 def delete_team(
     *,
     instance: Team,
-) -> None:
+) -> Team:
     """
-    Delete a team.
+    Backward compatible delete wrapper.
     """
 
-    instance.delete()
+    return TeamService.delete(
+        instance=instance,
+    )
+
+
+__all__ = (
+    "TeamService",
+    "create_team",
+    "update_team",
+    "delete_team",
+)
