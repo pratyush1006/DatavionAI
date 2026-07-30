@@ -4,12 +4,11 @@ Admin configuration for the Cash Management application.
 
 from __future__ import annotations
 
-from django.contrib import admin
-
 from apps.billing.cash_management.models import (
     BankAccount,
     CashTransaction,
 )
+from django.contrib import admin
 
 
 @admin.register(BankAccount)

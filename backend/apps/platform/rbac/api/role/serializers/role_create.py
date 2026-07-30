@@ -4,10 +4,9 @@ Role create serializer.
 
 from __future__ import annotations
 
-from rest_framework import serializers
-
 from apps.platform.rbac.models import Role
 from apps.platform.rbac.services import create_role
+from rest_framework import serializers
 
 
 class RoleCreateSerializer(

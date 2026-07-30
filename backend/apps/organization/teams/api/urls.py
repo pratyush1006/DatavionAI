@@ -2,12 +2,11 @@
 API routes for Teams.
 """
 
-from django.urls import path
-
 from apps.organization.teams.api.views import (
     TeamListCreateAPIView,
     TeamRetrieveUpdateDestroyAPIView,
 )
+from django.urls import path
 
 urlpatterns = [
     path(

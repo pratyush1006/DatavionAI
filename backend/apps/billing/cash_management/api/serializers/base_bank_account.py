@@ -4,9 +4,8 @@ Base serializer for the BankAccount model.
 
 from __future__ import annotations
 
-from rest_framework import serializers
-
 from apps.billing.cash_management.models import BankAccount
+from rest_framework import serializers
 
 
 class BankAccountBaseSerializer(serializers.ModelSerializer):

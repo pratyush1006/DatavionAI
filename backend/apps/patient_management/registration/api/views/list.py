@@ -4,14 +4,6 @@ List API view for the Patient Registration module.
 
 from __future__ import annotations
 
-from django_filters.rest_framework import (
-    DjangoFilterBackend,
-)
-from rest_framework.filters import (
-    OrderingFilter,
-    SearchFilter,
-)
-
 from apps.common.api import BaseListAPIView
 from apps.patient_management.registration.api.filters import (
     PatientRegistrationFilter,
@@ -21,6 +13,13 @@ from apps.patient_management.registration.api.serializers import (
 )
 from apps.patient_management.registration.models import (
     PatientRegistration,
+)
+from django_filters.rest_framework import (
+    DjangoFilterBackend,
+)
+from rest_framework.filters import (
+    OrderingFilter,
+    SearchFilter,
 )
 
 

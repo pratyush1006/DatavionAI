@@ -4,10 +4,6 @@ Role retrieve/update/destroy API view.
 
 from __future__ import annotations
 
-from drf_spectacular.utils import (
-    extend_schema,
-)
-
 from apps.common.api.base_generics import (
     BaseRetrieveUpdateDestroyAPIView,
 )
@@ -29,6 +25,9 @@ from apps.platform.rbac.selectors import (
 from apps.platform.rbac.services import (
     delete_role,
     update_role,
+)
+from drf_spectacular.utils import (
+    extend_schema,
 )
 
 

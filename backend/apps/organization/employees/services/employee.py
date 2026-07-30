@@ -6,10 +6,9 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 
+from apps.organization.employees.models import Employee
 from django.core.exceptions import ValidationError
 from django.db import transaction
-
-from apps.organization.employees.models import Employee
 
 type EmployeeData = Mapping[str, object]
 

@@ -4,12 +4,11 @@ URL patterns for the RCM Metric module.
 
 from __future__ import annotations
 
-from django.urls import path
-
 from apps.revenue_cycle.analytics.api.views import (
     RcmMetricListCreateAPIView,
     RcmMetricRetrieveUpdateDestroyAPIView,
 )
+from django.urls import path
 
 app_name = "rcm_metrics"
 

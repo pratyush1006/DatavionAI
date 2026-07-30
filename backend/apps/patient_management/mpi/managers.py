@@ -4,13 +4,12 @@ Custom managers and querysets for the Master Patient Index.
 
 from __future__ import annotations
 
-from django.db import models
-
 from apps.patient_management.mpi.constants import (
     MPIMergeStatus,
     MPIStatus,
     MPIVerificationStatus,
 )
+from django.db import models
 
 
 class MasterPatientIndexQuerySet(models.QuerySet):

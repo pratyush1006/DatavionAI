@@ -4,12 +4,11 @@ URL patterns for the Referral module.
 
 from __future__ import annotations
 
-from django.urls import path
-
 from apps.patient_management.referrals.api.views import (
     PatientReferralListCreateAPIView,
     PatientReferralRetrieveUpdateDestroyAPIView,
 )
+from django.urls import path
 
 app_name = "referrals_rec"
 

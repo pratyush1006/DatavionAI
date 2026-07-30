@@ -35,14 +35,13 @@ Resolution hierarchy:
 
 from __future__ import annotations
 
-from django.contrib.auth import get_user_model
-
 from apps.platform.organizations.models import (
     Organization,
 )
 from apps.platform.rbac.resolvers.permission import (
     resolve_permissions,
 )
+from django.contrib.auth import get_user_model
 
 User = get_user_model()
 

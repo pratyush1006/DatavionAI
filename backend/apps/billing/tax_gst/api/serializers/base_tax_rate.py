@@ -4,9 +4,8 @@ Base serializer for the TaxRate model.
 
 from __future__ import annotations
 
-from rest_framework import serializers
-
 from apps.billing.tax_gst.models import TaxRate
+from rest_framework import serializers
 
 
 class TaxRateBaseSerializer(serializers.ModelSerializer):

@@ -1,7 +1,3 @@
-from django.contrib.auth import get_user_model
-from django.core.exceptions import ValidationError
-from django.test import TestCase
-
 from apps.organization.departments.models import Department
 from apps.organization.employees.models import Employee
 from apps.organization.employees.services import (
@@ -11,6 +7,9 @@ from apps.organization.employees.services import (
 )
 from apps.organization.teams.models import Team
 from apps.platform.organizations.models import Organization
+from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
+from django.test import TestCase
 
 User = get_user_model()
 

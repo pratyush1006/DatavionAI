@@ -6,10 +6,6 @@ from __future__ import annotations
 
 from typing import Final
 
-from django.db.models import QuerySet
-from drf_spectacular.utils import extend_schema
-from rest_framework.permissions import IsAuthenticated
-
 from apps.common.api.base_generics import (
     BaseListCreateAPIView,
 )
@@ -31,6 +27,9 @@ from apps.platform.rbac.selectors import (
 from apps.platform.rbac.services import (
     create_permission,
 )
+from django.db.models import QuerySet
+from drf_spectacular.utils import extend_schema
+from rest_framework.permissions import IsAuthenticated
 
 PERMISSION_TAG: Final = ("Permissions",)
 

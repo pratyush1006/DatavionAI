@@ -5,7 +5,6 @@ Factories for the Master Patient Index module.
 from __future__ import annotations
 
 import factory
-
 from apps.patient_management.mpi.constants import (
     MPIMatchConfidence,
     MPIMergeStatus,

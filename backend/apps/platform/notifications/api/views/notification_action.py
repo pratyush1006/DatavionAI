@@ -7,12 +7,6 @@ from __future__ import annotations
 from typing import Final
 from uuid import UUID
 
-from django.shortcuts import get_object_or_404
-from drf_spectacular.utils import extend_schema
-from rest_framework.request import Request
-from rest_framework.response import Response
-from rest_framework.views import APIView
-
 from apps.common.api.responses import success_response
 from apps.platform.notifications.api.serializers import (
     CancelNotificationSerializer,
@@ -31,6 +25,11 @@ from apps.platform.notifications.selectors import (
 from apps.platform.notifications.services import (
     NotificationActionService,
 )
+from django.shortcuts import get_object_or_404
+from drf_spectacular.utils import extend_schema
+from rest_framework.request import Request
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 NOTIFICATION_TAG: Final = ("Notifications",)
 

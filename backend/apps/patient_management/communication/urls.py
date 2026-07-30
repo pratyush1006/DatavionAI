@@ -4,12 +4,11 @@ URL patterns for the Communication module.
 
 from __future__ import annotations
 
-from django.urls import path
-
 from apps.patient_management.communication.api.views import (
     PatientCommunicationListCreateAPIView,
     PatientCommunicationRetrieveUpdateDestroyAPIView,
 )
+from django.urls import path
 
 app_name = "communications"
 

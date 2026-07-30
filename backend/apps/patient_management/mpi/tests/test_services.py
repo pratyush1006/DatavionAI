@@ -4,14 +4,13 @@ Service tests for the Master Patient Index.
 
 from __future__ import annotations
 
-from django.test import TestCase
-
 from apps.patient_management.mpi.services import (
     create_mpi_record,
 )
 from apps.patient_management.mpi.tests.factories import (
     MasterPatientIndexFactory,
 )
+from django.test import TestCase
 
 
 class MasterPatientIndexServiceTestCase(TestCase):

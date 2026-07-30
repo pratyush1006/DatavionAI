@@ -4,12 +4,11 @@ URL patterns for the Billing Batch module.
 
 from __future__ import annotations
 
-from django.urls import path
-
 from apps.revenue_cycle.billing.api.views import (
     BillingBatchListCreateAPIView,
     BillingBatchRetrieveUpdateDestroyAPIView,
 )
+from django.urls import path
 
 app_name = "billing_batches"
 

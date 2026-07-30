@@ -8,12 +8,11 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from django.db import models
-from django.db.models import QuerySet
-
 from apps.organization.teams.models import (
     Team,
 )
+from django.db import models
+from django.db.models import QuerySet
 
 
 class TeamSelector:

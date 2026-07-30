@@ -10,8 +10,6 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
-from django.db import transaction
-
 from apps.organization.departments.constants import (
     DepartmentStatus,
 )
@@ -19,6 +17,7 @@ from apps.organization.departments.models import (
     Department,
 )
 from apps.platform.accounts.models import User
+from django.db import transaction
 
 type DepartmentData = Mapping[str, Any]
 

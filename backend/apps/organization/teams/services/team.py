@@ -8,11 +8,10 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 
-from django.db import transaction
-
 from apps.organization.teams.models import (
     Team,
 )
+from django.db import transaction
 
 type TeamData = Mapping[str, object]
 

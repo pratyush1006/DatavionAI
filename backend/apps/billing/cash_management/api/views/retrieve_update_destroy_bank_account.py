@@ -6,9 +6,6 @@ from __future__ import annotations
 
 from typing import Final
 
-from drf_spectacular.utils import extend_schema
-from rest_framework.permissions import IsAuthenticated
-
 from apps.billing.cash_management.api.serializers import (
     BankAccountDetailSerializer,
     BankAccountUpdateSerializer,
@@ -24,6 +21,8 @@ from apps.billing.cash_management.services import BankAccountService
 from apps.common.api.base_generics import (
     BaseRetrieveUpdateDestroyAPIView,
 )
+from drf_spectacular.utils import extend_schema
+from rest_framework.permissions import IsAuthenticated
 
 Bankaccount_TAG: Final[tuple[str, ...]] = ("Cash Management",)
 

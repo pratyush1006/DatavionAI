@@ -4,12 +4,11 @@ URL patterns for the Charge Capture module.
 
 from __future__ import annotations
 
-from django.urls import path
-
 from apps.revenue_cycle.charge_capture.api.views import (
     ChargeCaptureListCreateAPIView,
     ChargeCaptureRetrieveUpdateDestroyAPIView,
 )
+from django.urls import path
 
 app_name = "charge_captures"
 

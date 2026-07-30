@@ -4,10 +4,9 @@ Database selectors for the Employees app.
 
 from __future__ import annotations
 
+from apps.organization.employees.models import Employee
 from django.db.models import QuerySet
 from django.shortcuts import get_object_or_404
-
-from apps.organization.employees.models import Employee
 
 
 def get_employees() -> QuerySet[Employee]:

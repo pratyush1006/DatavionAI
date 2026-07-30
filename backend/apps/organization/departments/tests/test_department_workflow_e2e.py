@@ -18,8 +18,6 @@ Department Archive
 
 from __future__ import annotations
 
-from django.test import TransactionTestCase
-
 from apps.core.workflows import (
     WorkflowContext,
 )
@@ -52,6 +50,7 @@ from apps.platform.rbac.models import (
 from apps.platform.tenancy.models import (
     Tenant,
 )
+from django.test import TransactionTestCase
 
 
 class DepartmentWorkflowE2ETestCase(

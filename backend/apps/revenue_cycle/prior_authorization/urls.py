@@ -4,12 +4,11 @@ URL patterns for the Prior Authorization module.
 
 from __future__ import annotations
 
-from django.urls import path
-
 from apps.revenue_cycle.prior_authorization.api.views import (
     PriorAuthorizationRequestListCreateAPIView,
     PriorAuthorizationRequestRetrieveUpdateDestroyAPIView,
 )
+from django.urls import path
 
 app_name = "prior_authorizations"
 

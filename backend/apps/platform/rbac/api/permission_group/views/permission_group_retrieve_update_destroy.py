@@ -4,8 +4,6 @@ Retrieve/Update/Delete API for PermissionGroup.
 
 from __future__ import annotations
 
-from rest_framework.permissions import IsAuthenticated
-
 from apps.common.api.base_generics import (
     BaseRetrieveUpdateDestroyAPIView,
 )
@@ -28,6 +26,7 @@ from apps.platform.rbac.services import (
     delete_permission_group,
     update_permission_group,
 )
+from rest_framework.permissions import IsAuthenticated
 
 
 class PermissionGroupRetrieveUpdateDestroyAPIView(

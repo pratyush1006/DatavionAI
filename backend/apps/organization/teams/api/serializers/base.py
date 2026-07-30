@@ -7,11 +7,10 @@ for Team API serializers.
 
 from __future__ import annotations
 
-from rest_framework import serializers
-
 from apps.organization.teams.models import (
     Team,
 )
+from rest_framework import serializers
 
 from .fields import (
     DETAIL_FIELDS,

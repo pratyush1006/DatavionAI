@@ -114,8 +114,6 @@ class ChatModel(
         """
 
 
-
-
 __all__ = [
     "ChatMessage",
     "ChatRequest",

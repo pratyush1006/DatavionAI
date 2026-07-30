@@ -4,8 +4,6 @@ API views for laboratory orders.
 
 from __future__ import annotations
 
-from drf_spectacular.utils import extend_schema
-
 from apps.clinical.laboratories.api.serializers.laboratory_order import (
     LaboratoryOrderDetailSerializer,
     LaboratoryOrderUpdateSerializer,
@@ -23,6 +21,7 @@ from apps.clinical.laboratories.services import (
 from apps.common.api.base_generics import (
     BaseRetrieveUpdateDestroyAPIView,
 )
+from drf_spectacular.utils import extend_schema
 
 
 @extend_schema(

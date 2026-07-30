@@ -2,15 +2,14 @@
 
 import uuid
 
-import django.db.models.deletion
-import django.db.models.manager
-from django.db import migrations, models
-
 import apps.common.validators.fields.phone
 import apps.core.models.managers
 import apps.platform.organizations.managers.organization
 import apps.platform.organizations.validators.organization
 import apps.platform.organizations.validators.organization_branding
+import django.db.models.deletion
+import django.db.models.manager
+from django.db import migrations, models
 
 
 class Migration(migrations.Migration):

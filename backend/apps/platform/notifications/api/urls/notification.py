@@ -4,8 +4,6 @@ Notification API URLs.
 
 from __future__ import annotations
 
-from django.urls import path
-
 from apps.platform.notifications.api.views import (
     CancelNotificationAPIView,
     MarkAllNotificationsReadAPIView,
@@ -15,6 +13,7 @@ from apps.platform.notifications.api.views import (
     NotificationRetrieveAPIView,
     RetryNotificationAPIView,
 )
+from django.urls import path
 
 app_name = "notification-api"
 

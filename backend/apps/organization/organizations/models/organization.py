@@ -4,8 +4,6 @@ Organization model.
 
 from __future__ import annotations
 
-from django.db import models
-
 from apps.common.validators import (
     phone_number_validator,
 )
@@ -20,6 +18,7 @@ from apps.platform.organizations.constants import (
 from apps.platform.organizations.validators.organization import (
     validate_organization_code,
 )
+from django.db import models
 
 
 class Organization(BaseModel):

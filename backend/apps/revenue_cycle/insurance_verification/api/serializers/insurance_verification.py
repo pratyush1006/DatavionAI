@@ -4,9 +4,8 @@ Serializers for the InsuranceVerification module.
 
 from __future__ import annotations
 
-from rest_framework import serializers
-
 from apps.revenue_cycle.insurance_verification.models import InsuranceVerification
+from rest_framework import serializers
 
 WRITE_FIELDS: tuple[str, ...] = (
     "patient",

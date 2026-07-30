@@ -6,10 +6,9 @@ Organization level operational teams.
 
 from __future__ import annotations
 
-from django.db import models
-
 from apps.core.models import TimeStampedModel
 from apps.platform.organizations.models import Organization
+from django.db import models
 
 
 class Team(

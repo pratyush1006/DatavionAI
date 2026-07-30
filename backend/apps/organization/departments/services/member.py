@@ -7,8 +7,6 @@ management inside departments.
 
 from __future__ import annotations
 
-from django.db import transaction
-
 from apps.organization.departments.models import (
     Department,
     DepartmentMember,
@@ -17,6 +15,7 @@ from apps.organization.departments.models import (
 from apps.organization.employees.models import (
     Employee,
 )
+from django.db import transaction
 
 
 class DepartmentMemberService:

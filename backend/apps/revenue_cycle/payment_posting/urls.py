@@ -4,12 +4,11 @@ URL patterns for the Payment Posting module.
 
 from __future__ import annotations
 
-from django.urls import path
-
 from apps.revenue_cycle.payment_posting.api.views import (
     PaymentPostingListCreateAPIView,
     PaymentPostingRetrieveUpdateDestroyAPIView,
 )
+from django.urls import path
 
 app_name = "payment_postings"
 

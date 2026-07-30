@@ -4,8 +4,6 @@ Medical History models.
 
 from __future__ import annotations
 
-from django.db import models
-
 from apps.clinical.patients.models import Patient
 from apps.core.models import BaseManager, BaseModel
 from apps.patient_management.constants import RelationshipType
@@ -14,6 +12,7 @@ from apps.patient_management.medical_history.constants import (
     MedicalHistoryType,
 )
 from apps.platform.organizations.models import Organization
+from django.db import models
 
 
 class PatientMedicalHistory(BaseModel):

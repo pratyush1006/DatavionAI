@@ -6,9 +6,6 @@ from __future__ import annotations
 
 from typing import Final
 
-from drf_spectacular.utils import extend_schema
-from rest_framework.permissions import IsAuthenticated
-
 from apps.common.api.base_generics import (
     BaseRetrieveUpdateDestroyAPIView,
 )
@@ -30,6 +27,8 @@ from apps.organization.departments.workflows import (
     DepartmentUpdateRequest,
     DepartmentUpdateWorkflow,
 )
+from drf_spectacular.utils import extend_schema
+from rest_framework.permissions import IsAuthenticated
 
 DEPARTMENT_TAG: Final[tuple[str, ...]] = ("Departments",)
 

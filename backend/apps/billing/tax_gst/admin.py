@@ -4,12 +4,11 @@ Admin configuration for the Tax Gst application.
 
 from __future__ import annotations
 
-from django.contrib import admin
-
 from apps.billing.tax_gst.models import (
     TaxFiling,
     TaxRate,
 )
+from django.contrib import admin
 
 
 @admin.register(TaxRate)

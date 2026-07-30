@@ -4,9 +4,8 @@ Serializers for the BillingBatch module.
 
 from __future__ import annotations
 
-from rest_framework import serializers
-
 from apps.revenue_cycle.billing.models import BillingBatch
+from rest_framework import serializers
 
 WRITE_FIELDS: tuple[str, ...] = (
     "patient",

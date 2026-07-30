@@ -4,12 +4,11 @@ Admin configuration for the Accounts Receivable application.
 
 from __future__ import annotations
 
-from django.contrib import admin
-
 from apps.billing.accounts_receivable.models import (
     Customer,
     CustomerInvoice,
 )
+from django.contrib import admin
 
 
 @admin.register(Customer)

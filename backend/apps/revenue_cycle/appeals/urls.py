@@ -4,12 +4,11 @@ URL patterns for the Claim Appeal module.
 
 from __future__ import annotations
 
-from django.urls import path
-
 from apps.revenue_cycle.appeals.api.views import (
     ClaimAppealListCreateAPIView,
     ClaimAppealRetrieveUpdateDestroyAPIView,
 )
+from django.urls import path
 
 app_name = "claim_appeals"
 

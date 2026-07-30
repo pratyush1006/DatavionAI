@@ -4,12 +4,6 @@ Workflow API views for laboratory tests.
 
 from __future__ import annotations
 
-from drf_spectacular.utils import extend_schema
-from rest_framework import status
-from rest_framework.generics import GenericAPIView
-from rest_framework.request import Request
-from rest_framework.response import Response
-
 from apps.clinical.laboratories.api.serializers.workflow import (
     LaboratoryTestWorkflowResponseSerializer,
 )
@@ -24,6 +18,11 @@ from apps.clinical.laboratories.services import (
     complete_laboratory_test,
     start_laboratory_test,
 )
+from drf_spectacular.utils import extend_schema
+from rest_framework import status
+from rest_framework.generics import GenericAPIView
+from rest_framework.request import Request
+from rest_framework.response import Response
 
 
 class BaseLaboratoryTestWorkflowAPIView(

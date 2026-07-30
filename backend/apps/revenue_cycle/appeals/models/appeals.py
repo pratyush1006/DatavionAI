@@ -4,14 +4,13 @@ Appeals models.
 
 from __future__ import annotations
 
-from django.db import models
-
 from apps.clinical.patients.models import Patient
 from apps.core.models import BaseManager, BaseModel
 from apps.insurance.models import Claim
 from apps.platform.organizations.models import Organization
 from apps.revenue_cycle.constants import AppealStatus
 from apps.revenue_cycle.denials.models import ClaimDenial
+from django.db import models
 
 
 class ClaimAppeal(BaseModel):

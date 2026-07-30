@@ -4,14 +4,13 @@ Accounts Payable API URL patterns.
 
 from __future__ import annotations
 
-from django.urls import path
-
 from apps.billing.accounts_payable.api.views import (
     VendorInvoiceListCreateAPIView,
     VendorInvoiceRetrieveUpdateDestroyAPIView,
     VendorListCreateAPIView,
     VendorRetrieveUpdateDestroyAPIView,
 )
+from django.urls import path
 
 app_name = "accounts_payable"
 

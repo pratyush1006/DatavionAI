@@ -6,10 +6,6 @@ from __future__ import annotations
 
 from typing import Final
 
-from django.db.models import QuerySet
-from drf_spectacular.utils import extend_schema
-from rest_framework.permissions import IsAuthenticated
-
 from apps.common.api.base_generics import (
     BaseListCreateAPIView,
     BaseRetrieveUpdateDestroyAPIView,
@@ -29,6 +25,9 @@ from apps.patient_management.profile.permissions import (
 )
 from apps.patient_management.profile.selectors import ProfileSelector
 from apps.patient_management.profile.services import ProfileService
+from django.db.models import QuerySet
+from drf_spectacular.utils import extend_schema
+from rest_framework.permissions import IsAuthenticated
 
 PROFILE_TAG: Final[tuple[str, ...]] = ("Patient Profile",)
 

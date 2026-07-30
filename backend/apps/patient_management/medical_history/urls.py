@@ -4,12 +4,11 @@ URL patterns for the Medical History module.
 
 from __future__ import annotations
 
-from django.urls import path
-
 from apps.patient_management.medical_history.api.views import (
     PatientMedicalHistoryListCreateAPIView,
     PatientMedicalHistoryRetrieveUpdateDestroyAPIView,
 )
+from django.urls import path
 
 app_name = "medical_histories"
 

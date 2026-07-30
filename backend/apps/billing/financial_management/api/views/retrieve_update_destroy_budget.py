@@ -6,9 +6,6 @@ from __future__ import annotations
 
 from typing import Final
 
-from drf_spectacular.utils import extend_schema
-from rest_framework.permissions import IsAuthenticated
-
 from apps.billing.financial_management.api.serializers import (
     BudgetDetailSerializer,
     BudgetUpdateSerializer,
@@ -24,6 +21,8 @@ from apps.billing.financial_management.services import BudgetService
 from apps.common.api.base_generics import (
     BaseRetrieveUpdateDestroyAPIView,
 )
+from drf_spectacular.utils import extend_schema
+from rest_framework.permissions import IsAuthenticated
 
 Budget_TAG: Final[tuple[str, ...]] = ("Financial Management",)
 

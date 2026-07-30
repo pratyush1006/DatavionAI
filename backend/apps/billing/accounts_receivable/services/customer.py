@@ -7,9 +7,8 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
-from django.db import transaction
-
 from apps.billing.accounts_receivable.models import Customer
+from django.db import transaction
 
 
 class CustomerService:

@@ -4,11 +4,10 @@ User role detail serializer.
 
 from __future__ import annotations
 
-from rest_framework import serializers
-
 from apps.platform.rbac.models import (
     UserRole,
 )
+from rest_framework import serializers
 
 
 class UserRoleDetailSerializer(

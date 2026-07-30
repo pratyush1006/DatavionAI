@@ -4,15 +4,14 @@ Tests for the UserRole model.
 
 from __future__ import annotations
 
-from django.core.exceptions import ValidationError
-from django.test import TestCase
-
 from apps.platform.rbac.constants import (
     DEFAULT_USER_ROLE_ASSIGNMENT_SOURCE,
 )
 from apps.platform.rbac.tests.factories import (
     UserRoleFactory,
 )
+from django.core.exceptions import ValidationError
+from django.test import TestCase
 
 
 class UserRoleModelTestCase(

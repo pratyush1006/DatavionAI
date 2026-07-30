@@ -6,11 +6,10 @@ from __future__ import annotations
 
 from decimal import Decimal
 
-from django.db import models
-
 from apps.clinical.patients.models import Patient
 from apps.core.models import BaseManager, BaseModel
 from apps.platform.organizations.models import Organization
+from django.db import models
 
 
 class ChargeCapture(BaseModel):

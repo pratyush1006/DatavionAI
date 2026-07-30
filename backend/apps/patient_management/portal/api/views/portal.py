@@ -6,10 +6,6 @@ from __future__ import annotations
 
 from typing import Final
 
-from django.db.models import QuerySet
-from drf_spectacular.utils import extend_schema
-from rest_framework.permissions import IsAuthenticated
-
 from apps.common.api.base_generics import (
     BaseListCreateAPIView,
     BaseRetrieveUpdateDestroyAPIView,
@@ -29,6 +25,9 @@ from apps.patient_management.portal.permissions import (
 )
 from apps.patient_management.portal.selectors import PatientPortalAccountSelector
 from apps.patient_management.portal.services import PatientPortalAccountService
+from django.db.models import QuerySet
+from drf_spectacular.utils import extend_schema
+from rest_framework.permissions import IsAuthenticated
 
 TAG: Final[tuple[str, ...]] = ("Patient Portal",)
 

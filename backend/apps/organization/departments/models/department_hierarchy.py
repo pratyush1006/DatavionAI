@@ -4,10 +4,9 @@ Department hierarchy model.
 
 from __future__ import annotations
 
+from apps.core.models import BaseModel
 from django.core.exceptions import ValidationError
 from django.db import models
-
-from apps.core.models import BaseModel
 
 
 class DepartmentHierarchy(BaseModel):

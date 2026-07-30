@@ -2,14 +2,13 @@
 Admin configuration for Teams module.
 """
 
-from django.contrib import admin
-
 from apps.organization.teams.models import (
     Team,
     TeamDepartmentAssignment,
     TeamMember,
     TeamRole,
 )
+from django.contrib import admin
 
 
 @admin.register(

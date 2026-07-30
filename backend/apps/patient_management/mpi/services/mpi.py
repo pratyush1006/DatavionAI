@@ -4,11 +4,10 @@ Services for the Master Patient Index.
 
 from __future__ import annotations
 
-from django.db import transaction
-
 from apps.patient_management.mpi.models import (
     MasterPatientIndex,
 )
+from django.db import transaction
 
 
 @transaction.atomic

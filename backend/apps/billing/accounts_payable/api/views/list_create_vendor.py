@@ -6,10 +6,6 @@ from __future__ import annotations
 
 from typing import Final
 
-from django.db.models import QuerySet
-from drf_spectacular.utils import extend_schema
-from rest_framework.permissions import IsAuthenticated
-
 from apps.billing.accounts_payable.api.serializers import (
     VendorCreateSerializer,
     VendorDetailSerializer,
@@ -23,6 +19,9 @@ from apps.billing.accounts_payable.permissions import (
 from apps.billing.accounts_payable.selectors import VendorSelector
 from apps.billing.accounts_payable.services import VendorService
 from apps.common.api.base_generics import BaseListCreateAPIView
+from django.db.models import QuerySet
+from drf_spectacular.utils import extend_schema
+from rest_framework.permissions import IsAuthenticated
 
 VENDOR_TAG: Final[tuple[str, ...]] = ("Accounts Payable",)
 

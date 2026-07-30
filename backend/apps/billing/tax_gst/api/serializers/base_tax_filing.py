@@ -4,9 +4,8 @@ Base serializer for the TaxFiling model.
 
 from __future__ import annotations
 
-from rest_framework import serializers
-
 from apps.billing.tax_gst.models import TaxFiling
+from rest_framework import serializers
 
 
 class TaxFilingBaseSerializer(serializers.ModelSerializer):

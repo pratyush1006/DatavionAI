@@ -4,13 +4,6 @@ API views for laboratory results.
 
 from __future__ import annotations
 
-from django_filters.rest_framework import DjangoFilterBackend
-from drf_spectacular.utils import extend_schema
-from rest_framework.filters import (
-    OrderingFilter,
-    SearchFilter,
-)
-
 from apps.clinical.laboratories.api.serializers import (
     LaboratoryResultCreateSerializer,
     LaboratoryResultListSerializer,
@@ -26,6 +19,12 @@ from apps.clinical.laboratories.services import (
 )
 from apps.common.api.base_generics import (
     BaseListCreateAPIView,
+)
+from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.utils import extend_schema
+from rest_framework.filters import (
+    OrderingFilter,
+    SearchFilter,
 )
 
 

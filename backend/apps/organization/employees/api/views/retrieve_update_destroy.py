@@ -6,9 +6,6 @@ from __future__ import annotations
 
 from typing import Final
 
-from drf_spectacular.utils import extend_schema
-from rest_framework.permissions import IsAuthenticated
-
 from apps.common.api.base_generics import (
     BaseRetrieveUpdateDestroyAPIView,
 )
@@ -28,6 +25,8 @@ from apps.organization.employees.services import (
     delete_employee,
     update_employee,
 )
+from drf_spectacular.utils import extend_schema
+from rest_framework.permissions import IsAuthenticated
 
 EMPLOYEE_TAG: Final[tuple[str, ...]] = ("Employees",)
 

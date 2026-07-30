@@ -6,8 +6,6 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from django.db import IntegrityError
-
 from apps.billing.general_ledger.constants import (
     AccountStatus,
     AccountType,
@@ -17,6 +15,7 @@ from apps.billing.general_ledger.models import (
     GeneralLedgerJournalEntry,
 )
 from apps.common.tests.base import BaseTestCase
+from django.db import IntegrityError
 
 
 class GeneralLedgerAccountModelTestCase(BaseTestCase):

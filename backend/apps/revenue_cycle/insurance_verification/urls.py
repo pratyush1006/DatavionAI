@@ -4,12 +4,11 @@ URL patterns for the Insurance Verification module.
 
 from __future__ import annotations
 
-from django.urls import path
-
 from apps.revenue_cycle.insurance_verification.api.views import (
     InsuranceVerificationListCreateAPIView,
     InsuranceVerificationRetrieveUpdateDestroyAPIView,
 )
+from django.urls import path
 
 app_name = "insurance_verifications"
 

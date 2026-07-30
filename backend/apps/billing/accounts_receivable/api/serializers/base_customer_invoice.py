@@ -4,9 +4,8 @@ Base serializer for the CustomerInvoice model.
 
 from __future__ import annotations
 
-from rest_framework import serializers
-
 from apps.billing.accounts_receivable.models import CustomerInvoice
+from rest_framework import serializers
 
 
 class CustomerInvoiceBaseSerializer(serializers.ModelSerializer):

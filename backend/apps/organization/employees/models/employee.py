@@ -1,10 +1,9 @@
-from django.conf import settings
-from django.db import models
-
 from apps.core.models import TimeStampedModel
 from apps.organization.departments.models import Department
 from apps.organization.teams.models import Team
 from apps.platform.organizations.models import Organization
+from django.conf import settings
+from django.db import models
 
 
 class Employee(TimeStampedModel):

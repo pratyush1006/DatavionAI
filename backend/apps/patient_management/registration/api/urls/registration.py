@@ -4,8 +4,6 @@ URL configuration for the Patient Registration module.
 
 from __future__ import annotations
 
-from django.urls import path
-
 from apps.patient_management.registration.api.views import (
     PatientRegistrationCreateAPIView,
     PatientRegistrationDeleteAPIView,
@@ -13,6 +11,7 @@ from apps.patient_management.registration.api.views import (
     PatientRegistrationListAPIView,
     PatientRegistrationUpdateAPIView,
 )
+from django.urls import path
 
 app_name = "registration-api"
 

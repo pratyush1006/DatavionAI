@@ -4,9 +4,8 @@ Base serializer for the CashTransaction model.
 
 from __future__ import annotations
 
-from rest_framework import serializers
-
 from apps.billing.cash_management.models import CashTransaction
+from rest_framework import serializers
 
 
 class CashTransactionBaseSerializer(serializers.ModelSerializer):

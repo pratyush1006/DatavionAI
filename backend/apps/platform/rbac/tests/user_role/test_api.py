@@ -4,15 +4,14 @@ Tests for the UserRole API.
 
 from __future__ import annotations
 
-from django.urls import reverse
-from rest_framework import status
-from rest_framework.test import APITestCase
-
 from apps.platform.rbac.tests.factories import (
     RoleFactory,
     UserRoleFactory,
 )
 from apps.platform.rbac.tests.factories.user_role import UserFactory
+from django.urls import reverse
+from rest_framework import status
+from rest_framework.test import APITestCase
 
 
 class UserRoleAPITestCase(

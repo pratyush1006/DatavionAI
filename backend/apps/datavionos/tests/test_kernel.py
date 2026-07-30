@@ -209,10 +209,7 @@ def test_thread_safe_initialize() -> None:
             manager.initialize()
 
     with ThreadPoolExecutor(max_workers=4) as executor:
-        futures = [
-            executor.submit(initialize)
-            for _ in range(4)
-        ]
+        futures = [executor.submit(initialize) for _ in range(4)]
 
         for future in futures:
             future.result()
@@ -236,10 +233,7 @@ def test_thread_safe_start() -> None:
             manager.start()
 
     with ThreadPoolExecutor(max_workers=4) as executor:
-        futures = [
-            executor.submit(start)
-            for _ in range(4)
-        ]
+        futures = [executor.submit(start) for _ in range(4)]
 
         for future in futures:
             future.result()

@@ -4,13 +4,12 @@ User role API URLs.
 
 from __future__ import annotations
 
-from django.urls import (
-    path,
-)
-
 from apps.platform.rbac.api.user_role.views import (
     UserRoleListCreateAPIView,
     UserRoleRetrieveUpdateDestroyAPIView,
+)
+from django.urls import (
+    path,
 )
 
 app_name = "user-role-api"

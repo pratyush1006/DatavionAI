@@ -4,9 +4,8 @@ Base serializer for the FinancialReport model.
 
 from __future__ import annotations
 
-from rest_framework import serializers
-
 from apps.billing.financial_management.models import FinancialReport
+from rest_framework import serializers
 
 
 class FinancialReportBaseSerializer(serializers.ModelSerializer):

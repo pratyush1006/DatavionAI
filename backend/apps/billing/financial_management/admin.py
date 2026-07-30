@@ -4,12 +4,11 @@ Admin configuration for the Financial Management application.
 
 from __future__ import annotations
 
-from django.contrib import admin
-
 from apps.billing.financial_management.models import (
     Budget,
     FinancialReport,
 )
+from django.contrib import admin
 
 
 @admin.register(Budget)

@@ -4,9 +4,8 @@ Base serializer for the VendorInvoice model.
 
 from __future__ import annotations
 
-from rest_framework import serializers
-
 from apps.billing.accounts_payable.models import VendorInvoice
+from rest_framework import serializers
 
 
 class VendorInvoiceBaseSerializer(serializers.ModelSerializer):

@@ -4,12 +4,6 @@ Master Patient Index model.
 
 from __future__ import annotations
 
-from apps.patient_management.patients.models import Patient
-from django.core.exceptions import ValidationError
-from django.db import models
-from django.utils import timezone
-from django.utils.translation import gettext_lazy as _
-
 from apps.core.models import BaseModel
 from apps.patient_management.mpi.constants import (
     MPIMatchConfidence,
@@ -27,7 +21,12 @@ from apps.patient_management.mpi.validators import (
     validate_mpi_id,
     validate_passport_number,
 )
+from apps.patient_management.patients.models import Patient
 from apps.platform.organizations.models import Organization
+from django.core.exceptions import ValidationError
+from django.db import models
+from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
 
 class MasterPatientIndex(BaseModel):
