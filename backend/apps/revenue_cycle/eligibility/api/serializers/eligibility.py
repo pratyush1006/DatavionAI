@@ -4,8 +4,9 @@ Serializers for the EligibilityCheck module.
 
 from __future__ import annotations
 
-from apps.revenue_cycle.eligibility.models import EligibilityCheck
 from rest_framework import serializers
+
+from apps.revenue_cycle.eligibility.models import EligibilityCheck
 
 WRITE_FIELDS: tuple[str, ...] = (
     "patient",

@@ -4,10 +4,11 @@ Tax Filing model.
 
 from __future__ import annotations
 
+from django.db import models
+
 from apps.billing.tax_gst.models.tax_rate import TaxRate
 from apps.core.models import BaseModel
 from apps.platform.organizations.models import Organization
-from django.db import models
 
 
 class TaxFiling(BaseModel):

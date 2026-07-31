@@ -4,8 +4,9 @@ Serializers for the Timeline module.
 
 from __future__ import annotations
 
-from apps.patient_management.timeline.models import PatientTimelineEvent
 from rest_framework import serializers
+
+from apps.patient_management.timeline.models import PatientTimelineEvent
 
 WRITE_FIELDS: tuple[str, ...] = (
     "organization",

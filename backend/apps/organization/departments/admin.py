@@ -4,8 +4,9 @@ Admin configuration for the Departments application.
 
 from __future__ import annotations
 
-from apps.organization.departments.models import Department
 from django.contrib import admin
+
+from apps.organization.departments.models import Department
 
 
 @admin.register(Department)

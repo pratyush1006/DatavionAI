@@ -19,7 +19,7 @@ Organization
       |
 Subscription
       |
-Plan
+Plan Snapshot
       |
 EntitlementService
       |
@@ -33,6 +33,8 @@ EntitlementService
 """
 
 from __future__ import annotations
+
+from django.utils import timezone
 
 from apps.platform.saas_billing.models import (
     Subscription,
@@ -49,19 +51,28 @@ class EntitlementService:
         Subscription.Status.ACTIVE,
     }
 
+    # ==============================================================
+    # Subscription Resolver
+    # ==============================================================
+
     @staticmethod
     def get_subscription(
         *,
         organization,
     ) -> Subscription | None:
         """
-        Return organization subscription.
+        Resolve active organization subscription.
         """
+
+        now = timezone.now()
 
         return (
             Subscription.objects.filter(
                 organization=organization,
-                status__in=(EntitlementService.ACTIVE_STATUSES),
+                status__in=EntitlementService.ACTIVE_STATUSES,
+            )
+            .filter(
+                current_period_end__gte=now,
             )
             .select_related(
                 "plan",
@@ -69,14 +80,15 @@ class EntitlementService:
             .first()
         )
 
+    # ==============================================================
+    # Snapshot
+    # ==============================================================
+
     @staticmethod
     def get_snapshot(
         *,
         organization,
     ) -> dict:
-        """
-        Return entitlement snapshot.
-        """
 
         subscription = EntitlementService.get_subscription(
             organization=organization,
@@ -87,50 +99,83 @@ class EntitlementService:
 
         return subscription.feature_snapshot or {}
 
+    # ==============================================================
+    # Modules
+    # ==============================================================
+
     @staticmethod
     def get_modules(
         *,
         organization,
     ) -> dict:
-        """
-        Return enabled DatavionOS modules.
-        """
 
-        snapshot = EntitlementService.get_snapshot(
+        return EntitlementService.get_snapshot(
             organization=organization,
-        )
-
-        return snapshot.get(
+        ).get(
             "modules",
             {},
         )
+
+    @staticmethod
+    def get_enabled_modules(
+        *,
+        organization,
+    ) -> list[str]:
+        """
+        Return enabled module names.
+        """
+
+        return [
+            key
+            for key, value in EntitlementService.get_modules(
+                organization=organization,
+            ).items()
+            if value
+        ]
+
+    # ==============================================================
+    # Features
+    # ==============================================================
 
     @staticmethod
     def get_features(
         *,
         organization,
     ) -> dict:
+
+        return EntitlementService.get_snapshot(
+            organization=organization,
+        ).get(
+            "features",
+            {},
+        )
+
+    @staticmethod
+    def get_enabled_features(
+        *,
+        organization,
+    ) -> list[str]:
         """
         Return enabled features.
         """
 
-        snapshot = EntitlementService.get_snapshot(
-            organization=organization,
-        )
+        return [
+            key
+            for key, value in EntitlementService.get_features(
+                organization=organization,
+            ).items()
+            if value
+        ]
 
-        return snapshot.get(
-            "features",
-            {},
-        )
+    # ==============================================================
+    # Limits
+    # ==============================================================
 
     @staticmethod
     def get_limits(
         *,
         organization,
     ) -> dict:
-        """
-        Return subscription limits.
-        """
 
         subscription = EntitlementService.get_subscription(
             organization=organization,
@@ -145,29 +190,62 @@ class EntitlementService:
         )
 
     @staticmethod
+    def get_limit(
+        *,
+        organization,
+        key: str,
+    ):
+        """
+        Return single quota value.
+        """
+
+        return EntitlementService.get_limits(
+            organization=organization,
+        ).get(
+            key,
+        )
+
+    @staticmethod
+    def check_limit(
+        *,
+        organization,
+        limit_key: str,
+        requested_value: int = 1,
+    ) -> bool:
+
+        maximum = EntitlementService.get_limit(
+            organization=organization,
+            key=limit_key,
+        )
+
+        if maximum is None:
+            return True
+
+        if isinstance(
+            maximum,
+            dict,
+        ):
+            maximum = maximum.get(
+                "included",
+            )
+
+        return requested_value <= maximum
+
+    # ==============================================================
+    # Access Checks
+    # ==============================================================
+
+    @staticmethod
     def has_module(
         *,
         organization,
         module: str,
     ) -> bool:
-        """
-        Check module entitlement.
-
-        Examples:
-
-        clinical
-        pharmacy
-        laboratory
-        imaging
-        ai
-        """
-
-        modules = EntitlementService.get_modules(
-            organization=organization,
-        )
 
         return bool(
-            modules.get(
+            EntitlementService.get_modules(
+                organization=organization,
+            ).get(
                 module,
                 False,
             )
@@ -179,103 +257,15 @@ class EntitlementService:
         organization,
         feature: str,
     ) -> bool:
-        """
-        Check feature entitlement.
-        """
-
-        features = EntitlementService.get_features(
-            organization=organization,
-        )
 
         return bool(
-            features.get(
+            EntitlementService.get_features(
+                organization=organization,
+            ).get(
                 feature,
                 False,
             )
         )
-
-    @staticmethod
-    def check_limit(
-        *,
-        organization,
-        limit_key: str,
-        requested_value: int = 1,
-    ) -> bool:
-        """
-        Validate resource quota.
-
-        Example:
-
-        users
-        patients
-        storage_gb
-        ai_requests
-        """
-
-        limits = EntitlementService.get_limits(
-            organization=organization,
-        )
-
-        maximum = limits.get(
-            limit_key,
-        )
-
-        if maximum is None:
-            return True
-
-        return requested_value <= maximum
-
-    @staticmethod
-    def get_capabilities(
-        *,
-        organization,
-    ) -> dict:
-        """
-        Generate frontend capability payload.
-
-        Used by:
-
-        - Platform Bootstrap API
-        - Next.js application
-        - Dashboard rendering
-        """
-
-        subscription = EntitlementService.get_subscription(
-            organization=organization,
-        )
-
-        if not subscription:
-            return {
-                "subscription": None,
-                "modules": {},
-                "features": {},
-                "limits": {},
-            }
-
-        return {
-            "subscription": {
-                "status": (subscription.status),
-                "plan": {
-                    "name": (subscription.plan.name),
-                    "code": (subscription.plan.code),
-                },
-            },
-            "modules": (
-                EntitlementService.get_modules(
-                    organization=organization,
-                )
-            ),
-            "features": (
-                EntitlementService.get_features(
-                    organization=organization,
-                )
-            ),
-            "limits": (
-                EntitlementService.get_limits(
-                    organization=organization,
-                )
-            ),
-        }
 
     @staticmethod
     def can_access(
@@ -284,9 +274,6 @@ class EntitlementService:
         module: str | None = None,
         feature: str | None = None,
     ) -> bool:
-        """
-        Generic access checker.
-        """
 
         if module:
             return EntitlementService.has_module(
@@ -301,6 +288,56 @@ class EntitlementService:
             )
 
         return False
+
+    # ==============================================================
+    # Frontend Capability Payload
+    # ==============================================================
+
+    @staticmethod
+    def get_capabilities(
+        *,
+        organization,
+    ) -> dict:
+        """
+        Payload consumed by Next.js bootstrap.
+        """
+
+        subscription = EntitlementService.get_subscription(
+            organization=organization,
+        )
+
+        if not subscription:
+            return {
+                "subscription": None,
+                "modules": [],
+                "features": [],
+                "limits": {},
+            }
+
+        return {
+            "subscription": {
+                "status": subscription.status,
+                "plan": {
+                    "name": subscription.plan.name,
+                    "code": subscription.plan.code,
+                },
+            },
+            "modules": (
+                EntitlementService.get_enabled_modules(
+                    organization=organization,
+                )
+            ),
+            "features": (
+                EntitlementService.get_enabled_features(
+                    organization=organization,
+                )
+            ),
+            "limits": (
+                EntitlementService.get_limits(
+                    organization=organization,
+                )
+            ),
+        }
 
 
 __all__ = [

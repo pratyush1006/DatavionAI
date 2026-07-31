@@ -4,8 +4,9 @@ Serializers for the AccountsReceivable module.
 
 from __future__ import annotations
 
-from apps.revenue_cycle.ar.models import AccountsReceivable
 from rest_framework import serializers
+
+from apps.revenue_cycle.ar.models import AccountsReceivable
 
 WRITE_FIELDS: tuple[str, ...] = (
     "patient",

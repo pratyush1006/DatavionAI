@@ -4,10 +4,11 @@ Admin configuration for the Master Patient Index.
 
 from __future__ import annotations
 
+from django.contrib import admin
+
 from apps.patient_management.mpi.models import (
     MasterPatientIndex,
 )
-from django.contrib import admin
 
 
 @admin.register(MasterPatientIndex)

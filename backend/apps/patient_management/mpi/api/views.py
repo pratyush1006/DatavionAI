@@ -4,6 +4,9 @@ API views for the Master Patient Index.
 
 from __future__ import annotations
 
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters, status
+
 from apps.common.api import BaseAPIView
 from apps.common.api.pagination import StandardResultsSetPagination
 from apps.common.api.responses import success_response
@@ -25,8 +28,6 @@ from apps.patient_management.mpi.permissions import (
     CanUpdateMPI,
     CanViewMPI,
 )
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, status
 
 
 class MPIListAPIView(BaseAPIView):

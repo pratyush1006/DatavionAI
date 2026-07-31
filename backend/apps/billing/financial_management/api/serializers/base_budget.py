@@ -4,8 +4,9 @@ Base serializer for the Budget model.
 
 from __future__ import annotations
 
-from apps.billing.financial_management.models import Budget
 from rest_framework import serializers
+
+from apps.billing.financial_management.models import Budget
 
 
 class BudgetBaseSerializer(serializers.ModelSerializer):

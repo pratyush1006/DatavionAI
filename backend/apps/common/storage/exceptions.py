@@ -1,7 +1,14 @@
 """
 Storage exception hierarchy for DatavionOS.
 
-Provides reusable exceptions for the storage framework.
+Provides reusable exceptions for the storage infrastructure layer.
+
+Storage exceptions are independent from business domains:
+
+- healthcare
+- finance
+- analytics
+- reporting
 """
 
 from __future__ import annotations
@@ -11,7 +18,7 @@ class StorageError(
     Exception,
 ):
     """
-    Base exception for all storage-related errors.
+    Base exception for storage errors.
     """
 
 
@@ -23,85 +30,115 @@ class StorageConfigurationError(
     """
 
 
-class StorageProviderError(
+class StorageNotFoundError(
     StorageError,
 ):
     """
-    Raised when a storage provider operation fails.
-    """
-
-
-class StorageConnectionError(
-    StorageProviderError,
-):
-    """
-    Raised when connection to storage provider fails.
-    """
-
-
-class StorageUploadError(
-    StorageProviderError,
-):
-    """
-    Raised when file upload fails.
-    """
-
-
-class StorageDownloadError(
-    StorageProviderError,
-):
-    """
-    Raised when file download fails.
-    """
-
-
-class StorageDeleteError(
-    StorageProviderError,
-):
-    """
-    Raised when file deletion fails.
+    Raised when stored object is not found.
     """
 
 
 class StorageFileNotFoundError(
+    StorageNotFoundError,
+):
+    """
+    Raised when a file is not found in storage.
+    """
+
+
+class StorageAlreadyExistsError(
     StorageError,
 ):
     """
-    Raised when requested file does not exist.
+    Raised when creating duplicate storage object.
     """
 
 
-class StoragePermissionError(
+class StorageValidationError(
     StorageError,
 ):
     """
-    Raised when access to stored data is denied.
+    Raised when storage validation fails.
     """
 
 
-class StorageSecurityError(
+class StorageOperationError(
     StorageError,
 ):
     """
-    Raised when storage security validation fails.
+    Raised when storage operation fails.
+    """
 
-    Examples:
 
-    - checksum mismatch
-    - encryption failure
-    - invalid signed URL
+class StorageUploadError(
+    StorageOperationError,
+):
+    """
+    Raised when upload fails.
+    """
+
+
+class StorageDownloadError(
+    StorageOperationError,
+):
+    """
+    Raised when download fails.
+    """
+
+
+class StorageDeleteError(
+    StorageOperationError,
+):
+    """
+    Raised when delete fails.
+    """
+
+
+class StorageConnectionError(
+    StorageOperationError,
+):
+    """
+    Raised when connection to storage backend fails.
+    """
+
+
+class StorageRegistryError(
+    StorageError,
+):
+    """
+    Raised when storage registry operation fails.
+    """
+
+
+class StorageAlreadyRegisteredError(
+    StorageRegistryError,
+):
+    """
+    Raised when registering an existing storage handler.
+    """
+
+
+class StorageHandlerNotFoundError(
+    StorageRegistryError,
+):
+    """
+    Raised when storage handler is missing.
     """
 
 
 __all__: tuple[str, ...] = (
-    "StorageConnectionError",
-    "StorageConfigurationError",
-    "StorageDeleteError",
-    "StorageDownloadError",
     "StorageError",
+    "StorageConfigurationError",
+    "StorageNotFoundError",
     "StorageFileNotFoundError",
-    "StoragePermissionError",
-    "StorageProviderError",
-    "StorageSecurityError",
+    "StorageAlreadyExistsError",
+    "StorageValidationError",
+    "StorageOperationError",
     "StorageUploadError",
+    "StorageDownloadError",
+    "StorageDeleteError",
+    "StorageConnectionError",
+    "StorageRegistryError",
+    "StorageAlreadyRegisteredError",
+    "StorageHandlerNotFoundError",
 )

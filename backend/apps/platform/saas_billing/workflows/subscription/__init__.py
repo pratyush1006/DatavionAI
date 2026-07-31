@@ -21,13 +21,25 @@ from .cancel import (
 from .create import (
     CreateSubscriptionWorkflow,
 )
+from .downgrade import (
+    DowngradeSubscriptionWorkflow,
+)
+from .expire import (
+    ExpireSubscriptionWorkflow,
+)
 from .renew import (
     RenewSubscriptionWorkflow,
+)
+from .upgrade import (
+    UpgradeSubscriptionWorkflow,
 )
 
 __all__ = [
     "CreateSubscriptionWorkflow",
     "ActivateSubscriptionWorkflow",
     "RenewSubscriptionWorkflow",
+    "UpgradeSubscriptionWorkflow",
+    "DowngradeSubscriptionWorkflow",
     "CancelSubscriptionWorkflow",
+    "ExpireSubscriptionWorkflow",
 ]

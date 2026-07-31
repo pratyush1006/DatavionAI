@@ -6,13 +6,14 @@ from __future__ import annotations
 
 from decimal import Decimal
 
+from django.db import models
+
 from apps.billing.models.invoice import Invoice
 from apps.billing.models.payment import Payment
 from apps.clinical.patients.models import Patient
 from apps.core.models import BaseManager, BaseModel
 from apps.platform.organizations.models import Organization
 from apps.revenue_cycle.constants import PostingStatus
-from django.db import models
 
 
 class PaymentPosting(BaseModel):

@@ -4,8 +4,9 @@ Serializers for the ClaimAppeal module.
 
 from __future__ import annotations
 
-from apps.revenue_cycle.appeals.models import ClaimAppeal
 from rest_framework import serializers
+
+from apps.revenue_cycle.appeals.models import ClaimAppeal
 
 WRITE_FIELDS: tuple[str, ...] = (
     "patient",

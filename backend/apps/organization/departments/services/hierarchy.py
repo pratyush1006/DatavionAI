@@ -6,11 +6,12 @@ Manages department tree relationships.
 
 from __future__ import annotations
 
+from django.db import transaction
+
 from apps.organization.departments.models import (
     Department,
     DepartmentHierarchy,
 )
-from django.db import transaction
 
 
 class DepartmentHierarchyService:

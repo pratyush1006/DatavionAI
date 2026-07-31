@@ -6,10 +6,11 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from apps.patient_management.medical_history.models import PatientMedicalHistory
-from apps.platform.organizations.models import Organization
 from django.db.models import QuerySet
 from django.shortcuts import get_object_or_404
+
+from apps.patient_management.medical_history.models import PatientMedicalHistory
+from apps.platform.organizations.models import Organization
 
 
 class PatientMedicalHistorySelector:

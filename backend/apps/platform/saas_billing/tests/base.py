@@ -21,9 +21,16 @@ from decimal import Decimal
 
 from django.test import TestCase
 from django.utils import timezone
+from rest_framework.test import (
+    APIClient,
+)
 
-from apps.platform.accounts.models import User
-from apps.platform.organizations.models import Organization
+from apps.platform.accounts.models import (
+    User,
+)
+from apps.platform.organizations.models import (
+    Organization,
+)
 from apps.platform.rbac.constants import (
     PermissionScope,
 )
@@ -38,7 +45,9 @@ from apps.platform.saas_billing.models import (
     Plan,
     Subscription,
 )
-from apps.platform.tenancy.models import Tenant
+from apps.platform.tenancy.models import (
+    Tenant,
+)
 
 
 class SaaSBillingTestBase(
@@ -56,6 +65,9 @@ class SaaSBillingTestBase(
         """
 
         super().setUp()
+
+        # DRF API client
+        self.client = APIClient()
 
         self.tenant = self.create_tenant()
 
@@ -85,8 +97,6 @@ class SaaSBillingTestBase(
         """
         Authenticate API client with
         DatavionOS organization context.
-
-        Simulates organization middleware.
         """
 
         self.client.force_authenticate(
@@ -94,7 +104,9 @@ class SaaSBillingTestBase(
         )
 
         self.client.credentials(
-            HTTP_X_ORGANIZATION_ID=str(self.organization.id),
+            HTTP_X_ORGANIZATION_ID=str(
+                self.organization.id,
+            ),
         )
 
     # ==========================================================
@@ -167,11 +179,24 @@ class SaaSBillingTestBase(
         """
 
         permissions = [
+            # Billing Account
             "billing.view",
+            "billing.manage",
+            # Plans
+            "plans.view",
+            "plans.manage",
+            # Subscription
             "subscriptions.view",
+            "subscriptions.manage",
+            # Invoice
             "invoices.view",
+            "invoices.manage",
+            # Payment
             "payments.view",
+            "payments.manage",
+            # Usage
             "usage.view",
+            "usage.manage",
         ]
 
         for code in permissions:
@@ -191,7 +216,7 @@ class SaaSBillingTestBase(
                     ),
                     "module": module,
                     "action": action,
-                    "scope": (PermissionScope.ORGANIZATION),
+                    "scope": PermissionScope.ORGANIZATION,
                     "is_system": False,
                     "is_assignable": True,
                 },
@@ -283,7 +308,7 @@ class SaaSBillingTestBase(
             tenant=self.tenant,
             organization=self.organization,
             plan=self.plan,
-            status=(Subscription.Status.ACTIVE),
+            status=Subscription.Status.ACTIVE,
             auto_renew=True,
             started_at=now,
             current_period_start=now,
@@ -294,12 +319,12 @@ class SaaSBillingTestBase(
                 )
             ),
             plan_snapshot={
-                "name": (self.plan.name),
-                "price": ("9999.00"),
+                "name": self.plan.name,
+                "price": "9999.00",
                 "limits": self.plan.limits,
             },
             feature_snapshot={
-                "modules": (self.plan.modules),
-                "features": (self.plan.features),
+                "modules": self.plan.modules,
+                "features": self.plan.features,
             },
         )

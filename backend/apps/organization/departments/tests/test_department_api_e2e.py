@@ -13,6 +13,9 @@ Soft delete
 
 from __future__ import annotations
 
+from rest_framework import status
+from rest_framework.test import APITestCase
+
 from apps.organization.departments.models import (
     Department,
 )
@@ -28,8 +31,6 @@ from apps.platform.rbac.models import (
     RolePermission,
 )
 from apps.platform.tenancy.models import Tenant
-from rest_framework import status
-from rest_framework.test import APITestCase
 
 
 class DepartmentAPIE2ETestCase(

@@ -6,6 +6,10 @@ from __future__ import annotations
 
 from typing import Final
 
+from django.db.models import QuerySet
+from drf_spectacular.utils import extend_schema
+from rest_framework.permissions import IsAuthenticated
+
 from apps.common.api.base_generics import (
     BaseListCreateAPIView,
     BaseRetrieveUpdateDestroyAPIView,
@@ -29,9 +33,6 @@ from apps.patient_management.medical_history.selectors import (
 from apps.patient_management.medical_history.services import (
     PatientMedicalHistoryService,
 )
-from django.db.models import QuerySet
-from drf_spectacular.utils import extend_schema
-from rest_framework.permissions import IsAuthenticated
 
 TAG: Final[tuple[str, ...]] = ("Medical History",)
 

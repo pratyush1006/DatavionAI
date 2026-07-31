@@ -15,7 +15,7 @@ Supports:
 
 from __future__ import annotations
 
-from typing import Any, ClassVar, Protocol
+from typing import Any, ClassVar, Final, Protocol
 
 from django.core.exceptions import ImproperlyConfigured
 from rest_framework import status
@@ -23,14 +23,10 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.serializers import Serializer
 
-from apps.common.api.base_generics import (
-    BaseGenericAPIView,
-)
+from apps.common.api.base_generics import BaseGenericAPIView
 
 
-class WorkflowService(
-    Protocol,
-):
+class WorkflowService(Protocol):
     """
     Protocol implemented by workflow services.
     """
@@ -40,14 +36,12 @@ class WorkflowService(
         **kwargs: Any,
     ) -> Any:
         """
-        Execute workflow.
+        Execute the workflow.
         """
         ...
 
 
-class BaseWorkflowAPIView(
-    BaseGenericAPIView,
-):
+class BaseWorkflowAPIView(BaseGenericAPIView):
     """
     Base API view for workflow actions.
 
@@ -67,7 +61,7 @@ class BaseWorkflowAPIView(
 
     lookup_url_kwarg: ClassVar[str] = "uuid"
 
-    serializer_class: type[Serializer]
+    serializer_class: ClassVar[type[Serializer]]
 
     def get_object(
         self,
@@ -75,30 +69,46 @@ class BaseWorkflowAPIView(
         **kwargs: Any,
     ) -> Any:
         """
-        Return workflow resource.
+        Return the workflow resource.
 
         Subclasses must implement.
         """
 
-        raise NotImplementedError("Subclasses must implement get_object().")
+        raise NotImplementedError(
+            "Subclasses must implement get_object().",
+        )
+
+    def _base_context(self) -> dict[str, object]:
+        """
+        Return the common workflow context.
+        """
+
+        return {
+            "user": self.current_user,
+            "tenant": self.current_tenant,
+            "organization": self.current_organization,
+        }
 
     def get_workflow_kwargs(
         self,
         *,
         request: Request,
         resource: Any,
-    ) -> dict[str, Any]:
+    ) -> dict[str, object]:
         """
         Build workflow execution context.
         """
 
-        return {
-            "instance": resource,
-            "user": self.current_user,
-            "tenant": self.current_tenant,
-            "organization": (self.current_organization),
-            "request": request,
-        }
+        context = self._base_context()
+
+        context.update(
+            {
+                "instance": resource,
+                "request": request,
+            },
+        )
+
+        return context
 
     def before_execute(
         self,
@@ -107,10 +117,8 @@ class BaseWorkflowAPIView(
         resource: Any,
     ) -> None:
         """
-        Hook before workflow execution.
+        Hook executed before the workflow.
         """
-
-        return
 
     def after_execute(
         self,
@@ -120,41 +128,39 @@ class BaseWorkflowAPIView(
         result: Any,
     ) -> None:
         """
-        Hook after workflow execution.
+        Hook executed after the workflow.
         """
-
-        return
 
     def create_audit_context(
         self,
         *,
         request: Request,
         resource: Any,
-    ) -> dict[str, Any]:
+    ) -> dict[str, object]:
         """
         Build audit metadata.
 
         Applications may override.
         """
 
-        return {
-            "user": self.current_user,
-            "tenant": self.current_tenant,
-            "organization": (self.current_organization),
-            "resource": resource,
-        }
+        context = self._base_context()
+        context["resource"] = resource
+
+        return context
 
     def get_workflow_service(
         self,
     ) -> WorkflowService:
         """
-        Return configured workflow service.
+        Return the configured workflow service.
         """
 
         service = type(self).workflow_service
 
         if service is None:
-            raise ImproperlyConfigured("'workflow_service' must be configured.")
+            raise ImproperlyConfigured(
+                "'workflow_service' must be configured.",
+            )
 
         return service
 
@@ -164,12 +170,12 @@ class BaseWorkflowAPIView(
         request: Request,
     ) -> Any:
         """
-        Execute workflow service.
+        Execute the configured workflow.
         """
 
-        resource = self.get_object(
-            self.kwargs[self.lookup_url_kwarg],
-        )
+        lookup_value = self.kwargs[self.lookup_url_kwarg]
+
+        resource = self.get_object(lookup_value)
 
         self.before_execute(
             request=request,
@@ -195,9 +201,9 @@ class BaseWorkflowAPIView(
         self,
         *,
         result: Any,
-    ) -> dict[str, Any]:
+    ) -> dict[str, object]:
         """
-        Build workflow response.
+        Build the workflow response payload.
         """
 
         return {
@@ -208,7 +214,7 @@ class BaseWorkflowAPIView(
         self,
     ) -> int:
         """
-        Return success HTTP status.
+        Return the success HTTP status.
         """
 
         return status.HTTP_200_OK
@@ -220,7 +226,7 @@ class BaseWorkflowAPIView(
         **kwargs: Any,
     ) -> Response:
         """
-        Execute workflow action.
+        Execute the workflow action.
         """
 
         result = self.execute_workflow(
@@ -243,7 +249,7 @@ class BaseWorkflowAPIView(
         )
 
 
-__all__: tuple[str, ...] = (
+__all__: Final[tuple[str, ...]] = (
     "BaseWorkflowAPIView",
     "WorkflowService",
 )

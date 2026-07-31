@@ -1,8 +1,8 @@
 """
 Common application configuration.
 
-Provides shared infrastructure components for the
-DatavionOS platform.
+Provides shared framework infrastructure
+for the DatavionOS platform.
 """
 
 from __future__ import annotations
@@ -16,16 +16,27 @@ logger = logging.getLogger(__name__)
 
 class CommonConfig(AppConfig):
     """
-    Application configuration for the shared Common module.
+    Application configuration for shared
+    DatavionOS framework components.
 
-    Hosts reusable platform infrastructure:
+    Responsibilities:
 
-    - API helpers
-    - Audit framework
-    - Event framework
-    - Workflow engine
+    - API infrastructure
+    - Exception handling
+    - Event utilities
     - Notification framework
-    - Shared services
+    - Middleware utilities
+    - Shared validators
+    - Cross-cutting helpers
+
+    Non-responsibilities:
+
+    - Business domains
+    - Platform capabilities
+    - Audit persistence
+    - Tenant services
+    - Billing
+    - Clinical workflows
     """
 
     default_auto_field = "django.db.models.BigAutoField"
@@ -45,21 +56,18 @@ class CommonConfig(AppConfig):
         Startup must remain lightweight.
 
         No:
-            - database queries
-            - cache calls
-            - network calls
-            - background workers
+
+        - database queries
+        - cache calls
+        - network calls
+        - background workers
         """
 
         # --------------------------------------------------------------
-        # Framework Registrations
+        # Event Framework Registration
         # --------------------------------------------------------------
 
-        from apps.common import (
-            audit,  # noqa: F401
-            events,  # noqa: F401
-            workflow,  # noqa: F401
-        )
+        from apps.common import events  # noqa: F401
 
         # --------------------------------------------------------------
         # Notification Framework Registration

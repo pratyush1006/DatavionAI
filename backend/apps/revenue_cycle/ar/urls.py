@@ -4,11 +4,12 @@ URL patterns for the AR Record module.
 
 from __future__ import annotations
 
+from django.urls import path
+
 from apps.revenue_cycle.ar.api.views import (
     AccountsReceivableListCreateAPIView,
     AccountsReceivableRetrieveUpdateDestroyAPIView,
 )
-from django.urls import path
 
 app_name = "ar_records"
 

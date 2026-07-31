@@ -1,5 +1,5 @@
 """
-Local filesystem storage provider for DatavionOS.
+Local filesystem storage backend for DatavionOS.
 
 Provides a development and self-hosted storage backend.
 
@@ -15,17 +15,17 @@ from __future__ import annotations
 from hashlib import sha256
 from pathlib import Path
 
-from apps.common.storage.backend import (
-    StorageBackend,
-)
 from apps.common.storage.exceptions import (
     StorageDeleteError,
     StorageDownloadError,
-    StorageFileNotFoundError,
+    StorageNotFoundError,
     StorageUploadError,
 )
 from apps.common.storage.models import (
     StoredFile,
+)
+from apps.common.storage.providers.base import (
+    BaseStorageBackend,
 )
 from apps.common.storage.types import (
     FileContent,
@@ -33,8 +33,8 @@ from apps.common.storage.types import (
 )
 
 
-class LocalStorageProvider(
-    StorageBackend,
+class LocalStorageBackend(
+    BaseStorageBackend,
 ):
     """
     Local filesystem storage implementation.
@@ -46,10 +46,6 @@ class LocalStorageProvider(
     ) -> None:
         """
         Initialize local storage.
-
-        Args:
-            root_path:
-                Base filesystem directory.
         """
 
         self.root_path = Path(
@@ -66,7 +62,7 @@ class LocalStorageProvider(
         path: StoragePath,
     ) -> Path:
         """
-        Resolve a storage path safely.
+        Resolve storage path safely.
         """
 
         resolved = (self.root_path / path).resolve()
@@ -88,7 +84,7 @@ class LocalStorageProvider(
         overwrite: bool = False,
     ) -> StoredFile:
         """
-        Upload a file.
+        Upload file.
         """
 
         try:
@@ -118,6 +114,7 @@ class LocalStorageProvider(
                 path=path,
                 name=destination.name,
                 size=len(data),
+                content_type="application/octet-stream",
                 checksum=sha256(
                     data,
                 ).hexdigest(),
@@ -133,7 +130,7 @@ class LocalStorageProvider(
         path: StoragePath,
     ) -> bytes:
         """
-        Download file content.
+        Download file.
         """
 
         try:
@@ -142,13 +139,13 @@ class LocalStorageProvider(
             )
 
             if not source.exists():
-                raise StorageFileNotFoundError(
+                raise StorageNotFoundError(
                     path,
                 )
 
             return source.read_bytes()
 
-        except StorageFileNotFoundError:
+        except StorageNotFoundError:
             raise
 
         except Exception as exc:
@@ -161,7 +158,7 @@ class LocalStorageProvider(
         path: StoragePath,
     ) -> bool:
         """
-        Delete a file.
+        Delete file.
         """
 
         try:
@@ -201,8 +198,6 @@ class LocalStorageProvider(
     ) -> str:
         """
         Return local file reference.
-
-        Local storage does not generate signed URLs.
         """
 
         del expires_in
@@ -226,11 +221,11 @@ class LocalStorageProvider(
         )
 
         if not target.exists():
-            raise StorageFileNotFoundError(
+            raise StorageNotFoundError(
                 path,
             )
 
         return target.stat().st_size
 
 
-__all__: tuple[str, ...] = ("LocalStorageProvider",)
+__all__: tuple[str, ...] = ("LocalStorageBackend",)

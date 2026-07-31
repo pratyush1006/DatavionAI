@@ -14,21 +14,24 @@ Responsibilities:
 
 Architecture:
 
-Organization
-      |
-Subscription
-      |
-Plan
-      |
-EntitlementSelector
-      |
-Modules / Features / Limits
+API
+ |
+Selector
+ |
+EntitlementService
+ |
+Subscription Snapshot
+ |
+Database
 """
 
 from __future__ import annotations
 
 from apps.platform.saas_billing.models import (
     Subscription,
+)
+from apps.platform.saas_billing.services.entitlement_service import (
+    EntitlementService,
 )
 
 
@@ -37,24 +40,26 @@ class EntitlementSelector:
     SaaS entitlement read operations.
     """
 
+    # ==============================================================
+    # Subscription
+    # ==============================================================
+
     @staticmethod
     def get_subscription(
         *,
         organization,
     ) -> Subscription | None:
         """
-        Return organization subscription.
+        Return active organization subscription.
         """
 
-        return (
-            Subscription.objects.filter(
-                organization=organization,
-            )
-            .select_related(
-                "plan",
-            )
-            .first()
+        return EntitlementService.get_subscription(
+            organization=organization,
         )
+
+    # ==============================================================
+    # Modules
+    # ==============================================================
 
     @staticmethod
     def get_modules(
@@ -62,29 +67,37 @@ class EntitlementSelector:
         organization,
     ) -> dict:
         """
-        Return enabled DatavionOS modules.
-
-        Example:
-
-        {
-            "clinical": True,
-            "pharmacy": True,
-            "laboratory": False,
-            "ai": True
-        }
+        Return module entitlement map.
         """
 
-        subscription = EntitlementSelector.get_subscription(
+        return EntitlementService.get_modules(
             organization=organization,
         )
 
-        if not subscription:
-            return {}
+    @staticmethod
+    def get_enabled_modules(
+        *,
+        organization,
+    ) -> list[str]:
+        """
+        Return enabled module names.
 
-        return subscription.feature_snapshot.get(
-            "modules",
-            {},
+        Example:
+
+        [
+            "clinical",
+            "billing",
+            "laboratory"
+        ]
+        """
+
+        return EntitlementService.get_enabled_modules(
+            organization=organization,
         )
+
+    # ==============================================================
+    # Features
+    # ==============================================================
 
     @staticmethod
     def get_features(
@@ -92,20 +105,29 @@ class EntitlementSelector:
         organization,
     ) -> dict:
         """
-        Return enabled features.
+        Return feature entitlement map.
         """
 
-        subscription = EntitlementSelector.get_subscription(
+        return EntitlementService.get_features(
             organization=organization,
         )
 
-        if not subscription:
-            return {}
+    @staticmethod
+    def get_enabled_features(
+        *,
+        organization,
+    ) -> list[str]:
+        """
+        Return enabled feature names.
+        """
 
-        return subscription.feature_snapshot.get(
-            "features",
-            {},
+        return EntitlementService.get_enabled_features(
+            organization=organization,
         )
+
+    # ==============================================================
+    # Limits
+    # ==============================================================
 
     @staticmethod
     def get_limits(
@@ -113,28 +135,16 @@ class EntitlementSelector:
         organization,
     ) -> dict:
         """
-        Return subscription limits.
-
-        Example:
-
-        {
-            "users": 100,
-            "patients": 50000,
-            "storage_gb": 500
-        }
+        Return SaaS resource limits.
         """
 
-        subscription = EntitlementSelector.get_subscription(
+        return EntitlementService.get_limits(
             organization=organization,
         )
 
-        if not subscription:
-            return {}
-
-        return subscription.plan_snapshot.get(
-            "limits",
-            {},
-        )
+    # ==============================================================
+    # Access Checks
+    # ==============================================================
 
     @staticmethod
     def has_module(
@@ -143,18 +153,12 @@ class EntitlementSelector:
         module: str,
     ) -> bool:
         """
-        Check module access.
+        Check module entitlement.
         """
 
-        modules = EntitlementSelector.get_modules(
+        return EntitlementService.has_module(
             organization=organization,
-        )
-
-        return bool(
-            modules.get(
-                module,
-                False,
-            )
+            module=module,
         )
 
     @staticmethod
@@ -164,63 +168,13 @@ class EntitlementSelector:
         feature: str,
     ) -> bool:
         """
-        Check feature access.
+        Check feature entitlement.
         """
 
-        features = EntitlementSelector.get_features(
+        return EntitlementService.has_feature(
             organization=organization,
+            feature=feature,
         )
-
-        return bool(
-            features.get(
-                feature,
-                False,
-            )
-        )
-
-    @staticmethod
-    def get_dashboard_context(
-        *,
-        organization,
-    ) -> dict:
-        """
-        Return frontend bootstrap entitlement data.
-
-        Used by DatavionOS dynamic UI.
-
-        Example:
-
-        Clinic:
-            patients
-            appointments
-
-        Pharmacy:
-            inventory
-            sales
-
-        Hospital:
-            clinical
-            laboratory
-            imaging
-        """
-
-        return {
-            "modules": (
-                EntitlementSelector.get_modules(
-                    organization=organization,
-                )
-            ),
-            "features": (
-                EntitlementSelector.get_features(
-                    organization=organization,
-                )
-            ),
-            "limits": (
-                EntitlementSelector.get_limits(
-                    organization=organization,
-                )
-            ),
-        }
 
     @staticmethod
     def can_access(
@@ -233,19 +187,49 @@ class EntitlementSelector:
         Generic entitlement check.
         """
 
-        if module:
-            return EntitlementSelector.has_module(
-                organization=organization,
-                module=module,
-            )
+        return EntitlementService.can_access(
+            organization=organization,
+            module=module,
+            feature=feature,
+        )
 
-        if feature:
-            return EntitlementSelector.has_feature(
-                organization=organization,
-                feature=feature,
-            )
+    # ==============================================================
+    # Bootstrap Context
+    # ==============================================================
 
-        return False
+    @staticmethod
+    def get_dashboard_context(
+        *,
+        organization,
+    ) -> dict:
+        """
+        Frontend bootstrap entitlement payload.
+
+        Used by:
+
+        - Platform Bootstrap API
+        - Next.js dashboard
+        - Dynamic navigation
+        - Feature flags
+        """
+
+        return {
+            "modules": (
+                EntitlementSelector.get_enabled_modules(
+                    organization=organization,
+                )
+            ),
+            "features": (
+                EntitlementSelector.get_enabled_features(
+                    organization=organization,
+                )
+            ),
+            "limits": (
+                EntitlementSelector.get_limits(
+                    organization=organization,
+                )
+            ),
+        }
 
 
 __all__ = [

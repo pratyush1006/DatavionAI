@@ -10,6 +10,8 @@ Responsibilities:
 - Platform modules
 - Identity & Access
 - SaaS Platform
+- Organization operations
+- Document Management
 - Clinical modules
 - AI Platform
 - Infrastructure
@@ -99,19 +101,41 @@ urlpatterns = [
         ),
     ),
     # ==========================================================================
+    # Document Management
+    #
+    # Enterprise shared document capability.
+    #
+    # Used by:
+    #
+    # - Organizations
+    # - Employees
+    # - Patients
+    # - Clinical modules
+    # - Laboratory
+    # - Imaging
+    # - Billing
+    #
+    # ==========================================================================
+    path(
+        "api/documents/",
+        include(
+            "apps.documents.api.urls",
+        ),
+    ),
+    # ==========================================================================
     # SaaS Platform Billing
     #
     # DatavionOS SaaS lifecycle:
     #
     # Organization
     #       |
-    #       Subscription
+    # Subscription
     #       |
-    #       Invoice
+    # Invoice
     #       |
-    #       Payment
+    # Payment
     #       |
-    #       Usage
+    # Usage
     #
     # ==========================================================================
     path(
@@ -237,14 +261,11 @@ urlpatterns = [
     # ==========================================================================
     # Imaging / Healthcare Billing / Revenue Cycle
     #
-    # Note:
-    # This is separate from SaaS subscription billing.
-    #
     # SaaS Billing:
     #   DatavionOS subscription revenue
     #
-    # Billing:
-    #   Healthcare operational billing
+    # Healthcare Billing:
+    #   Operational healthcare revenue
     #
     # ==========================================================================
     path(

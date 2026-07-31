@@ -6,6 +6,9 @@ from __future__ import annotations
 
 from typing import Final
 
+from drf_spectacular.utils import extend_schema
+from rest_framework.permissions import IsAuthenticated
+
 from apps.billing.accounts_payable.api.serializers import (
     VendorDetailSerializer,
     VendorUpdateSerializer,
@@ -21,8 +24,6 @@ from apps.billing.accounts_payable.services import VendorService
 from apps.common.api.base_generics import (
     BaseRetrieveUpdateDestroyAPIView,
 )
-from drf_spectacular.utils import extend_schema
-from rest_framework.permissions import IsAuthenticated
 
 Vendor_TAG: Final[tuple[str, ...]] = ("Accounts Payable",)
 

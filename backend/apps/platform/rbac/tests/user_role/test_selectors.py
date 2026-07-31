@@ -4,6 +4,9 @@ Tests for UserRole selectors.
 
 from __future__ import annotations
 
+from django.http import Http404
+from django.test import TestCase
+
 from apps.platform.rbac.selectors import (
     get_user_role_by_id,
     get_user_roles,
@@ -15,8 +18,6 @@ from apps.platform.rbac.tests.factories import (
     RoleFactory,
     UserRoleFactory,
 )
-from django.http import Http404
-from django.test import TestCase
 
 
 class UserRoleSelectorTestCase(

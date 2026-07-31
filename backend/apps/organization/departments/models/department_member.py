@@ -4,8 +4,9 @@ Department member model.
 
 from __future__ import annotations
 
-from apps.core.models import BaseModel
 from django.db import models
+
+from apps.core.models import BaseModel
 
 
 class DepartmentMember(BaseModel):

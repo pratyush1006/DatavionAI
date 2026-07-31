@@ -4,8 +4,9 @@ Base serializer for the Departments application.
 
 from __future__ import annotations
 
-from apps.organization.departments.models import Department
 from rest_framework import serializers
+
+from apps.organization.departments.models import Department
 
 
 class DepartmentBaseSerializer(

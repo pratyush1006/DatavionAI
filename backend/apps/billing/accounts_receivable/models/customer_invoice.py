@@ -4,10 +4,11 @@ Customer Invoice model.
 
 from __future__ import annotations
 
+from django.db import models
+
 from apps.billing.accounts_receivable.models import Customer
 from apps.core.models import BaseModel
 from apps.platform.organizations.models import Organization
-from django.db import models
 
 
 class CustomerInvoice(BaseModel):

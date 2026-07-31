@@ -6,6 +6,7 @@ Shared API context utilities.
 Responsibilities:
 
 - Resolve organization context
+- Resolve plan resources
 - Support middleware injected organization
 - Support API clients
 - Support automated tests
@@ -16,6 +17,9 @@ from __future__ import annotations
 
 from apps.platform.organizations.models import (
     Organization,
+)
+from apps.platform.saas_billing.models import (
+    Plan,
 )
 
 
@@ -44,15 +48,7 @@ class OrganizationContextMixin:
     ):
         """
         Resolve current organization.
-
-        Returns:
-
-        Organization | None
         """
-
-        # ----------------------------------------------------------
-        # Middleware context
-        # ----------------------------------------------------------
 
         organization = getattr(
             request,
@@ -62,10 +58,6 @@ class OrganizationContextMixin:
 
         if organization:
             return organization
-
-        # ----------------------------------------------------------
-        # Header fallback
-        # ----------------------------------------------------------
 
         organization_id = request.headers.get(
             "X-Organization-ID",
@@ -78,10 +70,6 @@ class OrganizationContextMixin:
 
             if organization:
                 return organization
-
-        # ----------------------------------------------------------
-        # Authenticated user fallback
-        # ----------------------------------------------------------
 
         user = getattr(
             request,
@@ -106,6 +94,36 @@ class OrganizationContextMixin:
         return None
 
 
+class PlanLookupMixin:
+    """
+    SaaS Billing plan resolver.
+
+    Shared by:
+
+    - Update Plan API
+    - Activate Plan API
+    - Deactivate Plan API
+    - Archive Plan API
+    """
+
+    def get_plan(
+        self,
+        pk,
+    ) -> Plan:
+        """
+        Retrieve plan by UUID.
+
+        Raises:
+
+        Plan.DoesNotExist
+        """
+
+        return Plan.objects.get(
+            id=pk,
+        )
+
+
 __all__ = [
     "OrganizationContextMixin",
+    "PlanLookupMixin",
 ]

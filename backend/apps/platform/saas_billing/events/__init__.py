@@ -6,6 +6,7 @@ Central registry for all billing domain events.
 Domains:
 
 - Billing Account Events
+- Plan Events
 - Subscription Events
 - Invoice Events
 - Payment Events
@@ -74,6 +75,17 @@ from .payment_events import (
     PaymentRefunded,
     PaymentSucceeded,
 )
+
+# ------------------------------------------------------------------
+# Plan Events
+# ------------------------------------------------------------------
+from .plan_events import (
+    PlanActivated,
+    PlanArchived,
+    PlanCreated,
+    PlanDeactivated,
+    PlanUpdated,
+)
 from .registry import (
     register_billing_events,
 )
@@ -109,6 +121,12 @@ __all__ = [
     "BillingAccountUpdated",
     "BillingAccountSuspended",
     "BillingAccountClosed",
+    # Plan
+    "PlanCreated",
+    "PlanUpdated",
+    "PlanActivated",
+    "PlanDeactivated",
+    "PlanArchived",
     # Subscription
     "SubscriptionCreated",
     "SubscriptionActivated",

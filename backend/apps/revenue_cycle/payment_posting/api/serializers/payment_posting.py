@@ -4,8 +4,9 @@ Serializers for the PaymentPosting module.
 
 from __future__ import annotations
 
-from apps.revenue_cycle.payment_posting.models import PaymentPosting
 from rest_framework import serializers
+
+from apps.revenue_cycle.payment_posting.models import PaymentPosting
 
 WRITE_FIELDS: tuple[str, ...] = (
     "patient",

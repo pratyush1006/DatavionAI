@@ -1,30 +1,30 @@
 """
-AWS S3 storage provider for DatavionOS.
+AWS S3 storage backend for DatavionOS.
 
-This module provides an S3-compatible storage adapter.
+Provides an S3-compatible storage adapter.
 
-The implementation keeps AWS dependencies optional so the kernel
+AWS dependencies remain optional so the kernel
 can run without boto3 in local environments.
 
-Production deployments can enable boto3 and configure credentials
-through environment variables or secret management systems.
+Production deployments can enable boto3 and configure
+credentials through environment variables or secret management.
 """
 
 from __future__ import annotations
 
 from hashlib import sha256
 
-from apps.common.storage.backend import (
-    StorageBackend,
-)
 from apps.common.storage.exceptions import (
     StorageConnectionError,
     StorageDownloadError,
-    StorageFileNotFoundError,
+    StorageNotFoundError,
     StorageUploadError,
 )
 from apps.common.storage.models import (
     StoredFile,
+)
+from apps.common.storage.providers.base import (
+    BaseStorageBackend,
 )
 from apps.common.storage.types import (
     FileContent,
@@ -32,13 +32,13 @@ from apps.common.storage.types import (
 )
 
 
-class S3StorageProvider(
-    StorageBackend,
+class S3StorageBackend(
+    BaseStorageBackend,
 ):
     """
     AWS S3 storage implementation.
 
-    The actual S3 client is injected to keep this layer
+    The S3 client is injected to keep this layer
     testable and provider-independent.
     """
 
@@ -50,13 +50,6 @@ class S3StorageProvider(
     ) -> None:
         """
         Initialize S3 storage.
-
-        Args:
-            bucket_name:
-                S3 bucket name.
-
-            client:
-                boto3 S3 client instance.
         """
 
         self.bucket_name = bucket_name
@@ -70,7 +63,7 @@ class S3StorageProvider(
         overwrite: bool = False,
     ) -> StoredFile:
         """
-        Upload a file to S3.
+        Upload file to S3.
         """
 
         try:
@@ -91,6 +84,7 @@ class S3StorageProvider(
                 path=path,
                 name=path.split("/")[-1],
                 size=len(data),
+                content_type="application/octet-stream",
                 checksum=sha256(
                     data,
                 ).hexdigest(),
@@ -106,7 +100,7 @@ class S3StorageProvider(
         path: StoragePath,
     ) -> bytes:
         """
-        Download a file from S3.
+        Download file from S3.
         """
 
         try:
@@ -127,7 +121,7 @@ class S3StorageProvider(
         path: StoragePath,
     ) -> bool:
         """
-        Delete a file from S3.
+        Delete file from S3.
         """
 
         try:
@@ -148,7 +142,7 @@ class S3StorageProvider(
         path: StoragePath,
     ) -> bool:
         """
-        Check whether a file exists.
+        Check file existence.
         """
 
         try:
@@ -169,7 +163,7 @@ class S3StorageProvider(
         expires_in: int | None = None,
     ) -> str:
         """
-        Generate a signed S3 URL.
+        Generate signed S3 URL.
         """
 
         try:
@@ -206,9 +200,9 @@ class S3StorageProvider(
             )
 
         except Exception as exc:
-            raise StorageFileNotFoundError(
+            raise StorageNotFoundError(
                 str(exc),
             ) from exc
 
 
-__all__: tuple[str, ...] = ("S3StorageProvider",)
+__all__: tuple[str, ...] = ("S3StorageBackend",)

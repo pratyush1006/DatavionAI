@@ -17,6 +17,8 @@ instead of importing drf-spectacular directly.
 
 from __future__ import annotations
 
+from typing import Final
+
 from drf_spectacular.utils import (
     OpenApiExample as DatavionOpenApiExample,
 )
@@ -41,47 +43,41 @@ from drf_spectacular.utils import (
 # ============================================================================
 
 extend_schema = datavion_extend_schema
-
 extend_schema_view = datavion_extend_schema_view
 
 # ============================================================================
 # Common API Parameters
 # ============================================================================
 
-
-DATAVION_REQUEST_ID_PARAMETER = DatavionOpenApiParameter(
+DATAVION_REQUEST_ID_PARAMETER: Final = DatavionOpenApiParameter(
     name="X-Request-ID",
     type=DatavionOpenApiTypes.STR,
     location=DatavionOpenApiParameter.HEADER,
     required=False,
-    description=("Unique request correlation identifier."),
+    description="Unique request correlation identifier.",
 )
 
-
-DATAVION_TENANT_PARAMETER = DatavionOpenApiParameter(
+DATAVION_TENANT_PARAMETER: Final = DatavionOpenApiParameter(
     name="X-Tenant-ID",
     type=DatavionOpenApiTypes.UUID,
     location=DatavionOpenApiParameter.HEADER,
     required=False,
-    description=("Current tenant identifier."),
+    description="Current tenant identifier.",
 )
 
-
-DATAVION_ORGANIZATION_PARAMETER = DatavionOpenApiParameter(
+DATAVION_ORGANIZATION_PARAMETER: Final = DatavionOpenApiParameter(
     name="X-Organization-ID",
     type=DatavionOpenApiTypes.UUID,
     location=DatavionOpenApiParameter.HEADER,
     required=False,
-    description=("Current organization identifier."),
+    description="Current organization identifier.",
 )
-
 
 # ============================================================================
 # Standard API Examples
 # ============================================================================
 
-
-DATAVION_SUCCESS_EXAMPLE = DatavionOpenApiExample(
+DATAVION_SUCCESS_EXAMPLE: Final = DatavionOpenApiExample(
     "Success Response",
     value={
         "success": True,
@@ -91,8 +87,7 @@ DATAVION_SUCCESS_EXAMPLE = DatavionOpenApiExample(
     },
 )
 
-
-DATAVION_ERROR_EXAMPLE = DatavionOpenApiExample(
+DATAVION_ERROR_EXAMPLE: Final = DatavionOpenApiExample(
     "Error Response",
     value={
         "success": False,
@@ -104,13 +99,11 @@ DATAVION_ERROR_EXAMPLE = DatavionOpenApiExample(
     },
 )
 
-
 # ============================================================================
 # API Tags
 # ============================================================================
 
-
-DATAVION_API_TAGS = (
+DATAVION_API_TAGS: Final[tuple[str, ...]] = (
     "Authentication",
     "Organizations",
     "Users",
@@ -126,13 +119,11 @@ DATAVION_API_TAGS = (
     "Billing",
 )
 
-
 # ============================================================================
 # Public Exports
 # ============================================================================
 
-
-__all__: tuple[str, ...] = (
+__all__: Final[tuple[str, ...]] = (
     # DRF Spectacular wrappers
     "DatavionOpenApiExample",
     "DatavionOpenApiParameter",

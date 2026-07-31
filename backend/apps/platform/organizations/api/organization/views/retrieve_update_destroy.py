@@ -6,6 +6,9 @@ from __future__ import annotations
 
 from typing import Final
 
+from drf_spectacular.utils import extend_schema
+from rest_framework.permissions import IsAuthenticated
+
 from apps.common.api.base_generics import (
     BaseRetrieveUpdateDestroyAPIView,
 )
@@ -28,8 +31,6 @@ from apps.platform.organizations.services import (
     delete_organization,
     update_organization,
 )
-from drf_spectacular.utils import extend_schema
-from rest_framework.permissions import IsAuthenticated
 
 ORGANIZATION_TAG: Final[tuple[str, ...]] = ("Organizations",)
 

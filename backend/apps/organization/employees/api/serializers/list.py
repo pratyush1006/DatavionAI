@@ -1,27 +1,68 @@
+"""
+Employee list serializer.
+
+Optimized representation for:
+
+- Employee listing
+- Search results
+- Organization dashboards
+
+Avoids expensive nested serialization.
+"""
+
+from __future__ import annotations
+
 from rest_framework import serializers
 
-from .base import EmployeeBaseSerializer
-from .fields import LIST_FIELDS
+from apps.organization.employees.models import (
+    Employee,
+)
 
 
 class EmployeeListSerializer(
-    EmployeeBaseSerializer,
+    serializers.ModelSerializer,
 ):
-    organization = serializers.CharField(
-        source="organization.name",
+    """
+    Lightweight employee representation.
+
+    Used by:
+
+        EmployeeListCreateAPIView
+    """
+
+    full_name = serializers.CharField(
         read_only=True,
     )
 
-    department = serializers.CharField(
-        source="department.name",
-        read_only=True,
-    )
+    class Meta:
+        model = Employee
 
-    team = serializers.CharField(
-        source="team.name",
-        read_only=True,
-    )
+        fields = (
+            "id",
+            #
+            # Identity
+            #
+            "employee_code",
+            "full_name",
+            "designation",
+            #
+            # Employment
+            #
+            "employment_type",
+            "status",
+            "joining_date",
+            #
+            # Contact
+            #
+            "work_email",
+            #
+            # Audit
+            #
+            "created_at",
+        )
 
-    class Meta(EmployeeBaseSerializer.Meta):
-        fields = LIST_FIELDS
-        read_only_fields = LIST_FIELDS
+        read_only_fields = (
+            "id",
+            "full_name",
+            "created_at",
+        )

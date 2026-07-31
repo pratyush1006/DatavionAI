@@ -1,10 +1,24 @@
 """
-API views for retrieving, updating and deleting employees.
+API views for retrieving, updating, and deleting employees.
+
+Architecture:
+
+GET
+    Selector driven
+
+PUT/PATCH
+    Workflow driven
+
+DELETE
+    Workflow driven
 """
 
 from __future__ import annotations
 
 from typing import Final
+
+from drf_spectacular.utils import extend_schema
+from rest_framework.permissions import IsAuthenticated
 
 from apps.common.api.base_generics import (
     BaseRetrieveUpdateDestroyAPIView,
@@ -21,22 +35,33 @@ from apps.organization.employees.permissions import (
 from apps.organization.employees.selectors import (
     get_employee_by_id,
 )
-from apps.organization.employees.services import (
-    delete_employee,
-    update_employee,
+from apps.organization.employees.workflows import (
+    EmployeeDeletionRequest,
+    EmployeeDeletionWorkflow,
+    EmployeeUpdateRequest,
+    EmployeeUpdateWorkflow,
 )
-from drf_spectacular.utils import extend_schema
-from rest_framework.permissions import IsAuthenticated
 
 EMPLOYEE_TAG: Final[tuple[str, ...]] = ("Employees",)
 
 
-@extend_schema(tags=EMPLOYEE_TAG)
+@extend_schema(
+    tags=EMPLOYEE_TAG,
+)
 class EmployeeRetrieveUpdateDestroyAPIView(
     BaseRetrieveUpdateDestroyAPIView,
 ):
     """
-    Retrieve, update or delete an employee.
+    Retrieve, update, or delete employee.
+
+    GET:
+        Selector driven.
+
+    PUT/PATCH:
+        Workflow driven.
+
+    DELETE:
+        Workflow driven.
     """
 
     lookup_url_kwarg = "employee_id"
@@ -61,29 +86,57 @@ class EmployeeRetrieveUpdateDestroyAPIView(
     }
 
     serializer_classes = {
-        "GET": EmployeeDetailSerializer,
-        "PUT": EmployeeUpdateSerializer,
-        "PATCH": EmployeeUpdateSerializer,
+        "GET": (EmployeeDetailSerializer),
+        "PUT": (EmployeeUpdateSerializer),
+        "PATCH": (EmployeeUpdateSerializer),
     }
 
     detail_serializer_class = EmployeeDetailSerializer
 
-    update_service = update_employee
+    update_workflow = EmployeeUpdateWorkflow
 
-    delete_service = delete_employee
+    delete_workflow = EmployeeDeletionWorkflow
 
     update_success_message = "Employee updated successfully."
 
-    def get_object(self):
+    delete_success_message = "Employee deleted successfully."
+
+    def get_object(
+        self,
+    ):
         """
-        Return the requested employee.
+        Return employee instance.
         """
 
         return get_employee_by_id(
-            employee_id=self.kwargs[self.lookup_url_kwarg],
+            employee_id=(self.kwargs[self.lookup_url_kwarg]),
+        )
+
+    def build_update_workflow_request(
+        self,
+        instance,
+        validated_data,
+    ) -> EmployeeUpdateRequest:
+        """
+        Build employee update workflow request.
+        """
+
+        return EmployeeUpdateRequest(
+            employee_id=instance.id,
+            data=validated_data,
+        )
+
+    def build_delete_workflow_request(
+        self,
+        instance,
+    ) -> EmployeeDeletionRequest:
+        """
+        Build employee deletion workflow request.
+        """
+
+        return EmployeeDeletionRequest(
+            employee_id=instance.id,
         )
 
 
-__all__ = [
-    "EmployeeRetrieveUpdateDestroyAPIView",
-]
+__all__ = ("EmployeeRetrieveUpdateDestroyAPIView",)

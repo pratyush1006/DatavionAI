@@ -4,10 +4,11 @@ Serializers for the Medical History module.
 
 from __future__ import annotations
 
+from rest_framework import serializers
+
 from apps.patient_management.medical_history.models import (
     PatientMedicalHistory,
 )
-from rest_framework import serializers
 
 WRITE_FIELDS: tuple[str, ...] = (
     "organization",

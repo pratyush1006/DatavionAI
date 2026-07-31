@@ -6,6 +6,9 @@ from __future__ import annotations
 
 from typing import Final
 
+from drf_spectacular.utils import extend_schema
+from rest_framework.permissions import IsAuthenticated
+
 from apps.billing.tax_gst.api.serializers import (
     TaxRateDetailSerializer,
     TaxRateUpdateSerializer,
@@ -21,8 +24,6 @@ from apps.billing.tax_gst.services import TaxRateService
 from apps.common.api.base_generics import (
     BaseRetrieveUpdateDestroyAPIView,
 )
-from drf_spectacular.utils import extend_schema
-from rest_framework.permissions import IsAuthenticated
 
 Taxrate_TAG: Final[tuple[str, ...]] = ("Tax and GST",)
 

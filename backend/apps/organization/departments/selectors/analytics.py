@@ -4,10 +4,11 @@ Department analytics selectors.
 
 from __future__ import annotations
 
+from django.db.models import Count
+
 from apps.organization.departments.models import (
     Department,
 )
-from django.db.models import Count
 
 
 class DepartmentAnalyticsSelector:

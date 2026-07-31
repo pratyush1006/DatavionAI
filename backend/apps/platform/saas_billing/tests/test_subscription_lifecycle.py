@@ -3,10 +3,10 @@ Subscription lifecycle tests.
 
 Validates:
 
-- Create subscription
-- Activate subscription
-- Renew subscription
-- Cancel subscription
+- Subscription activation
+- Subscription renewal
+- Subscription cancellation
+- Subscription expiry
 """
 
 from __future__ import annotations
@@ -19,6 +19,9 @@ from apps.platform.saas_billing.workflows.subscription.activate import (
 )
 from apps.platform.saas_billing.workflows.subscription.cancel import (
     CancelSubscriptionWorkflow,
+)
+from apps.platform.saas_billing.workflows.subscription.expire import (
+    ExpireSubscriptionWorkflow,
 )
 from apps.platform.saas_billing.workflows.subscription.renew import (
     RenewSubscriptionWorkflow,
@@ -105,4 +108,22 @@ class SubscriptionLifecycleTest(
         self.assertEqual(
             cancelled.cancellation_reason,
             Subscription.CancellationReason.CUSTOMER_REQUEST,
+        )
+
+    def test_subscription_expiry(
+        self,
+    ):
+        """
+        Validate expiry flow.
+        """
+
+        expired = ExpireSubscriptionWorkflow().handle(
+            subscription=self.subscription,
+        )
+
+        expired.refresh_from_db()
+
+        self.assertEqual(
+            expired.status,
+            Subscription.Status.EXPIRED,
         )

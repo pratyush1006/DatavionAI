@@ -1,32 +1,52 @@
 """
-Base storage provider interface.
+Base storage backend implementation.
+
+Defines shared behavior for concrete storage backends.
+
+Supported implementations:
+
+- Local filesystem
+- AWS S3
+- Azure Blob Storage
+- Google Cloud Storage
 """
 
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
-from typing import BinaryIO
+from abc import (
+    abstractmethod,
+)
+
+from apps.common.storage.backend import (
+    StorageBackend,
+)
 
 
-class BaseStorageProvider(ABC):
+class BaseStorageBackend(
+    StorageBackend,
+):
     """
-    Abstract base class for all storage providers.
+    Abstract base class for storage backends.
+
+    Concrete providers must implement
+    storage-specific operations.
     """
 
     @abstractmethod
     def upload(
         self,
         *,
-        file: BinaryIO,
+        file,
         storage_key: str,
         content_type: str,
-    ) -> str:
+    ):
         """
-        Upload a file to the storage backend.
+        Upload file.
 
         Returns:
-            The provider-specific storage path or identifier.
+            Storage identifier.
         """
+
         raise NotImplementedError
 
     @abstractmethod
@@ -34,10 +54,11 @@ class BaseStorageProvider(ABC):
         self,
         *,
         storage_key: str,
-    ) -> BinaryIO:
+    ):
         """
-        Download a file from the storage backend.
+        Download file.
         """
+
         raise NotImplementedError
 
     @abstractmethod
@@ -47,8 +68,9 @@ class BaseStorageProvider(ABC):
         storage_key: str,
     ) -> None:
         """
-        Delete a file from the storage backend.
+        Delete file.
         """
+
         raise NotImplementedError
 
     @abstractmethod
@@ -58,21 +80,26 @@ class BaseStorageProvider(ABC):
         storage_key: str,
     ) -> bool:
         """
-        Check whether a file exists.
+        Check file existence.
         """
+
         raise NotImplementedError
 
     @abstractmethod
-    def url(
+    def get_url(
         self,
         *,
         storage_key: str,
         expires_in: int | None = None,
     ) -> str:
         """
-        Return a URL for accessing the file.
+        Generate file URL.
 
-        For private assets, implementations may generate a
-        signed URL using ``expires_in``.
+        Private storage may generate
+        signed URLs.
         """
+
         raise NotImplementedError
+
+
+__all__: tuple[str, ...] = ("BaseStorageBackend",)

@@ -104,4 +104,4 @@ class StorageBackend(
         """
 
 
-__all__ = ("StorageBackend",)
+__all__: tuple[str, ...] = ("StorageBackend",)

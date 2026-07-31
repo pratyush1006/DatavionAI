@@ -4,10 +4,11 @@ Detail serializer for the Master Patient Index.
 
 from __future__ import annotations
 
+from rest_framework import serializers
+
 from apps.patient_management.mpi.models import (
     MasterPatientIndex,
 )
-from rest_framework import serializers
 
 
 class MPIDetailSerializer(serializers.ModelSerializer):

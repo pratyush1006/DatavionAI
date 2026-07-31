@@ -7,8 +7,9 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
-from apps.billing.cash_management.models import BankAccount
 from django.db import transaction
+
+from apps.billing.cash_management.models import BankAccount
 
 
 class BankAccountService:

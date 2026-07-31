@@ -32,6 +32,8 @@ class PermissionGroupCode(
 
     TEAMS = "teams", "Teams"
 
+    DOCUMENTS = "documents", "Documents"
+
     APPOINTMENTS = "appointments", "Appointments"
 
     ENCOUNTERS = "encounters", "Encounters"

@@ -4,10 +4,11 @@ Role hierarchy create serializer.
 
 from __future__ import annotations
 
+from rest_framework import serializers
+
 from apps.platform.rbac.models import (
     RoleHierarchy,
 )
-from rest_framework import serializers
 
 
 class RoleHierarchyCreateSerializer(

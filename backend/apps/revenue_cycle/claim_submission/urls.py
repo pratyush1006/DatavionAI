@@ -4,11 +4,12 @@ URL patterns for the Claim Submission module.
 
 from __future__ import annotations
 
+from django.urls import path
+
 from apps.revenue_cycle.claim_submission.api.views import (
     ClaimSubmissionListCreateAPIView,
     ClaimSubmissionRetrieveUpdateDestroyAPIView,
 )
-from django.urls import path
 
 app_name = "claim_submissions"
 

@@ -7,6 +7,7 @@ Loaded during Django startup.
 
 Domains:
 
+- Plan
 - Subscription
 - Invoice
 - Payment
@@ -25,6 +26,13 @@ from .payment import (
     ReconcilePaymentWorkflow,
     RefundPaymentWorkflow,
 )
+from .plan import (
+    ActivatePlanWorkflow,
+    ArchivePlanWorkflow,
+    CreatePlanWorkflow,
+    DeactivatePlanWorkflow,
+    UpdatePlanWorkflow,
+)
 from .registry import (
     WorkflowRegistry,
 )
@@ -32,7 +40,10 @@ from .subscription import (
     ActivateSubscriptionWorkflow,
     CancelSubscriptionWorkflow,
     CreateSubscriptionWorkflow,
+    DowngradeSubscriptionWorkflow,
+    ExpireSubscriptionWorkflow,
     RenewSubscriptionWorkflow,
+    UpgradeSubscriptionWorkflow,
 )
 from .usage import (
     ChargeUsageWorkflow,
@@ -46,7 +57,38 @@ def register_billing_workflows() -> None:
     Register DatavionOS SaaS billing workflows.
     """
 
+    # ------------------------------------------------------------------
+    # Plan
+    # ------------------------------------------------------------------
+
+    WorkflowRegistry.register(
+        "plan.create",
+        CreatePlanWorkflow,
+    )
+
+    WorkflowRegistry.register(
+        "plan.update",
+        UpdatePlanWorkflow,
+    )
+
+    WorkflowRegistry.register(
+        "plan.activate",
+        ActivatePlanWorkflow,
+    )
+
+    WorkflowRegistry.register(
+        "plan.deactivate",
+        DeactivatePlanWorkflow,
+    )
+
+    WorkflowRegistry.register(
+        "plan.archive",
+        ArchivePlanWorkflow,
+    )
+
+    # ------------------------------------------------------------------
     # Subscription
+    # ------------------------------------------------------------------
 
     WorkflowRegistry.register(
         "subscription.create",
@@ -64,11 +106,26 @@ def register_billing_workflows() -> None:
     )
 
     WorkflowRegistry.register(
+        "subscription.upgrade",
+        UpgradeSubscriptionWorkflow,
+    )
+    WorkflowRegistry.register(
+        "subscription.downgrade",
+        DowngradeSubscriptionWorkflow,
+    )
+
+    WorkflowRegistry.register(
         "subscription.cancel",
         CancelSubscriptionWorkflow,
     )
+    WorkflowRegistry.register(
+        "subscription.expire",
+        ExpireSubscriptionWorkflow,
+    )
 
+    # ------------------------------------------------------------------
     # Invoice
+    # ------------------------------------------------------------------
 
     WorkflowRegistry.register(
         "invoice.generate",
@@ -85,7 +142,9 @@ def register_billing_workflows() -> None:
         FinalizeInvoiceWorkflow,
     )
 
+    # ------------------------------------------------------------------
     # Payment
+    # ------------------------------------------------------------------
 
     WorkflowRegistry.register(
         "payment.process",
@@ -102,7 +161,9 @@ def register_billing_workflows() -> None:
         RefundPaymentWorkflow,
     )
 
+    # ------------------------------------------------------------------
     # Usage
+    # ------------------------------------------------------------------
 
     WorkflowRegistry.register(
         "usage.collect",

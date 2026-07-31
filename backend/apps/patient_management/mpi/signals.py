@@ -4,11 +4,12 @@ Signals for the Master Patient Index module.
 
 from __future__ import annotations
 
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
 from apps.patient_management.mpi.models import (
     MasterPatientIndex,
 )
-from django.db.models.signals import post_save
-from django.dispatch import receiver
 
 
 @receiver(

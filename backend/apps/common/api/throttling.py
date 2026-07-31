@@ -12,6 +12,8 @@ Provides platform-wide throttling policies:
 
 from __future__ import annotations
 
+from typing import Final
+
 from rest_framework.throttling import (
     AnonRateThrottle,
     ScopedRateThrottle,
@@ -19,37 +21,32 @@ from rest_framework.throttling import (
 )
 
 
-class DatavionAnonRateThrottle(
-    AnonRateThrottle,
-):
+class DatavionAnonRateThrottle(AnonRateThrottle):
     """
     Anonymous request throttle.
     """
 
-    scope = "anonymous"
+    scope: Final[str] = "anonymous"
 
 
-class DatavionUserRateThrottle(
-    UserRateThrottle,
-):
+class DatavionUserRateThrottle(UserRateThrottle):
     """
     Authenticated user throttle.
     """
 
-    scope = "user"
+    scope: Final[str] = "user"
 
 
-class DatavionScopedRateThrottle(
-    ScopedRateThrottle,
-):
+class DatavionScopedRateThrottle(ScopedRateThrottle):
     """
     Generic scoped throttle.
+
+    Individual views should define
+    ``throttle_scope`` as needed.
     """
 
 
-class DatavionAIRateThrottle(
-    ScopedRateThrottle,
-):
+class DatavionAIRateThrottle(ScopedRateThrottle):
     """
     AI endpoint throttle.
 
@@ -60,12 +57,10 @@ class DatavionAIRateThrottle(
     - Agent execution
     """
 
-    scope = "ai"
+    scope: Final[str] = "ai"
 
 
-class DatavionExportRateThrottle(
-    ScopedRateThrottle,
-):
+class DatavionExportRateThrottle(ScopedRateThrottle):
     """
     Export/report throttle.
 
@@ -76,22 +71,24 @@ class DatavionExportRateThrottle(
     - Analytics extraction
     """
 
-    scope = "export"
+    scope: Final[str] = "export"
 
 
-class DatavionTenantRateThrottle(
-    ScopedRateThrottle,
-):
+class DatavionTenantRateThrottle(ScopedRateThrottle):
     """
     Tenant-aware API throttle.
 
     Used for SaaS isolation.
+
+    Individual views should define
+    ``throttle_scope`` when a more
+    specific tenant policy is required.
     """
 
-    scope = "tenant"
+    scope: Final[str] = "tenant"
 
 
-__all__: tuple[str, ...] = (
+__all__: Final[tuple[str, ...]] = (
     "DatavionAnonRateThrottle",
     "DatavionUserRateThrottle",
     "DatavionScopedRateThrottle",

@@ -64,6 +64,49 @@ class CanManageBilling(
 
 
 # =============================================================================
+# Plan Permissions
+# =============================================================================
+
+
+class CanViewPlan(
+    RBACPermissionBase,
+):
+    """
+    Allows viewing SaaS plans.
+
+    Covers:
+
+    - Pricing catalog
+    - Plan details
+    - Subscription selection
+    """
+
+    message = "You do not have permission to view SaaS plans."
+
+    permission_code = "plans.view"
+
+
+class CanManagePlan(
+    RBACPermissionBase,
+):
+    """
+    Allows managing SaaS plans.
+
+    Covers:
+
+    - Create plans
+    - Update plans
+    - Activate plans
+    - Deactivate plans
+    - Archive plans
+    """
+
+    message = "You do not have permission to manage SaaS plans."
+
+    permission_code = "plans.manage"
+
+
+# =============================================================================
 # Subscription Permissions
 # =============================================================================
 
@@ -123,14 +166,6 @@ class CanManageInvoice(
 ):
     """
     Allows managing invoices.
-
-    Covers:
-
-    - Generate
-    - Issue
-    - Finalize
-    - Cancel
-    - Refund
     """
 
     message = "You do not have permission to manage invoices."
@@ -160,12 +195,6 @@ class CanManagePayment(
 ):
     """
     Allows managing payments.
-
-    Covers:
-
-    - Payment processing
-    - Gateway reconciliation
-    - Refunds
     """
 
     message = "You do not have permission to manage payments."
@@ -195,12 +224,6 @@ class CanManageUsage(
 ):
     """
     Allows managing usage metering.
-
-    Covers:
-
-    - Usage collection
-    - Usage evaluation
-    - Usage charging
     """
 
     message = "You do not have permission to manage usage."
@@ -212,6 +235,9 @@ __all__ = (
     # Billing
     "CanViewBilling",
     "CanManageBilling",
+    # Plan
+    "CanViewPlan",
+    "CanManagePlan",
     # Subscription
     "CanViewSubscription",
     "CanManageSubscription",

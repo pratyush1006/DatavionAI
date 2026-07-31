@@ -4,8 +4,9 @@ Serializers for the ChargeCapture module.
 
 from __future__ import annotations
 
-from apps.revenue_cycle.charge_capture.models import ChargeCapture
 from rest_framework import serializers
+
+from apps.revenue_cycle.charge_capture.models import ChargeCapture
 
 WRITE_FIELDS: tuple[str, ...] = (
     "patient",

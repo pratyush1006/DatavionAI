@@ -4,8 +4,9 @@ Serializers for the Patient Profile module.
 
 from __future__ import annotations
 
-from apps.patient_management.profile.models import PatientProfile
 from rest_framework import serializers
+
+from apps.patient_management.profile.models import PatientProfile
 
 WRITE_FIELDS: tuple[str, ...] = (
     "organization",

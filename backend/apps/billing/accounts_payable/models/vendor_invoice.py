@@ -4,10 +4,11 @@ Vendor Invoice model.
 
 from __future__ import annotations
 
+from django.db import models
+
 from apps.billing.accounts_payable.models import Vendor
 from apps.core.models import BaseModel
 from apps.platform.organizations.models import Organization
-from django.db import models
 
 
 class VendorInvoice(BaseModel):

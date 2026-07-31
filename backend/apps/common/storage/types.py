@@ -1,57 +1,92 @@
 """
 Storage type definitions for DatavionOS.
 
-Provides reusable type aliases shared across the storage
-framework.
+Provides reusable type aliases shared across
+the storage infrastructure layer.
+
+Storage does not know about business domains.
+It only manages files, objects, and storage metadata.
 """
 
 from __future__ import annotations
 
-from collections.abc import (
-    Mapping,
-)
+from collections.abc import Mapping
 from typing import (
     Any,
 )
 
-###############################################################################
-# Storage Paths
-###############################################################################
+# ---------------------------------------------------------------------
+# Storage Identity
+# ---------------------------------------------------------------------
 
-type StoragePath = str
+StorageKey = str
+
+StoragePath = str
+
+FileName = str
 
 
-###############################################################################
+# ---------------------------------------------------------------------
 # File Content
-###############################################################################
+# ---------------------------------------------------------------------
 
-type FileContent = bytes | bytearray
+FileContent = bytes | bytearray | memoryview
 
 
-###############################################################################
-# File Metadata
-###############################################################################
+# ---------------------------------------------------------------------
+# File Information
+# ---------------------------------------------------------------------
 
-type FileMetadata = Mapping[
+MimeType = str
+
+FileSize = int
+
+Checksum = str
+
+
+# ---------------------------------------------------------------------
+# Metadata
+# ---------------------------------------------------------------------
+
+FileMetadata = Mapping[
     str,
     Any,
 ]
 
 
-###############################################################################
-# File Identifiers
-###############################################################################
+StorageContext = Mapping[
+    str,
+    Any,
+]
 
-type FileID = str
+
+# ---------------------------------------------------------------------
+# Ownership Context
+# ---------------------------------------------------------------------
+
+TenantID = str | int | None
+
+OrganizationID = str | int | None
 
 
-###############################################################################
-# Public Exports
-###############################################################################
+# ---------------------------------------------------------------------
+# Versioning
+# ---------------------------------------------------------------------
+
+VersionNumber = int
+
 
 __all__: tuple[str, ...] = (
+    "Checksum",
     "FileContent",
-    "FileID",
     "FileMetadata",
+    "FileName",
+    "FileSize",
+    "MimeType",
+    "OrganizationID",
+    "StorageContext",
+    "StorageKey",
     "StoragePath",
+    "TenantID",
+    "VersionNumber",
 )

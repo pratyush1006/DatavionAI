@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from datetime import UTC, datetime
-from typing import Any, Final
+from typing import Final, TypeAlias
 
 from django.conf import settings
 from rest_framework import status
@@ -16,32 +16,23 @@ from rest_framework.response import Response
 from apps.common.exceptions.codes import ErrorCode
 
 SUCCESS_MESSAGE: Final[str] = "Success."
-
 CREATED_MESSAGE: Final[str] = "Created successfully."
-
 VALIDATION_ERROR_MESSAGE: Final[str] = "Validation failed."
 
+JSONPrimitive: TypeAlias = str | int | float | bool | None
+JSONValue: TypeAlias = JSONPrimitive | list["JSONValue"] | dict[str, "JSONValue"]
 
-type JSONDict = dict[str, Any]
-
-type Headers = Mapping[str, str]
-
-type Meta = Mapping[str, Any]
+JSONDict: TypeAlias = dict[str, JSONValue]
+Headers: TypeAlias = Mapping[str, str]
+Meta: TypeAlias = Mapping[str, JSONValue]
 
 
 def _timestamp() -> str:
     """
-    Return UTC timestamp.
+    Return the current UTC timestamp in ISO-8601 format.
     """
 
-    return (
-        datetime.now(UTC)
-        .isoformat()
-        .replace(
-            "+00:00",
-            "Z",
-        )
-    )
+    return datetime.now(UTC).isoformat().replace("+00:00", "Z")
 
 
 def _request_metadata(
@@ -52,48 +43,35 @@ def _request_metadata(
     """
 
     metadata: JSONDict = {
-        "api_version": getattr(
-            settings,
-            "API_VERSION",
-            "v1",
-        ),
+        "api_version": getattr(settings, "API_VERSION", "v1"),
         "timestamp": _timestamp(),
     }
 
-    if request is not None:
-        request_id = getattr(
-            request,
-            "request_id",
-            None,
-        )
+    if request is None:
+        return metadata
 
-        if request_id:
-            metadata["request_id"] = str(
-                request_id,
-            )
+    if request_id := getattr(request, "request_id", None):
+        metadata["request_id"] = str(request_id)
 
-        tenant = getattr(
-            request,
-            "tenant",
-            None,
-        )
+    tenant = getattr(request, "tenant", None)
 
-        if tenant:
-            metadata["tenant_id"] = str(
-                tenant.id,
-            )
+    if tenant is not None:
+        tenant_id = getattr(tenant, "id", None)
+
+        if tenant_id is not None:
+            metadata["tenant_id"] = str(tenant_id)
 
     return metadata
 
 
 def _build_response(
     *,
-    payload: Mapping[str, Any] | None = None,
+    payload: Mapping[str, JSONValue] | None = None,
     status_code: int,
     headers: Headers | None = None,
 ) -> Response:
     """
-    Build standardized HTTP response.
+    Build a standardized HTTP response.
     """
 
     return Response(
@@ -105,7 +83,7 @@ def _build_response(
 
 def success_response(
     *,
-    data: Any = None,
+    data: JSONValue = None,
     message: str = SUCCESS_MESSAGE,
     meta: Meta | None = None,
     headers: Headers | None = None,
@@ -113,7 +91,7 @@ def success_response(
     status_code: int = status.HTTP_200_OK,
 ) -> Response:
     """
-    Return successful response.
+    Return a successful response.
     """
 
     payload: JSONDict = {
@@ -135,14 +113,14 @@ def success_response(
 
 def created_response(
     *,
-    data: Any = None,
+    data: JSONValue = None,
     message: str = CREATED_MESSAGE,
     meta: Meta | None = None,
     headers: Headers | None = None,
     request: Request | None = None,
 ) -> Response:
     """
-    Return HTTP 201 response.
+    Return an HTTP 201 response.
     """
 
     return success_response(
@@ -159,14 +137,14 @@ def error_response(
     *,
     code: ErrorCode = ErrorCode.VALIDATION_ERROR,
     message: str = VALIDATION_ERROR_MESSAGE,
-    details: Any = None,
+    details: JSONValue = None,
     meta: Meta | None = None,
     headers: Headers | None = None,
     request: Request | None = None,
     status_code: int = status.HTTP_400_BAD_REQUEST,
 ) -> Response:
     """
-    Return standardized error response.
+    Return a standardized error response.
     """
 
     payload: JSONDict = {
@@ -194,7 +172,7 @@ def no_content_response(
     headers: Headers | None = None,
 ) -> Response:
     """
-    Return HTTP 204 response.
+    Return an HTTP 204 response.
     """
 
     return _build_response(
@@ -203,7 +181,12 @@ def no_content_response(
     )
 
 
-__all__: tuple[str, ...] = (
+__all__ = (
+    "JSONDict",
+    "JSONPrimitive",
+    "JSONValue",
+    "Headers",
+    "Meta",
     "created_response",
     "error_response",
     "no_content_response",

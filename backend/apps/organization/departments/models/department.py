@@ -6,6 +6,11 @@ Enterprise department management entity.
 
 from __future__ import annotations
 
+from django.core.exceptions import ValidationError
+from django.core.validators import RegexValidator
+from django.db import models
+from django.utils.text import slugify
+
 from apps.core.models import BaseModel
 from apps.organization.departments.constants import (
     DEFAULT_DEPARTMENT_STATUS,
@@ -14,10 +19,6 @@ from apps.organization.departments.constants import (
     DepartmentType,
 )
 from apps.platform.organizations.models import Organization
-from django.core.exceptions import ValidationError
-from django.core.validators import RegexValidator
-from django.db import models
-from django.utils.text import slugify
 
 
 class Department(BaseModel):

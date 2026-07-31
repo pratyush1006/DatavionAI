@@ -4,8 +4,9 @@ Serializers for the ClaimScrubResult module.
 
 from __future__ import annotations
 
-from apps.revenue_cycle.claim_scrubbing.models import ClaimScrubResult
 from rest_framework import serializers
+
+from apps.revenue_cycle.claim_scrubbing.models import ClaimScrubResult
 
 WRITE_FIELDS: tuple[str, ...] = (
     "patient",

@@ -81,6 +81,7 @@ INSTALLED_APPS = [
     "apps.platform.tenancy",
     "apps.core.apps.CoreConfig",
     "apps.common.apps.CommonConfig",
+    "apps.documents",
     "apps.platform.accounts.apps.AccountsConfig",
     "apps.platform.organizations.apps.OrganizationsConfig",
     "apps.platform.rbac.apps.RBACConfig",

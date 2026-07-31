@@ -8,10 +8,11 @@ from __future__ import annotations
 
 from uuid import UUID
 
+from django.db.models import QuerySet
+
 from apps.organization.departments.models import (
     Department,
 )
-from django.db.models import QuerySet
 
 
 class DepartmentSelector:

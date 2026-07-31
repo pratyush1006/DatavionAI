@@ -4,11 +4,12 @@ URL patterns for the Claim Denial module.
 
 from __future__ import annotations
 
+from django.urls import path
+
 from apps.revenue_cycle.denials.api.views import (
     ClaimDenialListCreateAPIView,
     ClaimDenialRetrieveUpdateDestroyAPIView,
 )
-from django.urls import path
 
 app_name = "claim_denials"
 

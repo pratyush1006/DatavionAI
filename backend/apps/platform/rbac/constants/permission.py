@@ -3,6 +3,14 @@ Permission constants.
 
 Defines standard permission modules, actions, scopes,
 and system roles for the DatavionOS authorization platform.
+
+Design principles:
+
+- Multi-tenant SaaS RBAC
+- Healthcare enterprise workflows
+- Shared permission vocabulary
+- Module.action permission naming
+- Extensible lifecycle authorization
 """
 
 from __future__ import annotations
@@ -17,40 +25,147 @@ class PermissionModule(
     Application modules.
     """
 
-    ACCOUNTS = "accounts", "Accounts"
-    ORGANIZATIONS = "organizations", "Organizations"
-    RBAC = "rbac", "Role Based Access Control"
+    ACCOUNTS = (
+        "accounts",
+        "Accounts",
+    )
 
-    PATIENTS = "patients", "Patients"
-    PROVIDERS = "providers", "Providers"
-    EMPLOYEES = "employees", "Employees"
-    DEPARTMENTS = "departments", "Departments"
-    TEAMS = "teams", "Teams"
+    ORGANIZATIONS = (
+        "organizations",
+        "Organizations",
+    )
 
-    APPOINTMENTS = "appointments", "Appointments"
-    ENCOUNTERS = "encounters", "Encounters"
+    RBAC = (
+        "rbac",
+        "Role Based Access Control",
+    )
 
-    LABORATORIES = "laboratories", "Laboratories"
-    MEDICATIONS = "medications", "Medications"
-    PRESCRIPTIONS = "prescriptions", "Prescriptions"
+    # ==========================================================
+    # Organization Operations
+    # ==========================================================
 
-    ALLERGIES = "allergies", "Allergies"
-    DIAGNOSES = "diagnoses", "Diagnoses"
-    VITALS = "vitals", "Vitals"
+    PATIENTS = (
+        "patients",
+        "Patients",
+    )
 
-    PHARMACY = "pharmacy", "Pharmacy"
+    PROVIDERS = (
+        "providers",
+        "Providers",
+    )
 
-    BILLING = "billing", "Billing"
-    INVENTORY = "inventory", "Inventory"
+    EMPLOYEES = (
+        "employees",
+        "Employees",
+    )
 
-    NOTIFICATIONS = "notifications", "Notifications"
-    AUDIT = "audit", "Audit"
-    REPORTS = "reports", "Reports"
+    DEPARTMENTS = (
+        "departments",
+        "Departments",
+    )
 
-    DASHBOARD = "dashboard", "Dashboard"
-    SETTINGS = "settings", "Settings"
+    TEAMS = (
+        "teams",
+        "Teams",
+    )
 
-    AI = "ai", "Artificial Intelligence"
+    # ==========================================================
+    # Clinical Modules
+    # ==========================================================
+
+    DOCUMENTS = (
+        "documents",
+        "Documents",
+    )
+
+    APPOINTMENTS = (
+        "appointments",
+        "Appointments",
+    )
+
+    ENCOUNTERS = (
+        "encounters",
+        "Encounters",
+    )
+
+    LABORATORIES = (
+        "laboratories",
+        "Laboratories",
+    )
+
+    MEDICATIONS = (
+        "medications",
+        "Medications",
+    )
+
+    PRESCRIPTIONS = (
+        "prescriptions",
+        "Prescriptions",
+    )
+
+    ALLERGIES = (
+        "allergies",
+        "Allergies",
+    )
+
+    DIAGNOSES = (
+        "diagnoses",
+        "Diagnoses",
+    )
+
+    VITALS = (
+        "vitals",
+        "Vitals",
+    )
+
+    PHARMACY = (
+        "pharmacy",
+        "Pharmacy",
+    )
+
+    # ==========================================================
+    # Enterprise Modules
+    # ==========================================================
+
+    BILLING = (
+        "billing",
+        "Billing",
+    )
+
+    INVENTORY = (
+        "inventory",
+        "Inventory",
+    )
+
+    NOTIFICATIONS = (
+        "notifications",
+        "Notifications",
+    )
+
+    AUDIT = (
+        "audit",
+        "Audit",
+    )
+
+    REPORTS = (
+        "reports",
+        "Reports",
+    )
+
+    DASHBOARD = (
+        "dashboard",
+        "Dashboard",
+    )
+
+    SETTINGS = (
+        "settings",
+        "Settings",
+    )
+
+    AI = (
+        "ai",
+        "Artificial Intelligence",
+    )
 
 
 class PermissionAction(
@@ -59,41 +174,50 @@ class PermissionAction(
     """
     Permission actions.
 
-    These actions are shared across all
-    DatavionOS modules.
+    Permissions follow:
 
-    Example:
+        module.action
 
-        organizations.create
-        organizations.suspend
+    Examples:
+
+        employees.create
+        employees.assign
+        employees.contract
         patients.view
-        appointments.cancel
     """
 
-    # ------------------------------------------------------------------
+    # ==========================================================
     # CRUD
-    # ------------------------------------------------------------------
+    # ==========================================================
 
-    VIEW = "view", "View"
-    CREATE = "create", "Create"
-    UPDATE = "update", "Update"
-    DELETE = "delete", "Delete"
+    VIEW = (
+        "view",
+        "View",
+    )
 
-    # ------------------------------------------------------------------
-    # Lifecycle actions
-    #
-    # Required for enterprise workflows:
-    #
-    # Organization:
-    #   create
-    #   activate
-    #   suspend
-    #   restore
-    #   deactivate
-    #
-    # ------------------------------------------------------------------
+    CREATE = (
+        "create",
+        "Create",
+    )
 
-    ACTIVATE = "activate", "Activate"
+    UPDATE = (
+        "update",
+        "Update",
+    )
+
+    DELETE = (
+        "delete",
+        "Delete",
+    )
+
+    # ==========================================================
+    # Lifecycle
+    # ==========================================================
+
+    ACTIVATE = (
+        "activate",
+        "Activate",
+    )
 
     DEACTIVATE = (
         "deactivate",
@@ -110,42 +234,98 @@ class PermissionAction(
         "Restore",
     )
 
-    # ------------------------------------------------------------------
+    # ==========================================================
     # Approval / Assignment
-    # ------------------------------------------------------------------
+    # ==========================================================
 
-    APPROVE = "approve", "Approve"
+    APPROVE = (
+        "approve",
+        "Approve",
+    )
 
-    ASSIGN = "assign", "Assign"
+    ASSIGN = (
+        "assign",
+        "Assign",
+    )
 
-    # ------------------------------------------------------------------
-    # Clinical / Workflow actions
-    # ------------------------------------------------------------------
+    # ==========================================================
+    # Employee / HR Workflow Actions
+    #
+    # Generates:
+    #
+    # employees.contract
+    # employees.onboard
+    # employees.offboard
+    #
+    # ==========================================================
 
-    VERIFY = "verify", "Verify"
+    CONTRACT = (
+        "contract",
+        "Manage Contract",
+    )
 
-    RELEASE = "release", "Release"
+    ONBOARD = (
+        "onboard",
+        "Onboard Employee",
+    )
 
-    SIGN = "sign", "Sign"
+    OFFBOARD = (
+        "offboard",
+        "Offboard Employee",
+    )
 
-    # ------------------------------------------------------------------
-    # Document actions
-    # ------------------------------------------------------------------
+    # ==========================================================
+    # Clinical Workflow
+    # ==========================================================
 
-    UPLOAD = "upload", "Upload"
+    VERIFY = (
+        "verify",
+        "Verify",
+    )
+
+    RELEASE = (
+        "release",
+        "Release",
+    )
+
+    SIGN = (
+        "sign",
+        "Sign",
+    )
+
+    # ==========================================================
+    # Document Actions
+    # ==========================================================
+
+    UPLOAD = (
+        "upload",
+        "Upload",
+    )
 
     DOWNLOAD = (
         "download",
         "Download",
     )
 
-    EXPORT = "export", "Export"
+    EXPORT = (
+        "export",
+        "Export",
+    )
 
-    IMPORT = "import", "Import"
+    IMPORT = (
+        "import",
+        "Import",
+    )
 
-    SHARE = "share", "Share"
+    SHARE = (
+        "share",
+        "Share",
+    )
 
-    PRINT = "print", "Print"
+    PRINT = (
+        "print",
+        "Print",
+    )
 
 
 class PermissionScope(
@@ -155,7 +335,10 @@ class PermissionScope(
     Permission scopes.
     """
 
-    SELF = "self", "Self"
+    SELF = (
+        "self",
+        "Self",
+    )
 
     ASSIGNED = (
         "assigned",
@@ -177,7 +360,10 @@ class PermissionScope(
         "Network",
     )
 
-    ANY = "any", "Any"
+    ANY = (
+        "any",
+        "Any",
+    )
 
 
 class SystemRole(

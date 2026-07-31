@@ -4,9 +4,10 @@ Team member model.
 
 from __future__ import annotations
 
-from apps.core.models import TimeStampedModel
 from django.conf import settings
 from django.db import models
+
+from apps.core.models import TimeStampedModel
 
 
 class TeamMember(

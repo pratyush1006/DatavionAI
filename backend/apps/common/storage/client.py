@@ -30,7 +30,7 @@ class StorageClient:
     Example:
 
         storage.upload(
-            "documents/report.pdf",
+            "tenant/files/report.pdf",
             data,
         )
     """

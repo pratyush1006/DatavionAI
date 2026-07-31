@@ -4,10 +4,11 @@ Selectors for the Master Patient Index.
 
 from __future__ import annotations
 
+from django.db.models import QuerySet
+
 from apps.patient_management.mpi.models import (
     MasterPatientIndex,
 )
-from django.db.models import QuerySet
 
 
 def get_mpi_by_id(

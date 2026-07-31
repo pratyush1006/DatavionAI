@@ -9,6 +9,7 @@ Supports:
 - Multi-tenant SaaS RBAC
 - Healthcare roles
 - AI platform access
+- Document access control
 - Audit compliance
 """
 
@@ -71,23 +72,18 @@ SYSTEM_ROLE_PERMISSIONS = {
             PermissionModule.APPOINTMENTS,
             *PermissionAction,
         )
-        # ---------------------------------------------------------------------
-        # RBAC Administration
-        # ---------------------------------------------------------------------
+        + permissions_for(
+            PermissionModule.DOCUMENTS,
+            *PermissionAction,
+        )
         + permissions_for(
             PermissionModule.RBAC,
             *PermissionAction,
         )
-        # ---------------------------------------------------------------------
-        # AI Platform
-        # ---------------------------------------------------------------------
         + permissions_for(
             PermissionModule.AI,
             *PermissionAction,
         )
-        # ---------------------------------------------------------------------
-        # Compliance Audit
-        # ---------------------------------------------------------------------
         + permissions_for(
             PermissionModule.AUDIT,
             PermissionAction.VIEW,
@@ -116,17 +112,18 @@ SYSTEM_ROLE_PERMISSIONS = {
             PermissionAction.CREATE,
             PermissionAction.UPDATE,
         )
-        # RBAC visibility
+        + permissions_for(
+            PermissionModule.DOCUMENTS,
+            *PermissionAction,
+        )
         + permissions_for(
             PermissionModule.RBAC,
             PermissionAction.VIEW,
         )
-        # AI access
         + permissions_for(
             PermissionModule.AI,
             PermissionAction.VIEW,
         )
-        # Audit visibility
         + permissions_for(
             PermissionModule.AUDIT,
             PermissionAction.VIEW,
@@ -161,6 +158,15 @@ SYSTEM_ROLE_PERMISSIONS = {
             PermissionModule.VITALS,
             *PermissionAction,
         )
+        + permissions_for(
+            PermissionModule.DOCUMENTS,
+            PermissionAction.VIEW,
+            PermissionAction.UPLOAD,
+            PermissionAction.DOWNLOAD,
+            PermissionAction.SHARE,
+            PermissionAction.VERIFY,
+            PermissionAction.SIGN,
+        )
     ),
     # =========================================================================
     # Consultant
@@ -172,6 +178,10 @@ SYSTEM_ROLE_PERMISSIONS = {
         )
         + permissions_for(
             PermissionModule.ENCOUNTERS,
+            PermissionAction.VIEW,
+        )
+        + permissions_for(
+            PermissionModule.DOCUMENTS,
             PermissionAction.VIEW,
         )
     ),
@@ -188,6 +198,12 @@ SYSTEM_ROLE_PERMISSIONS = {
             PermissionModule.VITALS,
             *PermissionAction,
         )
+        + permissions_for(
+            PermissionModule.DOCUMENTS,
+            PermissionAction.VIEW,
+            PermissionAction.UPLOAD,
+            PermissionAction.DOWNLOAD,
+        )
     ),
     # =========================================================================
     # Laboratory Manager
@@ -196,6 +212,13 @@ SYSTEM_ROLE_PERMISSIONS = {
         permissions_for(
             PermissionModule.LABORATORIES,
             *PermissionAction,
+        )
+        + permissions_for(
+            PermissionModule.DOCUMENTS,
+            PermissionAction.VIEW,
+            PermissionAction.UPLOAD,
+            PermissionAction.DOWNLOAD,
+            PermissionAction.VERIFY,
         )
     ),
     # =========================================================================
@@ -207,6 +230,11 @@ SYSTEM_ROLE_PERMISSIONS = {
             PermissionAction.VIEW,
             PermissionAction.UPDATE,
             PermissionAction.RELEASE,
+        )
+        + permissions_for(
+            PermissionModule.DOCUMENTS,
+            PermissionAction.VIEW,
+            PermissionAction.UPLOAD,
         )
     ),
     # =========================================================================
@@ -220,6 +248,11 @@ SYSTEM_ROLE_PERMISSIONS = {
         + permissions_for(
             PermissionModule.MEDICATIONS,
             PermissionAction.VIEW,
+        )
+        + permissions_for(
+            PermissionModule.DOCUMENTS,
+            PermissionAction.VIEW,
+            PermissionAction.DOWNLOAD,
         )
     ),
     # =========================================================================
@@ -235,6 +268,10 @@ SYSTEM_ROLE_PERMISSIONS = {
             PermissionModule.APPOINTMENTS,
             *PermissionAction,
         )
+        + permissions_for(
+            PermissionModule.DOCUMENTS,
+            PermissionAction.VIEW,
+        )
     ),
     # =========================================================================
     # Patient
@@ -248,6 +285,11 @@ SYSTEM_ROLE_PERMISSIONS = {
             PermissionModule.APPOINTMENTS,
             PermissionAction.VIEW,
         )
+        + permissions_for(
+            PermissionModule.DOCUMENTS,
+            PermissionAction.VIEW,
+            PermissionAction.DOWNLOAD,
+        )
     ),
     # =========================================================================
     # AI Agent
@@ -256,6 +298,11 @@ SYSTEM_ROLE_PERMISSIONS = {
         permissions_for(
             PermissionModule.AI,
             *PermissionAction,
+        )
+        + permissions_for(
+            PermissionModule.DOCUMENTS,
+            PermissionAction.VIEW,
+            PermissionAction.EXPORT,
         )
     ),
 }

@@ -4,11 +4,12 @@ URL patterns for the Scrub Result module.
 
 from __future__ import annotations
 
+from django.urls import path
+
 from apps.revenue_cycle.claim_scrubbing.api.views import (
     ClaimScrubResultListCreateAPIView,
     ClaimScrubResultRetrieveUpdateDestroyAPIView,
 )
-from django.urls import path
 
 app_name = "scrub_results"
 

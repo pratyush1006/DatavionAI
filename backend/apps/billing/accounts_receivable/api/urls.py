@@ -4,13 +4,14 @@ Accounts Receivable API URL patterns.
 
 from __future__ import annotations
 
+from django.urls import path
+
 from apps.billing.accounts_receivable.api.views import (
     CustomerInvoiceListCreateAPIView,
     CustomerInvoiceRetrieveUpdateDestroyAPIView,
     CustomerListCreateAPIView,
     CustomerRetrieveUpdateDestroyAPIView,
 )
-from django.urls import path
 
 app_name = "accounts_receivable"
 

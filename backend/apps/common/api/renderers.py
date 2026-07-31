@@ -17,14 +17,39 @@ from __future__ import annotations
 import csv
 import io
 import json
-from typing import Any
+from collections.abc import Mapping, Sequence
+from typing import TypeAlias
 
 from rest_framework.renderers import BaseRenderer, JSONRenderer
 
+JSONPrimitive: TypeAlias = str | int | float | bool | None
+JSONValue: TypeAlias = JSONPrimitive | list["JSONValue"] | dict[str, "JSONValue"]
 
-class DatavionJSONRenderer(
-    JSONRenderer,
-):
+_ENCODING = "utf-8"
+_CSV_FORMULA_PREFIXES = ("=", "+", "-", "@")
+
+
+def _json_bytes(data: JSONValue) -> bytes:
+    """Serialize JSON-compatible data to UTF-8 bytes."""
+    return json.dumps(
+        data,
+        ensure_ascii=False,
+        separators=(",", ":"),
+    ).encode(_ENCODING)
+
+
+def _csv_value(value: object) -> object:
+    """
+    Protect exported CSV values against spreadsheet formula injection.
+    """
+
+    if isinstance(value, str) and value.startswith(_CSV_FORMULA_PREFIXES):
+        return f"'{value}"
+
+    return value
+
+
+class DatavionJSONRenderer(JSONRenderer):
     """
     Default JSON renderer.
 
@@ -32,9 +57,7 @@ class DatavionJSONRenderer(
     """
 
 
-class DatavionCSVRenderer(
-    BaseRenderer,
-):
+class DatavionCSVRenderer(BaseRenderer):
     """
     CSV export renderer.
 
@@ -46,129 +69,108 @@ class DatavionCSVRenderer(
     """
 
     media_type = "text/csv"
-
     format = "csv"
+    charset = _ENCODING
 
     def render(
         self,
-        data: Any,
-        accepted_media_type=None,
-        renderer_context=None,
+        data: object,
+        accepted_media_type: str | None = None,
+        renderer_context: dict[str, object] | None = None,
     ) -> bytes:
+        del accepted_media_type, renderer_context
 
         if not data:
             return b""
 
-        output = io.StringIO()
+        output = io.StringIO(newline="")
 
-        if isinstance(data, list):
+        if isinstance(data, Sequence) and not isinstance(data, (str, bytes, bytearray)):
+            rows = [row for row in data if isinstance(row, Mapping)]
+
+            if not rows:
+                return b""
+
             writer = csv.DictWriter(
                 output,
-                fieldnames=data[0].keys(),
+                fieldnames=list(rows[0].keys()),
             )
 
             writer.writeheader()
 
-            writer.writerows(
-                data,
+            for row in rows:
+                writer.writerow(
+                    {key: _csv_value(value) for key, value in row.items()},
+                )
+
+        elif isinstance(data, Mapping):
+            writer = csv.writer(output)
+
+            writer.writerow(data.keys())
+            writer.writerow(
+                [_csv_value(value) for value in data.values()],
             )
 
         else:
-            writer = csv.writer(
-                output,
-            )
+            writer = csv.writer(output)
+            writer.writerow([_csv_value(data)])
 
-            writer.writerow(
-                data.keys(),
-            )
-
-            writer.writerow(
-                data.values(),
-            )
-
-        return output.getvalue().encode(
-            "utf-8",
-        )
+        return output.getvalue().encode(_ENCODING)
 
 
-class DatavionFHIRRenderer(
-    BaseRenderer,
-):
+class DatavionFHIRRenderer(BaseRenderer):
     """
     FHIR JSON renderer.
 
-    Intended for healthcare interoperability:
+    Intended for healthcare interoperability.
 
-    - Patient resources
-    - Encounter resources
-    - Observation resources
-    - Medication resources
-
-    Actual FHIR mapping belongs to
-    healthcare applications.
+    Actual FHIR resource transformation belongs
+    to healthcare applications.
     """
 
     media_type = "application/fhir+json"
-
     format = "fhir"
+    charset = _ENCODING
 
     def render(
         self,
-        data: Any,
-        accepted_media_type=None,
-        renderer_context=None,
+        data: JSONValue,
+        accepted_media_type: str | None = None,
+        renderer_context: dict[str, object] | None = None,
     ) -> bytes:
-
-        return json.dumps(
-            data,
-            default=str,
-        ).encode(
-            "utf-8",
-        )
+        del accepted_media_type, renderer_context
+        return _json_bytes(data)
 
 
-class DatavionHL7Renderer(
-    BaseRenderer,
-):
+class DatavionHL7Renderer(BaseRenderer):
     """
     HL7 message renderer.
 
     Provides transport representation only.
 
-    HL7 generation/parsing logic belongs
-    to integration modules.
+    HL7 generation/parsing belongs to
+    integration modules.
     """
 
     media_type = "application/hl7-v2"
-
     format = "hl7"
+    charset = _ENCODING
 
     def render(
         self,
-        data: Any,
-        accepted_media_type=None,
-        renderer_context=None,
+        data: str | JSONValue,
+        accepted_media_type: str | None = None,
+        renderer_context: dict[str, object] | None = None,
     ) -> bytes:
+        del accepted_media_type, renderer_context
 
-        if isinstance(
-            data,
-            str,
-        ):
-            return data.encode(
-                "utf-8",
-            )
+        if isinstance(data, str):
+            return data.encode(_ENCODING)
 
-        return json.dumps(
-            data,
-            default=str,
-        ).encode(
-            "utf-8",
-        )
+        return _json_bytes(data)
 
 
-class DatavionAIResponseRenderer(
-    BaseRenderer,
-):
+class DatavionAIResponseRenderer(BaseRenderer):
     """
     AI response renderer.
 
@@ -181,26 +183,22 @@ class DatavionAIResponseRenderer(
     """
 
     media_type = "application/vnd.datavion.ai+json"
-
     format = "ai"
+    charset = _ENCODING
 
     def render(
         self,
-        data: Any,
-        accepted_media_type=None,
-        renderer_context=None,
+        data: JSONValue,
+        accepted_media_type: str | None = None,
+        renderer_context: dict[str, object] | None = None,
     ) -> bytes:
+        del accepted_media_type, renderer_context
 
-        payload = {
-            "type": "ai_response",
-            "data": data,
-        }
-
-        return json.dumps(
-            payload,
-            default=str,
-        ).encode(
-            "utf-8",
+        return _json_bytes(
+            {
+                "type": "ai_response",
+                "data": data,
+            },
         )
 
 

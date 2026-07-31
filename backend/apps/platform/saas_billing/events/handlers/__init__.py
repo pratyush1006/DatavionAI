@@ -27,6 +27,13 @@ from .payment_handlers import (
     handle_payment_refunded,
     handle_payment_succeeded,
 )
+from .plan_handlers import (
+    handle_plan_activated,
+    handle_plan_archived,
+    handle_plan_created,
+    handle_plan_deactivated,
+    handle_plan_updated,
+)
 from .subscription_handlers import (
     handle_subscription_activated,
     handle_subscription_cancelled,
@@ -59,4 +66,9 @@ __all__ = [
     "handle_usage_recorded",
     "handle_usage_limit_exceeded",
     "handle_usage_charged",
+    "handle_plan_created",
+    "handle_plan_updated",
+    "handle_plan_activated",
+    "handle_plan_deactivated",
+    "handle_plan_archived",
 ]

@@ -1,7 +1,7 @@
 """
-Billing account services.
+Billing service.
 
-Business logic layer for DatavionOS SaaS billing accounts.
+Business logic layer for DatavionOS SaaS billing.
 
 Responsibilities:
 
@@ -9,23 +9,26 @@ Responsibilities:
 - Update billing profiles
 - Manage billing lifecycle
 - Configure payment providers
-- Enterprise billing settings
+- Manage auto charge
+- Resolve billing capabilities
 
 Architecture:
 
 Organization
       |
-BillingAccountService
+BillingService
       |
 Billing Workflow
       |
-BillingAccount Model
+Billing Account
       |
 Subscription
       |
 Invoice
       |
 Payment
+      |
+Revenue Analytics
 """
 
 from __future__ import annotations
@@ -40,10 +43,14 @@ from apps.platform.saas_billing.models import (
 )
 
 
-class BillingAccountService:
+class BillingService:
     """
-    Enterprise SaaS billing account service.
+    Enterprise SaaS billing service.
     """
+
+    # ==============================================================
+    # Queries
+    # ==============================================================
 
     @staticmethod
     def get_billing_account(
@@ -59,6 +66,53 @@ class BillingAccountService:
         ).first()
 
     @staticmethod
+    def is_active(
+        *,
+        billing_account: BillingAccount,
+    ) -> bool:
+        """
+        Check billing account status.
+        """
+
+        return billing_account.status == BillingAccount.BillingStatus.ACTIVE
+
+    @staticmethod
+    def can_charge(
+        *,
+        billing_account: BillingAccount,
+    ) -> bool:
+        """
+        Check whether account supports charging.
+        """
+
+        return (
+            BillingService.is_active(
+                billing_account=billing_account,
+            )
+            and billing_account.auto_charge_enabled
+        )
+
+    @staticmethod
+    def get_payment_configuration(
+        *,
+        billing_account: BillingAccount,
+    ) -> dict:
+        """
+        Resolve payment gateway configuration.
+        """
+
+        return {
+            "provider": (billing_account.payment_provider),
+            "customer_id": (billing_account.payment_customer_id),
+            "payment_method_id": (billing_account.default_payment_method_id),
+            "auto_charge": (billing_account.auto_charge_enabled),
+        }
+
+    # ==============================================================
+    # Creation
+    # ==============================================================
+
+    @staticmethod
     @transaction.atomic
     def create_billing_account(
         *,
@@ -69,16 +123,16 @@ class BillingAccountService:
         currency: str = "INR",
     ) -> BillingAccount:
         """
-        Create billing account.
+        Create organization billing account.
 
         Used during:
 
-        - Organization registration
-        - SaaS onboarding
+        - Organization signup
         - Tenant provisioning
+        - SaaS onboarding
         """
 
-        existing = BillingAccountService.get_billing_account(
+        existing = BillingService.get_billing_account(
             organization=organization,
         )
 
@@ -94,9 +148,13 @@ class BillingAccountService:
             currency=currency,
             status=(BillingAccount.BillingStatus.ACTIVE),
             metadata={
-                "created_by": ("organization_signup"),
+                "created_by": "organization_signup",
             },
         )
+
+    # ==============================================================
+    # Profile
+    # ==============================================================
 
     @staticmethod
     @transaction.atomic
@@ -106,7 +164,7 @@ class BillingAccountService:
         data: dict,
     ) -> BillingAccount:
         """
-        Update billing profile.
+        Update billing information.
         """
 
         allowed_fields = {
@@ -147,6 +205,10 @@ class BillingAccountService:
 
         return billing_account
 
+    # ==============================================================
+    # Payment Provider
+    # ==============================================================
+
     @staticmethod
     @transaction.atomic
     def configure_payment_provider(
@@ -179,15 +241,16 @@ class BillingAccountService:
 
         return billing_account
 
+    # ==============================================================
+    # Auto Charge
+    # ==============================================================
+
     @staticmethod
     @transaction.atomic
     def enable_auto_charge(
         *,
         billing_account: BillingAccount,
     ) -> BillingAccount:
-        """
-        Enable automatic payment collection.
-        """
 
         billing_account.auto_charge_enabled = True
 
@@ -206,9 +269,6 @@ class BillingAccountService:
         *,
         billing_account: BillingAccount,
     ) -> BillingAccount:
-        """
-        Disable automatic payment collection.
-        """
 
         billing_account.auto_charge_enabled = False
 
@@ -221,15 +281,16 @@ class BillingAccountService:
 
         return billing_account
 
+    # ==============================================================
+    # Lifecycle
+    # ==============================================================
+
     @staticmethod
     @transaction.atomic
     def suspend(
         *,
         billing_account: BillingAccount,
     ) -> BillingAccount:
-        """
-        Suspend billing account.
-        """
 
         billing_account.status = BillingAccount.BillingStatus.SUSPENDED
 
@@ -248,9 +309,6 @@ class BillingAccountService:
         *,
         billing_account: BillingAccount,
     ) -> BillingAccount:
-        """
-        Activate billing account.
-        """
 
         billing_account.status = BillingAccount.BillingStatus.ACTIVE
 
@@ -269,11 +327,6 @@ class BillingAccountService:
         *,
         billing_account: BillingAccount,
     ) -> BillingAccount:
-        """
-        Close billing account.
-
-        Also disables automatic collection.
-        """
 
         billing_account.status = BillingAccount.BillingStatus.CLOSED
 
@@ -290,6 +343,17 @@ class BillingAccountService:
         return billing_account
 
 
+# Backward compatibility alias.
+#
+# Existing workflows and services may import
+# BillingAccountService.
+#
+# BillingService is the canonical implementation.
+
+BillingAccountService = BillingService
+
+
 __all__ = [
+    "BillingService",
     "BillingAccountService",
 ]

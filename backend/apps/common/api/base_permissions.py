@@ -14,7 +14,7 @@ Business authorization rules belong to feature applications:
 
 from __future__ import annotations
 
-from typing import Any, Final
+from typing import TYPE_CHECKING, Final
 
 from rest_framework.permissions import (
     SAFE_METHODS,
@@ -23,18 +23,16 @@ from rest_framework.permissions import (
 from rest_framework.request import Request
 from rest_framework.views import APIView
 
+if TYPE_CHECKING:
+    from django.contrib.auth.models import AbstractBaseUser
+
 AUTHENTICATION_REQUIRED_MESSAGE: Final[str] = "Authentication is required."
-
 ACCOUNT_INACTIVE_MESSAGE: Final[str] = "The authenticated account is inactive."
-
 TENANT_INACTIVE_MESSAGE: Final[str] = "Tenant access is unavailable."
-
 ACCESS_DENIED_MESSAGE: Final[str] = "Access denied."
 
 
-class DatavionPermission(
-    BasePermission,
-):
+class DatavionPermission(BasePermission):
     """
     Base permission for DatavionOS.
 
@@ -45,9 +43,9 @@ class DatavionPermission(
     @staticmethod
     def get_user(
         request: Request,
-    ) -> Any:
+    ) -> AbstractBaseUser | object:
         """
-        Return request user.
+        Return the authenticated user.
         """
 
         return request.user
@@ -55,9 +53,9 @@ class DatavionPermission(
     @staticmethod
     def get_tenant(
         request: Request,
-    ) -> Any:
+    ) -> object | None:
         """
-        Return current tenant.
+        Return the current tenant.
 
         Provided by tenant middleware.
         """
@@ -68,24 +66,37 @@ class DatavionPermission(
             None,
         )
 
+    @staticmethod
+    def _flag(
+        obj: object | None,
+        attribute: str,
+        default: bool = False,
+    ) -> bool:
+        """
+        Safely evaluate a boolean attribute.
+        """
+
+        return bool(
+            obj
+            and getattr(
+                obj,
+                attribute,
+                default,
+            )
+        )
+
     @classmethod
     def is_authenticated(
         cls,
         request: Request,
     ) -> bool:
         """
-        Check authentication.
+        Check whether the request is authenticated.
         """
 
-        user = cls.get_user(request)
-
-        return bool(
-            user
-            and getattr(
-                user,
-                "is_authenticated",
-                False,
-            )
+        return cls._flag(
+            cls.get_user(request),
+            "is_authenticated",
         )
 
     @classmethod
@@ -94,18 +105,12 @@ class DatavionPermission(
         request: Request,
     ) -> bool:
         """
-        Check user active status.
+        Check whether the authenticated user is active.
         """
 
-        user = cls.get_user(request)
-
-        return bool(
-            user
-            and getattr(
-                user,
-                "is_active",
-                False,
-            )
+        return cls._flag(
+            cls.get_user(request),
+            "is_active",
         )
 
     @classmethod
@@ -121,14 +126,13 @@ class DatavionPermission(
             request,
         )
 
-        # Allow non-tenant infrastructure APIs
         if tenant is None:
             return True
 
-        return getattr(
+        return cls._flag(
             tenant,
             "is_active",
-            True,
+            default=True,
         )
 
     def has_object_permission(
@@ -138,7 +142,7 @@ class DatavionPermission(
         obj: object,
     ) -> bool:
         """
-        Default object permission behavior.
+        Default object permission behaviour.
         """
 
         return self.has_permission(
@@ -147,9 +151,7 @@ class DatavionPermission(
         )
 
 
-class AllowAnyAuthenticated(
-    DatavionPermission,
-):
+class AllowAnyAuthenticated(DatavionPermission):
     """
     Allow authenticated users.
     """
@@ -161,15 +163,12 @@ class AllowAnyAuthenticated(
         request: Request,
         _view: APIView,
     ) -> bool:
-
         return self.is_authenticated(
             request,
         )
 
 
-class IsAuthenticatedAndActive(
-    DatavionPermission,
-):
+class IsAuthenticatedAndActive(DatavionPermission):
     """
     Allow authenticated active users
     with active tenant access.
@@ -182,7 +181,6 @@ class IsAuthenticatedAndActive(
         request: Request,
         _view: APIView,
     ) -> bool:
-
         return (
             self.is_authenticated(request)
             and self.is_active(request)
@@ -190,11 +188,9 @@ class IsAuthenticatedAndActive(
         )
 
 
-class ReadOnly(
-    DatavionPermission,
-):
+class ReadOnly(DatavionPermission):
     """
-    Allow only safe methods.
+    Allow only safe HTTP methods.
     """
 
     def has_permission(
@@ -202,13 +198,10 @@ class ReadOnly(
         request: Request,
         _view: APIView,
     ) -> bool:
-
         return request.method in SAFE_METHODS
 
 
-class DenyAll(
-    DatavionPermission,
-):
+class DenyAll(DatavionPermission):
     """
     Deny every request.
     """
@@ -220,11 +213,10 @@ class DenyAll(
         request: Request,
         _view: APIView,
     ) -> bool:
-
         return False
 
 
-__all__: tuple[str, ...] = (
+__all__: Final[tuple[str, ...]] = (
     "AllowAnyAuthenticated",
     "DatavionPermission",
     "DenyAll",

@@ -4,6 +4,7 @@ DatavionOS SaaS Billing API URLs.
 Routes:
 
 - Billing Account
+- Plan
 - Subscription
 - Invoice
 - Payment
@@ -30,6 +31,13 @@ from apps.platform.saas_billing.api.views import (
     PaymentProcessAPIView,
     PaymentReconcileAPIView,
     PaymentRefundAPIView,
+    PlanActivateAPIView,
+    PlanArchiveAPIView,
+    PlanCreateAPIView,
+    PlanDeactivateAPIView,
+    PlanDetailAPIView,
+    PlanListAPIView,
+    PlanUpdateAPIView,
     SubscriptionActivateAPIView,
     SubscriptionCancelAPIView,
     SubscriptionCreateAPIView,
@@ -64,6 +72,44 @@ urlpatterns = [
         "account/auto-charge/",
         BillingAutoChargeAPIView.as_view(),
         name="billing-auto-charge",
+    ),
+    # =========================================================================
+    # Plans
+    # =========================================================================
+    path(
+        "plans/",
+        PlanListAPIView.as_view(),
+        name="plan-list",
+    ),
+    path(
+        "plans/<uuid:pk>/",
+        PlanDetailAPIView.as_view(),
+        name="plan-detail",
+    ),
+    path(
+        "plans/create/",
+        PlanCreateAPIView.as_view(),
+        name="plan-create",
+    ),
+    path(
+        "plans/<uuid:pk>/update/",
+        PlanUpdateAPIView.as_view(),
+        name="plan-update",
+    ),
+    path(
+        "plans/<uuid:pk>/activate/",
+        PlanActivateAPIView.as_view(),
+        name="plan-activate",
+    ),
+    path(
+        "plans/<uuid:pk>/deactivate/",
+        PlanDeactivateAPIView.as_view(),
+        name="plan-deactivate",
+    ),
+    path(
+        "plans/<uuid:pk>/archive/",
+        PlanArchiveAPIView.as_view(),
+        name="plan-archive",
     ),
     # =========================================================================
     # Subscription

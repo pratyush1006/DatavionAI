@@ -7,8 +7,8 @@ from __future__ import annotations
 import asyncio
 
 from apps.ai.models import KnowledgeDocument
+from apps.ai.providers.chat import OpenAIChatModel
 from apps.common.tests.base import BaseTestCase
-from apps.datavionos.ai.implementation.chat import OpenAIChatModel
 from apps.datavionos.ai.implementation.embeddings import OpenAIEmbeddingModel
 from apps.datavionos.ai.implementation.rag_engine import SimpleRAGEngine
 from apps.datavionos.ai.implementation.vector_store import PostgresVectorStore

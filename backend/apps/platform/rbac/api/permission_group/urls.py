@@ -4,11 +4,12 @@ PermissionGroup API URLs.
 
 from __future__ import annotations
 
+from django.urls import path
+
 from apps.platform.rbac.api.permission_group.views import (
     PermissionGroupListCreateAPIView,
     PermissionGroupRetrieveUpdateDestroyAPIView,
 )
-from django.urls import path
 
 app_name = "permission-groups"
 

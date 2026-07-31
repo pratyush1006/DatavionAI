@@ -3,15 +3,14 @@ Storage models for DatavionOS.
 
 Defines immutable metadata models representing stored files.
 
-These models do not represent business documents.
-They only describe storage-level information.
+These models only describe storage-level information.
 
-Business ownership remains with feature applications:
+Domain ownership remains with feature applications:
 
-- patients
-- laboratories
-- clinical
-- billing
+- healthcare
+- finance
+- analytics
+- reporting
 """
 
 from __future__ import annotations
@@ -78,7 +77,8 @@ class StorageLocation:
     """
     Represents a storage location.
 
-    Used for tenant-aware and provider-aware storage routing.
+    Used for tenant-aware and provider-aware
+    storage routing.
     """
 
     tenant_id: str | None = None

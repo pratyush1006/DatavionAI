@@ -10,12 +10,12 @@ from __future__ import annotations
 import os
 from typing import Any
 
+from apps.ai.providers.chat import OpenAIChatModel
 from apps.datavionos.ai.chat import (
     ChatMessage,
     ChatRequest,
     ChatRole,
 )
-from apps.datavionos.ai.implementation.chat import OpenAIChatModel
 from apps.transcription.constants import TranscriptionStatus
 from apps.transcription.models import GeneratedNote, TranscriptionJob
 

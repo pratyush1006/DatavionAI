@@ -4,23 +4,28 @@ DatavionOS storage providers.
 Provides available storage backend implementations.
 
 Providers are adapters only.
+
 Business modules should use StorageClient.
 """
 
 from __future__ import annotations
 
 from .azure import (
-    AzureBlobStorageProvider,
+    AzureBlobStorageBackend,
+)
+from .gcs import (
+    GCSStorageBackend,
 )
 from .local import (
-    LocalStorageProvider,
+    LocalStorageBackend,
 )
 from .s3 import (
-    S3StorageProvider,
+    S3StorageBackend,
 )
 
 __all__: tuple[str, ...] = (
-    "AzureBlobStorageProvider",
-    "LocalStorageProvider",
-    "S3StorageProvider",
+    "AzureBlobStorageBackend",
+    "LocalStorageBackend",
+    "S3StorageBackend",
+    "GCSStorageBackend",
 )

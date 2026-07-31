@@ -167,9 +167,26 @@ class WorkflowCreateMixin(
         result,
     ):
         """
-        Resolve created object.
+        Resolve created domain object.
 
-        Supports workflow result DTOs.
+        Workflow returns DTOs.
+
+        Example:
+
+            EmployeeCreationData(
+                employee_id=UUID(...)
+            )
+
+        API serializers require
+        the actual model instance.
+
+        Supported identifiers:
+
+        - employee_id
+        - department_id
+        - patient_id
+        - appointment_id
+        - id
         """
 
         data = result.data
@@ -179,17 +196,25 @@ class WorkflowCreateMixin(
 
         object_id = None
 
-        if hasattr(
-            data,
+        workflow_identifier_fields = (
+            "employee_id",
             "department_id",
-        ):
-            object_id = data.department_id
-
-        elif hasattr(
-            data,
+            "patient_id",
+            "appointment_id",
+            "claim_id",
             "id",
-        ):
-            object_id = data.id
+        )
+
+        for field_name in workflow_identifier_fields:
+            if hasattr(
+                data,
+                field_name,
+            ):
+                object_id = getattr(
+                    data,
+                    field_name,
+                )
+                break
 
         if object_id is None:
             return data

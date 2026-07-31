@@ -34,6 +34,11 @@ from .handlers import (
     handle_payment_reconciled,
     handle_payment_refunded,
     handle_payment_succeeded,
+    handle_plan_activated,
+    handle_plan_archived,
+    handle_plan_created,
+    handle_plan_deactivated,
+    handle_plan_updated,
     handle_subscription_activated,
     handle_subscription_cancelled,
     handle_subscription_created,
@@ -58,6 +63,13 @@ from .payment_events import (
     PaymentRefunded,
     PaymentSucceeded,
 )
+from .plan_events import (
+    PlanActivated,
+    PlanArchived,
+    PlanCreated,
+    PlanDeactivated,
+    PlanUpdated,
+)
 from .subscription_events import (
     SubscriptionActivated,
     SubscriptionCancelled,
@@ -78,7 +90,38 @@ def register_billing_events() -> None:
     Called during application startup.
     """
 
+    # ------------------------------------------------------------------
+    # Plan
+    # ------------------------------------------------------------------
+
+    EventDispatcher.register(
+        PlanCreated,
+        handle_plan_created,
+    )
+
+    EventDispatcher.register(
+        PlanUpdated,
+        handle_plan_updated,
+    )
+
+    EventDispatcher.register(
+        PlanActivated,
+        handle_plan_activated,
+    )
+
+    EventDispatcher.register(
+        PlanDeactivated,
+        handle_plan_deactivated,
+    )
+
+    EventDispatcher.register(
+        PlanArchived,
+        handle_plan_archived,
+    )
+
+    # ------------------------------------------------------------------
     # Subscription
+    # ------------------------------------------------------------------
 
     EventDispatcher.register(
         SubscriptionCreated,
@@ -100,7 +143,9 @@ def register_billing_events() -> None:
         handle_subscription_cancelled,
     )
 
+    # ------------------------------------------------------------------
     # Invoice
+    # ------------------------------------------------------------------
 
     EventDispatcher.register(
         InvoiceGenerated,
@@ -132,7 +177,9 @@ def register_billing_events() -> None:
         handle_invoice_refunded,
     )
 
+    # ------------------------------------------------------------------
     # Payment
+    # ------------------------------------------------------------------
 
     EventDispatcher.register(
         PaymentCreated,
@@ -164,7 +211,9 @@ def register_billing_events() -> None:
         handle_payment_reconciled,
     )
 
+    # ------------------------------------------------------------------
     # Usage
+    # ------------------------------------------------------------------
 
     EventDispatcher.register(
         UsageRecorded,

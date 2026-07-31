@@ -1,5 +1,5 @@
 """
-Azure Blob Storage provider for DatavionOS.
+Azure Blob Storage backend for DatavionOS.
 
 Provides an Azure Blob Storage adapter.
 
@@ -11,17 +11,17 @@ from __future__ import annotations
 
 from hashlib import sha256
 
-from apps.common.storage.backend import (
-    StorageBackend,
-)
 from apps.common.storage.exceptions import (
     StorageConnectionError,
     StorageDownloadError,
-    StorageFileNotFoundError,
+    StorageNotFoundError,
     StorageUploadError,
 )
 from apps.common.storage.models import (
     StoredFile,
+)
+from apps.common.storage.providers.base import (
+    BaseStorageBackend,
 )
 from apps.common.storage.types import (
     FileContent,
@@ -29,8 +29,8 @@ from apps.common.storage.types import (
 )
 
 
-class AzureBlobStorageProvider(
-    StorageBackend,
+class AzureBlobStorageBackend(
+    BaseStorageBackend,
 ):
     """
     Azure Blob Storage implementation.
@@ -47,13 +47,6 @@ class AzureBlobStorageProvider(
     ) -> None:
         """
         Initialize Azure Blob storage.
-
-        Args:
-            container_name:
-                Azure blob container.
-
-            client:
-                Azure container client.
         """
 
         self.container_name = container_name
@@ -86,6 +79,7 @@ class AzureBlobStorageProvider(
                 path=path,
                 name=path.split("/")[-1],
                 size=len(data),
+                content_type="application/octet-stream",
                 checksum=sha256(
                     data,
                 ).hexdigest(),
@@ -121,7 +115,7 @@ class AzureBlobStorageProvider(
         path: StoragePath,
     ) -> bool:
         """
-        Delete a blob.
+        Delete blob.
         """
 
         try:
@@ -165,8 +159,8 @@ class AzureBlobStorageProvider(
         """
         Return blob URL.
 
-        Signed URL generation can be added through Azure SAS
-        tokens.
+        Signed URL generation can be added through
+        Azure SAS tokens.
         """
 
         del expires_in
@@ -203,9 +197,9 @@ class AzureBlobStorageProvider(
             )
 
         except Exception as exc:
-            raise StorageFileNotFoundError(
+            raise StorageNotFoundError(
                 str(exc),
             ) from exc
 
 
-__all__: tuple[str, ...] = ("AzureBlobStorageProvider",)
+__all__: tuple[str, ...] = ("AzureBlobStorageBackend",)
