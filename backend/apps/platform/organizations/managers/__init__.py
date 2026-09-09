@@ -11,6 +11,9 @@ from .organization import (
 from .organization_branding import (
     OrganizationBrandingManager,
 )
+from .organization_domain import (
+    OrganizationDomainManager,
+)
 from .organization_feature import (
     OrganizationFeatureManager,
 )
@@ -27,6 +30,7 @@ from .organization_profile import (
 __all__: tuple[str, ...] = (
     "OrganizationManager",
     "OrganizationBrandingManager",
+    "OrganizationDomainManager",
     "OrganizationFeatureManager",
     "OrganizationHierarchyManager",
     "OrganizationModuleManager",

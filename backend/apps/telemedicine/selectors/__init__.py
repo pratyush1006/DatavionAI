@@ -1,13 +1,5 @@
-"""
-Telemedicine selectors module.
-"""
+from .participant import ParticipantSelector
+from .recording import RecordingSelector
+from .session import SessionSelector
 
-from __future__ import annotations
-
-from apps.telemedicine.selectors.recording import RecordingSelector
-from apps.telemedicine.selectors.session import SessionSelector
-
-__all__ = [
-    "RecordingSelector",
-    "SessionSelector",
-]
+__all__ = ["ParticipantSelector", "RecordingSelector", "SessionSelector"]

@@ -21,7 +21,7 @@ from apps.billing.models import (
     InvoiceItem,
     Payment,
 )
-from apps.clinical.patients.tests.factories import PatientFactory
+from apps.patient_management.patients.tests.factories import PatientFactory
 from apps.platform.organizations.tests.factories import OrganizationFactory
 
 

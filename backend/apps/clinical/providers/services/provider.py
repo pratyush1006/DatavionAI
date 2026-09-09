@@ -1,5 +1,17 @@
 """
-Provider services.
+Provider domain services.
+
+Handles provider write operations.
+
+Lifecycle orchestration is performed
+by workflows.
+
+Services are responsible for:
+
+- Domain validation
+- Database writes
+- State transitions
+- Transaction boundaries
 """
 
 from __future__ import annotations
@@ -9,12 +21,15 @@ from typing import Any
 
 from django.db import transaction
 
+from apps.clinical.providers.constants import (
+    ProviderStatus,
+)
 from apps.clinical.providers.models import Provider
 
 
 class ProviderService:
     """
-    Service layer for provider write operations.
+    Provider domain write service.
     """
 
     @staticmethod
@@ -24,7 +39,7 @@ class ProviderService:
         validated_data: Mapping[str, Any],
     ) -> Provider:
         """
-        Create a new provider.
+        Create provider profile.
         """
 
         provider = Provider(
@@ -45,7 +60,7 @@ class ProviderService:
         validated_data: Mapping[str, Any],
     ) -> Provider:
         """
-        Update an existing provider.
+        Update provider profile.
         """
 
         for field, value in validated_data.items():
@@ -68,38 +83,116 @@ class ProviderService:
 
     @staticmethod
     @transaction.atomic
-    def delete(
-        *,
-        instance: Provider,
-    ) -> None:
-        """
-        Delete a provider.
-        """
-
-        instance.delete()
-
-    @staticmethod
-    @transaction.atomic
-    def archive(
+    def verify(
         *,
         instance: Provider,
     ) -> Provider:
         """
-        Archive a provider.
+        Move provider to verified state.
         """
 
-        instance.is_active = False
+        instance.status = ProviderStatus.VERIFIED
 
         instance.full_clean()
 
         instance.save(
             update_fields=[
-                "is_active",
+                "status",
                 "updated_at",
             ],
         )
 
         return instance
+
+    @staticmethod
+    @transaction.atomic
+    def activate(
+        *,
+        instance: Provider,
+    ) -> Provider:
+        """
+        Activate provider.
+        """
+
+        instance.status = ProviderStatus.ACTIVE
+
+        instance.is_accepting_patients = True
+
+        instance.full_clean()
+
+        instance.save(
+            update_fields=[
+                "status",
+                "is_accepting_patients",
+                "updated_at",
+            ],
+        )
+
+        return instance
+
+    @staticmethod
+    @transaction.atomic
+    def deactivate(
+        *,
+        instance: Provider,
+    ) -> Provider:
+        """
+        Deactivate provider.
+        """
+
+        instance.status = ProviderStatus.INACTIVE
+
+        instance.is_accepting_patients = False
+
+        instance.full_clean()
+
+        instance.save(
+            update_fields=[
+                "status",
+                "is_accepting_patients",
+                "updated_at",
+            ],
+        )
+
+        return instance
+
+    @staticmethod
+    @transaction.atomic
+    def suspend(
+        *,
+        instance: Provider,
+    ) -> Provider:
+        """
+        Suspend provider.
+        """
+
+        instance.status = ProviderStatus.SUSPENDED
+
+        instance.is_accepting_patients = False
+
+        instance.full_clean()
+
+        instance.save(
+            update_fields=[
+                "status",
+                "is_accepting_patients",
+                "updated_at",
+            ],
+        )
+
+        return instance
+
+    @staticmethod
+    @transaction.atomic
+    def delete(
+        *,
+        instance: Provider,
+    ) -> None:
+        """
+        Soft delete provider.
+        """
+
+        instance.delete()
 
     @staticmethod
     @transaction.atomic
@@ -108,26 +201,15 @@ class ProviderService:
         instance: Provider,
     ) -> Provider:
         """
-        Restore an archived provider.
+        Restore provider.
         """
 
-        instance.is_active = True
-
-        instance.full_clean()
-
-        instance.save(
-            update_fields=[
-                "is_active",
-                "updated_at",
-            ],
-        )
+        instance.restore()
 
         return instance
 
 
-# ---------------------------------------------------------------------
-# Backward-compatible aliases
-# ---------------------------------------------------------------------
+# Backward compatibility
 
 create_provider = ProviderService.create
 update_provider = ProviderService.update

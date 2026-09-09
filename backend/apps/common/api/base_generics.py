@@ -252,6 +252,9 @@ class BaseAPIViewMixin:
     def _resolve_serializer_class(
         self,
     ) -> type[Serializer] | None:
+        """
+        Resolve the serializer class.
+        """
 
         return (
             self._get_action_serializer()
@@ -287,6 +290,9 @@ class BaseGenericAPIView(
         self,
         **kwargs: Any,
     ) -> Response:
+        """
+        Return a standardized successful response.
+        """
 
         return success_response(
             request=self.request,
@@ -297,6 +303,9 @@ class BaseGenericAPIView(
         self,
         **kwargs: Any,
     ) -> Response:
+        """
+        Return a standardized created response.
+        """
 
         return created_response(
             request=self.request,
@@ -307,6 +316,9 @@ class BaseGenericAPIView(
         self,
         **kwargs: Any,
     ) -> Response:
+        """
+        Return a standardized error response.
+        """
 
         return error_response(
             request=self.request,
@@ -316,6 +328,9 @@ class BaseGenericAPIView(
     def no_content_response(
         self,
     ) -> Response:
+        """
+        Return a standardized no-content response.
+        """
 
         return no_content_response()
 
@@ -361,12 +376,22 @@ class BaseRetrieveUpdateDestroyAPIView(
     RetrieveUpdateDestroyAPIView,
 ):
     """
-    Base class for retrieve/update/delete endpoints.
+    Base class for retrieve, update, and delete endpoints.
+
+    Retrieve responses are standardized through the
+    DatavionOS response envelope.
+
+    Update and delete orchestration remains delegated to
+    the service/workflow mixins.
     """
 
     def get_object(
         self,
     ):
+        """
+        Return the requested object and enforce object-level
+        permissions.
+        """
 
         obj = super().get_object()
 
@@ -375,6 +400,36 @@ class BaseRetrieveUpdateDestroyAPIView(
         )
 
         return obj
+
+    def retrieve(
+        self,
+        request,
+        *args: Any,
+        **kwargs: Any,
+    ) -> Response:
+        """
+        Retrieve a single resource using the platform-standard
+        response envelope.
+
+        Response:
+
+            {
+                "success": true,
+                "message": "Success.",
+                "data": {...},
+                "meta": {...},
+            }
+        """
+
+        instance = self.get_object()
+
+        serializer = self.get_serializer(
+            instance,
+        )
+
+        return self.success_response(
+            data=serializer.data,
+        )
 
 
 __all__: tuple[str, ...] = (

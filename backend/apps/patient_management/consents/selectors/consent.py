@@ -1,87 +1,93 @@
 """
-Selectors for the Patient Consents module.
+Selectors for Patient Consents.
+
+Selectors own read-side tenant and organization filtering.
 """
 
 from __future__ import annotations
 
-from django.db.models import QuerySet
+from uuid import UUID
 
-from apps.patient_management.consents.models import Consent
-
-__all__ = [
-    "count_patient_consents",
-    "get_active_consent",
-    "get_consent_by_id",
-    "list_consents",
-    "list_organization_consents",
-    "list_patient_consents",
-]
+from apps.common.exceptions import ObjectNotFoundException
+from apps.patient_management.consents.models import (
+    PatientConsent,
+)
 
 
-def get_consent_by_id(
-    consent_id,
-) -> Consent:
+def get_consent(
+    *,
+    tenant_id: UUID,
+    consent_id: UUID,
+) -> PatientConsent:
     """
-    Return a consent by ID.
+    Retrieve one consent within the requested tenant.
     """
-
-    return Consent.objects.get(
-        id=consent_id,
-    )
-
-
-def list_consents() -> QuerySet[Consent]:
-    """
-    Return all consents.
-    """
-
-    return Consent.objects.all()
+    try:
+        return PatientConsent.objects.select_related(
+            "organization",
+            "patient",
+            "granted_by",
+        ).get(
+            pk=consent_id,
+            organization__tenant_id=tenant_id,
+        )
+    except PatientConsent.DoesNotExist as exc:
+        raise ObjectNotFoundException(
+            "Patient consent was not found.",
+        ) from exc
 
 
 def list_patient_consents(
-    patient_id,
-) -> QuerySet[Consent]:
+    *,
+    tenant_id: UUID,
+    patient_id: UUID,
+):
     """
-    Return consents for a patient.
+    Return non-deleted consents for one patient in the tenant.
     """
-
-    return Consent.objects.for_patient(
-        patient_id,
+    return (
+        PatientConsent.objects.select_related(
+            "organization",
+            "patient",
+            "granted_by",
+        )
+        .filter(
+            patient_id=patient_id,
+            organization__tenant_id=tenant_id,
+            is_deleted=False,
+        )
+        .order_by(
+            "-created_at",
+        )
     )
 
 
 def list_organization_consents(
-    organization_id,
-) -> QuerySet[Consent]:
+    *,
+    tenant_id: UUID,
+    organization_id: UUID,
+):
     """
-    Return consents for an organization.
+    Return non-deleted consents for one organization in the tenant.
     """
-
-    return Consent.objects.for_organization(
-        organization_id,
-    )
-
-
-def get_active_consent(
-    patient_id,
-    consent_type,
-) -> Consent | None:
-    """
-    Return the active consent for a patient and type.
-    """
-
     return (
-        Consent.objects.active().for_patient(patient_id).by_type(consent_type).first()
+        PatientConsent.objects.select_related(
+            "patient",
+            "granted_by",
+        )
+        .filter(
+            organization_id=organization_id,
+            organization__tenant_id=tenant_id,
+            is_deleted=False,
+        )
+        .order_by(
+            "-created_at",
+        )
     )
 
 
-def count_patient_consents(
-    patient_id,
-) -> int:
-    """
-    Count patient consents.
-    """
-
-    return Consent.objects.for_patient(
-        patient_id,
-    ).count()
+__all__ = (
+    "get_consent",
+    "list_organization_consents",
+    "list_patient_consents",
+)

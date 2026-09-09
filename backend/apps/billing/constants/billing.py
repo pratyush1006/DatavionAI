@@ -1,62 +1,51 @@
 """
-Billing-specific constants.
+Billing Core constants and lifecycle definitions.
 """
 
 from __future__ import annotations
-
-from typing import Final
 
 from django.db import models
 
 
 class InvoiceStatus(models.TextChoices):
-    """
-    Invoice lifecycle status.
-    """
+    """Invoice lifecycle states."""
 
-    DRAFT = "draft", "Draft"
-    SENT = "sent", "Sent"
-    PARTIALLY_PAID = "partially_paid", "Partially Paid"
-    PAID = "paid", "Paid"
-    OVERDUE = "overdue", "Overdue"
-    VOID = "void", "Void"
-    CANCELLED = "cancelled", "Cancelled"
+    DRAFT = "DRAFT", "Draft"
+    PARTIALLY_PAID = "PARTIALLY_PAID", "Partially Paid"
+    PAID = "PAID", "Paid"
+    OVERDUE = "OVERDUE", "Overdue"
+    VOID = "VOID", "Void"
 
 
 class PaymentMethod(models.TextChoices):
-    """
-    Supported payment methods.
-    """
+    """Supported payment methods."""
 
-    CASH = "cash", "Cash"
-    CARD = "card", "Card"
-    UPI = "upi", "UPI"
-    NET_BANKING = "net_banking", "Net Banking"
-    INSURANCE = "insurance", "Insurance"
-    CHEQUE = "cheque", "Cheque"
-    OTHER = "other", "Other"
+    CASH = "CASH", "Cash"
+    CARD = "CARD", "Card"
+    UPI = "UPI", "UPI"
+    BANK_TRANSFER = "BANK_TRANSFER", "Bank Transfer"
+    CHEQUE = "CHEQUE", "Cheque"
+    INSURANCE = "INSURANCE", "Insurance"
+    OTHER = "OTHER", "Other"
 
 
 class ClaimStatus(models.TextChoices):
-    """
-    Insurance claim lifecycle status.
-    """
+    """Insurance claim lifecycle states."""
 
-    SUBMITTED = "submitted", "Submitted"
-    UNDER_REVIEW = "under_review", "Under Review"
-    APPROVED = "approved", "Approved"
-    PARTIALLY_APPROVED = "partially_approved", "Partially Approved"
-    REJECTED = "rejected", "Rejected"
-    APPEALED = "appealed", "Appealed"
-    SETTLED = "settled", "Settled"
+    SUBMITTED = "SUBMITTED", "Submitted"
+    APPROVED = "APPROVED", "Approved"
+    PARTIALLY_APPROVED = "PARTIALLY_APPROVED", "Partially Approved"
+    REJECTED = "REJECTED", "Rejected"
+    APPEALED = "APPEALED", "Appealed"
+    SETTLED = "SETTLED", "Settled"
 
 
-DEFAULT_INVOICE_STATUS: Final[str] = InvoiceStatus.DRAFT
+DEFAULT_INVOICE_STATUS = InvoiceStatus.DRAFT
 
 
-__all__ = [
-    "DEFAULT_INVOICE_STATUS",
+__all__ = (
     "ClaimStatus",
+    "DEFAULT_INVOICE_STATUS",
     "InvoiceStatus",
     "PaymentMethod",
-]
+)

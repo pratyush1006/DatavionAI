@@ -9,10 +9,11 @@ bounded contexts.
 
 from __future__ import annotations
 
+from django.core.exceptions import ValidationError
 from django.db import models
 
-from apps.clinical.patients.models import Patient
 from apps.core.models import BaseManager, BaseModel
+from apps.patient_management.patients.models import Patient
 from apps.patient_management.profile.constants import (
     EducationLevel,
     EmploymentStatus,
@@ -25,10 +26,9 @@ class PatientProfile(BaseModel):
     """
     Extended demographic profile for a patient.
 
-    This model intentionally excludes contact information,
-    identifiers, addresses, consent, documents, preferences,
-    and clinical data, which are maintained in dedicated
-    bounded contexts.
+    A patient can have at most one profile within the owning organization.
+    The profile intentionally excludes contact information, identifiers,
+    addresses, consent, documents, preferences, and clinical data.
     """
 
     objects = BaseManager()
@@ -117,42 +117,60 @@ class PatientProfile(BaseModel):
 
         indexes = [
             models.Index(
-                fields=(
-                    "organization",
-                    "patient",
-                ),
+                fields=("organization", "patient"),
                 name="profile_org_patient_idx",
             ),
         ]
 
-    def clean(
-        self,
-    ) -> None:
+    def clean(self) -> None:
         """
         Validate and normalize profile data.
+
+        The patient and profile must belong to the same organization.
         """
 
         super().clean()
 
+        if self.patient_id and self.organization_id:
+            patient_organization_id = (
+                Patient.objects.filter(
+                    pk=self.patient_id,
+                )
+                .values_list(
+                    "organization_id",
+                    flat=True,
+                )
+                .first()
+            )
+
+            if (
+                patient_organization_id is not None
+                and patient_organization_id != self.organization_id
+            ):
+                raise ValidationError(
+                    {
+                        "patient": (
+                            "The patient must belong to the profile organization."
+                        ),
+                    }
+                )
+
+        self.preferred_language = self.preferred_language.strip()
         self.nationality = self.nationality.strip()
         self.religion = self.religion.strip()
         self.ethnicity = self.ethnicity.strip()
         self.occupation = self.occupation.strip()
-        self.preferred_language = self.preferred_language.strip()
+        self.income_bracket = self.income_bracket.strip()
 
     @property
-    def requires_interpreter(
-        self,
-    ) -> bool:
+    def requires_interpreter(self) -> bool:
         """
         Return whether interpreter assistance is required.
         """
 
         return self.interpreter_required
 
-    def __str__(
-        self,
-    ) -> str:
+    def __str__(self) -> str:
         """
         Return a human-readable representation.
         """

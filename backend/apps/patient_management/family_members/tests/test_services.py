@@ -1,18 +1,16 @@
 """
-Service tests for the Family Members module.
+Service tests for Patient Family Members.
 """
 
 from __future__ import annotations
 
 import pytest
+from django.core.exceptions import ValidationError
 
-from apps.patient_management.family_members.services import (
-    mark_as_emergency_contact,
-    mark_as_next_of_kin,
-    remove_emergency_contact,
-    remove_next_of_kin,
-    update_family_member,
+from apps.patient_management.family_members.constants import (
+    FamilyMemberStatus,
 )
+from apps.patient_management.family_members.services import FamilyMemberService
 from apps.patient_management.family_members.tests.factories import (
     FamilyMemberFactory,
 )
@@ -23,9 +21,9 @@ pytestmark = pytest.mark.django_db
 def test_update_family_member():
     member = FamilyMemberFactory()
 
-    update_family_member(
-        family_member=member,
-        first_name="Updated",
+    FamilyMemberService.update(
+        instance=member,
+        validated_data={"first_name": "Updated"},
     )
 
     member.refresh_from_db()
@@ -36,7 +34,9 @@ def test_update_family_member():
 def test_mark_next_of_kin():
     member = FamilyMemberFactory()
 
-    mark_as_next_of_kin(member)
+    FamilyMemberService.mark_next_of_kin(
+        instance=member,
+    )
 
     member.refresh_from_db()
 
@@ -48,7 +48,9 @@ def test_remove_next_of_kin():
         is_next_of_kin=True,
     )
 
-    remove_next_of_kin(member)
+    FamilyMemberService.remove_next_of_kin(
+        instance=member,
+    )
 
     member.refresh_from_db()
 
@@ -58,7 +60,9 @@ def test_remove_next_of_kin():
 def test_mark_emergency_contact():
     member = FamilyMemberFactory()
 
-    mark_as_emergency_contact(member)
+    FamilyMemberService.mark_emergency_contact(
+        instance=member,
+    )
 
     member.refresh_from_db()
 
@@ -70,8 +74,74 @@ def test_remove_emergency_contact():
         is_emergency_contact=True,
     )
 
-    remove_emergency_contact(member)
+    FamilyMemberService.remove_emergency_contact(
+        instance=member,
+    )
 
     member.refresh_from_db()
 
     assert not member.is_emergency_contact
+
+
+def test_deactivate_clears_special_flags():
+    member = FamilyMemberFactory(
+        is_next_of_kin=True,
+        is_emergency_contact=True,
+    )
+
+    FamilyMemberService.deactivate(
+        instance=member,
+    )
+
+    member.refresh_from_db()
+
+    assert member.status == FamilyMemberStatus.INACTIVE
+    assert not member.is_active
+    assert not member.is_next_of_kin
+    assert not member.is_emergency_contact
+
+
+def test_deleted_member_cannot_be_updated():
+    member = FamilyMemberFactory()
+
+    member.delete()
+
+    with pytest.raises(ValidationError):
+        FamilyMemberService.update(
+            instance=member,
+            validated_data={"first_name": "Updated"},
+        )
+
+
+def test_deleted_member_cannot_be_next_of_kin():
+    member = FamilyMemberFactory()
+
+    member.delete()
+
+    with pytest.raises(ValidationError):
+        FamilyMemberService.mark_next_of_kin(
+            instance=member,
+        )
+
+
+def test_deleted_member_cannot_be_emergency_contact():
+    member = FamilyMemberFactory()
+
+    member.delete()
+
+    with pytest.raises(ValidationError):
+        FamilyMemberService.mark_emergency_contact(
+            instance=member,
+        )
+
+
+def test_inactive_member_cannot_be_next_of_kin():
+    member = FamilyMemberFactory(
+        status=FamilyMemberStatus.INACTIVE,
+        is_active=False,
+    )
+
+    with pytest.raises(ValidationError):
+        FamilyMemberService.mark_next_of_kin(
+            instance=member,
+        )

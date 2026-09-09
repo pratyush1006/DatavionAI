@@ -1,3 +1,1 @@
-"""
-API package for the Patient Relationships module.
-"""
+"""Patient Relationships API package."""

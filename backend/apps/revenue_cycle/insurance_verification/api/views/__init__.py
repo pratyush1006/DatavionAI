@@ -1,9 +1,17 @@
-from .insurance_verification import (
+"""Insurance Verification API views."""
+
+from __future__ import annotations
+
+from apps.revenue_cycle.insurance_verification.api.views.insurance_verification import (
+    InsuranceVerificationDetailAPIView,
+    InsuranceVerificationLifecycleAPIView,
     InsuranceVerificationListCreateAPIView,
-    InsuranceVerificationRetrieveUpdateDestroyAPIView,
+    InsuranceVerificationRestoreAPIView,
 )
 
-__all__ = [
+__all__ = (
+    "InsuranceVerificationDetailAPIView",
+    "InsuranceVerificationLifecycleAPIView",
     "InsuranceVerificationListCreateAPIView",
-    "InsuranceVerificationRetrieveUpdateDestroyAPIView",
-]
+    "InsuranceVerificationRestoreAPIView",
+)

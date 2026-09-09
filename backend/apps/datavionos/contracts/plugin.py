@@ -87,7 +87,7 @@ class PluginContract(BaseContract):
         Validate the plugin contract.
         """
 
-        super().validate()
+        BaseContract.validate(self)
 
         if not self.display_name.strip():
             raise ValueError(

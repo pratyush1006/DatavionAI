@@ -1,15 +1,27 @@
 """
-Serializers for the Master Patient Index module.
+Master Patient Index serializer exports.
 """
 
-from .create import MPICreateSerializer
-from .detail import MPIDetailSerializer
-from .list import MPIListSerializer
-from .update import MPIUpdateSerializer
+from __future__ import annotations
 
-__all__ = [
+from apps.patient_management.mpi.api.serializers.mpi import (
+    MPICandidateSerializer,
+    MPICreateSerializer,
+    MPIDetailSerializer,
+    MPILifecycleSerializer,
+    MPIListSerializer,
+    MPIMergeSerializer,
+    MPIReviewSerializer,
+    MPIUpdateSerializer,
+)
+
+__all__ = (
+    "MPICandidateSerializer",
     "MPICreateSerializer",
     "MPIDetailSerializer",
+    "MPILifecycleSerializer",
     "MPIListSerializer",
+    "MPIMergeSerializer",
+    "MPIReviewSerializer",
     "MPIUpdateSerializer",
-]
+)

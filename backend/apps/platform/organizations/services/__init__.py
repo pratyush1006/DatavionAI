@@ -23,9 +23,13 @@ from .organization_branding import (
 )
 from .organization_domain import (
     create_domain,
+    create_organization_domain,
+    delete_organization_domain,
     set_primary_domain,
     update_domain,
+    update_organization_domain,
     verify_domain,
+    verify_organization_domain,
 )
 from .organization_feature import (
     create_feature,
@@ -69,9 +73,13 @@ __all__: tuple[str, ...] = (
     "update_organization_branding",
     # Domain
     "create_domain",
+    "create_organization_domain",
+    "delete_organization_domain",
     "set_primary_domain",
     "update_domain",
+    "update_organization_domain",
     "verify_domain",
+    "verify_organization_domain",
     # Feature
     "create_feature",
     "disable_feature",

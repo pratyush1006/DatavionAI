@@ -1,5 +1,8 @@
 """
 Reusable serializer fields for providers.
+
+Defines API exposure rules for
+Provider bounded context.
 """
 
 from __future__ import annotations
@@ -17,35 +20,42 @@ LIST_FIELDS = (
     "is_accepting_patients",
 )
 
+
 DETAIL_FIELDS = (
     *LIST_FIELDS,
     "organization",
-    "license_number",
     "years_of_experience",
     "bio",
-    "is_active",
     "display_name",
     "full_name",
     "created_at",
     "updated_at",
 )
 
+
 WRITE_FIELDS = (
-    "organization",
     "employee",
     "provider_number",
-    "license_number",
     "provider_type",
     "years_of_experience",
     "is_accepting_patients",
     "bio",
-    "status",
 )
 
-UPDATE_FIELDS = WRITE_FIELDS
+
+UPDATE_FIELDS = (
+    "provider_number",
+    "provider_type",
+    "years_of_experience",
+    "is_accepting_patients",
+    "bio",
+)
+
 
 READ_ONLY_FIELDS = (
     "id",
+    "organization",
+    "status",
     "display_name",
     "full_name",
     "created_at",
@@ -72,11 +82,11 @@ class ProviderFieldsSerializer(
         read_only_fields = READ_ONLY_FIELDS
 
 
-__all__ = [
+__all__ = (
     "DETAIL_FIELDS",
     "LIST_FIELDS",
     "ProviderFieldsSerializer",
     "READ_ONLY_FIELDS",
     "UPDATE_FIELDS",
     "WRITE_FIELDS",
-]
+)

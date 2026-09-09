@@ -1,15 +1,15 @@
-from .insurance_verification import (
-    InsuranceVerificationCreateSerializer,
+"""Insurance Verification API serializers."""
+
+from __future__ import annotations
+
+from apps.revenue_cycle.insurance_verification.api.serializers.insurance_verification import (
     InsuranceVerificationDetailSerializer,
-    InsuranceVerificationListSerializer,
-    InsuranceVerificationSerializer,
-    InsuranceVerificationUpdateSerializer,
+    InsuranceVerificationLifecycleSerializer,
+    InsuranceVerificationWriteSerializer,
 )
 
-__all__ = [
-    "InsuranceVerificationCreateSerializer",
+__all__ = (
     "InsuranceVerificationDetailSerializer",
-    "InsuranceVerificationListSerializer",
-    "InsuranceVerificationSerializer",
-    "InsuranceVerificationUpdateSerializer",
-]
+    "InsuranceVerificationLifecycleSerializer",
+    "InsuranceVerificationWriteSerializer",
+)

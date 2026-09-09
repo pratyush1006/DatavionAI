@@ -1,59 +1,46 @@
-"""
-Communication selectors.
-"""
+"""Read selectors for Patient Communication."""
 
 from __future__ import annotations
 
 from uuid import UUID
 
 from django.db.models import QuerySet
-from django.shortcuts import get_object_or_404
 
 from apps.patient_management.communication.models import PatientCommunication
-from apps.platform.organizations.models import Organization
 
 
-class PatientCommunicationSelector:
-    """
-    Read-only queries for communication records.
-    """
+def list_communications(
+    *,
+    tenant_id: UUID,
+    patient_id: UUID | None = None,
+    organization_id: UUID | None = None,
+) -> QuerySet[PatientCommunication]:
+    """Return alive communications inside the tenant boundary."""
+    queryset = PatientCommunication.objects.filter(organization__tenant_id=tenant_id)
+    if patient_id is not None:
+        queryset = queryset.filter(patient_id=patient_id)
+    if organization_id is not None:
+        queryset = queryset.filter(organization_id=organization_id)
+    return queryset.select_related("organization", "patient", "created_by")
 
-    @staticmethod
-    def queryset() -> QuerySet[PatientCommunication]:
-        return PatientCommunication.objects.select_related(
-            "organization",
-            "patient",
-        )
 
-    @staticmethod
-    def get(
-        *,
-        communication_id: UUID,
-    ) -> PatientCommunication:
-        return get_object_or_404(
-            PatientCommunicationSelector.queryset(),
+def get_communication(
+    *, tenant_id: UUID, communication_id: UUID, include_deleted: bool = False
+) -> PatientCommunication:
+    """Return one communication inside the tenant boundary."""
+    manager = (
+        PatientCommunication.all_objects
+        if include_deleted
+        else PatientCommunication.objects
+    )
+    return (
+        manager.filter(
             pk=communication_id,
+            organization__tenant_id=tenant_id,
         )
-
-    @staticmethod
-    def list_by_patient(
-        *,
-        patient_id: UUID,
-    ) -> QuerySet[PatientCommunication]:
-        return PatientCommunicationSelector.queryset().filter(
-            patient_id=patient_id,
-        )
-
-    @staticmethod
-    def list_by_organization(
-        *,
-        organization: Organization,
-    ) -> QuerySet[PatientCommunication]:
-        return PatientCommunicationSelector.queryset().filter(
-            organization=organization,
-        )
+        .select_related("organization", "patient", "created_by")
+        .get()
+    )
 
 
-__all__ = [
-    "PatientCommunicationSelector",
-]
+__all__ = ("get_communication", "list_communications")

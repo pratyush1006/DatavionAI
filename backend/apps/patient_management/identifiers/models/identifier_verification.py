@@ -73,7 +73,7 @@ class IdentifierVerification(AuditableModel):
                 fields=[
                     "identifier",
                 ],
-                name="identifier_verify_identifier_idx",
+                name="identifier_verification_idx",
             ),
             models.Index(
                 fields=[

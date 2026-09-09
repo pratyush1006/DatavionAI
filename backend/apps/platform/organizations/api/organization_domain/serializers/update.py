@@ -17,6 +17,9 @@ class OrganizationDomainUpdateSerializer(
 ):
     """
     Serializer used when updating an organization domain.
+
+    Business validation and persistence are handled by
+    the organization domain service layer.
     """
 
     class Meta(
@@ -24,17 +27,5 @@ class OrganizationDomainUpdateSerializer(
     ):
         fields = _UPDATE_FIELDS
 
-    def validate(
-        self,
-        attrs,
-    ):
-        """
-        Hook for update-specific validation.
-        """
 
-        return super().validate(attrs)
-
-
-__all__ = [
-    "OrganizationDomainUpdateSerializer",
-]
+__all__: tuple[str, ...] = ("OrganizationDomainUpdateSerializer",)

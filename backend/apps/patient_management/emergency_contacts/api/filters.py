@@ -1,11 +1,17 @@
 """
-Filters for the Emergency Contacts module.
+API filters for Emergency Contacts.
 """
 
 from __future__ import annotations
 
 import django_filters
 
+from ...constants import (
+    EmergencyContactAvailability,
+    EmergencyContactRelationship,
+    EmergencyContactStatus,
+    PreferredContactMethod,
+)
 from ...models import EmergencyContact
 
 
@@ -13,27 +19,54 @@ class EmergencyContactFilter(
     django_filters.FilterSet,
 ):
     """
-    Emergency contact filter.
+    Filter EmergencyContact querysets.
+
+    Authorization and organization scoping are handled by the selector,
+    policy, and workflow layers.
     """
 
     search = django_filters.CharFilter(
         method="filter_search",
     )
 
+    patient = django_filters.UUIDFilter(
+        field_name="patient_id",
+    )
+
+    relationship = django_filters.ChoiceFilter(
+        choices=EmergencyContactRelationship.choices,
+    )
+
+    status = django_filters.ChoiceFilter(
+        choices=EmergencyContactStatus.choices,
+    )
+
+    preferred_contact_method = django_filters.ChoiceFilter(
+        choices=PreferredContactMethod.choices,
+    )
+
+    availability = django_filters.ChoiceFilter(
+        choices=EmergencyContactAvailability.choices,
+    )
+
     is_primary = django_filters.BooleanFilter()
 
     is_verified = django_filters.BooleanFilter()
 
-    relationship = django_filters.CharFilter()
+    is_legal_guardian = django_filters.BooleanFilter()
 
-    status = django_filters.CharFilter()
+    has_medical_power_of_attorney = django_filters.BooleanFilter()
 
-    patient = django_filters.UUIDFilter(
-        field_name="patient__uuid",
+    priority_order = django_filters.NumberFilter()
+
+    priority_order_min = django_filters.NumberFilter(
+        field_name="priority_order",
+        lookup_expr="gte",
     )
 
-    organization = django_filters.UUIDFilter(
-        field_name="organization__uuid",
+    priority_order_max = django_filters.NumberFilter(
+        field_name="priority_order",
+        lookup_expr="lte",
     )
 
     class Meta:
@@ -41,11 +74,15 @@ class EmergencyContactFilter(
 
         fields = (
             "patient",
-            "organization",
             "relationship",
             "status",
+            "preferred_contact_method",
+            "availability",
             "is_primary",
             "is_verified",
+            "is_legal_guardian",
+            "has_medical_power_of_attorney",
+            "priority_order",
         )
 
     def filter_search(
@@ -55,3 +92,8 @@ class EmergencyContactFilter(
         value,
     ):
         return queryset.search(value)
+
+
+__all__ = [
+    "EmergencyContactFilter",
+]

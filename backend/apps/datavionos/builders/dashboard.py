@@ -1,23 +1,57 @@
 """
-Platform dashboard builder.
+DatavionOS dashboard builder.
 
-Builds runtime dashboard cards from
-DatavionOS module contracts.
+Builds runtime dashboard cards from canonical ModuleContract instances.
 
-Dashboard visibility is controlled by:
+Responsibilities
+----------------
+This builder is responsible only for dashboard presentation eligibility.
 
-1. Module availability
-2. Subscription enabled modules
-3. Feature flags
-4. RBAC permissions
+It evaluates:
+
+- Module availability
+- Dashboard configuration
+- Feature entitlements
+- RBAC permissions
+- Deterministic dashboard ordering
+
+Subscription/module entitlement resolution belongs to:
+
+    ModuleAvailabilitySelector
+
+The builder therefore does NOT query:
+
+- Subscription models
+- ModuleEntitlement
+- Billing services
+- Tenant models
+
+Architecture:
+
+ModuleAvailabilitySelector
+        |
+        v
+Available ModuleContract[]
+        |
+        v
+DashboardBuilder
+        |
+        +--> Feature flags
+        |
+        +--> RBAC permissions
+        |
+        +--> Dashboard configuration
+        |
+        v
+DashboardCard[]
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
 
-from apps.datavionos.registries.module import (
-    PlatformModule,
+from apps.datavionos.contracts.module import (
+    ModuleContract,
 )
 
 
@@ -28,6 +62,9 @@ from apps.datavionos.registries.module import (
 class DashboardCard:
     """
     Runtime dashboard card.
+
+    This is a presentation contract generated from a
+    canonical ModuleContract.
     """
 
     key: str
@@ -47,62 +84,65 @@ class DashboardCard:
 
 class DashboardBuilder:
     """
-    Build dashboard cards from runtime modules.
+    Build runtime dashboard cards.
+
+    The builder expects modules to have already passed platform-level
+    availability and SaaS entitlement checks.
+
+    Remaining dashboard visibility checks are:
+
+    1. Module availability
+    2. Dashboard configuration
+    3. Feature entitlements
+    4. RBAC permissions
     """
 
     def build(
         self,
         *,
-        modules: list[PlatformModule],
+        modules: list[ModuleContract],
         permissions: set[str],
         feature_flags: dict[str, bool],
     ) -> list[DashboardCard]:
         """
-        Build runtime dashboard.
+        Build dashboard cards from available modules.
 
-        Filtering order:
+        Args:
+            modules:
+                Modules already resolved by ModuleAvailabilitySelector.
 
-        1. Module enabled state
-        2. Dashboard availability
-        3. Feature flag entitlement
-        4. Permission authorization
+            permissions:
+                Effective permissions for the current runtime context.
+
+            feature_flags:
+                Enabled SaaS feature flags.
+
+        Returns:
+            Deterministically ordered dashboard cards.
         """
 
         cards: list[DashboardCard] = []
 
         for module in modules:
-            #
-            # Module enabled validation
-            #
-            if not self._module_enabled(
+            if not self._module_available(
                 module,
             ):
                 continue
 
-            #
-            # Dashboard configuration validation
-            #
-            dashboard = getattr(
-                module,
-                "dashboard",
-                None,
-            )
+            dashboard = module.dashboard
 
             if dashboard is None:
                 continue
 
-            #
-            # Feature flags
-            #
+            if not dashboard.enabled:
+                continue
+
             if not self._features_enabled(
                 module=module,
                 feature_flags=feature_flags,
             ):
                 continue
 
-            #
-            # RBAC permissions
-            #
             if not self._has_permission(
                 module=module,
                 permissions=permissions,
@@ -116,45 +156,61 @@ class DashboardBuilder:
                     description=dashboard.description,
                     icon=dashboard.icon,
                     route=dashboard.route,
-                    category=(
-                        module.category.value
-                        if hasattr(
-                            module.category,
-                            "value",
-                        )
-                        else str(
-                            module.category,
-                        )
+                    category=self._category_value(
+                        module,
                     ),
                     order=dashboard.order,
-                )
+                ),
             )
 
         return sorted(
             cards,
-            key=lambda card: card.order,
+            key=lambda card: (
+                card.order,
+                card.key,
+            ),
         )
 
-    def _module_enabled(
-        self,
-        module: PlatformModule,
+    # ==================================================================
+    # Module Availability
+    # ==================================================================
+
+    @staticmethod
+    def _module_available(
+        module: ModuleContract,
     ) -> bool:
         """
-        Check module availability.
+        Validate platform-level module availability.
+
+        ModuleContract owns the canonical lifecycle rule:
+
+            enabled and active
+
+        Therefore the builder delegates to ``is_available`` rather than
+        duplicating lifecycle logic.
         """
 
-        return bool(
-            module.enabled,
-        )
+        return module.is_available
 
+    # ==================================================================
+    # Feature Entitlements
+    # ==================================================================
+
+    @staticmethod
     def _features_enabled(
-        self,
         *,
-        module: PlatformModule,
+        module: ModuleContract,
         feature_flags: dict[str, bool],
     ) -> bool:
         """
-        Check module feature requirements.
+        Determine whether all required module features are enabled.
+
+        A module without feature requirements is allowed.
+
+        A declared feature is considered enabled only when its runtime
+        feature flag explicitly resolves to True.
+
+        Missing feature flags therefore fail closed.
         """
 
         if not module.feature_flags:
@@ -162,20 +218,29 @@ class DashboardBuilder:
 
         return all(
             feature_flags.get(
-                flag,
+                feature,
                 False,
             )
-            for flag in module.feature_flags
+            for feature in module.feature_flags
         )
 
+    # ==================================================================
+    # RBAC
+    # ==================================================================
+
+    @staticmethod
     def _has_permission(
-        self,
         *,
-        module: PlatformModule,
+        module: ModuleContract,
         permissions: set[str],
     ) -> bool:
         """
-        Check module RBAC access.
+        Determine whether the user may see the module dashboard card.
+
+        Modules without declared permissions are available.
+
+        When permissions are declared, at least one matching effective
+        permission is required.
         """
 
         if not module.permissions:
@@ -183,8 +248,32 @@ class DashboardBuilder:
 
         return any(permission in permissions for permission in module.permissions)
 
+    # ==================================================================
+    # Category
+    # ==================================================================
 
-__all__ = [
+    @staticmethod
+    def _category_value(
+        module: ModuleContract,
+    ) -> str:
+        """
+        Resolve the serialized category value.
+
+        ModuleCategory is normally an enum, but this helper keeps the
+        presentation boundary tolerant of enum-backed and string-backed
+        values.
+        """
+
+        return str(
+            getattr(
+                module.category,
+                "value",
+                module.category,
+            ),
+        )
+
+
+__all__ = (
     "DashboardBuilder",
     "DashboardCard",
-]
+)

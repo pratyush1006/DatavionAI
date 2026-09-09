@@ -1,13 +1,9 @@
-from .prior_authorization import (
-    PriorAuthorizationRequestService,
-    create_authorization,
-    delete_authorization,
-    update_authorization,
+"""Prior Authorization domain services."""
+
+from __future__ import annotations
+
+from apps.revenue_cycle.prior_authorization.services.prior_authorization import (
+    PriorAuthorizationService,
 )
 
-__all__ = [
-    "PriorAuthorizationRequestService",
-    "create_authorization",
-    "delete_authorization",
-    "update_authorization",
-]
+__all__ = ("PriorAuthorizationService",)

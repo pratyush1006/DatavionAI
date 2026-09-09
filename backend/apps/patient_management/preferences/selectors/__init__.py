@@ -1,21 +1,15 @@
-"""
-Selectors for the Patient Preferences module.
-"""
+"""Patient Preferences selector exports."""
 
-from .communication_preference import (
-    get_communication_preference,
-    get_communication_preferences,
-    get_enabled_communication_preferences,
+from __future__ import annotations
+
+from apps.patient_management.preferences.selectors.communication_preference import (
+    PatientCommunicationPreferenceSelector,
 )
-from .preference import (
-    get_patient_preference,
-    get_patient_preferences,
+from apps.patient_management.preferences.selectors.preference import (
+    PatientPreferenceSelector,
 )
 
-__all__ = [
-    "get_communication_preference",
-    "get_communication_preferences",
-    "get_enabled_communication_preferences",
-    "get_patient_preference",
-    "get_patient_preferences",
-]
+__all__ = (
+    "PatientCommunicationPreferenceSelector",
+    "PatientPreferenceSelector",
+)

@@ -13,6 +13,7 @@ class ContactType(models.TextChoices):
     MOBILE = "MOBILE", "Mobile"
     HOME = "HOME", "Home"
     WORK = "WORK", "Work"
+    EMAIL = "EMAIL", "Email"
     EMERGENCY = "EMERGENCY", "Emergency"
     FAX = "FAX", "Fax"
     OTHER = "OTHER", "Other"

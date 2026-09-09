@@ -58,6 +58,14 @@ class BaseContract:
         """Return the schema identifier."""
         return f"{self.contract_namespace()}:v{self.contract_version()}"
 
+    def validate(self) -> None:
+        """Validate the base contract.
+
+        The base implementation intentionally performs no field-specific
+        validation; concrete contracts extend this hook with domain rules.
+        """
+        return
+
 
 CONTRACT_SCHEMA_VERSION: Final[int] = 1
 

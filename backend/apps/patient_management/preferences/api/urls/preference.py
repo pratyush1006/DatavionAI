@@ -1,43 +1,45 @@
-"""
-URLs for PatientPreference.
-"""
+"""Patient Preferences API URL patterns."""
 
 from __future__ import annotations
 
 from django.urls import path
 
 from apps.patient_management.preferences.api.views import (
-    PatientPreferenceCreateAPIView,
+    PatientCommunicationPreferenceAPIView,
     PatientPreferenceDeleteAPIView,
     PatientPreferenceDetailAPIView,
-    PatientPreferenceListAPIView,
-    PatientPreferenceUpdateAPIView,
+    PatientPreferenceListCreateAPIView,
+    PatientPreferenceRestoreAPIView,
 )
 
 urlpatterns = [
     path(
         "",
-        PatientPreferenceListAPIView.as_view(),
-        name="patient-preference-list",
+        PatientPreferenceListCreateAPIView.as_view(),
+        name="patient-preferences-list-create",
     ),
     path(
-        "create/",
-        PatientPreferenceCreateAPIView.as_view(),
-        name="patient-preference-create",
-    ),
-    path(
-        "<uuid:uuid>/",
+        "<uuid:preference_id>/",
         PatientPreferenceDetailAPIView.as_view(),
-        name="patient-preference-detail",
+        name="patient-preferences-detail",
     ),
     path(
-        "<uuid:uuid>/update/",
-        PatientPreferenceUpdateAPIView.as_view(),
-        name="patient-preference-update",
-    ),
-    path(
-        "<uuid:uuid>/delete/",
+        "<uuid:preference_id>/delete/",
         PatientPreferenceDeleteAPIView.as_view(),
-        name="patient-preference-delete",
+        name="patient-preferences-delete",
+    ),
+    path(
+        "<uuid:preference_id>/restore/",
+        PatientPreferenceRestoreAPIView.as_view(),
+        name="patient-preferences-restore",
+    ),
+    path(
+        "<uuid:preference_id>/communication/",
+        PatientCommunicationPreferenceAPIView.as_view(),
+        name="patient-preferences-communication",
     ),
 ]
+
+app_name = "patient_preferences"
+
+__all__ = ("urlpatterns",)

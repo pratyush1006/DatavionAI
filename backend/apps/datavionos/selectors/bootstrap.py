@@ -1,7 +1,8 @@
 """
 Platform bootstrap selector.
 
-Resolves runtime context required by DatavionOS bootstrap.
+Resolves the authenticated user's runtime context required by
+DatavionOS bootstrap.
 
 Resolution:
 
@@ -27,6 +28,30 @@ Tenant                      Organization
               |
               v
  Platform Bootstrap Context
+
+Responsibilities
+----------------
+This selector resolves:
+
+- Tenant context
+- Tenant membership
+- Employee context
+- Organization context
+- Platform roles
+- Organization roles
+- Effective permissions
+
+It does NOT resolve:
+
+- SaaS subscriptions
+- SaaS entitlements
+- Module availability
+- Navigation
+- Dashboard
+- Feature flags
+
+Those responsibilities belong to the corresponding
+DatavionOS services, selectors, and builders.
 """
 
 from __future__ import annotations
@@ -90,6 +115,12 @@ class PlatformBootstrapContext:
 class PlatformBootstrapSelector:
     """
     Resolve DatavionOS runtime bootstrap context.
+
+    The selector is intentionally limited to identity, tenant,
+    organization, RBAC, and effective permission resolution.
+
+    SaaS entitlement resolution is deliberately excluded from this
+    selector and remains owned by EntitlementResolver.
     """
 
     def get(
@@ -98,7 +129,7 @@ class PlatformBootstrapSelector:
         user: User,
     ) -> PlatformBootstrapContext:
         """
-        Return runtime bootstrap context.
+        Return the runtime bootstrap context for the authenticated user.
         """
 
         tenant_context = get_tenant_context()
@@ -150,20 +181,38 @@ class PlatformBootstrapSelector:
             permissions=permissions,
         )
 
+    # ==================================================================
+    # Employee
+    # ==================================================================
+
+    @staticmethod
     def _get_employee(
-        self,
         *,
         user: User,
         tenant: Tenant | None,
     ) -> Employee | None:
         """
-        Resolve tenant scoped employee profile.
+        Resolve the tenant-scoped employee profile.
+
+        Employee is the organization employee aggregate root.
+
+        The Employee model owns direct relationships to:
+
+        - organization
+        - user
+        - manager
+        - profile
+        - provider
+
+        Department and team assignments are separate bounded contexts
+        and are intentionally not joined here.
+
+        Bootstrap currently requires only the employee's organization
+        and employee code, so only ``organization`` is eagerly loaded.
         """
 
         queryset = Employee.objects.select_related(
             "organization",
-            "department",
-            "team",
         ).filter(
             user=user,
         )
@@ -175,20 +224,27 @@ class PlatformBootstrapSelector:
 
         return queryset.first()
 
+    # ==================================================================
+    # Organization
+    # ==================================================================
+
+    @staticmethod
     def _get_organization(
-        self,
         *,
         user: User,
         tenant: Tenant | None,
         employee: Employee | None,
     ) -> Organization | None:
         """
-        Resolve organization context.
+        Resolve the organization context.
 
         Resolution order:
 
         1. Employee organization
-        2. Organization RBAC assignment
+        2. Active organization RBAC assignment
+
+        Employee organization is authoritative when an employee
+        exists for the current tenant.
         """
 
         if employee is not None:
@@ -207,13 +263,22 @@ class PlatformBootstrapSelector:
             .first()
         )
 
+    # ==================================================================
+    # Subscription
+    # ==================================================================
+
+    @staticmethod
     def _get_subscription(
-        self,
         *,
         tenant: Tenant | None,
     ) -> object | None:
         """
-        Resolve tenant subscription.
+        Resolve the tenant subscription reference.
+
+        This is retained as runtime context compatibility only.
+
+        SaaS entitlement decisions are not performed here.
+        EntitlementResolver owns entitlement resolution.
         """
 
         if tenant is None:
@@ -225,8 +290,12 @@ class PlatformBootstrapSelector:
             None,
         )
 
+    # ==================================================================
+    # Platform RBAC
+    # ==================================================================
+
+    @staticmethod
     def _get_platform_roles(
-        self,
         *,
         user: User,
     ) -> tuple[str, ...]:
@@ -241,8 +310,12 @@ class PlatformBootstrapSelector:
             )
         )
 
+    # ==================================================================
+    # Organization RBAC
+    # ==================================================================
+
+    @staticmethod
     def _get_organization_roles(
-        self,
         *,
         user: User,
         organization: Organization | None,

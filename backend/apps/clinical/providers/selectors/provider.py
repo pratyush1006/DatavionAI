@@ -1,30 +1,59 @@
 """
 Provider selectors.
+
+Read layer for Provider bounded context.
+
+Responsibilities:
+
+- Tenant aware reads
+- Organization scoped queries
+- Optimized ORM loading
+- Provider identity search
+- Backward compatible selector exports
+
+DatavionOS Healthcare Platform.
 """
 
 from __future__ import annotations
 
-from django.core.paginator import Paginator
-from django.db.models import Q, QuerySet
+from uuid import UUID
 
-from apps.clinical.providers.models import Provider
-from apps.platform.organizations.models import Organization
+from django.db.models import (
+    Q,
+    QuerySet,
+)
+
+from apps.clinical.providers.constants import (
+    ProviderStatus,
+)
+from apps.clinical.providers.models import (
+    Provider,
+)
+from apps.platform.organizations.models import (
+    Organization,
+)
 
 
 class ProviderSelector:
     """
-    Selector layer for provider read operations.
+    Selector layer for provider reads.
     """
 
     @staticmethod
     def queryset() -> QuerySet[Provider]:
         """
-        Return the base provider queryset.
+        Base optimized provider queryset.
         """
 
         return Provider.objects.select_related(
             "organization",
             "employee",
+            "employee__user",
+        ).prefetch_related(
+            "specializations",
+            "credentials",
+            "availability",
+            "assignments",
         )
 
     @staticmethod
@@ -38,29 +67,14 @@ class ProviderSelector:
     @staticmethod
     def get(
         *,
-        provider_id: int,
+        provider_id: UUID,
     ) -> Provider:
         """
-        Return a provider by ID.
+        Return provider by id.
         """
 
         return ProviderSelector.queryset().get(
             id=provider_id,
-        )
-
-    @staticmethod
-    def get_by_provider_number(
-        *,
-        organization: Organization,
-        provider_number: str,
-    ) -> Provider:
-        """
-        Return a provider by provider number.
-        """
-
-        return ProviderSelector.queryset().get(
-            organization=organization,
-            provider_number=provider_number,
         )
 
     @staticmethod
@@ -69,7 +83,7 @@ class ProviderSelector:
         organization: Organization,
     ) -> QuerySet[Provider]:
         """
-        Return providers belonging to an organization.
+        Return providers scoped to organization.
         """
 
         return ProviderSelector.queryset().filter(
@@ -77,32 +91,32 @@ class ProviderSelector:
         )
 
     @staticmethod
-    def list_active() -> QuerySet[Provider]:
+    def list_active(
+        *,
+        organization: Organization,
+    ) -> QuerySet[Provider]:
         """
         Return active providers.
         """
 
-        return ProviderSelector.queryset().filter(
-            is_active=True,
+        return ProviderSelector.list_by_organization(
+            organization=organization,
+        ).filter(
+            status=ProviderStatus.ACTIVE,
         )
 
     @staticmethod
-    def list_inactive() -> QuerySet[Provider]:
+    def list_accepting_patients(
+        *,
+        organization: Organization,
+    ) -> QuerySet[Provider]:
         """
-        Return inactive providers.
-        """
-
-        return ProviderSelector.queryset().filter(
-            is_active=False,
-        )
-
-    @staticmethod
-    def list_accepting_patients() -> QuerySet[Provider]:
-        """
-        Return providers accepting new patients.
+        Return providers accepting patients.
         """
 
-        return ProviderSelector.queryset().filter(
+        return ProviderSelector.list_by_organization(
+            organization=organization,
+        ).filter(
             is_accepting_patients=True,
         )
 
@@ -113,11 +127,12 @@ class ProviderSelector:
         provider_type: str,
     ) -> QuerySet[Provider]:
         """
-        Return providers by provider type.
+        Filter providers by provider type.
         """
 
-        return ProviderSelector.queryset().filter(
+        return ProviderSelector.list_by_organization(
             organization=organization,
+        ).filter(
             provider_type=provider_type,
         )
 
@@ -129,28 +144,41 @@ class ProviderSelector:
     ) -> QuerySet[Provider]:
         """
         Search providers.
+
+        Searches:
+
+        - Employee first name
+        - Employee last name
+        - Employee code
+        - Employee work email
+        - Provider number
+
+        License search is intentionally excluded.
+        License management belongs to credential/compliance
+        bounded context.
         """
 
         return (
-            ProviderSelector.queryset()
-            .filter(
+            ProviderSelector.list_by_organization(
                 organization=organization,
             )
             .filter(
-                Q(employee__first_name__icontains=query)
-                | Q(employee__last_name__icontains=query)
+                Q(employee__user__first_name__icontains=query)
+                | Q(employee__user__last_name__icontains=query)
+                | Q(employee__employee_code__icontains=query)
+                | Q(employee__work_email__icontains=query)
                 | Q(provider_number__icontains=query)
-                | Q(license_number__icontains=query)
             )
+            .distinct()
         )
 
     @staticmethod
     def exists(
         *,
-        provider_id: int,
+        provider_id: UUID,
     ) -> bool:
         """
-        Return whether a provider exists.
+        Check provider existence.
         """
 
         return (
@@ -167,40 +195,16 @@ class ProviderSelector:
         organization: Organization,
     ) -> int:
         """
-        Return the provider count for an organization.
+        Count providers in organization.
         """
 
-        return (
-            ProviderSelector.queryset()
-            .filter(
-                organization=organization,
-            )
-            .count()
-        )
-
-    @staticmethod
-    def paginated(
-        *,
-        organization: Organization,
-        page: int,
-        per_page: int,
-    ):
-        """
-        Return a paginated provider list.
-        """
-
-        paginator = Paginator(
-            ProviderSelector.list_by_organization(
-                organization=organization,
-            ),
-            per_page,
-        )
-
-        return paginator.get_page(page)
+        return ProviderSelector.list_by_organization(
+            organization=organization,
+        ).count()
 
 
 # ----------------------------------------------------------------------
-# Legacy aliases
+# Legacy compatibility aliases
 # ----------------------------------------------------------------------
 
 get_providers = ProviderSelector.list
@@ -210,9 +214,9 @@ get_provider_by_id = ProviderSelector.get
 get_organization_providers = ProviderSelector.list_by_organization
 
 
-__all__ = [
+__all__ = (
     "ProviderSelector",
-    "get_provider_by_id",
     "get_providers",
+    "get_provider_by_id",
     "get_organization_providers",
-]
+)

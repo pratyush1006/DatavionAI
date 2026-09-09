@@ -1,45 +1,13 @@
 """
-URL configuration for the Patient Consents API.
+Patient Consent API URL entry point.
+
+The detailed consent routes are maintained in the api.urls package.
 """
 
 from __future__ import annotations
 
-from django.urls import path
-
-from apps.patient_management.consents.api.views import (
-    ConsentCreateAPIView,
-    ConsentDestroyAPIView,
-    ConsentListAPIView,
-    ConsentRetrieveAPIView,
-    ConsentUpdateAPIView,
+from apps.patient_management.consents.api.urls.consent import (
+    urlpatterns,
 )
 
-app_name = "patient-consents"
-
-urlpatterns = [
-    path(
-        "",
-        ConsentListAPIView.as_view(),
-        name="list",
-    ),
-    path(
-        "create/",
-        ConsentCreateAPIView.as_view(),
-        name="create",
-    ),
-    path(
-        "<uuid:pk>/",
-        ConsentRetrieveAPIView.as_view(),
-        name="detail",
-    ),
-    path(
-        "<uuid:pk>/update/",
-        ConsentUpdateAPIView.as_view(),
-        name="update",
-    ),
-    path(
-        "<uuid:pk>/delete/",
-        ConsentDestroyAPIView.as_view(),
-        name="delete",
-    ),
-]
+__all__ = ("urlpatterns",)

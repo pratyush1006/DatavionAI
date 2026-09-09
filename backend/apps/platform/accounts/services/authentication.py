@@ -6,6 +6,7 @@ Handles:
 - Registration
 - Authentication
 - Login OTP workflow
+- Login OTP resend workflow
 - JWT token lifecycle
 - Login security events
 
@@ -16,6 +17,7 @@ DatavionOS common notification framework.
 from __future__ import annotations
 
 import logging
+from datetime import timedelta
 from typing import Any
 
 from django.contrib.auth import authenticate
@@ -38,6 +40,8 @@ from apps.common.notifications.services import (
     notification_service,
 )
 from apps.platform.accounts.constants import (
+    OTP_MAX_RESEND_PER_HOUR,
+    OTP_RESEND_INTERVAL_SECONDS,
     OTPChannel,
     OTPPurpose,
 )
@@ -182,6 +186,9 @@ class AuthenticationService:
     def register(
         **validated_data: Any,
     ) -> User:
+        """
+        Register a SaaS user.
+        """
 
         organization_name = validated_data.pop(
             "organization_name",
@@ -236,6 +243,9 @@ class AuthenticationService:
         email: str,
         password: str,
     ) -> User:
+        """
+        Authenticate user credentials.
+        """
 
         user = authenticate(
             username=email,
@@ -254,7 +264,7 @@ class AuthenticationService:
 
         if not user.is_verified:
             raise AuthenticationException(
-                message=("Please verify your email before logging in."),
+                message="Please verify your email before logging in.",
             )
 
         return user
@@ -270,7 +280,10 @@ class AuthenticationService:
         *,
         email: str,
         password: str,
-    ) -> dict[str, str]:
+    ) -> dict[str, str | bool]:
+        """
+        Validate credentials and create login OTP.
+        """
 
         user = cls.authenticate_user(
             email=email,
@@ -295,7 +308,134 @@ class AuthenticationService:
             "otp_id": str(
                 result.otp.id,
             ),
-            "requires_otp": "true",
+            "requires_otp": True,
+            "expires_at": result.otp.expires_at.isoformat(),
+        }
+
+    # ==========================================================
+    # Login OTP Resend
+    # ==========================================================
+
+    @classmethod
+    @transaction.atomic
+    def resend_login_otp(
+        cls,
+        *,
+        otp_id: str,
+        ip_address: str | None = None,
+        user_agent: str = "",
+    ) -> dict[str, str | bool]:
+        """
+        Resend the active login OTP.
+
+        Security policy:
+
+        - OTP must belong to the LOGIN purpose.
+        - User must still be active.
+        - Resend cooldown is enforced server-side.
+        - Hourly resend limit is enforced server-side.
+        - Previous OTP is invalidated atomically.
+        - A new OTP ID is returned.
+        """
+
+        try:
+            otp = (
+                OTP.objects.select_for_update()
+                .select_related("user")
+                .get(
+                    id=otp_id,
+                    purpose=OTPPurpose.LOGIN,
+                )
+            )
+
+        except OTP.DoesNotExist as exc:
+            raise AuthenticationException(
+                message="Invalid or expired login verification request.",
+            ) from exc
+
+        user = otp.user
+
+        if not user.is_active:
+            raise AuthenticationException(
+                message="User account is inactive.",
+            )
+
+        now = timezone.now()
+
+        # ------------------------------------------------------
+        # Resend cooldown
+        # ------------------------------------------------------
+
+        next_allowed_at = otp.created_at + timedelta(
+            seconds=OTP_RESEND_INTERVAL_SECONDS,
+        )
+
+        if now < next_allowed_at:
+            remaining_seconds = max(
+                1,
+                int((next_allowed_at - now).total_seconds()),
+            )
+
+            raise AuthenticationException(
+                message=(
+                    "Please wait "
+                    f"{remaining_seconds} seconds before "
+                    "requesting another verification code."
+                ),
+            )
+
+        # ------------------------------------------------------
+        # Hourly resend limit
+        # ------------------------------------------------------
+
+        hourly_window_start = now - timedelta(
+            hours=1,
+        )
+
+        resend_count = (
+            OTP.objects.filter(
+                user=user,
+                purpose=OTPPurpose.LOGIN,
+                created_at__gte=hourly_window_start,
+            ).count()
+            - 1
+        )
+
+        if resend_count >= OTP_MAX_RESEND_PER_HOUR:
+            raise AuthenticationException(
+                message=(
+                    "You have reached the maximum number of "
+                    "verification code resends. Please try again later."
+                ),
+            )
+
+        # ------------------------------------------------------
+        # Create replacement OTP
+        # ------------------------------------------------------
+
+        result = OTPService.resend(
+            otp=otp,
+        )
+
+        transaction.on_commit(
+            lambda: cls._send_login_otp(
+                user=user,
+                code=result.code,
+            ),
+        )
+
+        return {
+            "otp_id": str(
+                result.otp.id,
+            ),
+            "requires_otp": True,
+            "expires_at": result.otp.expires_at.isoformat(),
+            "resend_available_at": (
+                result.otp.created_at
+                + timedelta(
+                    seconds=OTP_RESEND_INTERVAL_SECONDS,
+                )
+            ).isoformat(),
         }
 
     # ==========================================================
@@ -327,7 +467,7 @@ class AuthenticationService:
 
         except OTP.DoesNotExist as exc:
             raise AuthenticationException(
-                message=("Invalid login verification request."),
+                message="Invalid login verification request.",
             ) from exc
 
         if not OTPService.verify(
@@ -507,7 +647,7 @@ class AuthenticationService:
 
         except TokenError as exc:
             raise AuthenticationException(
-                message=("Invalid or expired refresh token."),
+                message="Invalid or expired refresh token.",
             ) from exc
 
     @staticmethod

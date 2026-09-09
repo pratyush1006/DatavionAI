@@ -58,7 +58,7 @@ class PatientFactory(factory.django.DjangoModelFactory):
     """
 
     class Meta:
-        model = "patients.Patient"
+        model = "patient_core.Patient"
 
     organization = factory.SubFactory(
         OrganizationFactory,

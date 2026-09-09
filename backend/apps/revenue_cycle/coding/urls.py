@@ -1,32 +1,14 @@
-"""
-URL patterns for the Coding Entry module.
-"""
-
 from __future__ import annotations
 
-from django.urls import path
+"""Revenue Cycle Coding URL entry point."""
 
-from apps.revenue_cycle.coding.api.views import (
-    ChargeCodingListCreateAPIView,
-    ChargeCodingRetrieveUpdateDestroyAPIView,
-)
-
-app_name = "coding_entries"
+from django.urls import include, path
 
 urlpatterns = [
     path(
         "",
-        ChargeCodingListCreateAPIView.as_view(),
-        name="list-create",
-    ),
-    path(
-        "<uuid:coding_id>/",
-        ChargeCodingRetrieveUpdateDestroyAPIView.as_view(),
-        name="detail",
+        include("apps.revenue_cycle.coding.api.urls"),
     ),
 ]
 
-__all__ = [
-    "app_name",
-    "urlpatterns",
-]
+__all__ = ("urlpatterns",)

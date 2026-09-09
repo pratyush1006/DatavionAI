@@ -1,59 +1,106 @@
-"""
-Prior Authorization selectors.
-"""
+"""Tenant-safe Prior Authorization query selectors."""
 
 from __future__ import annotations
 
 from uuid import UUID
 
 from django.db.models import QuerySet
-from django.shortcuts import get_object_or_404
 
-from apps.platform.organizations.models import Organization
-from apps.revenue_cycle.prior_authorization.models import PriorAuthorizationRequest
+from apps.revenue_cycle.prior_authorization.models import PriorAuthorization
 
 
-class PriorAuthorizationRequestSelector:
-    """
-    Read-only queries for prior authorization records.
-    """
+def list_verifications(
+    *,
+    tenant_id: UUID,
+    organization_id: UUID,
+    patient_id: UUID | None = None,
+) -> QuerySet[PriorAuthorization]:
+    """List active records inside the exact tenant and organization scope."""
 
-    @staticmethod
-    def queryset() -> QuerySet[PriorAuthorizationRequest]:
-        return PriorAuthorizationRequest.objects.select_related(
-            "organization",
+    queryset = (
+        PriorAuthorization.objects.select_related(
             "patient",
+            "organization",
+            "verified_by",
         )
-
-    @staticmethod
-    def get(
-        *,
-        authorization_id: UUID,
-    ) -> PriorAuthorizationRequest:
-        return get_object_or_404(
-            PriorAuthorizationRequestSelector.queryset(),
-            pk=authorization_id,
+        .filter(
+            organization_id=organization_id,
+            organization__tenant_id=tenant_id,
         )
+        .order_by("-requested_at")
+    )
+    if patient_id is not None:
+        queryset = queryset.filter(patient_id=patient_id)
+    return queryset
 
-    @staticmethod
-    def list_by_patient(
-        *,
-        patient_id: UUID,
-    ) -> QuerySet[PriorAuthorizationRequest]:
-        return PriorAuthorizationRequestSelector.queryset().filter(
-            patient_id=patient_id,
+
+def get_verification(
+    *,
+    tenant_id: UUID,
+    organization_id: UUID,
+    verification_id: UUID,
+) -> PriorAuthorization:
+    """Get one active verification inside the exact scope."""
+
+    return PriorAuthorization.objects.select_related(
+        "patient",
+        "organization",
+        "verified_by",
+    ).get(
+        pk=verification_id,
+        organization_id=organization_id,
+        organization__tenant_id=tenant_id,
+    )
+
+
+def get_authorization_for_update(
+    *,
+    tenant_id: UUID,
+    organization_id: UUID,
+    verification_id: UUID,
+) -> PriorAuthorization:
+    """Lock one active verification for mutation."""
+
+    return (
+        PriorAuthorization.objects.select_for_update()
+        .select_related(
+            "patient",
+            "organization",
         )
-
-    @staticmethod
-    def list_by_organization(
-        *,
-        organization: Organization,
-    ) -> QuerySet[PriorAuthorizationRequest]:
-        return PriorAuthorizationRequestSelector.queryset().filter(
-            organization=organization,
+        .get(
+            pk=verification_id,
+            organization_id=organization_id,
+            organization__tenant_id=tenant_id,
         )
+    )
 
 
-__all__ = [
-    "PriorAuthorizationRequestSelector",
-]
+def get_deleted_authorization_for_update(
+    *,
+    tenant_id: UUID,
+    organization_id: UUID,
+    verification_id: UUID,
+) -> PriorAuthorization:
+    """Lock one deleted verification for restoration."""
+
+    return (
+        PriorAuthorization.all_objects.select_for_update()
+        .select_related(
+            "patient",
+            "organization",
+        )
+        .get(
+            pk=verification_id,
+            organization_id=organization_id,
+            organization__tenant_id=tenant_id,
+            is_deleted=True,
+        )
+    )
+
+
+__all__ = (
+    "get_deleted_authorization_for_update",
+    "get_verification",
+    "get_authorization_for_update",
+    "list_verifications",
+)

@@ -1,15 +1,25 @@
 """
-Patient Consent serializers.
+Patient Consent serializer exports.
 """
 
-from .create import ConsentCreateSerializer
-from .detail import ConsentDetailSerializer
-from .list import ConsentListSerializer
-from .update import ConsentUpdateSerializer
+from __future__ import annotations
 
-__all__ = [
-    "ConsentCreateSerializer",
-    "ConsentDetailSerializer",
-    "ConsentListSerializer",
-    "ConsentUpdateSerializer",
-]
+from .create import (
+    PatientConsentCreateSerializer,
+)
+from .detail import (
+    PatientConsentDetailSerializer,
+)
+from .list import (
+    PatientConsentListSerializer,
+)
+from .update import (
+    PatientConsentUpdateSerializer,
+)
+
+__all__ = (
+    "PatientConsentCreateSerializer",
+    "PatientConsentDetailSerializer",
+    "PatientConsentListSerializer",
+    "PatientConsentUpdateSerializer",
+)

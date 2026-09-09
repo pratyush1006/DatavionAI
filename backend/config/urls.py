@@ -14,20 +14,15 @@ Responsibilities:
 - Document Management
 - Clinical modules
 - AI Platform
+- Device Platform
 - Infrastructure
 """
 
 from __future__ import annotations
 
 from django.contrib import admin
-from django.urls import (
-    include,
-    path,
-)
-from drf_spectacular.views import (
-    SpectacularAPIView,
-    SpectacularSwaggerView,
-)
+from django.urls import include, path
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 urlpatterns = [
     # ==========================================================================
@@ -80,6 +75,12 @@ urlpatterns = [
         ),
     ),
     path(
+        "api/geography/",
+        include(
+            "apps.platform.geography.urls",
+        ),
+    ),
+    path(
         "api/platform/",
         include(
             "apps.datavionos.api.urls",
@@ -102,19 +103,6 @@ urlpatterns = [
     ),
     # ==========================================================================
     # Document Management
-    #
-    # Enterprise shared document capability.
-    #
-    # Used by:
-    #
-    # - Organizations
-    # - Employees
-    # - Patients
-    # - Clinical modules
-    # - Laboratory
-    # - Imaging
-    # - Billing
-    #
     # ==========================================================================
     path(
         "api/documents/",
@@ -124,19 +112,6 @@ urlpatterns = [
     ),
     # ==========================================================================
     # SaaS Platform Billing
-    #
-    # DatavionOS SaaS lifecycle:
-    #
-    # Organization
-    #       |
-    # Subscription
-    #       |
-    # Invoice
-    #       |
-    # Payment
-    #       |
-    # Usage
-    #
     # ==========================================================================
     path(
         "api/saas-billing/",
@@ -175,24 +150,24 @@ urlpatterns = [
         ),
     ),
     # ==========================================================================
-    # Clinical APIs
+    # Patient Management
     # ==========================================================================
-    path(
-        "api/patients/",
-        include(
-            "apps.clinical.patients.urls",
-        ),
-    ),
     path(
         "api/patient-management/",
         include(
             "apps.patient_management.urls",
         ),
     ),
+    # ==========================================================================
+    # Clinical APIs
+    # ==========================================================================
     path(
         "api/providers/",
         include(
-            "apps.clinical.providers.urls",
+            (
+                "apps.clinical.providers.urls",
+                "providers",
+            ),
         ),
     ),
     path(
@@ -244,6 +219,15 @@ urlpatterns = [
         ),
     ),
     # ==========================================================================
+    # Device Platform
+    # ==========================================================================
+    path(
+        "api/device-platform/",
+        include(
+            "apps.device_platform.urls",
+        ),
+    ),
+    # ==========================================================================
     # AI Platform APIs
     # ==========================================================================
     path(
@@ -259,15 +243,14 @@ urlpatterns = [
         ),
     ),
     # ==========================================================================
-    # Imaging / Healthcare Billing / Revenue Cycle
-    #
-    # SaaS Billing:
-    #   DatavionOS subscription revenue
-    #
-    # Healthcare Billing:
-    #   Operational healthcare revenue
-    #
+    # Telemedicine / Imaging / Billing / Revenue Cycle
     # ==========================================================================
+    path(
+        "api/telemedicine/",
+        include(
+            "apps.telemedicine.api.urls",
+        ),
+    ),
     path(
         "api/imaging/",
         include(

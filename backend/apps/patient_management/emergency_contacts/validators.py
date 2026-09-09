@@ -12,57 +12,42 @@ from django.utils.translation import gettext_lazy as _
 def validate_emergency_contact_number(
     value: str,
 ) -> None:
-    """
-    Validate the emergency contact number.
-    """
-
+    """Validate an emergency-contact business identifier."""
     if not value:
-        raise ValidationError(
-            _("Emergency contact number is required."),
-        )
+        raise ValidationError(_("Emergency contact number is required."))
+
+    value = value.strip()
 
     if len(value) > 30:
         raise ValidationError(
-            _(
-                "Emergency contact number cannot exceed 30 characters.",
-            ),
+            _("Emergency contact number cannot exceed 30 characters.")
         )
 
 
 def validate_phone_number(
     value: str,
 ) -> None:
-    """
-    Validate a phone number.
-    """
-
+    """Validate a phone number."""
     if not value:
         return
+
+    value = value.strip()
 
     allowed = set("+0123456789 -()")
 
     if any(character not in allowed for character in value):
-        raise ValidationError(
-            _("Enter a valid phone number."),
-        )
+        raise ValidationError(_("Enter a valid phone number."))
 
     digits = "".join(character for character in value if character.isdigit())
 
     if len(digits) < 7 or len(digits) > 15:
-        raise ValidationError(
-            _(
-                "Phone number must contain between 7 and 15 digits.",
-            ),
-        )
+        raise ValidationError(_("Phone number must contain between 7 and 15 digits."))
 
 
 def validate_email_address(
     value: str,
 ) -> None:
-    """
-    Validate an email address.
-    """
-
+    """Validate an email address."""
     if not value:
         return
 
@@ -72,32 +57,20 @@ def validate_email_address(
 def validate_priority_order(
     value: int,
 ) -> None:
-    """
-    Validate the priority order.
-    """
-
+    """Validate priority ordering."""
     if value < 1:
-        raise ValidationError(
-            _(
-                "Priority order must be greater than zero.",
-            ),
-        )
+        raise ValidationError(_("Priority order must be greater than zero."))
 
 
 def validate_notes(
     value: str,
 ) -> None:
-    """
-    Validate notes.
-    """
-
+    """Validate emergency-contact notes."""
     if not value:
         return
 
     if len(value) > 2000:
-        raise ValidationError(
-            _("Notes cannot exceed 2000 characters."),
-        )
+        raise ValidationError(_("Notes cannot exceed 2000 characters."))
 
 
 __all__ = [

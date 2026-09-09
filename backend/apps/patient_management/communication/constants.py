@@ -1,6 +1,4 @@
-"""
-Constants for the Communication module.
-"""
+"""Patient Communication domain constants."""
 
 from __future__ import annotations
 
@@ -8,51 +6,52 @@ from django.db import models
 
 
 class CommunicationChannel(models.TextChoices):
-    """
-    Channel used for patient communication.
-    """
-
-    EMAIL = "email", "Email"
+    """Supported patient communication channels."""
 
     SMS = "sms", "SMS"
-
+    EMAIL = "email", "Email"
     PHONE = "phone", "Phone"
-
     PORTAL = "portal", "Patient Portal"
-
-    POST = "post", "Postal Mail"
-
-    IN_APP = "in_app", "In App"
+    LETTER = "letter", "Letter"
+    IN_PERSON = "in_person", "In Person"
+    OTHER = "other", "Other"
 
 
 class CommunicationDirection(models.TextChoices):
-    """
-    Direction of the communication.
-    """
-
-    INBOUND = "inbound", "Inbound"
+    """Direction of a communication interaction."""
 
     OUTBOUND = "outbound", "Outbound"
+    INBOUND = "inbound", "Inbound"
 
 
 class CommunicationStatus(models.TextChoices):
-    """
-    Delivery status of the communication.
-    """
+    """Lifecycle status of a communication interaction."""
 
-    PENDING = "pending", "Pending"
-
+    DRAFT = "draft", "Draft"
+    QUEUED = "queued", "Queued"
     SENT = "sent", "Sent"
-
     DELIVERED = "delivered", "Delivered"
-
     READ = "read", "Read"
-
     FAILED = "failed", "Failed"
+    CANCELLED = "cancelled", "Cancelled"
+    ARCHIVED = "archived", "Archived"
 
 
-__all__ = [
+class CommunicationType(models.TextChoices):
+    """Business classification for a communication."""
+
+    GENERAL = "general", "General"
+    APPOINTMENT = "appointment", "Appointment"
+    CLINICAL = "clinical", "Clinical"
+    BILLING = "billing", "Billing"
+    FOLLOW_UP = "follow_up", "Follow Up"
+    REMINDER = "reminder", "Reminder"
+    ADMINISTRATIVE = "administrative", "Administrative"
+
+
+__all__ = (
     "CommunicationChannel",
     "CommunicationDirection",
     "CommunicationStatus",
-]
+    "CommunicationType",
+)

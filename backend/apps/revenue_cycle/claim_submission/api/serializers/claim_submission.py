@@ -1,93 +1,98 @@
-"""
-Serializers for the ClaimSubmission module.
-"""
+"""Serializers for claim submission APIs."""
 
 from __future__ import annotations
 
 from rest_framework import serializers
 
+from apps.revenue_cycle.claim_submission.constants import (
+    SubmissionMethod,
+    SubmissionStatus,
+)
 from apps.revenue_cycle.claim_submission.models import ClaimSubmission
-
-WRITE_FIELDS: tuple[str, ...] = (
-    "patient",
-    "claim",
-    "submission_method",
-    "priority",
-    "submitted_at",
-    "submitted_by",
-    "clearinghouse",
-    "acknowledgement_code",
-    "payer_control_number",
-    "transmission_status",
-)
-
-DETAIL_FIELDS: tuple[str, ...] = (
-    "organization",
-    "patient",
-    "claim",
-    "submission_method",
-    "priority",
-    "submitted_at",
-    "submitted_by",
-    "clearinghouse",
-    "acknowledgement_code",
-    "payer_control_number",
-    "transmission_status",
-    "organization",
-    "is_active",
-    "created_at",
-    "updated_at",
-)
-
-LIST_FIELDS: tuple[str, ...] = (
-    "organization",
-    "patient",
-    "claim",
-    "submission_method",
-    "priority",
-    "submitted_at",
-    "submitted_by",
-    "clearinghouse",
-    "acknowledgement_code",
-    "payer_control_number",
-    "transmission_status",
-)
-
-READ_ONLY_FIELDS: tuple[str, ...] = ("id", "created_at", "updated_at")
 
 
 class ClaimSubmissionSerializer(serializers.ModelSerializer):
+    """Serialize a claim submission."""
+
     class Meta:
+        """Define serializer metadata."""
+
         model = ClaimSubmission
-        fields = DETAIL_FIELDS
-        read_only_fields = READ_ONLY_FIELDS
+        fields = (
+            "id",
+            "patient",
+            "claim_reference",
+            "payer_id",
+            "payer_name",
+            "submission_method",
+            "status",
+            "payload",
+            "response_data",
+            "external_submission_id",
+            "rejection_code",
+            "rejection_reason",
+            "submitted_at",
+            "accepted_at",
+            "failed_at",
+            "cancelled_at",
+            "idempotency_key",
+            "created_at",
+            "updated_at",
+        )
+        read_only_fields = (
+            "id",
+            "status",
+            "response_data",
+            "external_submission_id",
+            "rejection_code",
+            "rejection_reason",
+            "submitted_at",
+            "accepted_at",
+            "failed_at",
+            "cancelled_at",
+            "created_at",
+            "updated_at",
+        )
 
 
-class ClaimSubmissionCreateSerializer(ClaimSubmissionSerializer):
-    class Meta(ClaimSubmissionSerializer.Meta):
-        fields = WRITE_FIELDS
-        read_only_fields = READ_ONLY_FIELDS
+class CreateClaimSubmissionSerializer(serializers.Serializer):
+    """Validate claim submission creation commands."""
+
+    patient_id = serializers.UUIDField()
+    claim_reference = serializers.CharField(max_length=100)
+    payer_id = serializers.CharField(max_length=100)
+    payer_name = serializers.CharField(max_length=200, required=False, allow_blank=True)
+    submission_method = serializers.ChoiceField(
+        choices=SubmissionMethod.choices, default=SubmissionMethod.EDI
+    )
+    idempotency_key = serializers.CharField(max_length=150)
+    payload = serializers.JSONField(required=False)
 
 
-class ClaimSubmissionUpdateSerializer(ClaimSubmissionSerializer):
-    class Meta(ClaimSubmissionSerializer.Meta):
-        fields = WRITE_FIELDS
-        read_only_fields = READ_ONLY_FIELDS
+class UpdateClaimSubmissionSerializer(serializers.Serializer):
+    """Validate mutable claim submission fields."""
+
+    payer_name = serializers.CharField(max_length=200, required=False)
+    response_data = serializers.JSONField(required=False)
 
 
-class ClaimSubmissionListSerializer(ClaimSubmissionSerializer):
-    class Meta(ClaimSubmissionSerializer.Meta):
-        fields = LIST_FIELDS
-        read_only_fields = READ_ONLY_FIELDS
+class TransitionClaimSubmissionSerializer(serializers.Serializer):
+    """Validate lifecycle transition commands."""
+
+    target_status = serializers.ChoiceField(choices=SubmissionStatus.choices)
+    response_data = serializers.JSONField(required=False)
+    external_submission_id = serializers.CharField(
+        max_length=150, required=False, allow_blank=True
+    )
+    rejection_code = serializers.CharField(
+        max_length=100, required=False, allow_blank=True
+    )
+    rejection_reason = serializers.CharField(required=False, allow_blank=True)
 
 
-ClaimSubmissionDetailSerializer = ClaimSubmissionSerializer
-
-
-__all__ = [
-    "ClaimSubmissionCreateSerializer",
-    "ClaimSubmissionDetailSerializer",
-    "ClaimSubmissionListSerializer",
+__all__ = (
     "ClaimSubmissionSerializer",
-    "ClaimSubmissionUpdateSerializer",
-]
+    "CreateClaimSubmissionSerializer",
+    "UpdateClaimSubmissionSerializer",
+    "TransitionClaimSubmissionSerializer",
+)

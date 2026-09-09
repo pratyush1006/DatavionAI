@@ -1,253 +1,212 @@
 """
-Insurance claim services.
+Billing Core Insurance Claim service.
 """
 
 from __future__ import annotations
 
-from collections.abc import Mapping
-from typing import Any
+from decimal import Decimal
 
 from django.db import transaction
+from django.utils import timezone
 
-from apps.billing.constants import (
-    ClaimStatus,
-    InvoiceStatus,
+from apps.billing.constants import ClaimStatus
+from apps.billing.exceptions import (
+    BillingFinancialInvariantError,
+    BillingLifecycleError,
 )
-from apps.billing.models import InsuranceClaim
+from apps.billing.models import InsuranceClaim, Invoice
 
 
 class InsuranceClaimService:
-    """
-    Application service responsible for insurance claim write operations.
-
-    This service is the single entry point for all insurance claim
-    lifecycle operations and provides a centralized location for
-    future business rules such as:
-
-    - Claim validation
-    - Approval amount tracking
-    - Settlement processing
-    - Audit logging
-    - Notifications
-    - External integrations
-    """
+    """Mutate insurance claims and settlement aggregates."""
 
     @staticmethod
     @transaction.atomic
     def create(
         *,
-        validated_data: Mapping[str, Any],
-        performed_by: Any = None,
+        organization,
+        patient,
+        invoice,
+        data,
+        performed_by,
     ) -> InsuranceClaim:
-        """
-        Create a new insurance claim.
-        """
+        """Submit a claim after validating aggregate ownership."""
+        if invoice.organization_id != organization.pk:
+            raise BillingFinancialInvariantError(
+                "Claim and invoice organizations must match.",
+            )
+        if invoice.patient_id != patient.pk:
+            raise BillingFinancialInvariantError(
+                "Claim and invoice patients must match.",
+            )
 
         claim = InsuranceClaim(
-            **validated_data,
+            organization=organization,
+            patient=patient,
+            invoice=invoice,
+            insurance_provider=data["insurance_provider"],
+            policy_number=data["policy_number"],
+            claim_number=data["claim_number"],
+            claim_amount=data["claim_amount"],
+            status=ClaimStatus.SUBMITTED,
         )
-
         claim.full_clean()
-
         claim.save()
 
         return claim
 
     @staticmethod
     @transaction.atomic
-    def update(
-        *,
-        instance: InsuranceClaim,
-        validated_data: Mapping[str, Any],
-        performed_by: Any = None,
-    ) -> InsuranceClaim:
-        """
-        Update an existing insurance claim.
-        """
-
-        for field, value in validated_data.items():
-            setattr(
-                instance,
-                field,
-                value,
-            )
-
-        instance.full_clean()
-
-        instance.save()
-
-        return instance
-
-    @staticmethod
-    @transaction.atomic
     def approve(
         *,
-        instance: InsuranceClaim,
-        approved_amount: float,
-        performed_by: Any = None,
+        claim: InsuranceClaim,
+        approved_amount: Decimal,
+        performed_by,
     ) -> InsuranceClaim:
-        """
-        Approve an insurance claim.
-        """
+        """Approve a submitted or appealed claim."""
+        locked = InsuranceClaim.objects.select_for_update().get(pk=claim.pk)
 
-        instance.approved_amount = approved_amount
+        if locked.status not in (
+            ClaimStatus.SUBMITTED,
+            ClaimStatus.APPEALED,
+        ):
+            raise BillingLifecycleError(
+                "Only submitted or appealed claims can be approved.",
+            )
 
-        if approved_amount >= instance.claim_amount:
-            instance.status = ClaimStatus.APPROVED
-        else:
-            instance.status = ClaimStatus.PARTIALLY_APPROVED
-
-        instance.full_clean()
-
-        instance.save(
-            update_fields=[
-                "approved_amount",
-                "status",
-            ],
+        amount = Decimal(
+            str(approved_amount),
         )
+        if amount <= Decimal("0.00") or amount > locked.claim_amount:
+            raise BillingFinancialInvariantError(
+                "Approved amount must be positive and not exceed claim amount.",
+            )
 
-        return instance
+        locked.approved_amount = amount
+        locked.status = (
+            ClaimStatus.APPROVED
+            if amount == locked.claim_amount
+            else ClaimStatus.PARTIALLY_APPROVED
+        )
+        locked.rejection_reason = ""
+        locked.full_clean()
+        locked.save()
+
+        return locked
 
     @staticmethod
     @transaction.atomic
     def reject(
         *,
-        instance: InsuranceClaim,
+        claim: InsuranceClaim,
         rejection_reason: str,
-        performed_by: Any = None,
+        performed_by,
     ) -> InsuranceClaim:
-        """
-        Reject an insurance claim.
-        """
+        """Reject a submitted or appealed claim."""
+        locked = InsuranceClaim.objects.select_for_update().get(pk=claim.pk)
 
-        instance.status = ClaimStatus.REJECTED
-        instance.rejection_reason = rejection_reason
+        if locked.status not in (
+            ClaimStatus.SUBMITTED,
+            ClaimStatus.APPEALED,
+        ):
+            raise BillingLifecycleError(
+                "Only submitted or appealed claims can be rejected.",
+            )
 
-        instance.full_clean()
+        reason = rejection_reason.strip()
+        if not reason:
+            raise BillingLifecycleError(
+                "A rejection reason is required.",
+            )
 
-        instance.save(
-            update_fields=[
-                "status",
-                "rejection_reason",
-            ],
-        )
+        locked.status = ClaimStatus.REJECTED
+        locked.rejection_reason = reason
+        locked.full_clean()
+        locked.save()
 
-        return instance
+        return locked
 
     @staticmethod
     @transaction.atomic
     def appeal(
         *,
-        instance: InsuranceClaim,
-        performed_by: Any = None,
+        claim: InsuranceClaim,
+        performed_by,
     ) -> InsuranceClaim:
-        """
-        Appeal a rejected insurance claim.
-        """
+        """Appeal a rejected claim."""
+        locked = InsuranceClaim.objects.select_for_update().get(pk=claim.pk)
 
-        instance.status = ClaimStatus.APPEALED
+        if locked.status != ClaimStatus.REJECTED:
+            raise BillingLifecycleError(
+                "Only rejected claims can be appealed.",
+            )
 
-        instance.full_clean()
+        locked.status = ClaimStatus.APPEALED
+        locked.rejection_reason = ""
+        locked.full_clean()
+        locked.save()
 
-        instance.save(
-            update_fields=[
-                "status",
-            ],
-        )
-
-        return instance
+        return locked
 
     @staticmethod
     @transaction.atomic
     def settle(
         *,
-        instance: InsuranceClaim,
-        performed_by: Any = None,
+        claim: InsuranceClaim,
+        performed_by,
     ) -> InsuranceClaim:
-        """
-        Settle an approved insurance claim.
-        """
-
-        from django.utils import timezone
-
-        instance.status = ClaimStatus.SETTLED
-        instance.settled_at = timezone.now()
-
-        instance.full_clean()
-
-        instance.save(
-            update_fields=[
-                "status",
-                "settled_at",
-            ],
+        """Settle an approved claim and apply its proceeds to the invoice."""
+        locked_claim = (
+            InsuranceClaim.objects.select_for_update()
+            .select_related("invoice")
+            .get(pk=claim.pk)
         )
 
-        invoice = instance.invoice
-
-        if instance.approved_amount:
-            remaining = invoice.balance_amount
-
-            if instance.approved_amount >= remaining:
-                invoice.status = InvoiceStatus.PAID
-                invoice.balance_amount = 0
-                invoice.paid_amount = invoice.total_amount
-            else:
-                invoice.paid_amount = invoice.paid_amount + instance.approved_amount
-                invoice.balance_amount = invoice.total_amount - invoice.paid_amount
-
-                if invoice.paid_amount > 0:
-                    invoice.status = InvoiceStatus.PARTIALLY_PAID
-
-            invoice.save(
-                update_fields=[
-                    "status",
-                    "paid_amount",
-                    "balance_amount",
-                ],
+        if locked_claim.status not in (
+            ClaimStatus.APPROVED,
+            ClaimStatus.PARTIALLY_APPROVED,
+        ):
+            raise BillingLifecycleError(
+                "Only approved claims can be settled.",
             )
 
-        return instance
-
-    @staticmethod
-    @transaction.atomic
-    def bulk_create(
-        *,
-        validated_data_list: list[Mapping[str, Any]],
-        performed_by: Any = None,
-    ) -> list[InsuranceClaim]:
-        """
-        Create multiple insurance claims.
-        """
-
-        claims: list[InsuranceClaim] = []
-
-        for validated_data in validated_data_list:
-            claim = InsuranceClaim(
-                **validated_data,
+        if locked_claim.approved_amount is None:
+            raise BillingFinancialInvariantError(
+                "Approved claim amount is required for settlement.",
             )
 
-            claim.full_clean()
+        invoice = Invoice.objects.select_for_update().get(pk=locked_claim.invoice_id)
 
-            claim.save()
+        applied = min(
+            locked_claim.approved_amount,
+            invoice.balance_amount,
+        )
 
-            claims.append(claim)
+        invoice.paid_amount += applied
+        invoice.balance_amount = invoice.total_amount - invoice.paid_amount
+        invoice.recalculate_status()
+        invoice.full_clean()
+        invoice.save(
+            update_fields=(
+                "paid_amount",
+                "balance_amount",
+                "status",
+                "updated_at",
+            ),
+        )
 
-        return claims
+        locked_claim.status = ClaimStatus.SETTLED
+        locked_claim.settled_at = timezone.now()
+        locked_claim.full_clean()
+        locked_claim.save(
+            update_fields=(
+                "status",
+                "settled_at",
+                "updated_at",
+            ),
+        )
+
+        return locked_claim
 
 
-create_claim = InsuranceClaimService.create
-approve_claim = InsuranceClaimService.approve
-reject_claim = InsuranceClaimService.reject
-appeal_claim = InsuranceClaimService.appeal
-settle_claim = InsuranceClaimService.settle
-update_claim = InsuranceClaimService.update
-
-
-__all__ = [
-    "InsuranceClaimService",
-    "appeal_claim",
-    "approve_claim",
-    "create_claim",
-    "reject_claim",
-    "settle_claim",
-]
+__all__ = ("InsuranceClaimService",)

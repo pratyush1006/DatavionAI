@@ -1,59 +1,106 @@
-"""
-Insurance Verification selectors.
-"""
+"""Tenant-safe Insurance Verification query selectors."""
 
 from __future__ import annotations
 
 from uuid import UUID
 
 from django.db.models import QuerySet
-from django.shortcuts import get_object_or_404
 
-from apps.platform.organizations.models import Organization
 from apps.revenue_cycle.insurance_verification.models import InsuranceVerification
 
 
-class InsuranceVerificationSelector:
-    """
-    Read-only queries for insurance verification records.
-    """
+def list_verifications(
+    *,
+    tenant_id: UUID,
+    organization_id: UUID,
+    patient_id: UUID | None = None,
+) -> QuerySet[InsuranceVerification]:
+    """List active records inside the exact tenant and organization scope."""
 
-    @staticmethod
-    def queryset() -> QuerySet[InsuranceVerification]:
-        return InsuranceVerification.objects.select_related(
-            "organization",
+    queryset = (
+        InsuranceVerification.objects.select_related(
             "patient",
+            "organization",
+            "verified_by",
         )
+        .filter(
+            organization_id=organization_id,
+            organization__tenant_id=tenant_id,
+        )
+        .order_by("-requested_at")
+    )
+    if patient_id is not None:
+        queryset = queryset.filter(patient_id=patient_id)
+    return queryset
 
-    @staticmethod
-    def get(
-        *,
-        verification_id: UUID,
-    ) -> InsuranceVerification:
-        return get_object_or_404(
-            InsuranceVerificationSelector.queryset(),
+
+def get_verification(
+    *,
+    tenant_id: UUID,
+    organization_id: UUID,
+    verification_id: UUID,
+) -> InsuranceVerification:
+    """Get one active verification inside the exact scope."""
+
+    return InsuranceVerification.objects.select_related(
+        "patient",
+        "organization",
+        "verified_by",
+    ).get(
+        pk=verification_id,
+        organization_id=organization_id,
+        organization__tenant_id=tenant_id,
+    )
+
+
+def get_verification_for_update(
+    *,
+    tenant_id: UUID,
+    organization_id: UUID,
+    verification_id: UUID,
+) -> InsuranceVerification:
+    """Lock one active verification for mutation."""
+
+    return (
+        InsuranceVerification.objects.select_for_update()
+        .select_related(
+            "patient",
+            "organization",
+        )
+        .get(
             pk=verification_id,
+            organization_id=organization_id,
+            organization__tenant_id=tenant_id,
         )
+    )
 
-    @staticmethod
-    def list_by_patient(
-        *,
-        patient_id: UUID,
-    ) -> QuerySet[InsuranceVerification]:
-        return InsuranceVerificationSelector.queryset().filter(
-            patient_id=patient_id,
+
+def get_deleted_verification_for_update(
+    *,
+    tenant_id: UUID,
+    organization_id: UUID,
+    verification_id: UUID,
+) -> InsuranceVerification:
+    """Lock one deleted verification for restoration."""
+
+    return (
+        InsuranceVerification.all_objects.select_for_update()
+        .select_related(
+            "patient",
+            "organization",
         )
-
-    @staticmethod
-    def list_by_organization(
-        *,
-        organization: Organization,
-    ) -> QuerySet[InsuranceVerification]:
-        return InsuranceVerificationSelector.queryset().filter(
-            organization=organization,
+        .get(
+            pk=verification_id,
+            organization_id=organization_id,
+            organization__tenant_id=tenant_id,
+            is_deleted=True,
         )
+    )
 
 
-__all__ = [
-    "InsuranceVerificationSelector",
-]
+__all__ = (
+    "get_deleted_verification_for_update",
+    "get_verification",
+    "get_verification_for_update",
+    "list_verifications",
+)

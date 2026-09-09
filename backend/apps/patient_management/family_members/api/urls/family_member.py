@@ -1,5 +1,5 @@
 """
-URL patterns for the Family Members API.
+URL patterns for the Patient Family Members API.
 """
 
 from __future__ import annotations
@@ -7,39 +7,58 @@ from __future__ import annotations
 from django.urls import path
 
 from apps.patient_management.family_members.api.views import (
-    FamilyMemberCreateAPIView,
-    FamilyMemberDeleteAPIView,
-    FamilyMemberDetailAPIView,
-    FamilyMemberListAPIView,
-    FamilyMemberUpdateAPIView,
+    FamilyMemberActivateAPIView,
+    FamilyMemberDeactivateAPIView,
+    FamilyMemberListCreateAPIView,
+    FamilyMemberRestoreAPIView,
+    FamilyMemberRetrieveUpdateDestroyAPIView,
+    FamilyMemberSetEmergencyContactAPIView,
+    FamilyMemberSetNextOfKinAPIView,
 )
 
-app_name = "family-members-api"
+app_name = "patient-family-members"
 
-urlpatterns = [
+
+urlpatterns = (
     path(
         "",
-        FamilyMemberListAPIView.as_view(),
-        name="list",
+        FamilyMemberListCreateAPIView.as_view(),
+        name="list-create",
     ),
     path(
-        "create/",
-        FamilyMemberCreateAPIView.as_view(),
-        name="create",
+        "<uuid:family_member_id>/",
+        FamilyMemberRetrieveUpdateDestroyAPIView.as_view(),
+        name="retrieve-update-destroy",
     ),
     path(
-        "<uuid:id>/",
-        FamilyMemberDetailAPIView.as_view(),
-        name="detail",
+        "<uuid:family_member_id>/activate/",
+        FamilyMemberActivateAPIView.as_view(),
+        name="activate",
     ),
     path(
-        "<uuid:id>/update/",
-        FamilyMemberUpdateAPIView.as_view(),
-        name="update",
+        "<uuid:family_member_id>/deactivate/",
+        FamilyMemberDeactivateAPIView.as_view(),
+        name="deactivate",
     ),
     path(
-        "<uuid:id>/delete/",
-        FamilyMemberDeleteAPIView.as_view(),
-        name="delete",
+        "<uuid:family_member_id>/restore/",
+        FamilyMemberRestoreAPIView.as_view(),
+        name="restore",
     ),
-]
+    path(
+        "<uuid:family_member_id>/set-next-of-kin/",
+        FamilyMemberSetNextOfKinAPIView.as_view(),
+        name="set-next-of-kin",
+    ),
+    path(
+        "<uuid:family_member_id>/set-emergency-contact/",
+        FamilyMemberSetEmergencyContactAPIView.as_view(),
+        name="set-emergency-contact",
+    ),
+)
+
+
+__all__ = (
+    "app_name",
+    "urlpatterns",
+)

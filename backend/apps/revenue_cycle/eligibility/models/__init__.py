@@ -1,5 +1,7 @@
-from .eligibility import EligibilityCheck
+"""Revenue Cycle Eligibility models."""
 
-__all__ = [
-    "EligibilityCheck",
-]
+from __future__ import annotations
+
+from apps.revenue_cycle.eligibility.models.eligibility import Eligibility
+
+__all__ = ("Eligibility",)

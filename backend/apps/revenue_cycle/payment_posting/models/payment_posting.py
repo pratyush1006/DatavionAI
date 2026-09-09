@@ -1,105 +1,105 @@
-"""
-Payment Posting models.
-"""
+"""Payment posting aggregate."""
 
 from __future__ import annotations
 
 from decimal import Decimal
 
+from django.conf import settings
 from django.db import models
+from django.db.models import Q
 
-from apps.billing.models.invoice import Invoice
-from apps.billing.models.payment import Payment
-from apps.clinical.patients.models import Patient
-from apps.core.models import BaseManager, BaseModel
+from apps.core.models.base import BaseModel
 from apps.platform.organizations.models import Organization
-from apps.revenue_cycle.constants import PostingStatus
+
+from ..constants import PaymentPostingSource, PaymentPostingStatus
 
 
 class PaymentPosting(BaseModel):
-    """
-    Allocation of a payment against an invoice / charge.
-    """
-
-    objects = BaseManager()
+    """Represent a tenant-scoped payment posting against a patient account."""
 
     organization = models.ForeignKey(
         Organization,
-        on_delete=models.CASCADE,
-        related_name="payment_postings",
+        on_delete=models.PROTECT,
+        related_name="revenue_cycle_payment_postings",
     )
-
     patient = models.ForeignKey(
-        Patient,
-        on_delete=models.CASCADE,
-        related_name="payment_postings",
+        "patient_core.Patient",
+        on_delete=models.PROTECT,
+        related_name="revenue_cycle_payment_postings",
     )
-
-    payment = models.ForeignKey(
-        Payment,
-        on_delete=models.CASCADE,
-        related_name="postings",
-    )
-
     invoice = models.ForeignKey(
-        Invoice,
-        on_delete=models.CASCADE,
-        related_name="payment_postings",
+        "billing.Invoice",
+        on_delete=models.PROTECT,
+        related_name="revenue_cycle_payment_postings",
+        null=True,
+        blank=True,
     )
-
-    amount = models.DecimalField(
-        max_digits=12,
-        decimal_places=2,
-        default=Decimal("0.00"),
-        help_text="Amount posted to the invoice.",
+    payer_name = models.CharField(max_length=200, blank=True)
+    payer_claim_reference = models.CharField(max_length=100, blank=True)
+    source = models.CharField(
+        max_length=20,
+        choices=PaymentPostingSource.choices,
+        default=PaymentPostingSource.MANUAL,
     )
-
-    posting_date = models.DateField(
-        help_text="Date the payment was posted.",
-    )
-
     status = models.CharField(
         max_length=20,
-        choices=PostingStatus.choices,
-        default=PostingStatus.POSTED,
+        choices=PaymentPostingStatus.choices,
+        default=PaymentPostingStatus.PENDING,
         db_index=True,
     )
-
-    posted_by = models.CharField(
-        max_length=150,
-        blank=True,
+    amount = models.DecimalField(max_digits=14, decimal_places=2)
+    adjustment_amount = models.DecimalField(
+        max_digits=14,
+        decimal_places=2,
+        default=Decimal("0.00"),
     )
-
-    notes = models.TextField(
+    posted_at = models.DateTimeField(null=True, blank=True)
+    reversed_at = models.DateTimeField(null=True, blank=True)
+    external_reference = models.CharField(max_length=150, blank=True)
+    idempotency_key = models.CharField(max_length=150)
+    notes = models.TextField(blank=True)
+    posted_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
         blank=True,
+        related_name="revenue_cycle_payment_postings",
     )
+    reversal_reason = models.TextField(blank=True)
 
     class Meta:
-        db_table = "payment_postings"
+        """Configure database constraints and indexes."""
 
-        verbose_name = "Payment Posting"
-
-        verbose_name_plural = "Payment Postings"
-
-        ordering = ("-posting_date",)
-
-        indexes = [
-            models.Index(
-                fields=[
-                    "organization",
-                    "payment",
-                    "invoice",
-                ],
-                name="post_org_pay_inv_idx",
+        db_table = "revenue_cycle_payment_postings"
+        ordering = ("-created_at",)
+        constraints = (
+            models.UniqueConstraint(
+                fields=("organization", "idempotency_key"),
+                name="rc_pp_org_idempotency_uniq",
             ),
-        ]
+            models.CheckConstraint(
+                condition=Q(amount__gt=0),
+                name="rc_pp_amount_positive",
+            ),
+            models.CheckConstraint(
+                condition=Q(adjustment_amount__gte=0),
+                name="rc_pp_adjustment_nonnegative",
+            ),
+        )
+        indexes = (
+            models.Index(
+                fields=("organization", "status"),
+                name="rc_pp_org_status_idx",
+            ),
+            models.Index(
+                fields=("organization", "patient"),
+                name="rc_pp_org_patient_idx",
+            ),
+            models.Index(
+                fields=("organization", "posted_at"),
+                name="rc_pp_org_posted_idx",
+            ),
+        )
 
-    def __str__(
-        self,
-    ) -> str:
-        return f"Posting {self.payment} -> {self.invoice}"
 
-
-__all__ = [
-    "PaymentPosting",
-]
+__all__ = ("PaymentPosting",)

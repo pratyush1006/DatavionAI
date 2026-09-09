@@ -1,13 +1,23 @@
-from .timeline import (
-    PatientTimelineEventService,
-    create_timeline_event,
-    delete_timeline_event,
-    update_timeline_event,
+"""
+Patient Timeline service exports.
+"""
+
+from __future__ import annotations
+
+from apps.patient_management.timeline.services.timeline import (
+    activate_timeline,
+    archive_timeline,
+    create_timeline,
+    deactivate_timeline,
+    delete_timeline,
+    update_timeline,
 )
 
-__all__ = [
-    "PatientTimelineEventService",
-    "create_timeline_event",
-    "delete_timeline_event",
-    "update_timeline_event",
-]
+__all__ = (
+    "activate_timeline",
+    "archive_timeline",
+    "create_timeline",
+    "deactivate_timeline",
+    "delete_timeline",
+    "update_timeline",
+)

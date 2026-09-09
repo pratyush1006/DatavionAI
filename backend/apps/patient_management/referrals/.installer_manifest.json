@@ -1,0 +1,10 @@
+{
+  "installer": "DatavionOS Patient Referrals Production Installer",
+  "module": "apps.patient_management.referrals",
+  "version": "1.0.5",
+  "canonical_patient": "apps.patient_management.patients.models.Patient",
+  "fresh_install": true,
+  "delete_existing_module_before_install": true,
+  "migration_policy": "no_migrations",
+  "migrations_generated": false
+}

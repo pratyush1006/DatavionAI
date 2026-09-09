@@ -9,7 +9,6 @@ from datetime import datetime
 import factory
 
 from apps.ai.tests.factories import AIModelFactory
-from apps.clinical.patients.tests.factories import PatientFactory
 from apps.imaging.constants import (
     AIAnalysisType,
     Modality,
@@ -17,6 +16,7 @@ from apps.imaging.constants import (
     StudyStatus,
 )
 from apps.imaging.models import AIAnalysis, ImageInstance, Report, Series, Study
+from apps.patient_management.patients.tests.factories import PatientFactory
 from apps.platform.organizations.tests.factories import OrganizationFactory
 
 

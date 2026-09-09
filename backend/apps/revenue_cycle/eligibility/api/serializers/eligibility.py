@@ -1,90 +1,106 @@
-"""
-Serializers for the EligibilityCheck module.
-"""
+"""DRF serializers for Eligibility."""
 
 from __future__ import annotations
 
 from rest_framework import serializers
 
-from apps.revenue_cycle.eligibility.models import EligibilityCheck
-
-WRITE_FIELDS: tuple[str, ...] = (
-    "patient",
-    "enrollment",
-    "check_date",
-    "service_code",
-    "status",
-    "checked_by",
-    "benefit_details",
-    "notes",
-    "reference_number",
-)
-
-DETAIL_FIELDS: tuple[str, ...] = (
-    "organization",
-    "patient",
-    "enrollment",
-    "check_date",
-    "service_code",
-    "status",
-    "checked_by",
-    "benefit_details",
-    "notes",
-    "reference_number",
-    "organization",
-    "is_active",
-    "created_at",
-    "updated_at",
-)
-
-LIST_FIELDS: tuple[str, ...] = (
-    "organization",
-    "patient",
-    "enrollment",
-    "check_date",
-    "service_code",
-    "status",
-    "checked_by",
-    "benefit_details",
-    "notes",
-    "reference_number",
-)
-
-READ_ONLY_FIELDS: tuple[str, ...] = ("id", "created_at", "updated_at")
+from apps.revenue_cycle.eligibility.models import Eligibility
 
 
-class EligibilityCheckSerializer(serializers.ModelSerializer):
+class EligibilityCreateSerializer(serializers.Serializer):
+    """Validate Eligibility creation input."""
+
+    patient_id = serializers.UUIDField()
+    payer_id = serializers.CharField(max_length=100)
+    payer_name = serializers.CharField(max_length=255, required=False, allow_blank=True)
+    member_id = serializers.CharField(max_length=100)
+    group_number = serializers.CharField(
+        max_length=100, required=False, allow_blank=True
+    )
+    subscriber_name = serializers.CharField(
+        max_length=255, required=False, allow_blank=True
+    )
+    subscriber_relationship = serializers.CharField(
+        max_length=50, required=False, allow_blank=True
+    )
+    request_reference = serializers.CharField(max_length=100)
+    idempotency_key = serializers.CharField(max_length=255)
+    response_payload = serializers.JSONField(required=False)
+
+    def validate(self, attrs):
+        """Reject blank required identifiers."""
+        for field in ("payer_id", "member_id", "request_reference", "idempotency_key"):
+            attrs[field] = attrs[field].strip()
+            if not attrs[field]:
+                raise serializers.ValidationError(
+                    {field: "This field cannot be blank."}
+                )
+        return attrs
+
+
+class EligibilityUpdateSerializer(serializers.Serializer):
+    """Validate mutable Eligibility metadata."""
+
+    payer_id = serializers.CharField(max_length=100, required=False)
+    payer_name = serializers.CharField(max_length=255, required=False, allow_blank=True)
+    member_id = serializers.CharField(max_length=100, required=False)
+    group_number = serializers.CharField(
+        max_length=100, required=False, allow_blank=True
+    )
+    subscriber_name = serializers.CharField(
+        max_length=255, required=False, allow_blank=True
+    )
+    subscriber_relationship = serializers.CharField(
+        max_length=50, required=False, allow_blank=True
+    )
+    response_code = serializers.CharField(
+        max_length=100, required=False, allow_blank=True
+    )
+    response_message = serializers.CharField(required=False, allow_blank=True)
+    response_payload = serializers.JSONField(required=False)
+
+
+class EligibilityLifecycleSerializer(serializers.Serializer):
+    """Validate a lifecycle transition."""
+
+    status = serializers.CharField(max_length=30)
+
+
+class EligibilityListSerializer(serializers.ModelSerializer):
+    """Serialize Eligibility list data."""
+
     class Meta:
-        model = EligibilityCheck
-        fields = DETAIL_FIELDS
-        read_only_fields = READ_ONLY_FIELDS
+        """Serializer metadata."""
+
+        model = Eligibility
+        fields = (
+            "id",
+            "patient",
+            "payer_id",
+            "payer_name",
+            "member_id",
+            "status",
+            "coverage_status",
+            "requested_at",
+            "verified_at",
+            "request_reference",
+        )
 
 
-class EligibilityCheckCreateSerializer(EligibilityCheckSerializer):
-    class Meta(EligibilityCheckSerializer.Meta):
-        fields = WRITE_FIELDS
-        read_only_fields = READ_ONLY_FIELDS
+class EligibilityDetailSerializer(serializers.ModelSerializer):
+    """Serialize complete Eligibility data."""
+
+    class Meta:
+        """Serializer metadata."""
+
+        model = Eligibility
+        fields = "__all__"
 
 
-class EligibilityCheckUpdateSerializer(EligibilityCheckSerializer):
-    class Meta(EligibilityCheckSerializer.Meta):
-        fields = WRITE_FIELDS
-        read_only_fields = READ_ONLY_FIELDS
-
-
-class EligibilityCheckListSerializer(EligibilityCheckSerializer):
-    class Meta(EligibilityCheckSerializer.Meta):
-        fields = LIST_FIELDS
-        read_only_fields = READ_ONLY_FIELDS
-
-
-EligibilityCheckDetailSerializer = EligibilityCheckSerializer
-
-
-__all__ = [
-    "EligibilityCheckCreateSerializer",
-    "EligibilityCheckDetailSerializer",
-    "EligibilityCheckListSerializer",
-    "EligibilityCheckSerializer",
-    "EligibilityCheckUpdateSerializer",
-]
+__all__ = (
+    "EligibilityCreateSerializer",
+    "EligibilityDetailSerializer",
+    "EligibilityLifecycleSerializer",
+    "EligibilityListSerializer",
+    "EligibilityUpdateSerializer",
+)

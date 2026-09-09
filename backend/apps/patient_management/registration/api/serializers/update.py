@@ -1,24 +1,27 @@
 """
 Update serializer for the Patient Registration module.
+
+The serializer performs API-level validation and representation only.
+Domain mutation is handled by the registration update workflow and
+PatientRegistrationService.
 """
 
 from __future__ import annotations
 
-from rest_framework import serializers
-
 from apps.patient_management.registration.models import (
     PatientRegistration,
 )
-from apps.patient_management.registration.services import (
-    PatientRegistrationService,
-)
+from rest_framework import serializers
 
 
 class PatientRegistrationUpdateSerializer(
     serializers.ModelSerializer,
 ):
     """
-    Serializer for updating a patient registration.
+    Serializer for updating mutable patient registration fields.
+
+    This serializer deliberately does not override ``update()``.
+    Persistence is performed by the registration update workflow.
     """
 
     class Meta:
@@ -51,16 +54,14 @@ class PatientRegistrationUpdateSerializer(
             "updated_at",
         )
 
-    def update(
-        self,
-        instance: PatientRegistration,
-        validated_data: dict,
-    ) -> PatientRegistration:
+    def validate_notes(self, value: str | None) -> str | None:
         """
-        Update a patient registration.
+        Normalize optional registration notes.
         """
+        if value is None:
+            return None
 
-        return PatientRegistrationService.update_registration(
-            registration=instance,
-            **validated_data,
-        )
+        return value.strip()
+
+
+__all__ = ("PatientRegistrationUpdateSerializer",)

@@ -1,7 +1,7 @@
 """
-Platform bootstrap serializer.
+DatavionOS platform bootstrap serializer.
 
-Serializes the DatavionOS runtime bootstrap payload.
+Serializes the immutable DatavionOS runtime bootstrap payload.
 
 Bootstrap is the single runtime contract consumed by
 DatavionOS frontend applications.
@@ -18,7 +18,7 @@ from apps.datavionos.api.serializers.dashboard import (
     DashboardCardSerializer,
 )
 from apps.datavionos.api.serializers.module import (
-    PlatformModuleSerializer,
+    ModuleContractSerializer,
 )
 from apps.datavionos.api.serializers.navigation import (
     NavigationItemSerializer,
@@ -56,7 +56,7 @@ class SubscriptionPlanSerializer(
     serializers.Serializer,
 ):
     """
-    Subscription plan information.
+    Subscription plan runtime information.
     """
 
     name = serializers.CharField(
@@ -96,21 +96,24 @@ class PlatformBootstrapSerializer(
     serializers.Serializer,
 ):
     """
-    DatavionOS runtime bootstrap serializer.
+    Serialize the DatavionOS runtime bootstrap contract.
 
-    Provides complete SaaS runtime context:
+    Provides:
 
     - Identity
     - Tenant
     - Organization
+    - Employee
     - Platform RBAC
     - Organization RBAC
-    - Permissions
-    - Subscription
-    - Modules
+    - Effective permissions
+    - Available modules
     - Navigation
     - Dashboard
+    - Branding
     - Feature flags
+    - Subscription
+    - Preferences
     """
 
     user = BootstrapUserSerializer(
@@ -128,9 +131,9 @@ class PlatformBootstrapSerializer(
 
     employee = serializers.SerializerMethodField()
 
-    #
+    # ==================================================================
     # RBAC
-    #
+    # ==================================================================
 
     platform_roles = serializers.ListField(
         source="context.platform_roles",
@@ -146,7 +149,11 @@ class PlatformBootstrapSerializer(
 
     permissions = serializers.SerializerMethodField()
 
-    modules = PlatformModuleSerializer(
+    # ==================================================================
+    # Runtime Platform
+    # ==================================================================
+
+    modules = ModuleContractSerializer(
         many=True,
         read_only=True,
     )
@@ -180,22 +187,29 @@ class PlatformBootstrapSerializer(
         read_only=True,
     )
 
+    # ==================================================================
+    # Computed Runtime Fields
+    # ==================================================================
+
     def get_permissions(
         self,
         obj,
-    ):
+    ) -> list[str]:
         """
         Serialize effective permissions.
 
-        Converts frozenset into stable JSON list.
+        Converts the immutable permission set into a stable,
+        deterministic JSON list.
         """
 
-        return sorted(obj.context.permissions)
+        return sorted(
+            obj.context.permissions,
+        )
 
     def get_organization(
         self,
         obj,
-    ):
+    ) -> dict[str, object] | None:
         """
         Serialize organization runtime data.
         """
@@ -215,7 +229,7 @@ class PlatformBootstrapSerializer(
     def get_employee(
         self,
         obj,
-    ):
+    ) -> dict[str, object] | None:
         """
         Serialize employee runtime data.
         """
@@ -235,6 +249,7 @@ class PlatformBootstrapSerializer(
 
 __all__ = (
     "TenantBootstrapSerializer",
+    "SubscriptionPlanSerializer",
     "SubscriptionSerializer",
     "PlatformBootstrapSerializer",
 )

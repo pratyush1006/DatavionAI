@@ -1,3 +1,15 @@
-export * from "./general-information";
-export * from "./contact-information";
-export * from "./address-information";
+export {
+  AddressInformation,
+} from "./address-information";
+
+export {
+  ContactInformation,
+} from "./contact-information";
+
+export {
+  GeneralInformation,
+} from "./general-information";
+
+export {
+  LegalInformation,
+} from "./legal-information";

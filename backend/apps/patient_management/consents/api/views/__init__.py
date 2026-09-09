@@ -1,17 +1,25 @@
 """
-Patient Consent API views.
+Patient Consent API view exports.
 """
 
-from .create import ConsentCreateAPIView
-from .delete import ConsentDeleteAPIView
-from .detail import ConsentDetailAPIView
-from .list import ConsentListAPIView
-from .update import ConsentUpdateAPIView
+from __future__ import annotations
 
-__all__ = [
-    "ConsentCreateAPIView",
-    "ConsentDeleteAPIView",
-    "ConsentDetailAPIView",
-    "ConsentListAPIView",
-    "ConsentUpdateAPIView",
-]
+from .lifecycle import (
+    PatientConsentGrantView,
+    PatientConsentRestoreView,
+    PatientConsentRevokeView,
+)
+from .list_create import (
+    PatientConsentListCreateView,
+)
+from .retrieve_update_destroy import (
+    PatientConsentRetrieveUpdateDestroyView,
+)
+
+__all__ = (
+    "PatientConsentGrantView",
+    "PatientConsentListCreateView",
+    "PatientConsentRetrieveUpdateDestroyView",
+    "PatientConsentRestoreView",
+    "PatientConsentRevokeView",
+)

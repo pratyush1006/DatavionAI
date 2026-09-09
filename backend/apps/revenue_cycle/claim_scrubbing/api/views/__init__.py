@@ -1,9 +1,17 @@
-from .claim_scrubbing import (
-    ClaimScrubResultListCreateAPIView,
-    ClaimScrubResultRetrieveUpdateDestroyAPIView,
+"""Revenue Cycle claim scrubbing API views."""
+
+from __future__ import annotations
+
+from apps.revenue_cycle.claim_scrubbing.api.views.claim_scrub import (
+    ClaimScrubDetailAPIView,
+    ClaimScrubListCreateAPIView,
+    ClaimScrubOverrideAPIView,
+    ClaimScrubRunAPIView,
 )
 
-__all__ = [
-    "ClaimScrubResultListCreateAPIView",
-    "ClaimScrubResultRetrieveUpdateDestroyAPIView",
-]
+__all__ = (
+    "ClaimScrubListCreateAPIView",
+    "ClaimScrubDetailAPIView",
+    "ClaimScrubRunAPIView",
+    "ClaimScrubOverrideAPIView",
+)

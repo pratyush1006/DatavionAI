@@ -6,13 +6,13 @@ from __future__ import annotations
 
 from django.db import models
 
-from apps.clinical.patients.models import Patient
 from apps.compliance.constants import (
     ConsentPurpose,
     ConsentStatus,
     PhiAccessAction,
 )
 from apps.core.models import BaseManager, BaseModel
+from apps.patient_management.patients.models import Patient
 from apps.platform.accounts.models import User
 from apps.platform.organizations.models import Organization
 

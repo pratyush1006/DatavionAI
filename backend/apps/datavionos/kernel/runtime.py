@@ -6,9 +6,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from apps.datavionos.container import (
-    ServiceProvider,
-)
 from apps.datavionos.kernel.health import (
     KernelHealth,
 )
@@ -23,11 +20,18 @@ from apps.datavionos.kernel.lifecycle import (
 )
 class KernelRuntime:
     """
-    Coordinates the execution of the
-    DatavionOS runtime.
+    Coordinates execution of the DatavionOS runtime.
+
+    The runtime intentionally has no dependency on the legacy
+    DatavionOS container abstraction.
+
+    Runtime services are ordinary objects managed through the
+    KernelLifecycle contract.
     """
 
-    provider: ServiceProvider
+    provider: list[object] = field(
+        default_factory=list,
+    )
 
     lifecycle: KernelLifecycle = field(
         default_factory=KernelLifecycle,
@@ -40,6 +44,11 @@ class KernelRuntime:
     services: list[object] = field(
         default_factory=list,
     )
+
+    def __post_init__(self) -> None:
+        """Initialize managed services from the bootstrap provider."""
+        if self.provider and not self.services:
+            self.services.extend(self.provider)
 
     async def initialize(
         self,
@@ -100,7 +109,7 @@ class KernelRuntime:
         self,
     ) -> LifecycleState:
         """
-        Current runtime state.
+        Current runtime lifecycle state.
         """
 
         return self.lifecycle.state
@@ -120,7 +129,7 @@ class KernelRuntime:
         self,
     ) -> bool:
         """
-        Whether the runtime is healthy.
+        Whether the runtime has health information.
         """
 
         return self.health.count > 0
@@ -129,8 +138,7 @@ class KernelRuntime:
         self,
     ):
         """
-        Return the current runtime
-        health status.
+        Return the current runtime health status.
         """
 
         return await self.health.status()
@@ -140,26 +148,39 @@ class KernelRuntime:
         service: object,
     ) -> None:
         """
-        Register a managed runtime
-        service.
+        Register a managed runtime service.
+
+        Duplicate registrations are ignored.
         """
 
-        self.services.append(
-            service,
-        )
+        if service not in self.services:
+            self.services.append(
+                service,
+            )
 
     def unregister_service(
         self,
         service: object,
     ) -> None:
         """
-        Remove a managed runtime
-        service.
+        Remove a managed runtime service.
         """
 
         self.services.remove(
             service,
         )
+
+    def clear_services(
+        self,
+    ) -> None:
+        """
+        Remove all registered runtime services.
+
+        This does not dispose services. Call dispose() when
+        lifecycle cleanup is required.
+        """
+
+        self.services.clear()
 
     def __repr__(
         self,

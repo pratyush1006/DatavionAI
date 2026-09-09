@@ -1,5 +1,9 @@
-from .appeals import ClaimAppeal
+"""
+Revenue Cycle Appeals model exports.
+"""
 
-__all__ = [
-    "ClaimAppeal",
-]
+from __future__ import annotations
+
+from apps.revenue_cycle.appeals.models.appeal import Appeal
+
+__all__ = ("Appeal",)

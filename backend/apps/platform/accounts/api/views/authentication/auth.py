@@ -28,6 +28,7 @@ from apps.platform.accounts.api.serializers.authentication import (
     LogoutSerializer,
     RefreshSerializer,
     RegisterSerializer,
+    ResendLoginOTPSerializer,
     TokenResponseSerializer,
     VerifyLoginOTPSerializer,
 )
@@ -127,6 +128,70 @@ class LoginAPIView(
 
         return self.success_response(
             message="Login OTP sent successfully.",
+            data=result,
+        )
+
+
+@extend_schema(
+    tags=AUTH_TAG,
+    summary="Resend Login OTP",
+    description=(
+        "Resend the verification code for an existing login authentication challenge."
+    ),
+    request=ResendLoginOTPSerializer,
+)
+class ResendLoginOTPAPIView(
+    BaseGenericAPIView,
+):
+    """
+    Resend login OTP.
+    """
+
+    permission_classes = (AllowAny,)
+
+    authentication_classes = ()
+
+    serializer_class = ResendLoginOTPSerializer
+
+    def post(
+        self,
+        request: Request,
+    ) -> Response:
+        """
+        Resend login verification OTP.
+        """
+
+        serializer = self.get_serializer(
+            data=request.data,
+            context={
+                "ip_address": get_client_ip(
+                    request,
+                ),
+                "device": get_client_device(
+                    request,
+                ),
+                "location": get_client_location(
+                    request,
+                ),
+            },
+        )
+
+        serializer.is_valid(
+            raise_exception=True,
+        )
+
+        result = serializer.save(
+            ip_address=serializer.context.get(
+                "ip_address",
+            ),
+            user_agent=serializer.context.get(
+                "device",
+                "",
+            ),
+        )
+
+        return self.success_response(
+            message=("Login verification code resent successfully."),
             data=result,
         )
 
@@ -247,7 +312,7 @@ class ChangePasswordAPIView(
 @extend_schema(
     tags=AUTH_TAG,
     summary="Logout",
-    description=("Blacklist refresh token."),
+    description="Blacklist refresh token.",
     request=LogoutSerializer,
 )
 class LogoutAPIView(
@@ -329,5 +394,6 @@ __all__ = (
     "LogoutAPIView",
     "RefreshAPIView",
     "RegisterAPIView",
+    "ResendLoginOTPAPIView",
     "VerifyLoginOTPAPIView",
 )

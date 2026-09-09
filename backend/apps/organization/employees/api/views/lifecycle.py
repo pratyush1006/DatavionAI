@@ -1,31 +1,40 @@
 """
 Employee lifecycle API views.
 
-Workflow driven employee actions.
+Workflow-driven employee lifecycle actions.
 
-Supported:
+Responsibilities
+----------------
+- Authentication
+- Permission declarations
+- Request validation
+- Workflow request construction
+- Workflow execution
+- Standard API response serialization
 
-- Activate employee
-- Deactivate employee
-- Change assignment
-- Manage contract
-- Employee onboarding
-- Employee offboarding
+Business rules remain inside workflow and domain-service layers.
 
-Architecture:
+Architecture
+------------
 
 API
  |
+ v
 Serializer
  |
+ v
 Workflow Request
  |
+ v
 Workflow
  |
-Service
+ v
+Domain Service
  |
+ v
 Domain Event
  |
+ v
 Background Tasks
 """
 
@@ -34,14 +43,18 @@ from __future__ import annotations
 from dataclasses import asdict, is_dataclass
 from typing import Any, Final
 
-from drf_spectacular.utils import extend_schema
-from rest_framework.permissions import IsAuthenticated
-
 from apps.common.api.base_generics import (
     BaseGenericAPIView,
 )
+from apps.common.api.responses import (
+    error_response,
+)
+from apps.common.exceptions.codes import (
+    ErrorCode,
+)
 from apps.core.workflows import (
     WorkflowContext,
+    WorkflowResult,
 )
 from apps.organization.employees.api.serializers import (
     EmployeeAssignmentActionSerializer,
@@ -72,61 +85,199 @@ from apps.organization.employees.workflows import (
     EmployeeOnboardingRequest,
     EmployeeOnboardingWorkflow,
 )
+from drf_spectacular.utils import extend_schema
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 
 EMPLOYEE_TAG: Final[tuple[str, ...]] = ("Employees",)
 
 
+# =============================================================================
+# Serialization
+# =============================================================================
+
+
 def serialize_workflow_data(
     data: Any,
-):
+) -> Any:
     """
-    Convert workflow DTO output
-    into API serializable payload.
+    Convert workflow DTO output into API-safe structured data.
 
     Supports:
 
     - dataclasses
-    - DTO objects
+    - objects exposing to_dict()
+    - objects exposing __dict__
     - primitive values
+    - None
     """
 
     if data is None:
         return None
 
-    if is_dataclass(
+    if is_dataclass(data):
+        return asdict(data)
+
+    to_dict = getattr(
         data,
-    ):
-        return asdict(
-            data,
-        )
+        "to_dict",
+        None,
+    )
+
+    if callable(to_dict):
+        return to_dict()
 
     if hasattr(
         data,
         "__dict__",
     ):
-        return data.__dict__
+        return dict(data.__dict__)
 
     return data
 
 
-# ============================================================
+# =============================================================================
+# Error Mapping
+# =============================================================================
+
+
+def _resolve_error_code(
+    code: str | None,
+) -> ErrorCode:
+    """
+    Resolve a workflow error code into the platform ErrorCode enum.
+
+    Workflow codes are intentionally allowed to remain domain-specific.
+    When a workflow code does not have a corresponding platform-level
+    ErrorCode, validation error is used as the safe standardized fallback.
+    """
+
+    if not code:
+        return ErrorCode.VALIDATION_ERROR
+
+    #
+    # Match enum values first.
+    #
+    for error_code in ErrorCode:
+        if error_code.value == code:
+            return error_code
+
+    #
+    # Match enum member names.
+    #
+    normalized = code.upper()
+
+    member = ErrorCode.__members__.get(
+        normalized,
+    )
+
+    if member is not None:
+        return member
+
+    return ErrorCode.VALIDATION_ERROR
+
+
+def _workflow_error_status(
+    *,
+    result: WorkflowResult[Any],
+) -> int:
+    """
+    Resolve an appropriate HTTP status for a failed workflow.
+
+    Workflow/domain error codes remain the primary source of semantic
+    information. This function only translates those semantics into HTTP.
+    """
+
+    code = (result.code or "").lower()
+
+    message = (result.message or "").lower()
+
+    combined = f"{code} {message}"
+
+    if any(
+        value in combined
+        for value in (
+            "permission",
+            "forbidden",
+            "not_allowed",
+            "unauthorized",
+        )
+    ):
+        return status.HTTP_403_FORBIDDEN
+
+    if any(
+        value in combined
+        for value in (
+            "not_found",
+            "does_not_exist",
+            "not found",
+        )
+    ):
+        return status.HTTP_404_NOT_FOUND
+
+    if any(
+        value in combined
+        for value in (
+            "conflict",
+            "already_exists",
+            "already exists",
+            "duplicate",
+        )
+    ):
+        return status.HTTP_409_CONFLICT
+
+    return status.HTTP_400_BAD_REQUEST
+
+
+def _workflow_error_details(
+    result: WorkflowResult[Any],
+) -> Any:
+    """
+    Serialize workflow error details when available.
+    """
+
+    if result.error is None:
+        return None
+
+    to_dict = getattr(
+        result.error,
+        "to_dict",
+        None,
+    )
+
+    if callable(to_dict):
+        return to_dict()
+
+    details = getattr(
+        result.error,
+        "details",
+        None,
+    )
+
+    if details is not None:
+        return details
+
+    return None
+
+
+# =============================================================================
 # Base Workflow API
-# ============================================================
+# =============================================================================
 
 
 class EmployeeWorkflowAPIView(
     BaseGenericAPIView,
 ):
     """
-    Base employee workflow action API.
+    Base API view for employee lifecycle workflows.
 
-    Provides:
+    Responsibilities:
 
-    - Workflow execution
-    - WorkflowContext creation
-    - Standard API response
-
-    Business logic remains inside workflows.
+    - Resolve tenant context
+    - Build workflow context
+    - Execute workflow
+    - Preserve workflow success/failure state
+    - Serialize standardized API responses
     """
 
     def build_workflow_context(
@@ -135,45 +286,63 @@ class EmployeeWorkflowAPIView(
         workflow_name: str,
     ) -> WorkflowContext:
         """
-        Build DatavionOS workflow context.
+        Build a DatavionOS workflow context.
 
         Tenant resolution priority:
 
         1. Request tenant context
         2. Current organization tenant
-        3. User organization role tenant
+        3. User organization-role tenant
         """
 
         tenant = self.current_tenant
 
         if tenant is None:
-            organization = getattr(
-                self,
-                "current_organization",
-                None,
-            )
+            organization = self.current_organization
 
             if organization is not None:
-                tenant = organization.tenant
+                tenant = getattr(
+                    organization,
+                    "tenant",
+                    None,
+                )
 
         if tenant is None:
             user = self.current_user
 
-            organization_role = user.organization_roles.select_related(
-                "organization__tenant",
-            ).first()
+            organization_roles = getattr(
+                user,
+                "organization_roles",
+                None,
+            )
 
-            if organization_role:
-                tenant = organization_role.organization.tenant
+            if organization_roles is not None:
+                organization_role = organization_roles.select_related(
+                    "organization__tenant",
+                ).first()
+
+                if organization_role is not None:
+                    tenant = organization_role.organization.tenant
 
         if tenant is None:
             raise RuntimeError(
                 "Tenant context is required for employee lifecycle workflow.",
             )
 
+        actor_id = getattr(
+            self.current_user,
+            "id",
+            None,
+        )
+
+        if actor_id is None:
+            raise RuntimeError(
+                "Authenticated actor is required for employee lifecycle workflow.",
+            )
+
         return WorkflowContext.create(
             tenant_id=tenant.id,
-            actor_id=self.current_user.id,
+            actor_id=actor_id,
             workflow_name=workflow_name,
             request_id=getattr(
                 self.request,
@@ -185,12 +354,16 @@ class EmployeeWorkflowAPIView(
     def execute_workflow(
         self,
         *,
-        workflow,
+        workflow: Any,
         workflow_name: str,
     ):
         """
-        Execute workflow and return
-        JSON serializable response.
+        Execute an employee workflow and preserve its outcome.
+
+        Successful workflows return the standard success envelope.
+
+        Failed workflows return the standard error envelope instead of
+        incorrectly converting failures into HTTP 200 success responses.
         """
 
         result = workflow.execute(
@@ -199,17 +372,40 @@ class EmployeeWorkflowAPIView(
             ),
         )
 
+        if not result.success:
+            return error_response(
+                code=_resolve_error_code(
+                    result.code,
+                ),
+                message=(result.message or "Workflow execution failed."),
+                details=_workflow_error_details(
+                    result,
+                ),
+                meta={
+                    "workflow": workflow_name,
+                    "workflow_code": (result.code),
+                },
+                request=self.request,
+                status_code=_workflow_error_status(
+                    result=result,
+                ),
+            )
+
         return self.success_response(
             data=serialize_workflow_data(
                 result.data,
             ),
             message=result.message,
+            meta={
+                "workflow": workflow_name,
+                "workflow_code": (result.code),
+            },
         )
 
 
-# ============================================================
+# =============================================================================
 # Activate
-# ============================================================
+# =============================================================================
 
 
 @extend_schema(
@@ -219,7 +415,7 @@ class EmployeeActivateAPIView(
     EmployeeWorkflowAPIView,
 ):
     """
-    Activate employee.
+    Activate an employee.
     """
 
     permission_classes = (
@@ -234,6 +430,13 @@ class EmployeeActivateAPIView(
         request,
         employee_id,
     ):
+        serializer = self.get_serializer(
+            data=request.data,
+        )
+
+        serializer.is_valid(
+            raise_exception=True,
+        )
 
         workflow = EmployeeActivationWorkflow(
             request=EmployeeActivationRequest(
@@ -247,9 +450,9 @@ class EmployeeActivateAPIView(
         )
 
 
-# ============================================================
+# =============================================================================
 # Deactivate
-# ============================================================
+# =============================================================================
 
 
 @extend_schema(
@@ -259,7 +462,7 @@ class EmployeeDeactivateAPIView(
     EmployeeWorkflowAPIView,
 ):
     """
-    Deactivate employee.
+    Deactivate an employee.
     """
 
     permission_classes = (
@@ -274,6 +477,13 @@ class EmployeeDeactivateAPIView(
         request,
         employee_id,
     ):
+        serializer = self.get_serializer(
+            data=request.data,
+        )
+
+        serializer.is_valid(
+            raise_exception=True,
+        )
 
         workflow = EmployeeDeactivationWorkflow(
             request=EmployeeDeactivationRequest(
@@ -287,9 +497,9 @@ class EmployeeDeactivateAPIView(
         )
 
 
-# ============================================================
+# =============================================================================
 # Assignment
-# ============================================================
+# =============================================================================
 
 
 @extend_schema(
@@ -299,7 +509,7 @@ class EmployeeAssignmentAPIView(
     EmployeeWorkflowAPIView,
 ):
     """
-    Change employee assignment.
+    Change an employee's organizational assignment.
     """
 
     permission_classes = (
@@ -314,7 +524,6 @@ class EmployeeAssignmentAPIView(
         request,
         employee_id,
     ):
-
         serializer = self.get_serializer(
             data=request.data,
         )
@@ -336,9 +545,9 @@ class EmployeeAssignmentAPIView(
         )
 
 
-# ============================================================
+# =============================================================================
 # Contract
-# ============================================================
+# =============================================================================
 
 
 @extend_schema(
@@ -348,7 +557,7 @@ class EmployeeContractAPIView(
     EmployeeWorkflowAPIView,
 ):
     """
-    Manage employee contract.
+    Create an employee contract.
     """
 
     permission_classes = (
@@ -363,7 +572,6 @@ class EmployeeContractAPIView(
         request,
         employee_id,
     ):
-
         serializer = self.get_serializer(
             data=request.data,
         )
@@ -373,11 +581,11 @@ class EmployeeContractAPIView(
         )
 
         workflow = EmployeeContractManagementWorkflow(
-            request=(
-                EmployeeContractManagementRequest(
-                    employee_id=employee_id,
-                    contract_data=(serializer.validated_data["contract_data"]),
-                )
+            request=EmployeeContractManagementRequest(
+                employee_id=employee_id,
+                contract_data=dict(
+                    serializer.validated_data,
+                ),
             ),
         )
 
@@ -387,9 +595,9 @@ class EmployeeContractAPIView(
         )
 
 
-# ============================================================
+# =============================================================================
 # Onboarding
-# ============================================================
+# =============================================================================
 
 
 @extend_schema(
@@ -400,6 +608,15 @@ class EmployeeOnboardingAPIView(
 ):
     """
     Complete employee onboarding.
+
+    The onboarding workflow orchestrates:
+
+    - Employee creation
+    - Optional contract creation
+    - Optional assignment
+    - Activation
+    - Onboarding event
+    - Post-commit processing
     """
 
     permission_classes = (
@@ -413,7 +630,6 @@ class EmployeeOnboardingAPIView(
         self,
         request,
     ):
-
         serializer = self.get_serializer(
             data=request.data,
         )
@@ -424,7 +640,9 @@ class EmployeeOnboardingAPIView(
 
         workflow = EmployeeOnboardingWorkflow(
             request=EmployeeOnboardingRequest(
-                **serializer.validated_data,
+                **dict(
+                    serializer.validated_data,
+                ),
             ),
         )
 
@@ -434,9 +652,9 @@ class EmployeeOnboardingAPIView(
         )
 
 
-# ============================================================
+# =============================================================================
 # Offboarding
-# ============================================================
+# =============================================================================
 
 
 @extend_schema(
@@ -461,7 +679,6 @@ class EmployeeOffboardingAPIView(
         request,
         employee_id,
     ):
-
         serializer = self.get_serializer(
             data=request.data,
         )
@@ -473,7 +690,9 @@ class EmployeeOffboardingAPIView(
         workflow = EmployeeOffboardingWorkflow(
             request=EmployeeOffboardingRequest(
                 employee_id=employee_id,
-                **serializer.validated_data,
+                **dict(
+                    serializer.validated_data,
+                ),
             ),
         )
 

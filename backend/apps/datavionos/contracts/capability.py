@@ -68,7 +68,7 @@ class CapabilityContract(BaseContract):
         Validate the capability.
         """
 
-        super().validate()
+        BaseContract.validate(self)
 
         if not self.display_name.strip():
             raise ValueError(

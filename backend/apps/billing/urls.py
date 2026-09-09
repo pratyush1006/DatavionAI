@@ -1,5 +1,7 @@
 """
 Billing API URL patterns.
+
+Central URL aggregator for the Billing bounded context.
 """
 
 from __future__ import annotations
@@ -8,11 +10,18 @@ from django.urls import include, path
 
 app_name = "billing"
 
+
 urlpatterns = [
     path(
         "billing/",
         include(
             "apps.billing.api.urls",
+        ),
+    ),
+    path(
+        "billing/patient-billing/",
+        include(
+            "apps.billing.patient_billing.api.urls",
         ),
     ),
     path(
@@ -53,6 +62,5 @@ urlpatterns = [
     ),
 ]
 
-__all__ = [
-    "urlpatterns",
-]
+
+__all__ = ("urlpatterns",)

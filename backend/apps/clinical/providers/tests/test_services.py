@@ -1,238 +1,249 @@
 """
-Tests for provider services.
+Provider service tests.
+
+Validates provider domain service layer.
+
+Coverage:
+
+- Create provider
+- Update provider
+- Verify provider
+- Activate provider
+- Deactivate provider
+- Suspend provider
+- Delete provider
+- Restore provider
 """
 
 from __future__ import annotations
 
+from datetime import date
+from uuid import uuid4
+
+from django.test import TestCase
+
 from apps.clinical.providers.constants import (
     ProviderStatus,
-    ProviderType,
 )
-from apps.clinical.providers.models import Provider
 from apps.clinical.providers.services import (
     ProviderService,
-    create_provider,
-    delete_provider,
-    update_provider,
 )
-from apps.common.tests.base import BaseTestCase
+from apps.organization.employees.models import Employee
+from apps.platform.accounts.models import User
+from apps.platform.organizations.models import Organization
+from apps.platform.tenancy.models import Tenant
 
 
-class ProviderServiceTestCase(BaseTestCase):
+class ProviderServiceTestCase(
+    TestCase,
+):
     """
-    Test cases for provider services.
+    Provider service test suite.
     """
 
-    def setUp(
-        self,
-    ) -> None:
-        """
-        Set up test data.
-        """
+    def setUp(self):
 
-        super().setUp()
+        self.tenant = Tenant.objects.create(
+            name="Datavion Test Tenant",
+            slug=(f"tenant-{uuid4().hex[:8]}"),
+            tenant_type="ORGANIZATION",
+            status="ACTIVE",
+        )
 
-        self.employee = self.create_employee(
+        self.organization = Organization.objects.create(
+            tenant=self.tenant,
+            name="Datavion Healthcare",
+            display_name="Datavion Healthcare",
+            code=(f"DVT-{uuid4().hex[:6].upper()}"),
+            slug=(f"clinic-{uuid4().hex[:8]}"),
+            organization_type="CLINIC",
+            status="ACTIVE",
+            email="clinic@datavion.test",
+        )
+
+        self.employee_user = User.objects.create_user(
+            email=(f"provider.service.{uuid4().hex[:8]}@datavion.ai"),
+            password="TestPassword@123",
+        )
+
+        self.employee = Employee.objects.create(
             organization=self.organization,
+            user=self.employee_user,
+            employee_code=(f"EMP-{uuid4().hex[:8].upper()}"),
+            designation="Physician",
+            work_email=self.employee_user.email,
+            phone_number="9999999999",
+            employment_type="full_time",
+            status="active",
+            joining_date=date.today(),
         )
 
-        self.provider = Provider.objects.create(
-            organization=self.organization,
-            employee=self.employee,
-            provider_number="PRV000001",
-            license_number="LIC000001",
-            provider_type=ProviderType.PHYSICIAN,
-        )
+    def create_provider(self):
 
-    def test_create_provider(
-        self,
-    ) -> None:
-        """
-        Provider should be created successfully.
-        """
-
-        user = self.create_user(
-            username="provider2",
-            email="provider2@datavion.ai",
-            organization=self.organization,
-        )
-
-        employee = self.create_employee(
-            user=user,
-            employee_code="EMP000002",
-        )
-
-        provider = create_provider(
+        return ProviderService.create(
             validated_data={
                 "organization": self.organization,
-                "employee": employee,
-                "provider_number": "PRV000002",
-                "license_number": "LIC000002",
-                "provider_type": ProviderType.SURGEON,
-                "years_of_experience": 10,
-                "status": ProviderStatus.ACTIVE,
+                "employee": self.employee,
+                "provider_number": (f"DOC-{uuid4().hex[:8].upper()}"),
+                "provider_type": "physician",
+                "years_of_experience": 5,
+                "bio": "Service test provider",
             },
         )
 
-        self.assertIsInstance(
-            provider,
-            Provider,
+    def test_create_provider(self):
+
+        provider = self.create_provider()
+
+        self.assertIsNotNone(
+            provider.id,
         )
 
         self.assertEqual(
-            provider.provider_number,
-            "PRV000002",
+            provider.organization,
+            self.organization,
         )
 
         self.assertEqual(
             provider.employee,
-            employee,
+            self.employee,
         )
 
-    def test_create_provider_persists_to_database(
-        self,
-    ) -> None:
-        """
-        Created provider should be persisted.
-        """
-
-        user = self.create_user(
-            username="provider3",
-            email="provider3@datavion.ai",
-            organization=self.organization,
+        self.assertEqual(
+            provider.status,
+            ProviderStatus.PENDING,
         )
 
-        employee = self.create_employee(
-            user=user,
-            employee_code="EMP000003",
-        )
+    def test_update_provider(self):
 
-        initial_count = Provider.objects.count()
+        provider = self.create_provider()
 
-        create_provider(
+        updated = ProviderService.update(
+            instance=provider,
             validated_data={
-                "organization": self.organization,
-                "employee": employee,
-                "provider_number": "PRV000003",
-                "license_number": "LIC000003",
-                "provider_type": ProviderType.NURSE,
+                "bio": "Updated provider",
+                "years_of_experience": 10,
             },
         )
 
         self.assertEqual(
-            Provider.objects.count(),
-            initial_count + 1,
-        )
-
-    def test_update_provider(
-        self,
-    ) -> None:
-        """
-        Provider should be updated successfully.
-        """
-
-        updated_provider = update_provider(
-            instance=self.provider,
-            validated_data={
-                "years_of_experience": 15,
-                "status": ProviderStatus.INACTIVE,
-            },
-        )
-
-        updated_provider.refresh_from_db()
-
-        self.assertEqual(
-            updated_provider.years_of_experience,
-            15,
+            updated.bio,
+            "Updated provider",
         )
 
         self.assertEqual(
-            updated_provider.status,
+            updated.years_of_experience,
+            10,
+        )
+
+    def test_verify_provider(self):
+
+        provider = self.create_provider()
+
+        verified = ProviderService.verify(
+            instance=provider,
+        )
+
+        self.assertEqual(
+            verified.status,
+            ProviderStatus.VERIFIED,
+        )
+
+    def test_activate_provider(self):
+
+        provider = self.create_provider()
+
+        provider.status = ProviderStatus.VERIFIED
+
+        provider.save(
+            update_fields=[
+                "status",
+            ],
+        )
+
+        activated = ProviderService.activate(
+            instance=provider,
+        )
+
+        self.assertEqual(
+            activated.status,
+            ProviderStatus.ACTIVE,
+        )
+
+        self.assertTrue(
+            activated.is_accepting_patients,
+        )
+
+    def test_deactivate_provider(self):
+
+        provider = self.create_provider()
+
+        provider.status = ProviderStatus.ACTIVE
+
+        provider.save(
+            update_fields=[
+                "status",
+            ],
+        )
+
+        deactivated = ProviderService.deactivate(
+            instance=provider,
+        )
+
+        self.assertEqual(
+            deactivated.status,
             ProviderStatus.INACTIVE,
         )
 
-    def test_update_provider_returns_same_instance(
-        self,
-    ) -> None:
-        """
-        Update service should return the same provider instance.
-        """
+        self.assertFalse(
+            deactivated.is_accepting_patients,
+        )
 
-        updated_provider = update_provider(
-            instance=self.provider,
-            validated_data={
-                "provider_type": ProviderType.THERAPIST,
-            },
+    def test_suspend_provider(self):
+
+        provider = self.create_provider()
+
+        suspended = ProviderService.suspend(
+            instance=provider,
         )
 
         self.assertEqual(
-            updated_provider.pk,
-            self.provider.pk,
+            suspended.status,
+            ProviderStatus.SUSPENDED,
         )
-
-        self.assertEqual(
-            updated_provider.provider_type,
-            ProviderType.THERAPIST,
-        )
-
-    def test_archive_provider(
-        self,
-    ) -> None:
-        """
-        Provider should be archived.
-        """
-
-        ProviderService.archive(
-            self.provider,
-        )
-
-        self.provider.refresh_from_db()
 
         self.assertFalse(
-            self.provider.is_active,
+            suspended.is_accepting_patients,
         )
 
-    def test_restore_provider(
-        self,
-    ) -> None:
-        """
-        Archived provider should be restored.
-        """
+    def test_delete_provider(self):
 
-        ProviderService.archive(
-            self.provider,
+        provider = self.create_provider()
+
+        ProviderService.delete(
+            instance=provider,
         )
 
-        ProviderService.restore(
-            self.provider,
-        )
-
-        self.provider.refresh_from_db()
+        provider.refresh_from_db()
 
         self.assertTrue(
-            self.provider.is_active,
+            provider.is_deleted,
         )
 
-    def test_delete_provider(
-        self,
-    ) -> None:
-        """
-        Provider should be deleted successfully.
-        """
+    def test_restore_provider(self):
 
-        provider_id = self.provider.pk
+        provider = self.create_provider()
 
-        delete_provider(
-            instance=self.provider,
+        ProviderService.delete(
+            instance=provider,
+        )
+
+        provider.refresh_from_db()
+
+        restored = ProviderService.restore(
+            instance=provider,
         )
 
         self.assertFalse(
-            Provider.objects.filter(
-                pk=provider_id,
-            ).exists(),
+            restored.is_deleted,
         )
-
-
-__all__ = [
-    "ProviderServiceTestCase",
-]

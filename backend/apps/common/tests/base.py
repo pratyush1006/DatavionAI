@@ -46,13 +46,13 @@ from apps.clinical.medications.constants import (
     MedicationRoute,
 )
 from apps.clinical.medications.models import Medication
-from apps.clinical.patients.constants import PatientGender
-from apps.clinical.patients.models import Patient
 from apps.clinical.providers.constants import ProviderType
 from apps.clinical.providers.models import Provider
 from apps.organization.departments.models import Department
 from apps.organization.employees.models import Employee
 from apps.organization.teams.models import Team
+from apps.patient_management.patients.constants import PatientGender
+from apps.patient_management.patients.models import Patient
 from apps.platform.organizations.models import Organization
 
 User = get_user_model()

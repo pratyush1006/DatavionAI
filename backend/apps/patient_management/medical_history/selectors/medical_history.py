@@ -1,59 +1,52 @@
-"""
-Medical History selectors.
-"""
+"""Read-only selectors for Patient Medical History."""
 
 from __future__ import annotations
 
 from uuid import UUID
 
-from django.db.models import QuerySet
-from django.shortcuts import get_object_or_404
-
 from apps.patient_management.medical_history.models import PatientMedicalHistory
-from apps.platform.organizations.models import Organization
 
 
-class PatientMedicalHistorySelector:
-    """
-    Read-only queries for medical history records.
-    """
-
-    @staticmethod
-    def queryset() -> QuerySet[PatientMedicalHistory]:
-        return PatientMedicalHistory.objects.select_related(
-            "organization",
-            "patient",
-        )
-
-    @staticmethod
-    def get(
-        *,
-        medical_history_id: UUID,
-    ) -> PatientMedicalHistory:
-        return get_object_or_404(
-            PatientMedicalHistorySelector.queryset(),
-            pk=medical_history_id,
-        )
-
-    @staticmethod
-    def list_by_patient(
-        *,
-        patient_id: UUID,
-    ) -> QuerySet[PatientMedicalHistory]:
-        return PatientMedicalHistorySelector.queryset().filter(
-            patient_id=patient_id,
-        )
-
-    @staticmethod
-    def list_by_organization(
-        *,
-        organization: Organization,
-    ) -> QuerySet[PatientMedicalHistory]:
-        return PatientMedicalHistorySelector.queryset().filter(
-            organization=organization,
-        )
+def list_medical_history(
+    *,
+    tenant_id: UUID,
+    patient_id=None,
+    organization_id=None,
+    include_inactive: bool = False,
+):
+    """List medical history."""
+    queryset = PatientMedicalHistory.objects.with_relations().filter(
+        organization__tenant_id=tenant_id
+    )
+    if patient_id:
+        queryset = queryset.filter(patient_id=patient_id)
+    if organization_id:
+        queryset = queryset.filter(organization_id=organization_id)
+    if not include_inactive:
+        queryset = queryset.filter(is_active=True)
+    return queryset
 
 
-__all__ = [
-    "PatientMedicalHistorySelector",
-]
+def get_medical_history(*, tenant_id: UUID, history_id: UUID):
+    """Get medical history."""
+    return PatientMedicalHistory.objects.with_relations().get(
+        id=history_id, organization__tenant_id=tenant_id
+    )
+
+
+def get_deleted_medical_history(*, tenant_id: UUID, history_id: UUID):
+    """Get deleted medical history."""
+    return PatientMedicalHistory.deleted_objects.select_related(
+        "organization", "patient", "verified_by"
+    ).get(
+        id=history_id,
+        organization__tenant_id=tenant_id,
+        is_deleted=True,
+    )
+
+
+__all__ = (
+    "list_medical_history",
+    "get_medical_history",
+    "get_deleted_medical_history",
+)

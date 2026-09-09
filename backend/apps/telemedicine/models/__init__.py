@@ -1,15 +1,5 @@
-"""
-Telemedicine models module.
-"""
+from .participant import Participant
+from .recording import Recording
+from .session import TelemedicineSession
 
-from __future__ import annotations
-
-from apps.telemedicine.models.participant import Participant
-from apps.telemedicine.models.recording import Recording
-from apps.telemedicine.models.session import TelemedicineSession
-
-__all__ = [
-    "Participant",
-    "Recording",
-    "TelemedicineSession",
-]
+__all__ = ["Participant", "Recording", "TelemedicineSession"]

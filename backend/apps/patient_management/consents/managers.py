@@ -1,53 +1,29 @@
 """
-Managers for the Patient Consents module.
+Managers and querysets for Patient Consents.
 """
 
 from __future__ import annotations
 
-from django.db import models
-
-__all__ = [
-    "ConsentManager",
-    "ConsentQuerySet",
-]
+from apps.core.models import (
+    BaseManager,
+    BaseQuerySet,
+)
 
 
 class ConsentQuerySet(
-    models.QuerySet,
+    BaseQuerySet["PatientConsent"],
 ):
     """
-    QuerySet for Consent.
+    Query helpers for Patient Consent records.
     """
-
-    def active(self):
-        return self.filter(
-            is_active=True,
-        )
-
-    def granted(self):
-        return self.filter(
-            status="GRANTED",
-        )
-
-    def pending(self):
-        return self.filter(
-            status="PENDING",
-        )
-
-    def revoked(self):
-        return self.filter(
-            status="REVOKED",
-        )
-
-    def expired(self):
-        return self.filter(
-            status="EXPIRED",
-        )
 
     def for_patient(
         self,
         patient_id,
-    ):
+    ) -> ConsentQuerySet:
+        """
+        Return consent records belonging to a patient.
+        """
         return self.filter(
             patient_id=patient_id,
         )
@@ -55,60 +31,46 @@ class ConsentQuerySet(
     def for_organization(
         self,
         organization_id,
-    ):
+    ) -> ConsentQuerySet:
+        """
+        Return consent records belonging to an organization.
+        """
         return self.filter(
             organization_id=organization_id,
         )
 
-    def by_type(
+    def active(
         self,
-        consent_type,
-    ):
+    ) -> ConsentQuerySet:
+        """
+        Return active, non-deleted consent records.
+        """
         return self.filter(
-            consent_type=consent_type,
+            is_active=True,
+            is_deleted=False,
+        )
+
+    def granted(
+        self,
+    ) -> ConsentQuerySet:
+        """
+        Return currently granted consent records.
+        """
+        return self.filter(
+            status="granted",
+            is_deleted=False,
         )
 
 
 class ConsentManager(
-    models.Manager,
+    BaseManager.from_queryset(ConsentQuerySet),
 ):
     """
-    Default manager for Consent.
+    Default manager for Patient Consent records.
     """
 
-    def get_queryset(self):
-        return ConsentQuerySet(
-            self.model,
-            using=self._db,
-        )
 
-    def active(self):
-        return self.get_queryset().active()
-
-    def granted(self):
-        return self.get_queryset().granted()
-
-    def pending(self):
-        return self.get_queryset().pending()
-
-    def revoked(self):
-        return self.get_queryset().revoked()
-
-    def expired(self):
-        return self.get_queryset().expired()
-
-    def for_patient(
-        self,
-        patient_id,
-    ):
-        return self.get_queryset().for_patient(
-            patient_id,
-        )
-
-    def for_organization(
-        self,
-        organization_id,
-    ):
-        return self.get_queryset().for_organization(
-            organization_id,
-        )
+__all__ = (
+    "ConsentManager",
+    "ConsentQuerySet",
+)

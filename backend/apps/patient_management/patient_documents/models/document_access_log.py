@@ -1,38 +1,45 @@
-"""
-Patient document access log model.
-"""
+"""Audit log for patient-document access."""
 
 from __future__ import annotations
 
-from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
 
 from apps.core.models import BaseModel
+from apps.patient_management.patient_documents.constants import (
+    DocumentAccessAction,
+)
+from apps.patient_management.patient_documents.models.patient_document import (
+    PatientDocument,
+)
+from apps.platform.accounts.models import User
 
-from ..constants import DocumentAction
-from .patient_document import PatientDocument
 
+class PatientDocumentAccessLog(BaseModel):
+    """Record an auditable access operation against a patient document."""
 
-class DocumentAccessLog(BaseModel):
-    """
-    Audit log for patient document access.
-    """
-
-    document = models.ForeignKey(
+    patient_document = models.ForeignKey(
         PatientDocument,
         on_delete=models.CASCADE,
         related_name="access_logs",
     )
 
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.PROTECT,
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
         related_name="patient_document_access_logs",
     )
 
     action = models.CharField(
         max_length=20,
-        choices=DocumentAction.choices,
+        choices=DocumentAccessAction.choices,
+    )
+
+    accessed_at = models.DateTimeField(
+        auto_now_add=True,
+        db_index=True,
     )
 
     ip_address = models.GenericIPAddressField(
@@ -40,52 +47,85 @@ class DocumentAccessLog(BaseModel):
         blank=True,
     )
 
-    user_agent = models.TextField(
+    user_agent = models.CharField(
+        max_length=1000,
         blank=True,
     )
 
-    remarks = models.TextField(
+    metadata = models.JSONField(
+        default=dict,
         blank=True,
     )
+
+    def save(
+        self,
+        *args,
+        **kwargs,
+    ):
+        """Prevent modification of an existing access audit record."""
+        if not self._state.adding:
+            raise ValidationError(
+                "Document access audit records are immutable.",
+            )
+        return super().save(
+            *args,
+            **kwargs,
+        )
+
+    def delete(
+        self,
+        *args,
+        **kwargs,
+    ):
+        """Reject deletion of document access audit history."""
+        raise ValidationError(
+            "Document access audit records cannot be deleted.",
+        )
+
+    def restore(
+        self,
+    ):
+        """Reject restoration of document access audit history."""
+        raise ValidationError(
+            "Document access audit records cannot be restored.",
+        )
 
     class Meta:
-        verbose_name = "Document Access Log"
+        """Database metadata for document access audit records."""
 
-        verbose_name_plural = "Document Access Logs"
+        db_table = "patient_document_access_logs"
 
-        ordering = ("-created_at",)
+        ordering = ("-accessed_at",)
 
         indexes = [
             models.Index(
-                fields=[
-                    "document",
-                ],
+                fields=(
+                    "patient_document",
+                    "accessed_at",
+                ),
+                name="pdal_document_access_idx",
             ),
             models.Index(
-                fields=[
+                fields=(
                     "user",
-                ],
+                    "accessed_at",
+                ),
+                name="pdal_user_access_idx",
             ),
             models.Index(
-                fields=[
+                fields=(
                     "action",
-                ],
-            ),
-            models.Index(
-                fields=[
-                    "created_at",
-                ],
+                    "accessed_at",
+                ),
+                name="pdal_action_access_idx",
             ),
         ]
 
-    def __str__(self) -> str:
-        """
-        Return the string representation.
-        """
+    def __str__(
+        self,
+    ) -> str:
+        """Return an audit-log label."""
+        return f"{self.action} - {self.patient_document_id}"
 
-        return f"{self.document.document_number} - {self.action}"
 
-
-__all__ = [
-    "DocumentAccessLog",
-]
+__all__ = ("PatientDocumentAccessLog",)

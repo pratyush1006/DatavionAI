@@ -10,8 +10,8 @@ interoperability without external dependencies.
 from __future__ import annotations
 
 from apps.clinical.encounters.models import Encounter
-from apps.clinical.patients.models import Patient
 from apps.clinical.providers.models import Provider
+from apps.patient_management.patients.models import Patient
 from apps.platform.organizations.models import Organization
 
 

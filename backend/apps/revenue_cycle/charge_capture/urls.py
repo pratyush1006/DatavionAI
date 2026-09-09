@@ -1,32 +1,11 @@
-"""
-URL patterns for the Charge Capture module.
-"""
+"""Root URL configuration for Revenue Cycle Charge Capture."""
 
 from __future__ import annotations
 
-from django.urls import path
+from django.urls import include, path
 
-from apps.revenue_cycle.charge_capture.api.views import (
-    ChargeCaptureListCreateAPIView,
-    ChargeCaptureRetrieveUpdateDestroyAPIView,
-)
-
-app_name = "charge_captures"
+__all__ = ("urlpatterns",)
 
 urlpatterns = [
-    path(
-        "",
-        ChargeCaptureListCreateAPIView.as_view(),
-        name="list-create",
-    ),
-    path(
-        "<uuid:charge_id>/",
-        ChargeCaptureRetrieveUpdateDestroyAPIView.as_view(),
-        name="detail",
-    ),
-]
-
-__all__ = [
-    "app_name",
-    "urlpatterns",
+    path("", include("apps.revenue_cycle.charge_capture.api.urls")),
 ]

@@ -18,8 +18,10 @@ from apps.patient_management.registration.constants import (
     VerificationMethod,
     VisitType,
 )
+from apps.patient_management.registration.managers import (
+    PatientRegistrationManager,
+)
 from apps.patient_management.registration.validators import (
-    validate_cancellation_reason,
     validate_notes,
     validate_registration_number,
 )
@@ -29,7 +31,13 @@ from apps.platform.organizations.models import Organization
 class PatientRegistration(BaseModel):
     """
     Represents a patient registration within an organization.
+
+    Patient Registration owns the persisted registration record and its
+    registration metadata. Lifecycle orchestration is handled by the
+    application service and workflow layers.
     """
+
+    objects = PatientRegistrationManager()
 
     organization = models.ForeignKey(
         Organization,
@@ -142,7 +150,7 @@ class PatientRegistration(BaseModel):
     cancellation_notes = models.TextField(
         blank=True,
         validators=[
-            validate_cancellation_reason,
+            validate_notes,
         ],
         verbose_name=_("Cancellation Notes"),
     )
@@ -222,3 +230,6 @@ class PatientRegistration(BaseModel):
         self,
     ) -> bool:
         return self.verified
+
+
+__all__ = ("PatientRegistration",)

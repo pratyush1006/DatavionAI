@@ -1,0 +1,29 @@
+"""
+Patient deleted domain event.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from uuid import UUID
+
+from apps.core.events import DomainEvent
+
+
+@dataclass(
+    frozen=True,
+    slots=True,
+    kw_only=True,
+)
+class PatientDeletedEvent(DomainEvent):
+    """
+    Emitted when a patient is deleted through the patient lifecycle.
+    """
+
+    tenant_id: UUID
+    actor_id: UUID
+    patient_id: UUID
+    organization_id: UUID
+
+
+__all__: tuple[str, ...] = ("PatientDeletedEvent",)

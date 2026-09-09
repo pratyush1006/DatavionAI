@@ -1,15 +1,15 @@
+"""Payment posting API serializers."""
+
+from __future__ import annotations
+
 from .payment_posting import (
     PaymentPostingCreateSerializer,
-    PaymentPostingDetailSerializer,
-    PaymentPostingListSerializer,
     PaymentPostingSerializer,
     PaymentPostingUpdateSerializer,
 )
 
-__all__ = [
+__all__ = (
     "PaymentPostingCreateSerializer",
-    "PaymentPostingDetailSerializer",
-    "PaymentPostingListSerializer",
     "PaymentPostingSerializer",
     "PaymentPostingUpdateSerializer",
-]
+)

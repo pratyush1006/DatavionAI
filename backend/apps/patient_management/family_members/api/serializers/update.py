@@ -1,33 +1,19 @@
 """
-Update serializer for the Family Members module.
+Serializer for updating patient family members.
 """
 
 from __future__ import annotations
 
 from rest_framework import serializers
 
-from apps.patient_management.family_members.models import (
-    FamilyMember,
-)
-from apps.patient_management.family_members.services import (
-    update_family_member,
-)
-
-__all__ = [
-    "FamilyMemberUpdateSerializer",
-]
+from apps.patient_management.family_members.models import FamilyMember
 
 
-class FamilyMemberUpdateSerializer(
-    serializers.ModelSerializer,
-):
-    """
-    Serializer for updating a family member.
-    """
+class FamilyMemberUpdateSerializer(serializers.ModelSerializer):
+    """Validate client input for family member updates."""
 
     class Meta:
         model = FamilyMember
-
         fields = (
             "first_name",
             "middle_name",
@@ -48,18 +34,10 @@ class FamilyMemberUpdateSerializer(
             "is_emergency_contact",
             "is_next_of_kin",
             "notes",
-            "status",
         )
 
-    def update(
-        self,
-        instance: FamilyMember,
-        validated_data: dict,
-    ) -> FamilyMember:
-        """
-        Update a family member.
-        """
-        return update_family_member(
-            family_member=instance,
-            **validated_data,
-        )
+    def validate_email(self, value: str) -> str:
+        return value.strip().lower()
+
+
+__all__ = ("FamilyMemberUpdateSerializer",)

@@ -1,33 +1,16 @@
-"""
-Telemedicine serializer exports.
-"""
-
-from __future__ import annotations
-
+from .participant import ParticipantMediaStateSerializer, ParticipantSerializer
+from .recording import RecordingSerializer
 from .session import (
-    DETAIL_FIELDS,
-    LIST_FIELDS,
-    READ_ONLY_FIELDS,
-    UPDATE_FIELDS,
-    WRITE_FIELDS,
-    TelemedicineSessionBaseSerializer,
     TelemedicineSessionCreateSerializer,
     TelemedicineSessionDetailSerializer,
-    TelemedicineSessionListSerializer,
-    TelemedicineSessionSerializer,
     TelemedicineSessionUpdateSerializer,
 )
 
 __all__ = [
-    "DETAIL_FIELDS",
-    "LIST_FIELDS",
-    "READ_ONLY_FIELDS",
-    "UPDATE_FIELDS",
-    "WRITE_FIELDS",
-    "TelemedicineSessionBaseSerializer",
+    "ParticipantMediaStateSerializer",
+    "ParticipantSerializer",
+    "RecordingSerializer",
     "TelemedicineSessionCreateSerializer",
     "TelemedicineSessionDetailSerializer",
-    "TelemedicineSessionListSerializer",
-    "TelemedicineSessionSerializer",
     "TelemedicineSessionUpdateSerializer",
 ]

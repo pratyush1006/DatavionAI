@@ -15,3 +15,21 @@ __all__ = [
     "InsuranceClaim",
     "Payment",
 ]
+from apps.billing.patient_billing.models import (
+    PatientBillingAccount,
+    PatientBillingStatement,
+    PatientFinancialResponsibility,
+    PatientGuarantor,
+)
+
+__all__ = tuple(
+    dict.fromkeys(
+        (
+            *__all__,
+            "PatientBillingAccount",
+            "PatientBillingStatement",
+            "PatientFinancialResponsibility",
+            "PatientGuarantor",
+        )
+    )
+)

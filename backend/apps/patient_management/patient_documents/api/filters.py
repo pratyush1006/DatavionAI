@@ -1,6 +1,4 @@
-"""
-Filters for Patient Documents.
-"""
+"""Filters for Patient Documents API."""
 
 from __future__ import annotations
 
@@ -14,38 +12,34 @@ from apps.patient_management.patient_documents.models import (
 class PatientDocumentFilter(
     django_filters.FilterSet,
 ):
-    """
-    Filter set for PatientDocument.
-    """
-
-    category = django_filters.CharFilter()
-
-    status = django_filters.CharFilter()
-
-    visibility = django_filters.CharFilter()
-
-    storage_backend = django_filters.CharFilter()
+    """Filter patient documents by patient, category, and status."""
 
     patient = django_filters.UUIDFilter(
-        field_name="patient__id",
+        field_name="patient_id",
     )
 
-    organization = django_filters.UUIDFilter(
-        field_name="organization__id",
+    category = django_filters.CharFilter(
+        field_name="category",
     )
 
-    title = django_filters.CharFilter(
-        lookup_expr="icontains",
+    status = django_filters.CharFilter(
+        field_name="status",
+    )
+
+    confidential = django_filters.BooleanFilter(
+        field_name="is_confidential",
     )
 
     class Meta:
-        model = PatientDocument
+        """FilterSet metadata."""
 
+        model = PatientDocument
         fields = (
-            "organization",
             "patient",
             "category",
             "status",
-            "visibility",
-            "storage_backend",
+            "confidential",
         )
+
+
+__all__ = ("PatientDocumentFilter",)

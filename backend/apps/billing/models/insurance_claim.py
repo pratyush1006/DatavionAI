@@ -26,7 +26,7 @@ class InsuranceClaim(BaseModel):
     )
 
     patient = models.ForeignKey(
-        "patients.Patient",
+        "patient_core.Patient",
         on_delete=models.CASCADE,
         related_name="insurance_claims",
         help_text="Patient associated with the claim.",

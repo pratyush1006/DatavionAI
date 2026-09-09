@@ -1,55 +1,371 @@
 """
-Constants used by the Providers application.
+Provider domain constants.
+
+Defines provider lifecycle states,
+provider categories, credential types,
+license lifecycle, verification states,
+and availability states.
+
+DatavionOS Healthcare Platform.
+
+Supports:
+
+- Multi-tenant SaaS
+- Healthcare provider lifecycle
+- Credential compliance
+- License management
+- Appointment scheduling
+- Workflow-driven architecture
+- AI provider matching
 """
 
 from __future__ import annotations
 
-from typing import Final
-
 from django.db import models
 
+# ============================================================================
+# Provider Lifecycle
+# ============================================================================
 
-class ProviderType(models.TextChoices):
+
+class ProviderStatus(
+    models.TextChoices,
+):
     """
-    Supported healthcare provider types.
+    Provider lifecycle state.
+
+    Workflow:
+
+        PENDING
+            |
+            v
+        UNDER_REVIEW
+            |
+            v
+        VERIFIED
+            |
+            v
+        ACTIVE
+            |
+            +--> INACTIVE
+            |
+            +--> SUSPENDED
     """
 
-    # Medical
-    PHYSICIAN = "physician", "Physician"
-    SURGEON = "surgeon", "Surgeon"
-    DENTIST = "dentist", "Dentist"
+    PENDING = (
+        "pending",
+        "Pending",
+    )
 
-    # Nursing & Allied Health
-    NURSE = "nurse", "Nurse"
-    THERAPIST = "therapist", "Therapist"
-    PHARMACIST = "pharmacist", "Pharmacist"
+    UNDER_REVIEW = (
+        "under_review",
+        "Under Review",
+    )
 
-    # Diagnostics
-    RADIOLOGIST = "radiologist", "Radiologist"
-    PATHOLOGIST = "pathologist", "Pathologist"
-    LAB_TECHNICIAN = "lab_technician", "Lab Technician"
+    VERIFIED = (
+        "verified",
+        "Verified",
+    )
 
-    # Other
-    OTHER = "other", "Other"
+    ACTIVE = (
+        "active",
+        "Active",
+    )
+
+    INACTIVE = (
+        "inactive",
+        "Inactive",
+    )
+
+    SUSPENDED = (
+        "suspended",
+        "Suspended",
+    )
 
 
-class ProviderStatus(models.TextChoices):
+DEFAULT_PROVIDER_STATUS = ProviderStatus.PENDING
+
+
+# ============================================================================
+# Provider Classification
+# ============================================================================
+
+
+class ProviderType(
+    models.TextChoices,
+):
     """
-    Provider lifecycle status.
+    Healthcare provider classification.
     """
 
-    ACTIVE = "active", "Active"
-    INACTIVE = "inactive", "Inactive"
-    ON_LEAVE = "on_leave", "On Leave"
-    SUSPENDED = "suspended", "Suspended"
-    RETIRED = "retired", "Retired"
+    PHYSICIAN = (
+        "physician",
+        "Physician",
+    )
+
+    SPECIALIST = (
+        "specialist",
+        "Specialist",
+    )
+
+    SURGEON = (
+        "surgeon",
+        "Surgeon",
+    )
+
+    NURSE = (
+        "nurse",
+        "Nurse",
+    )
+
+    DENTIST = (
+        "dentist",
+        "Dentist",
+    )
+
+    PHARMACIST = (
+        "pharmacist",
+        "Pharmacist",
+    )
+
+    THERAPIST = (
+        "therapist",
+        "Therapist",
+    )
+
+    PSYCHOLOGIST = (
+        "psychologist",
+        "Psychologist",
+    )
+
+    DIETITIAN = (
+        "dietitian",
+        "Dietitian",
+    )
+
+    TECHNICIAN = (
+        "technician",
+        "Technician",
+    )
+
+    OTHER = (
+        "other",
+        "Other",
+    )
 
 
-DEFAULT_PROVIDER_STATUS: Final[ProviderStatus] = ProviderStatus.ACTIVE
+# ============================================================================
+# Credential Management
+# ============================================================================
+
+
+class CredentialType(
+    models.TextChoices,
+):
+    """
+    Provider credential category.
+    """
+
+    DEGREE = (
+        "degree",
+        "Degree",
+    )
+
+    CERTIFICATION = (
+        "certification",
+        "Certification",
+    )
+
+    FELLOWSHIP = (
+        "fellowship",
+        "Fellowship",
+    )
+
+    TRAINING = (
+        "training",
+        "Training",
+    )
+
+    LICENSE = (
+        "license",
+        "License",
+    )
+
+
+class CredentialStatus(
+    models.TextChoices,
+):
+    """
+    Credential verification lifecycle.
+    """
+
+    PENDING = (
+        "pending",
+        "Pending",
+    )
+
+    VERIFIED = (
+        "verified",
+        "Verified",
+    )
+
+    REJECTED = (
+        "rejected",
+        "Rejected",
+    )
+
+    EXPIRED = (
+        "expired",
+        "Expired",
+    )
+
+
+# ============================================================================
+# License Management
+# ============================================================================
+
+
+class LicenseStatus(
+    models.TextChoices,
+):
+    """
+    Medical license lifecycle.
+    """
+
+    PENDING = (
+        "pending",
+        "Pending",
+    )
+
+    VERIFIED = (
+        "verified",
+        "Verified",
+    )
+
+    EXPIRED = (
+        "expired",
+        "Expired",
+    )
+
+    SUSPENDED = (
+        "suspended",
+        "Suspended",
+    )
+
+    REVOKED = (
+        "revoked",
+        "Revoked",
+    )
+
+
+# ============================================================================
+# Provider Assignment
+# ============================================================================
+
+
+class ProviderAssignmentStatus(
+    models.TextChoices,
+):
+    """
+    Provider assignment lifecycle.
+
+    Used for:
+
+    - Department assignment
+    - Team assignment
+    - Location assignment
+    """
+
+    ACTIVE = (
+        "active",
+        "Active",
+    )
+
+    INACTIVE = (
+        "inactive",
+        "Inactive",
+    )
+
+
+# ============================================================================
+# Availability
+# ============================================================================
+
+
+class AvailabilityDay(
+    models.IntegerChoices,
+):
+    """
+    ISO weekday values.
+    """
+
+    MONDAY = (
+        1,
+        "Monday",
+    )
+
+    TUESDAY = (
+        2,
+        "Tuesday",
+    )
+
+    WEDNESDAY = (
+        3,
+        "Wednesday",
+    )
+
+    THURSDAY = (
+        4,
+        "Thursday",
+    )
+
+    FRIDAY = (
+        5,
+        "Friday",
+    )
+
+    SATURDAY = (
+        6,
+        "Saturday",
+    )
+
+    SUNDAY = (
+        7,
+        "Sunday",
+    )
+
+
+class AvailabilityStatus(
+    models.TextChoices,
+):
+    """
+    Provider schedule availability.
+    """
+
+    AVAILABLE = (
+        "available",
+        "Available",
+    )
+
+    UNAVAILABLE = (
+        "unavailable",
+        "Unavailable",
+    )
+
+    BLOCKED = (
+        "blocked",
+        "Blocked",
+    )
 
 
 __all__ = [
-    "DEFAULT_PROVIDER_STATUS",
     "ProviderStatus",
+    "DEFAULT_PROVIDER_STATUS",
     "ProviderType",
+    "CredentialType",
+    "CredentialStatus",
+    "LicenseStatus",
+    "ProviderAssignmentStatus",
+    "AvailabilityDay",
+    "AvailabilityStatus",
 ]

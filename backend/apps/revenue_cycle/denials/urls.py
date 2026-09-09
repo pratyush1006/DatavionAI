@@ -1,32 +1,22 @@
-"""
-URL patterns for the Claim Denial module.
-"""
+"""URLs for Revenue Cycle Denials."""
 
 from __future__ import annotations
 
 from django.urls import path
 
-from apps.revenue_cycle.denials.api.views import (
-    ClaimDenialListCreateAPIView,
-    ClaimDenialRetrieveUpdateDestroyAPIView,
+from .api.views import (
+    DenialDetailAPIView,
+    DenialListCreateAPIView,
+    DenialTransitionAPIView,
 )
 
-app_name = "claim_denials"
-
 urlpatterns = [
+    path("", DenialListCreateAPIView.as_view(), name="denial-list-create"),
+    path("<uuid:denial_id>/", DenialDetailAPIView.as_view(), name="denial-detail"),
     path(
-        "",
-        ClaimDenialListCreateAPIView.as_view(),
-        name="list-create",
-    ),
-    path(
-        "<uuid:denial_id>/",
-        ClaimDenialRetrieveUpdateDestroyAPIView.as_view(),
-        name="detail",
+        "<uuid:denial_id>/transition/",
+        DenialTransitionAPIView.as_view(),
+        name="denial-transition",
     ),
 ]
-
-__all__ = [
-    "app_name",
-    "urlpatterns",
-]
+__all__ = ("urlpatterns",)

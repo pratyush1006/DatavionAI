@@ -1,5 +1,5 @@
-from .ar import AccountsReceivableSelector
+"""Revenue Cycle ar selectors package."""
 
-__all__ = [
-    "AccountsReceivableSelector",
-]
+from __future__ import annotations
+
+__all__ = ()

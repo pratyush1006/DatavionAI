@@ -6,6 +6,7 @@ Handles:
 - Registration
 - Password login
 - Login OTP verification
+- Login OTP resend
 - JWT refresh
 - Logout
 """
@@ -174,7 +175,7 @@ class LoginSerializer(
     def save(
         self,
         **kwargs: Any,
-    ) -> dict[str, str]:
+    ) -> dict[str, str | bool]:
         """
         Generate login OTP.
         """
@@ -182,6 +183,40 @@ class LoginSerializer(
         return AuthenticationService.request_login_otp(
             email=self.validated_data["email"],
             password=self.validated_data["password"],
+        )
+
+
+class ResendLoginOTPSerializer(
+    serializers.Serializer,
+):
+    """
+    Resend a login verification OTP.
+
+    The OTP ID identifies the existing login
+    authentication challenge.
+    """
+
+    otp_id = serializers.UUIDField()
+
+    def save(
+        self,
+        **kwargs: Any,
+    ) -> dict[str, str | bool]:
+        """
+        Resend login OTP.
+        """
+
+        return AuthenticationService.resend_login_otp(
+            otp_id=str(
+                self.validated_data["otp_id"],
+            ),
+            ip_address=kwargs.get(
+                "ip_address",
+            ),
+            user_agent=kwargs.get(
+                "user_agent",
+                "",
+            ),
         )
 
 
@@ -273,5 +308,6 @@ __all__ = (
     "LogoutSerializer",
     "RefreshSerializer",
     "RegisterSerializer",
+    "ResendLoginOTPSerializer",
     "VerifyLoginOTPSerializer",
 )

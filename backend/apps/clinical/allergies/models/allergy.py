@@ -15,12 +15,12 @@ from apps.clinical.allergies.constants import (
     AllergyStatus,
 )
 from apps.clinical.encounters.models import Encounter
-from apps.clinical.patients.models import Patient
 from apps.clinical.providers.models import Provider
 from apps.core.models import (
     BaseManager,
     BaseModel,
 )
+from apps.patient_management.patients.models import Patient
 from apps.platform.organizations.models import Organization
 
 

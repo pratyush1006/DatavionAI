@@ -1,15 +1,9 @@
-from .communication import (
-    CanCreatePatientCommunication,
-    CanDeletePatientCommunication,
-    CanUpdatePatientCommunication,
-    CanViewPatientCommunication,
+"""Patient Communication permission exports."""
+
+from __future__ import annotations
+
+from apps.patient_management.communication.permissions.communication import (
     PatientCommunicationPermission,
 )
 
-__all__ = [
-    "CanCreatePatientCommunication",
-    "CanDeletePatientCommunication",
-    "CanUpdatePatientCommunication",
-    "CanViewPatientCommunication",
-    "PatientCommunicationPermission",
-]
+__all__ = ("PatientCommunicationPermission",)

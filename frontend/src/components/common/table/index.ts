@@ -1,15 +1,27 @@
 /**
- * Enterprise table framework exports.
+ * Common enterprise table components.
  */
 
-export * from "./column-visibility";
-export * from "./data-table";
-export * from "./data-table-empty";
-export * from "./data-table-filters";
-export * from "./data-table-loading";
-export * from "./data-table-pagination";
-export * from "./data-table-search";
-export * from "./data-table-toolbar";
-export * from "./entity-table";
-export * from "./row-actions";
-export * from "./table-toolbar";
+export {
+  DataTable,
+} from "./data-table";
+
+export {
+  DataTableEmpty,
+} from "./data-table-empty";
+
+export {
+  DataTableLoading,
+} from "./data-table-loading";
+
+export {
+  EntityTable,
+} from "./entity-table";
+
+export {
+  RowActions,
+} from "./row-actions";
+
+export type {
+  DataTableLoadingProps,
+} from "./data-table-loading";

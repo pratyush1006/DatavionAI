@@ -1,35 +1,29 @@
-"""
-Filters for the Patient Relationships API.
-"""
-
 from __future__ import annotations
 
 import django_filters
 
-from apps.patient_management.relationships.models import (
-    PatientRelationship,
-)
+from apps.patient_management.relationships.models import PatientRelationship
 
 
-class RelationshipFilter(django_filters.FilterSet):
-    """
-    FilterSet for patient relationships.
-    """
+class PatientRelationshipFilter(django_filters.FilterSet):
+    relationship_type = django_filters.CharFilter(
+        field_name="relationship_type", lookup_expr="iexact"
+    )
+    status = django_filters.CharFilter(field_name="status", lookup_expr="iexact")
+    verification_status = django_filters.CharFilter(
+        field_name="verification_status", lookup_expr="iexact"
+    )
+    is_primary = django_filters.BooleanFilter(field_name="is_primary")
+    is_active = django_filters.BooleanFilter(field_name="is_active")
+    related_patient = django_filters.UUIDFilter(field_name="related_patient_id")
 
     class Meta:
         model = PatientRelationship
-        fields = {
-            "organization": ["exact"],
-            "patient": ["exact"],
-            "related_patient": ["exact"],
-            "relationship_type": ["exact"],
-            "status": ["exact"],
-            "verification_status": ["exact"],
-            "source": ["exact"],
-            "is_primary": ["exact"],
-        }
-
-
-__all__ = [
-    "RelationshipFilter",
-]
+        fields = (
+            "relationship_type",
+            "status",
+            "verification_status",
+            "is_primary",
+            "is_active",
+            "related_patient",
+        )

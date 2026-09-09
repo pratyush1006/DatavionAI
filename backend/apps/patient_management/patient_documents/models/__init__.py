@@ -1,13 +1,13 @@
-"""
-Patient Documents models.
-"""
+"""Patient Documents model exports."""
 
-from .document_access_log import DocumentAccessLog
-from .document_version import DocumentVersion
+from __future__ import annotations
+
+from .document_access_log import PatientDocumentAccessLog
+from .document_version import PatientDocumentVersion
 from .patient_document import PatientDocument
 
-__all__ = [
-    "DocumentAccessLog",
-    "DocumentVersion",
+__all__ = (
     "PatientDocument",
-]
+    "PatientDocumentAccessLog",
+    "PatientDocumentVersion",
+)

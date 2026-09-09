@@ -1,13 +1,11 @@
-from .referrals import (
+"""
+Patient Referral domain services.
+"""
+
+from __future__ import annotations
+
+from apps.patient_management.referrals.services.referral import (
     PatientReferralService,
-    create_referral,
-    delete_referral,
-    update_referral,
 )
 
-__all__ = [
-    "PatientReferralService",
-    "create_referral",
-    "delete_referral",
-    "update_referral",
-]
+__all__ = ("PatientReferralService",)

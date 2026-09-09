@@ -1,52 +1,69 @@
 """
-Provider create serializer.
+Provider creation serializer.
+
+Responsible for:
+
+- Validating provider creation payload
+- Normalizing provider input
+- Preparing workflow input
+
+Business rules do not belong here.
 """
 
 from __future__ import annotations
 
-from collections.abc import Mapping
-from typing import Any
+from rest_framework import serializers
 
-from apps.clinical.providers.api.serializers.base import (
-    ProviderBaseSerializer,
-)
-from apps.clinical.providers.api.serializers.fields import (
-    READ_ONLY_FIELDS,
-    WRITE_FIELDS,
-)
-from apps.clinical.providers.models import Provider
-from apps.clinical.providers.services import (
-    ProviderService,
+from apps.clinical.providers.models import (
+    Provider,
 )
 
 
 class ProviderCreateSerializer(
-    ProviderBaseSerializer,
+    serializers.ModelSerializer,
 ):
     """
-    Serializer used for provider creation.
+    Provider creation serializer.
+
+    Used by:
+
+        ProviderListCreateAPIView
+                |
+                v
+        ProviderCreationWorkflow
     """
 
-    class Meta(
-        ProviderBaseSerializer.Meta,
-    ):
-        fields = WRITE_FIELDS
+    class Meta:
+        model = Provider
 
-        read_only_fields = READ_ONLY_FIELDS
-
-    def create(
-        self,
-        validated_data: Mapping[str, Any],
-    ) -> Provider:
-        """
-        Create and return a provider.
-        """
-
-        return ProviderService.create(
-            validated_data=validated_data,
+        fields = (
+            "employee",
+            "provider_number",
+            "provider_type",
+            "years_of_experience",
+            "is_accepting_patients",
+            "bio",
         )
 
+    def validate_provider_number(
+        self,
+        value: str,
+    ) -> str:
+        """
+        Normalize provider number.
+        """
 
-__all__ = [
-    "ProviderCreateSerializer",
-]
+        return value.strip().upper()
+
+    def validate_bio(
+        self,
+        value: str,
+    ) -> str:
+        """
+        Normalize biography.
+        """
+
+        return value.strip()
+
+
+__all__ = ("ProviderCreateSerializer",)

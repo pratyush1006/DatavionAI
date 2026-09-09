@@ -1,6 +1,11 @@
 """
 Application configuration for the Providers app.
+
+Registers provider domain integrations
+during Django application startup.
 """
+
+from __future__ import annotations
 
 from django.apps import AppConfig
 
@@ -15,3 +20,16 @@ class ProvidersConfig(AppConfig):
     name = "apps.clinical.providers"
 
     verbose_name = "Providers"
+
+    def ready(
+        self,
+    ) -> None:
+        """
+        Initialize provider domain registrations.
+        """
+
+        from apps.clinical.providers.workflow_registry import (
+            register_provider_workflows,
+        )
+
+        register_provider_workflows()

@@ -1,35 +1,17 @@
-"""
-Application configuration for the Patient Preferences module.
-"""
+"""Django application configuration for Patient Preferences."""
 
 from __future__ import annotations
 
 from django.apps import AppConfig
 
 
-class PreferencesConfig(
-    AppConfig,
-):
-    """
-    Configuration for the Patient Preferences application.
-    """
+class PatientPreferencesConfig(AppConfig):
+    """Configure the Patient Preferences Django application."""
 
     default_auto_field = "django.db.models.BigAutoField"
-
     name = "apps.patient_management.preferences"
-
+    label = "patient_preferences"
     verbose_name = "Patient Preferences"
 
-    def ready(
-        self,
-    ) -> None:
-        from apps.patient_management.preferences import (
-            signals,
-        )
 
-        _ = signals
-
-
-__all__ = [
-    "PreferencesConfig",
-]
+__all__ = ("PatientPreferencesConfig",)

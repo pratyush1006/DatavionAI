@@ -1,197 +1,136 @@
-"""
-Telemedicine session service.
-"""
-
 from __future__ import annotations
-
-import uuid
-from collections.abc import Mapping
-from typing import Any
 
 from django.db import transaction
 from django.utils import timezone
 
-from apps.platform.accounts.models import User
 from apps.telemedicine.constants import SessionStatus
+from apps.telemedicine.integrations.video_provider import get_video_provider
 from apps.telemedicine.models import TelemedicineSession
+
+ALLOWED_TRANSITIONS = {
+    SessionStatus.DRAFT: {
+        SessionStatus.SCHEDULED,
+        SessionStatus.CANCELLED,
+        SessionStatus.FAILED,
+    },
+    SessionStatus.SCHEDULED: {
+        SessionStatus.CONFIRMED,
+        SessionStatus.CANCELLED,
+        SessionStatus.NO_SHOW,
+        SessionStatus.FAILED,
+    },
+    SessionStatus.CONFIRMED: {
+        SessionStatus.READY,
+        SessionStatus.CANCELLED,
+        SessionStatus.FAILED,
+    },
+    SessionStatus.READY: {
+        SessionStatus.IN_PROGRESS,
+        SessionStatus.CANCELLED,
+        SessionStatus.NO_SHOW,
+        SessionStatus.FAILED,
+    },
+    SessionStatus.IN_PROGRESS: {
+        SessionStatus.COMPLETED,
+        SessionStatus.CANCELLED,
+        SessionStatus.FAILED,
+    },
+    SessionStatus.COMPLETED: set(),
+    SessionStatus.CANCELLED: set(),
+    SessionStatus.NO_SHOW: set(),
+    SessionStatus.FAILED: set(),
+}
 
 
 class SessionService:
-    """
-    Application service responsible for telemedicine session operations.
-
-    This service is the single entry point for all telemedicine session
-    lifecycle operations and provides a centralized location for future
-    business rules such as:
-
-    - Notification dispatch
-    - Screen sharing logs
-    - Post-consultation note generation
-    - Domain events
-    - External integrations
-    """
+    @staticmethod
+    @transaction.atomic
+    def create(*, validated_data):
+        s = TelemedicineSession(**validated_data)
+        s.full_clean()
+        s.save()
+        return s
 
     @staticmethod
     @transaction.atomic
-    def create(
-        *,
-        validated_data: Mapping[str, Any],
-        performed_by: User | None = None,
-    ) -> TelemedicineSession:
-        """
-        Create a new telemedicine session.
-        """
-
-        session = TelemedicineSession(
-            **validated_data,
-        )
-
-        if not session.session_id:
-            session.session_id = str(uuid.uuid4())
-
+    def update(*, session, validated_data):
+        if session.status not in {
+            SessionStatus.DRAFT,
+            SessionStatus.SCHEDULED,
+            SessionStatus.CONFIRMED,
+        }:
+            raise ValueError(
+                "Only draft, scheduled, or confirmed sessions can be edited."
+            )
+        for f, v in validated_data.items():
+            setattr(session, f, v)
         session.full_clean()
-
         session.save()
-
         return session
 
     @staticmethod
     @transaction.atomic
-    def update(
+    def transition(
         *,
-        instance: TelemedicineSession,
-        validated_data: Mapping[str, Any],
-        performed_by: User | None = None,
-    ) -> TelemedicineSession:
-        """
-        Update an existing telemedicine session.
-        """
-
-        for field, value in validated_data.items():
-            setattr(
-                instance,
-                field,
-                value,
+        session_id,
+        target_status,
+        organization_id,
+        cancellation_reason="",
+        failure_reason="",
+    ):
+        s = TelemedicineSession.objects.select_for_update().get(
+            session_id=session_id, organization_id=organization_id
+        )
+        allowed = ALLOWED_TRANSITIONS[s.status]
+        if target_status not in allowed:
+            raise ValueError(
+                f"Invalid Telemedicine transition: {s.status} -> {target_status}."
             )
-
-        instance.full_clean()
-
-        instance.save()
-
-        return instance
-
-    @staticmethod
-    @transaction.atomic
-    def start(
-        *,
-        instance: TelemedicineSession,
-        performed_by: User | None = None,
-    ) -> TelemedicineSession:
-        """
-        Start a telemedicine session.
-        """
-
-        instance.status = SessionStatus.IN_PROGRESS
-        instance.actual_start = timezone.now()
-
-        instance.save(
+        now = timezone.now()
+        s.status = target_status
+        if target_status == SessionStatus.IN_PROGRESS:
+            s.actual_start = now
+        if target_status == SessionStatus.COMPLETED:
+            s.actual_start = s.actual_start or now
+            s.actual_end = now
+        if target_status == SessionStatus.CANCELLED:
+            s.cancellation_reason = cancellation_reason.strip()
+        if target_status == SessionStatus.FAILED:
+            s.failure_reason = failure_reason.strip()
+        s.save(
             update_fields=[
                 "status",
                 "actual_start",
-                "updated_at",
-            ],
-        )
-
-        return instance
-
-    @staticmethod
-    @transaction.atomic
-    def end(
-        *,
-        instance: TelemedicineSession,
-        performed_by: User | None = None,
-    ) -> TelemedicineSession:
-        """
-        End a telemedicine session.
-        """
-
-        instance.status = SessionStatus.COMPLETED
-        instance.actual_end = timezone.now()
-
-        instance.save(
-            update_fields=[
-                "status",
                 "actual_end",
+                "cancellation_reason",
+                "failure_reason",
                 "updated_at",
-            ],
+            ]
         )
-
-        return instance
+        return s
 
     @staticmethod
     @transaction.atomic
-    def cancel(
-        *,
-        instance: TelemedicineSession,
-        performed_by: User | None = None,
-    ) -> TelemedicineSession:
-        """
-        Cancel a telemedicine session.
-        """
-
-        instance.status = SessionStatus.CANCELLED
-
-        instance.save(
+    def prepare(*, session_id, organization_id):
+        s = TelemedicineSession.objects.select_for_update().get(
+            session_id=session_id, organization_id=organization_id
+        )
+        if s.status != SessionStatus.CONFIRMED:
+            raise ValueError("Only confirmed sessions can be prepared.")
+        room = get_video_provider().create_room(
+            session_id=str(s.session_id), session_type=s.session_type
+        )
+        s.connection_id = room.connection_id
+        s.connection_url = room.connection_url
+        s.provider_name = room.provider_name
+        s.status = SessionStatus.READY
+        s.save(
             update_fields=[
+                "connection_id",
+                "connection_url",
+                "provider_name",
                 "status",
                 "updated_at",
-            ],
+            ]
         )
-
-        return instance
-
-    @staticmethod
-    @transaction.atomic
-    def bulk_create(
-        *,
-        validated_data_list: list[Mapping[str, Any]],
-        performed_by: User | None = None,
-    ) -> list[TelemedicineSession]:
-        """
-        Create multiple telemedicine sessions.
-        """
-
-        sessions: list[TelemedicineSession] = []
-
-        for validated_data in validated_data_list:
-            session = TelemedicineSession(
-                **validated_data,
-            )
-
-            if not session.session_id:
-                session.session_id = str(uuid.uuid4())
-
-            session.full_clean()
-
-            session.save()
-
-            sessions.append(session)
-
-        return sessions
-
-
-create_session = SessionService.create
-update_session = SessionService.update
-start_session = SessionService.start
-end_session = SessionService.end
-cancel_session = SessionService.cancel
-
-
-__all__ = [
-    "SessionService",
-    "cancel_session",
-    "create_session",
-    "end_session",
-    "start_session",
-    "update_session",
-]
+        return s

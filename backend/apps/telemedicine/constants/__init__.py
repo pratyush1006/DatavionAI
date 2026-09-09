@@ -1,21 +1,19 @@
-"""
-Telemedicine constants module.
-"""
-
-from __future__ import annotations
-
-from apps.telemedicine.constants.telemedicine import (
-    DEFAULT_SESSION_STATUS,
+from .participant import (
     ConnectionQuality,
+    MediaPermission,
+    ParticipantStatus,
     ParticipantType,
-    SessionStatus,
-    SessionType,
 )
+from .recording import RecordingStatus
+from .session import DEFAULT_SESSION_STATUS, SessionStatus, SessionType
 
 __all__ = [
     "ConnectionQuality",
-    "DEFAULT_SESSION_STATUS",
+    "MediaPermission",
+    "ParticipantStatus",
     "ParticipantType",
+    "RecordingStatus",
+    "DEFAULT_SESSION_STATUS",
     "SessionStatus",
     "SessionType",
 ]

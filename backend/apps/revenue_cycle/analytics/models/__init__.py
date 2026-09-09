@@ -1,5 +1,5 @@
-from .analytics import RcmMetric
+"""Revenue Cycle analytics models package."""
 
-__all__ = [
-    "RcmMetric",
-]
+from __future__ import annotations
+
+__all__ = ()

@@ -1,45 +1,62 @@
 """
-URL configuration for Emergency Contact APIs.
+Emergency Contacts API URLs.
 """
-
-from __future__ import annotations
 
 from django.urls import path
 
-from ..views import (
-    EmergencyContactCreateAPIView,
-    EmergencyContactDeleteAPIView,
-    EmergencyContactListAPIView,
-    EmergencyContactRetrieveAPIView,
-    EmergencyContactUpdateAPIView,
+from apps.patient_management.emergency_contacts.api.views import (
+    EmergencyContactActivateAPIView,
+    EmergencyContactBlockAPIView,
+    EmergencyContactDeactivateAPIView,
+    EmergencyContactListCreateAPIView,
+    EmergencyContactRetrieveUpdateDestroyAPIView,
+    EmergencyContactSetPrimaryAPIView,
+    EmergencyContactVerifyAPIView,
 )
 
-app_name = "emergency-contacts"
+app_name = "patient-emergency-contacts"
 
-urlpatterns = [
+
+urlpatterns = (
     path(
         "",
-        EmergencyContactListAPIView.as_view(),
-        name="list",
+        EmergencyContactListCreateAPIView.as_view(),
+        name="list-create",
     ),
     path(
-        "create/",
-        EmergencyContactCreateAPIView.as_view(),
-        name="create",
+        "<uuid:emergency_contact_id>/",
+        EmergencyContactRetrieveUpdateDestroyAPIView.as_view(),
+        name="retrieve-update-destroy",
     ),
     path(
-        "<uuid:id>/",
-        EmergencyContactRetrieveAPIView.as_view(),
-        name="detail",
+        "<uuid:emergency_contact_id>/verify/",
+        EmergencyContactVerifyAPIView.as_view(),
+        name="verify",
     ),
     path(
-        "<uuid:id>/update/",
-        EmergencyContactUpdateAPIView.as_view(),
-        name="update",
+        "<uuid:emergency_contact_id>/activate/",
+        EmergencyContactActivateAPIView.as_view(),
+        name="activate",
     ),
     path(
-        "<uuid:id>/delete/",
-        EmergencyContactDeleteAPIView.as_view(),
-        name="delete",
+        "<uuid:emergency_contact_id>/deactivate/",
+        EmergencyContactDeactivateAPIView.as_view(),
+        name="deactivate",
     ),
-]
+    path(
+        "<uuid:emergency_contact_id>/block/",
+        EmergencyContactBlockAPIView.as_view(),
+        name="block",
+    ),
+    path(
+        "<uuid:emergency_contact_id>/set-primary/",
+        EmergencyContactSetPrimaryAPIView.as_view(),
+        name="set-primary",
+    ),
+)
+
+
+__all__ = (
+    "app_name",
+    "urlpatterns",
+)

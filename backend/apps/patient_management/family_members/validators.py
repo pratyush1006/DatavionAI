@@ -1,39 +1,28 @@
 """
-Validators for the Family Members module.
+Validators for Patient Family Members.
 """
 
 from __future__ import annotations
 
 import re
+from datetime import date
 
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from django.utils import timezone
-
-__all__ = [
-    "validate_family_member_name",
-    "validate_mobile_number",
-    "validate_email_address",
-    "validate_notes",
-    "validate_date_of_birth",
-]
-
 
 _NAME_PATTERN = re.compile(r"^[A-Za-z][A-Za-z\s.'-]{0,99}$")
 _PHONE_PATTERN = re.compile(r"^\+?[1-9]\d{7,14}$")
 
 
 def validate_family_member_name(value: str) -> None:
-    """
-    Validate a family member's name.
-    """
+    value = (value or "").strip()
+
     if not value:
         raise ValidationError(
             "Name is required.",
             code="required",
         )
-
-    value = value.strip()
 
     if not _NAME_PATTERN.fullmatch(value):
         raise ValidationError(
@@ -43,15 +32,9 @@ def validate_family_member_name(value: str) -> None:
 
 
 def validate_mobile_number(value: str) -> None:
-    """
-    Validate an international mobile number.
-    """
-    if not value:
-        return
+    value = (value or "").strip()
 
-    value = value.strip()
-
-    if not _PHONE_PATTERN.fullmatch(value):
+    if value and not _PHONE_PATTERN.fullmatch(value):
         raise ValidationError(
             "Enter a valid mobile number.",
             code="invalid_mobile_number",
@@ -59,9 +42,8 @@ def validate_mobile_number(value: str) -> None:
 
 
 def validate_email_address(value: str) -> None:
-    """
-    Validate an email address.
-    """
+    value = (value or "").strip()
+
     if not value:
         return
 
@@ -75,23 +57,14 @@ def validate_email_address(value: str) -> None:
 
 
 def validate_notes(value: str) -> None:
-    """
-    Validate notes length.
-    """
-    if not value:
-        return
-
-    if len(value.strip()) > 1000:
+    if len((value or "").strip()) > 2000:
         raise ValidationError(
-            "Notes cannot exceed 1000 characters.",
+            "Notes cannot exceed 2000 characters.",
             code="notes_too_long",
         )
 
 
-def validate_date_of_birth(value) -> None:
-    """
-    Validate date of birth.
-    """
+def validate_date_of_birth(value: date | None) -> None:
     if value is None:
         return
 
@@ -110,5 +83,14 @@ def validate_date_of_birth(value) -> None:
     if age > 130:
         raise ValidationError(
             "Age cannot exceed 130 years.",
-            code="invalid_age",
+            code="age_too_high",
         )
+
+
+__all__ = (
+    "validate_date_of_birth",
+    "validate_email_address",
+    "validate_family_member_name",
+    "validate_mobile_number",
+    "validate_notes",
+)

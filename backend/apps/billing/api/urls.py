@@ -1,5 +1,5 @@
 """
-Billing API URL patterns.
+Billing Core API URLs.
 """
 
 from __future__ import annotations
@@ -7,91 +7,67 @@ from __future__ import annotations
 from django.urls import path
 
 from apps.billing.api.views import (
+    InsuranceClaimAppealAPIView,
     InsuranceClaimApproveAPIView,
-    InsuranceClaimBulkCreateAPIView,
     InsuranceClaimListCreateAPIView,
     InsuranceClaimRejectAPIView,
     InsuranceClaimRetrieveUpdateAPIView,
-    InvoiceBulkCreateAPIView,
+    InsuranceClaimSettleAPIView,
     InvoiceListCreateAPIView,
     InvoiceRetrieveUpdateDestroyAPIView,
-    InvoiceVoidAPIView,
     PaymentBulkCreateAPIView,
     PaymentListCreateAPIView,
     PaymentRetrieveAPIView,
 )
 
-app_name = "billing"
+app_name = "billing_api"
 
-urlpatterns = [
-    path(
-        "invoices/",
-        InvoiceListCreateAPIView.as_view(),
-        name="invoice-list-create",
-    ),
+urlpatterns = (
+    path("invoices/", InvoiceListCreateAPIView.as_view(), name="invoice-list-create"),
     path(
         "invoices/<uuid:invoice_id>/",
         InvoiceRetrieveUpdateDestroyAPIView.as_view(),
         name="invoice-detail",
     ),
-    path(
-        "invoices/<uuid:invoice_id>/items/",
-        InvoiceListCreateAPIView.as_view(),
-        name="invoice-items",
-    ),
-    path(
-        "invoices/bulk/",
-        InvoiceBulkCreateAPIView.as_view(),
-        name="invoice-bulk-create",
-    ),
-    path(
-        "invoices/<uuid:invoice_id>/void/",
-        InvoiceVoidAPIView.as_view(),
-        name="invoice-void",
-    ),
-    path(
-        "payments/",
-        PaymentListCreateAPIView.as_view(),
-        name="payment-list-create",
-    ),
+    path("payments/", PaymentListCreateAPIView.as_view(), name="payment-list-create"),
     path(
         "payments/<uuid:payment_id>/",
         PaymentRetrieveAPIView.as_view(),
         name="payment-detail",
     ),
     path(
-        "payments/bulk/",
-        PaymentBulkCreateAPIView.as_view(),
-        name="payment-bulk-create",
+        "payments/bulk/", PaymentBulkCreateAPIView.as_view(), name="payment-bulk-create"
     ),
     path(
-        "claims/",
+        "insurance-claims/",
         InsuranceClaimListCreateAPIView.as_view(),
         name="claim-list-create",
     ),
     path(
-        "claims/<uuid:claim_id>/",
+        "insurance-claims/<uuid:claim_id>/",
         InsuranceClaimRetrieveUpdateAPIView.as_view(),
         name="claim-detail",
     ),
     path(
-        "claims/bulk/",
-        InsuranceClaimBulkCreateAPIView.as_view(),
-        name="claim-bulk-create",
-    ),
-    path(
-        "claims/<uuid:claim_id>/approve/",
+        "insurance-claims/<uuid:claim_id>/approve/",
         InsuranceClaimApproveAPIView.as_view(),
         name="claim-approve",
     ),
     path(
-        "claims/<uuid:claim_id>/reject/",
+        "insurance-claims/<uuid:claim_id>/reject/",
         InsuranceClaimRejectAPIView.as_view(),
         name="claim-reject",
     ),
-]
+    path(
+        "insurance-claims/<uuid:claim_id>/appeal/",
+        InsuranceClaimAppealAPIView.as_view(),
+        name="claim-appeal",
+    ),
+    path(
+        "insurance-claims/<uuid:claim_id>/settle/",
+        InsuranceClaimSettleAPIView.as_view(),
+        name="claim-settle",
+    ),
+)
 
-
-__all__ = [
-    "urlpatterns",
-]
+__all__ = ("app_name", "urlpatterns")

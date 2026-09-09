@@ -1,13 +1,7 @@
-from .eligibility import (
-    EligibilityCheckService,
-    create_eligibility,
-    delete_eligibility,
-    update_eligibility,
-)
+"""Revenue Cycle Eligibility services."""
 
-__all__ = [
-    "EligibilityCheckService",
-    "create_eligibility",
-    "delete_eligibility",
-    "update_eligibility",
-]
+from __future__ import annotations
+
+from apps.revenue_cycle.eligibility.services.eligibility import EligibilityService
+
+__all__ = ("EligibilityService",)

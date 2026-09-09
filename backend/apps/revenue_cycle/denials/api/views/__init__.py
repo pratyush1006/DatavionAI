@@ -1,9 +1,11 @@
+"""Denials API views."""
+
+from __future__ import annotations
+
 from .denials import (
-    ClaimDenialListCreateAPIView,
-    ClaimDenialRetrieveUpdateDestroyAPIView,
+    DenialDetailAPIView,
+    DenialListCreateAPIView,
+    DenialTransitionAPIView,
 )
 
-__all__ = [
-    "ClaimDenialListCreateAPIView",
-    "ClaimDenialRetrieveUpdateDestroyAPIView",
-]
+__all__ = ("DenialListCreateAPIView", "DenialDetailAPIView", "DenialTransitionAPIView")

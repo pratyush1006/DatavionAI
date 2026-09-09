@@ -1,15 +1,17 @@
-from .claim_submission import (
-    ClaimSubmissionCreateSerializer,
-    ClaimSubmissionDetailSerializer,
-    ClaimSubmissionListSerializer,
+"""Claim submission API serializers."""
+
+from __future__ import annotations
+
+from apps.revenue_cycle.claim_submission.api.serializers.claim_submission import (
     ClaimSubmissionSerializer,
-    ClaimSubmissionUpdateSerializer,
+    CreateClaimSubmissionSerializer,
+    TransitionClaimSubmissionSerializer,
+    UpdateClaimSubmissionSerializer,
 )
 
-__all__ = [
-    "ClaimSubmissionCreateSerializer",
-    "ClaimSubmissionDetailSerializer",
-    "ClaimSubmissionListSerializer",
+__all__ = (
     "ClaimSubmissionSerializer",
-    "ClaimSubmissionUpdateSerializer",
-]
+    "CreateClaimSubmissionSerializer",
+    "UpdateClaimSubmissionSerializer",
+    "TransitionClaimSubmissionSerializer",
+)

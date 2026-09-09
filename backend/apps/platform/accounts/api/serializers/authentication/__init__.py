@@ -9,6 +9,7 @@ from .auth import (
     LogoutSerializer,
     RefreshSerializer,
     RegisterSerializer,
+    ResendLoginOTPSerializer,
     VerifyLoginOTPSerializer,
 )
 from .me import (
@@ -41,6 +42,7 @@ __all__ = (
     "MicrosoftLoginSerializer",
     "RefreshSerializer",
     "RegisterSerializer",
+    "ResendLoginOTPSerializer",
     "ResendOTPSerializer",
     "ResetPasswordSerializer",
     "TokenResponseSerializer",

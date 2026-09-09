@@ -1,34 +1,23 @@
-"""
-Public type aliases for the DatavionOS kernel.
-
-The ``types`` package contains reusable type aliases shared across the
-DatavionOS kernel. These aliases improve readability, encourage consistency,
-and provide a stable public typing API for plugins, runtime components,
-contracts, and integrations.
-
-Type aliases must remain:
-
-- Lightweight
-- Framework agnostic
-- Free of runtime side effects
-- Backward compatible whenever possible
-
-Consumers should always import types from this package rather than individual
-implementation modules.
-"""
+"""Public type aliases for the DatavionOS kernel."""
 
 from __future__ import annotations
 
 from apps.datavionos.types.common import (
     CapabilityName,
+    CapabilityStatus,
     Context,
+    Environment,
     FeatureFlag,
     Identifier,
     Labels,
+    LifecycleState,
     Metadata,
     PermissionName,
     PluginName,
+    PluginStatus,
     Properties,
+    ReadonlyContext,
+    ReadonlyMetadata,
     TagSet,
     TenantIdentifier,
     UserIdentifier,
@@ -37,14 +26,20 @@ from apps.datavionos.types.common import (
 
 __all__ = [
     "CapabilityName",
+    "CapabilityStatus",
     "Context",
+    "Environment",
     "FeatureFlag",
     "Identifier",
     "Labels",
+    "LifecycleState",
     "Metadata",
     "PermissionName",
     "PluginName",
+    "PluginStatus",
     "Properties",
+    "ReadonlyContext",
+    "ReadonlyMetadata",
     "TagSet",
     "TenantIdentifier",
     "UserIdentifier",

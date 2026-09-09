@@ -23,15 +23,7 @@ class PatientRegistrationConfig(AppConfig):
         "Patient Registration",
     )
 
-    def ready(
-        self,
-    ) -> None:
-        """
-        Initialize application components.
-        """
 
-        from apps.patient_management.registration import (
-            signals,
-        )
-
-        del signals
+__all__ = [
+    "PatientRegistrationConfig",
+]

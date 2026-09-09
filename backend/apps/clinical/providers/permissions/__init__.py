@@ -1,21 +1,25 @@
 """
-Provider permission exports.
+Provider RBAC permission exports.
 """
 
 from __future__ import annotations
 
 from .provider import (
+    CanActivateProvider,
+    CanAssignProvider,
     CanCreateProvider,
-    CanDeleteProvider,
+    CanDeactivateProvider,
     CanUpdateProvider,
+    CanVerifyProvider,
     CanViewProvider,
-    ProviderPermission,
 )
 
-__all__ = [
-    "ProviderPermission",
-    "CanCreateProvider",
-    "CanDeleteProvider",
-    "CanUpdateProvider",
+__all__ = (
     "CanViewProvider",
-]
+    "CanCreateProvider",
+    "CanUpdateProvider",
+    "CanVerifyProvider",
+    "CanActivateProvider",
+    "CanDeactivateProvider",
+    "CanAssignProvider",
+)

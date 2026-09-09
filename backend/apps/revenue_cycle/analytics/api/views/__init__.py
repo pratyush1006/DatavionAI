@@ -1,9 +1,5 @@
-from .analytics import (
-    RcmMetricListCreateAPIView,
-    RcmMetricRetrieveUpdateDestroyAPIView,
-)
+"""Revenue Cycle analytics api/views package."""
 
-__all__ = [
-    "RcmMetricListCreateAPIView",
-    "RcmMetricRetrieveUpdateDestroyAPIView",
-]
+from __future__ import annotations
+
+__all__ = ()

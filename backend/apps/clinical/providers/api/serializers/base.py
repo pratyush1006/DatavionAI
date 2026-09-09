@@ -1,5 +1,8 @@
 """
 Base provider serializer.
+
+Shared validation and normalization
+for Provider API serializers.
 """
 
 from __future__ import annotations
@@ -18,11 +21,14 @@ class ProviderBaseSerializer(
 
     @staticmethod
     def _normalize_text(
-        value: str,
+        value: str | None,
     ) -> str:
         """
         Normalize text input.
         """
+
+        if not value:
+            return ""
 
         return value.strip()
 
@@ -31,31 +37,19 @@ class ProviderBaseSerializer(
         value: str,
     ) -> str:
         """
-        Validate the provider number.
+        Validate provider identifier.
         """
 
         return self._normalize_text(
             value,
-        )
-
-    def validate_license_number(
-        self,
-        value: str,
-    ) -> str:
-        """
-        Validate the license number.
-        """
-
-        return self._normalize_text(
-            value,
-        )
+        ).upper()
 
     def validate_bio(
         self,
         value: str,
     ) -> str:
         """
-        Validate the provider biography.
+        Validate provider biography.
         """
 
         return self._normalize_text(
@@ -65,6 +59,10 @@ class ProviderBaseSerializer(
     class Meta(
         ProviderFieldsSerializer.Meta,
     ):
+        """
+        Serializer metadata.
+        """
+
         read_only_fields = (
             "id",
             "created_at",
@@ -72,6 +70,4 @@ class ProviderBaseSerializer(
         )
 
 
-__all__ = [
-    "ProviderBaseSerializer",
-]
+__all__ = ("ProviderBaseSerializer",)

@@ -1,25 +1,13 @@
-"""
-Services for the Patient Documents module.
-"""
+"""Patient Documents service exports."""
 
-from .document_access_log import (
-    create_document_access_log,
-)
-from .document_version import (
-    create_document_version,
-)
-from .patient_document import (
-    archive_patient_document,
-    create_patient_document,
-    delete_patient_document,
-    update_patient_document,
-)
+from __future__ import annotations
 
-__all__ = [
-    "archive_patient_document",
-    "create_document_access_log",
-    "create_document_version",
-    "create_patient_document",
-    "delete_patient_document",
-    "update_patient_document",
-]
+from .document_access_log import PatientDocumentAccessLogService
+from .document_version import PatientDocumentVersionService
+from .patient_document import PatientDocumentService
+
+__all__ = (
+    "PatientDocumentAccessLogService",
+    "PatientDocumentService",
+    "PatientDocumentVersionService",
+)

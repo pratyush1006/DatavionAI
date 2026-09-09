@@ -1,100 +1,153 @@
 """
-Selectors for Patient Relationships.
+Organization-scoped read selectors for Patient Relationships.
+
+Selectors contain read/query concerns only. They do not perform
+authorization, persistence, or workflow orchestration.
 """
 
 from __future__ import annotations
 
+from typing import Any
+from uuid import UUID
+
 from django.db.models import QuerySet
 
-from apps.patient_management.relationships.models import (
-    PatientRelationship,
+from apps.patient_management.relationships.constants import (
+    RelationshipStatus,
+    VerificationStatus,
 )
+from apps.patient_management.relationships.models import PatientRelationship
 
 
-def get_relationship_by_id(
-    relationship_id: int,
-) -> PatientRelationship:
-    """
-    Return a relationship by its primary key.
-    """
-    return PatientRelationship.objects.get(
-        pk=relationship_id,
-    )
+class PatientRelationshipSelector:
+    """Canonical read boundary for PatientRelationship."""
 
-
-def get_patient_relationships(
-    *,
-    patient_id: int,
-) -> QuerySet[PatientRelationship]:
-    """
-    Return all relationships for a patient.
-    """
-    return (
-        PatientRelationship.objects.select_related(
+    @staticmethod
+    def queryset(
+        *,
+        organization: Any | None = None,
+        organization_id: UUID | None = None,
+    ) -> QuerySet[PatientRelationship]:
+        queryset = PatientRelationship.objects.select_related(
             "organization",
             "patient",
             "related_patient",
         )
-        .filter(
-            patient_id=patient_id,
-        )
-        .order_by(
-            "-is_primary",
-            "relationship_type",
-        )
-    )
 
+        if organization is not None:
+            queryset = queryset.filter(organization=organization)
+        elif organization_id is not None:
+            queryset = queryset.filter(organization_id=organization_id)
 
-def get_primary_relationship(
-    *,
-    patient_id: int,
-    relationship_type: str,
-) -> PatientRelationship | None:
-    """
-    Return the primary relationship for a patient.
-    """
-    return (
-        PatientRelationship.objects.select_related(
-            "organization",
-            "patient",
-            "related_patient",
-        )
-        .filter(
-            patient_id=patient_id,
-            relationship_type=relationship_type,
-            is_primary=True,
-        )
-        .first()
-    )
+        return queryset
 
-
-def get_relationships_by_type(
-    *,
-    organization_id: int,
-    relationship_type: str,
-) -> QuerySet[PatientRelationship]:
-    """
-    Return relationships by type.
-    """
-    return (
-        PatientRelationship.objects.select_related(
-            "organization",
-            "patient",
-            "related_patient",
-        )
-        .filter(
+    @classmethod
+    def get(
+        cls,
+        *,
+        organization: Any | None = None,
+        organization_id: UUID | None = None,
+        relationship_id: UUID,
+    ) -> PatientRelationship:
+        return cls.queryset(
+            organization=organization,
             organization_id=organization_id,
-            relationship_type=relationship_type,
+        ).get(id=relationship_id)
+
+    get_by_id = get
+
+    @classmethod
+    def list(
+        cls,
+        *,
+        organization: Any | None = None,
+        organization_id: UUID | None = None,
+    ) -> QuerySet[PatientRelationship]:
+        return cls.queryset(
+            organization=organization,
+            organization_id=organization_id,
+        ).order_by("-is_primary", "-created_at")
+
+    list_by_organization = list
+
+    @classmethod
+    def for_patient(
+        cls,
+        *,
+        organization: Any | None = None,
+        organization_id: UUID | None = None,
+        patient_id: UUID,
+    ) -> QuerySet[PatientRelationship]:
+        return (
+            cls.queryset(
+                organization=organization,
+                organization_id=organization_id,
+            )
+            .filter(patient_id=patient_id)
+            .order_by("-is_primary", "-created_at")
         )
-        .order_by(
-            "-created_at",
+
+    list_by_patient = for_patient
+
+    @classmethod
+    def get_primary(
+        cls,
+        *,
+        organization: Any | None = None,
+        organization_id: UUID | None = None,
+        patient_id: UUID,
+    ) -> PatientRelationship | None:
+        return (
+            cls.for_patient(
+                organization=organization,
+                organization_id=organization_id,
+                patient_id=patient_id,
+            )
+            .filter(
+                is_active=True,
+                is_primary=True,
+            )
+            .first()
         )
-    )
+
+    @classmethod
+    def list_active(
+        cls,
+        *,
+        organization: Any | None = None,
+        organization_id: UUID | None = None,
+    ) -> QuerySet[PatientRelationship]:
+        return cls.list(
+            organization=organization,
+            organization_id=organization_id,
+        ).filter(
+            is_active=True,
+            status=RelationshipStatus.ACTIVE,
+        )
+
+    @classmethod
+    def list_verified(
+        cls,
+        *,
+        organization: Any | None = None,
+        organization_id: UUID | None = None,
+    ) -> QuerySet[PatientRelationship]:
+        return cls.list(
+            organization=organization,
+            organization_id=organization_id,
+        ).filter(
+            verification_status=VerificationStatus.VERIFIED,
+        )
 
 
-__all__ = [
-    "get_patient_relationships",
-    "get_primary_relationship",
-    "get_relationship_by_id",
-    "get_relationships_by_type",
-]
+get_patient_relationship = PatientRelationshipSelector.get
+get_patient_relationship_for_patient = PatientRelationshipSelector.for_patient
+list_patient_relationships = PatientRelationshipSelector.list
+
+
+__all__ = (
+    "PatientRelationshipSelector",
+    "get_patient_relationship",
+    "get_patient_relationship_for_patient",
+    "list_patient_relationships",
+)

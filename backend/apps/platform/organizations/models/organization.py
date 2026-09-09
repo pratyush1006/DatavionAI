@@ -55,6 +55,10 @@ class Organization(
 
     Tenant isolation is managed by the
     Tenancy bounded context.
+
+    Geography references are global master-data references.
+    The legacy string address fields are retained for
+    backwards compatibility during the Geography migration.
     """
 
     objects = OrganizationManager()
@@ -190,11 +194,61 @@ class Organization(
         blank=True,
     )
 
+    # ------------------------------------------------------------------
+    # Geography Master-Data References
+    # ------------------------------------------------------------------
+
+    country_ref = models.ForeignKey(
+        "geography.Country",
+        on_delete=models.PROTECT,
+        related_name="organizations",
+        null=True,
+        blank=True,
+        db_index=True,
+        verbose_name=_("Country Reference"),
+        help_text=_(
+            "Global Geography country master-data reference.",
+        ),
+    )
+
+    region_ref = models.ForeignKey(
+        "geography.AdministrativeRegion",
+        on_delete=models.PROTECT,
+        related_name="organizations",
+        null=True,
+        blank=True,
+        db_index=True,
+        verbose_name=_("Region Reference"),
+        help_text=_(
+            "Global Geography administrative-region master-data reference.",
+        ),
+    )
+
+    city_ref = models.ForeignKey(
+        "geography.City",
+        on_delete=models.PROTECT,
+        related_name="organizations",
+        null=True,
+        blank=True,
+        db_index=True,
+        verbose_name=_("City Reference"),
+        help_text=_(
+            "Global Geography city master-data reference.",
+        ),
+    )
+
+    # ------------------------------------------------------------------
+    # Legacy Address Compatibility
+    # ------------------------------------------------------------------
+
     city = models.CharField(
         _("City"),
         max_length=100,
         blank=True,
         db_index=True,
+        help_text=_(
+            "Legacy city text retained for API and migration compatibility.",
+        ),
     )
 
     state = models.CharField(
@@ -202,6 +256,9 @@ class Organization(
         max_length=100,
         blank=True,
         db_index=True,
+        help_text=_(
+            "Legacy state/region text retained for API and migration compatibility.",
+        ),
     )
 
     country = models.CharField(
@@ -209,6 +266,9 @@ class Organization(
         max_length=100,
         default="India",
         db_index=True,
+        help_text=_(
+            "Legacy country text retained for API and migration compatibility.",
+        ),
     )
 
     postal_code = models.CharField(
@@ -349,6 +409,24 @@ class Organization(
                     "country",
                 ],
                 name="idx_org_country",
+            ),
+            models.Index(
+                fields=[
+                    "country_ref",
+                ],
+                name="idx_org_country_ref",
+            ),
+            models.Index(
+                fields=[
+                    "region_ref",
+                ],
+                name="idx_org_region_ref",
+            ),
+            models.Index(
+                fields=[
+                    "city_ref",
+                ],
+                name="idx_org_city_ref",
             ),
             models.Index(
                 fields=[

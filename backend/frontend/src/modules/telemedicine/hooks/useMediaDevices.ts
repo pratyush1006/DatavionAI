@@ -1,0 +1,3 @@
+"use client";
+import {useCallback,useEffect,useState} from "react";import type {MediaDeviceOption} from "../types";
+export function useMediaDevices(){const[devices,setDevices]=useState<MediaDeviceOption[]>([]);const refresh=useCallback(async()=>{if(!navigator.mediaDevices)return;const d=await navigator.mediaDevices.enumerateDevices();setDevices(d.filter(x=>["audioinput","audiooutput","videoinput"].includes(x.kind)).map(x=>({deviceId:x.deviceId,label:x.label||"Default device",kind:x.kind})))},[]);useEffect(()=>{void refresh();const h=()=>void refresh();navigator.mediaDevices?.addEventListener("devicechange",h);return()=>navigator.mediaDevices?.removeEventListener("devicechange",h)},[refresh]);return{devices,refresh}}

@@ -1,10 +1,11 @@
 """
-Managers for the Patient Registration module.
+Managers and querysets for the Patient Registration module.
 """
 
 from __future__ import annotations
 
 from datetime import timedelta
+from typing import TYPE_CHECKING
 
 from django.db import models
 from django.db.models import Q
@@ -14,25 +15,41 @@ from apps.patient_management.registration.constants import (
     RegistrationStatus,
 )
 
+if TYPE_CHECKING:
+    from apps.patient_management.patients.models import Patient
+    from apps.platform.organizations.models import Organization
+
 
 class PatientRegistrationQuerySet(
     models.QuerySet,
 ):
     """
     QuerySet for PatientRegistration.
+
+    Query methods are intentionally composable and do not perform
+    authorization. Tenant and organization authorization belongs to the
+    selector, policy, and workflow layers.
     """
 
     def active(
         self,
     ) -> PatientRegistrationQuerySet:
         """
-        Return active registrations.
+        Return registrations that are currently active.
+
+        Terminal lifecycle states are excluded:
+        - COMPLETED
+        - CANCELLED
+        - REJECTED
+        - NO_SHOW
         """
 
         return self.exclude(
             registration_status__in=(
+                RegistrationStatus.COMPLETED,
                 RegistrationStatus.CANCELLED,
                 RegistrationStatus.REJECTED,
+                RegistrationStatus.NO_SHOW,
             ),
         )
 
@@ -77,15 +94,16 @@ class PatientRegistrationQuerySet(
         """
 
         return self.filter(
-            registration_status=(RegistrationStatus.PENDING_VERIFICATION),
+            registration_status=RegistrationStatus.PENDING_VERIFICATION,
+            verified=False,
         )
 
     def for_organization(
         self,
-        organization,
+        organization: Organization,
     ) -> PatientRegistrationQuerySet:
         """
-        Filter by organization.
+        Return registrations belonging to the organization.
         """
 
         return self.filter(
@@ -94,10 +112,10 @@ class PatientRegistrationQuerySet(
 
     def for_patient(
         self,
-        patient,
+        patient: Patient,
     ) -> PatientRegistrationQuerySet:
         """
-        Filter by patient.
+        Return registrations belonging to the patient.
         """
 
         return self.filter(
@@ -109,7 +127,7 @@ class PatientRegistrationQuerySet(
         status: str,
     ) -> PatientRegistrationQuerySet:
         """
-        Filter by registration status.
+        Filter registrations by lifecycle status.
         """
 
         return self.filter(
@@ -121,7 +139,7 @@ class PatientRegistrationQuerySet(
         registration_type: str,
     ) -> PatientRegistrationQuerySet:
         """
-        Filter by registration type.
+        Filter registrations by registration type.
         """
 
         return self.filter(
@@ -133,7 +151,7 @@ class PatientRegistrationQuerySet(
         source: str,
     ) -> PatientRegistrationQuerySet:
         """
-        Filter by registration source.
+        Filter registrations by registration source.
         """
 
         return self.filter(
@@ -145,7 +163,7 @@ class PatientRegistrationQuerySet(
         priority: str,
     ) -> PatientRegistrationQuerySet:
         """
-        Filter by priority.
+        Filter registrations by registration priority.
         """
 
         return self.filter(
@@ -156,7 +174,7 @@ class PatientRegistrationQuerySet(
         self,
     ) -> PatientRegistrationQuerySet:
         """
-        Return today's registrations.
+        Return registrations for the current local date.
         """
 
         today = timezone.localdate()
@@ -169,13 +187,15 @@ class PatientRegistrationQuerySet(
         self,
     ) -> PatientRegistrationQuerySet:
         """
-        Return this week's registrations.
+        Return registrations during the current calendar week.
         """
 
         today = timezone.localdate()
+
         start = today - timedelta(
             days=today.weekday(),
         )
+
         end = start + timedelta(
             days=7,
         )
@@ -189,7 +209,7 @@ class PatientRegistrationQuerySet(
         self,
     ) -> PatientRegistrationQuerySet:
         """
-        Return this month's registrations.
+        Return registrations during the current calendar month.
         """
 
         today = timezone.localdate()
@@ -203,7 +223,7 @@ class PatientRegistrationQuerySet(
         self,
     ) -> PatientRegistrationQuerySet:
         """
-        Return registrations ordered by most recent.
+        Return registrations ordered from newest to oldest.
         """
 
         return self.order_by(
@@ -214,31 +234,39 @@ class PatientRegistrationQuerySet(
         self,
     ) -> PatientRegistrationQuerySet:
         """
-        Return registrations requiring verification.
+        Return registrations that require verification.
         """
 
         return self.filter(
+            registration_status=RegistrationStatus.PENDING_VERIFICATION,
             verified=False,
-            registration_status=(RegistrationStatus.PENDING_VERIFICATION),
         )
 
     def ready_for_checkin(
         self,
     ) -> PatientRegistrationQuerySet:
         """
-        Return registrations ready for check-in.
+        Return verified registrations that are eligible for check-in.
+
+        VERIFIED is the canonical post-verification state.
+
+        REGISTERED remains supported for existing or legacy records that
+        may already be in that state.
         """
 
         return self.filter(
-            registration_status=RegistrationStatus.REGISTERED,
             verified=True,
+            registration_status__in=(
+                RegistrationStatus.VERIFIED,
+                RegistrationStatus.REGISTERED,
+            ),
         )
 
     def ready_for_completion(
         self,
     ) -> PatientRegistrationQuerySet:
         """
-        Return registrations ready for completion.
+        Return registrations currently eligible for completion.
         """
 
         return self.filter(
@@ -250,25 +278,51 @@ class PatientRegistrationQuerySet(
         query: str,
     ) -> PatientRegistrationQuerySet:
         """
-        Search registrations.
+        Search registrations by registration number or patient identity.
         """
 
-        if not query:
+        normalized_query = query.strip()
+
+        if not normalized_query:
             return self
 
         return self.filter(
             Q(
-                registration_number__icontains=query,
+                registration_number__icontains=normalized_query,
             )
             | Q(
-                patient__medical_record_number__icontains=query,
+                patient__mrn__icontains=normalized_query,
             )
             | Q(
-                patient__first_name__icontains=query,
+                patient__first_name__icontains=normalized_query,
             )
             | Q(
-                patient__last_name__icontains=query,
+                patient__last_name__icontains=normalized_query,
             ),
+        )
+
+    def ordered(
+        self,
+    ) -> PatientRegistrationQuerySet:
+        """
+        Return registrations using the canonical registration ordering.
+        """
+
+        return self.order_by(
+            "-registration_datetime",
+        )
+
+    def with_relations(
+        self,
+    ) -> PatientRegistrationQuerySet:
+        """
+        Return registrations with commonly required related objects loaded.
+        """
+
+        return self.select_related(
+            "organization",
+            "patient",
+            "verified_by",
         )
 
 
@@ -279,13 +333,16 @@ class PatientRegistrationManager(
 ):
     """
     Manager for PatientRegistration.
+
+    The manager provides reusable query capabilities. Authorization and
+    tenant-boundary enforcement remain outside the manager.
     """
 
     def get_queryset(
         self,
     ) -> PatientRegistrationQuerySet:
         """
-        Return the optimized queryset.
+        Return the base optimized registration queryset.
         """
 
         return (
@@ -313,6 +370,64 @@ class PatientRegistrationManager(
     ) -> PatientRegistrationQuerySet:
         return self.get_queryset().checked_in()
 
+    def verified(
+        self,
+    ) -> PatientRegistrationQuerySet:
+        return self.get_queryset().verified()
+
+    def pending_verification(
+        self,
+    ) -> PatientRegistrationQuerySet:
+        return self.get_queryset().pending_verification()
+
+    def for_organization(
+        self,
+        organization: Organization,
+    ) -> PatientRegistrationQuerySet:
+        return self.get_queryset().for_organization(
+            organization,
+        )
+
+    def for_patient(
+        self,
+        patient: Patient,
+    ) -> PatientRegistrationQuerySet:
+        return self.get_queryset().for_patient(
+            patient,
+        )
+
+    def by_status(
+        self,
+        status: str,
+    ) -> PatientRegistrationQuerySet:
+        return self.get_queryset().by_status(
+            status,
+        )
+
+    def by_type(
+        self,
+        registration_type: str,
+    ) -> PatientRegistrationQuerySet:
+        return self.get_queryset().by_type(
+            registration_type,
+        )
+
+    def by_source(
+        self,
+        source: str,
+    ) -> PatientRegistrationQuerySet:
+        return self.get_queryset().by_source(
+            source,
+        )
+
+    def by_priority(
+        self,
+        priority: str,
+    ) -> PatientRegistrationQuerySet:
+        return self.get_queryset().by_priority(
+            priority,
+        )
+
     def today(
         self,
     ) -> PatientRegistrationQuerySet:
@@ -327,6 +442,11 @@ class PatientRegistrationManager(
         self,
     ) -> PatientRegistrationQuerySet:
         return self.get_queryset().this_month()
+
+    def recent(
+        self,
+    ) -> PatientRegistrationQuerySet:
+        return self.get_queryset().recent()
 
     def needs_verification(
         self,
@@ -350,3 +470,19 @@ class PatientRegistrationManager(
         return self.get_queryset().search(
             query,
         )
+
+    def ordered(
+        self,
+    ) -> PatientRegistrationQuerySet:
+        return self.get_queryset().ordered()
+
+    def with_relations(
+        self,
+    ) -> PatientRegistrationQuerySet:
+        return self.get_queryset().with_relations()
+
+
+__all__ = (
+    "PatientRegistrationManager",
+    "PatientRegistrationQuerySet",
+)

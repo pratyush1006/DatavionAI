@@ -1,23 +1,15 @@
 """
-Emergency Contact serializers.
+Emergency Contacts API serializers.
 """
 
-from .create import (
-    EmergencyContactCreateSerializer,
-)
-from .detail import (
-    EmergencyContactDetailSerializer,
-)
-from .list import (
-    EmergencyContactListSerializer,
-)
-from .update import (
-    EmergencyContactUpdateSerializer,
-)
+from .create import EmergencyContactCreateSerializer
+from .detail import EmergencyContactDetailSerializer
+from .list import EmergencyContactListSerializer
+from .update import EmergencyContactUpdateSerializer
 
-__all__ = [
+__all__ = (
     "EmergencyContactCreateSerializer",
     "EmergencyContactDetailSerializer",
     "EmergencyContactListSerializer",
     "EmergencyContactUpdateSerializer",
-]
+)

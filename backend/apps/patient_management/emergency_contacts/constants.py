@@ -8,9 +8,7 @@ from django.db import models
 
 
 class EmergencyContactRelationship(models.TextChoices):
-    """
-    Relationship between the patient and the emergency contact.
-    """
+    """Relationship between the patient and emergency contact."""
 
     SPOUSE = "SPOUSE", "Spouse"
     FATHER = "FATHER", "Father"
@@ -37,9 +35,7 @@ class EmergencyContactRelationship(models.TextChoices):
 
 
 class EmergencyContactStatus(models.TextChoices):
-    """
-    Lifecycle status of an emergency contact.
-    """
+    """Lifecycle status of an emergency contact."""
 
     ACTIVE = "ACTIVE", "Active"
     INACTIVE = "INACTIVE", "Inactive"
@@ -47,9 +43,7 @@ class EmergencyContactStatus(models.TextChoices):
 
 
 class PreferredContactMethod(models.TextChoices):
-    """
-    Preferred communication channel.
-    """
+    """Preferred communication channel."""
 
     MOBILE = "MOBILE", "Mobile"
     HOME_PHONE = "HOME_PHONE", "Home Phone"
@@ -61,25 +55,18 @@ class PreferredContactMethod(models.TextChoices):
 
 
 class EmergencyContactAvailability(models.TextChoices):
-    """
-    Availability of the emergency contact.
-    """
+    """Availability of the emergency contact."""
 
     ALWAYS = "ALWAYS", "Always Available"
     DAYTIME = "DAYTIME", "Daytime"
     NIGHT = "NIGHT", "Night"
-    BUSINESS_HOURS = (
-        "BUSINESS_HOURS",
-        "Business Hours",
-    )
+    BUSINESS_HOURS = "BUSINESS_HOURS", "Business Hours"
     WEEKENDS = "WEEKENDS", "Weekends"
     ON_CALL = "ON_CALL", "On Call"
 
 
 class EmergencyContactNumberPrefix:
-    """
-    Prefix used when generating emergency contact numbers.
-    """
+    """Prefix used by emergency-contact number generators."""
 
     DEFAULT = "EC"
 

@@ -1,117 +1,86 @@
 """
-Payment services.
+Billing Core Payment service.
 """
 
 from __future__ import annotations
 
-from collections.abc import Mapping
-from typing import Any
+from decimal import Decimal
 
 from django.db import transaction
 
-from apps.billing.models import Payment
+from apps.billing.exceptions import BillingFinancialInvariantError
+from apps.billing.models import Invoice, Payment
 
 
 class PaymentService:
-    """
-    Application service responsible for payment write operations.
-
-    This service is the single entry point for all payment lifecycle
-    operations and provides a centralized location for future business
-    rules such as:
-
-    - Payment validation
-    - Balance recalculation
-    - Receipt generation
-    - Audit logging
-    - Notifications
-    - External integrations
-    """
+    """Record payments with invoice row-level concurrency control."""
 
     @staticmethod
     @transaction.atomic
     def create(
         *,
-        validated_data: Mapping[str, Any],
-        performed_by: Any = None,
+        organization,
+        patient,
+        data,
+        performed_by,
     ) -> Payment:
-        """
-        Create a new payment and update the invoice balance.
-        """
-
-        payment = Payment(
-            **validated_data,
+        """Create a payment and update the invoice atomically."""
+        invoice = (
+            Invoice.objects.select_for_update()
+            .select_related("patient", "organization")
+            .get(
+                pk=data["invoice_id"],
+                organization_id=organization.pk,
+            )
         )
 
-        payment.full_clean()
+        if invoice.patient_id != patient.pk:
+            raise BillingFinancialInvariantError(
+                "Payment patient must match invoice patient.",
+            )
 
+        amount = Decimal(
+            str(data["amount"]),
+        )
+
+        if amount <= Decimal("0.00"):
+            raise BillingFinancialInvariantError(
+                "Payment amount must be greater than zero.",
+            )
+
+        if amount > invoice.balance_amount:
+            raise BillingFinancialInvariantError(
+                "Payment cannot exceed invoice balance.",
+            )
+
+        payment = Payment(
+            organization=organization,
+            invoice=invoice,
+            patient=patient,
+            payment_method=data["payment_method"],
+            amount=amount,
+            payment_date=data["payment_date"],
+            reference_number=data.get("reference_number", ""),
+            notes=data.get("notes", ""),
+            received_by=performed_by,
+        )
+        payment.full_clean()
         payment.save()
 
-        invoice = payment.invoice
-
-        invoice.paid_amount = invoice.paid_amount + payment.amount
-
+        invoice.paid_amount += amount
         invoice.balance_amount = invoice.total_amount - invoice.paid_amount
-
-        invoice.update_status()
-
+        invoice.recalculate_status()
+        invoice.full_clean()
         invoice.save(
-            update_fields=[
+            update_fields=(
                 "paid_amount",
                 "balance_amount",
                 "status",
-            ],
+                "updated_at",
+            ),
         )
 
         return payment
 
-    @staticmethod
-    @transaction.atomic
-    def bulk_create(
-        *,
-        validated_data_list: list[Mapping[str, Any]],
-        performed_by: Any = None,
-    ) -> list[Payment]:
-        """
-        Create multiple payments.
-        """
 
-        payments: list[Payment] = []
-
-        for validated_data in validated_data_list:
-            payment = Payment(
-                **validated_data,
-            )
-
-            payment.full_clean()
-
-            payment.save()
-
-            invoice = payment.invoice
-
-            invoice.paid_amount = invoice.paid_amount + payment.amount
-
-            invoice.balance_amount = invoice.total_amount - invoice.paid_amount
-
-            invoice.update_status()
-
-            invoice.save(
-                update_fields=[
-                    "paid_amount",
-                    "balance_amount",
-                    "status",
-                ],
-            )
-
-            payments.append(payment)
-
-        return payments
-
-
-create_payment = PaymentService.create
-
-
-__all__ = [
-    "PaymentService",
-    "create_payment",
-]
+__all__ = ("PaymentService",)

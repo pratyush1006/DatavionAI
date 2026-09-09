@@ -1,59 +1,47 @@
 """
-Portal Account selectors.
+Read-only selectors for Patient Portal accounts.
 """
 
 from __future__ import annotations
 
 from uuid import UUID
 
-from django.db.models import QuerySet
-from django.shortcuts import get_object_or_404
-
 from apps.patient_management.portal.models import PatientPortalAccount
-from apps.platform.organizations.models import Organization
 
 
-class PatientPortalAccountSelector:
-    """
-    Read-only queries for portal account records.
-    """
+def list_portal_accounts(
+    *,
+    tenant_id: UUID,
+    organization_id: UUID,
+):
+    """Return alive portal accounts inside one tenant and organization."""
 
-    @staticmethod
-    def queryset() -> QuerySet[PatientPortalAccount]:
-        return PatientPortalAccount.objects.select_related(
-            "organization",
-            "patient",
+    return (
+        PatientPortalAccount.objects.filter(
+            organization_id=organization_id,
+            organization__tenant_id=tenant_id,
         )
-
-    @staticmethod
-    def get(
-        *,
-        portal_account_id: UUID,
-    ) -> PatientPortalAccount:
-        return get_object_or_404(
-            PatientPortalAccountSelector.queryset(),
-            pk=portal_account_id,
-        )
-
-    @staticmethod
-    def list_by_patient(
-        *,
-        patient_id: UUID,
-    ) -> QuerySet[PatientPortalAccount]:
-        return PatientPortalAccountSelector.queryset().filter(
-            patient_id=patient_id,
-        )
-
-    @staticmethod
-    def list_by_organization(
-        *,
-        organization: Organization,
-    ) -> QuerySet[PatientPortalAccount]:
-        return PatientPortalAccountSelector.queryset().filter(
-            organization=organization,
-        )
+        .select_related("organization", "patient")
+        .order_by("username")
+    )
 
 
-__all__ = [
-    "PatientPortalAccountSelector",
-]
+def get_portal_account(
+    *,
+    tenant_id: UUID,
+    organization_id: UUID,
+    account_id: UUID,
+) -> PatientPortalAccount:
+    """Return one alive portal account within the requested boundary."""
+
+    return PatientPortalAccount.objects.select_related("organization", "patient").get(
+        pk=account_id,
+        organization_id=organization_id,
+        organization__tenant_id=tenant_id,
+    )
+
+
+__all__ = (
+    "get_portal_account",
+    "list_portal_accounts",
+)

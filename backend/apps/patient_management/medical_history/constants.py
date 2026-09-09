@@ -1,6 +1,4 @@
-"""
-Constants for the Medical History module.
-"""
+"""Medical history domain constants."""
 
 from __future__ import annotations
 
@@ -8,42 +6,39 @@ from django.db import models
 
 
 class MedicalHistoryType(models.TextChoices):
-    """
-    Type of medical history entry.
-    """
+    """MedicalHistoryType implementation."""
 
     CONDITION = "condition", "Condition"
-
     SURGERY = "surgery", "Surgery"
-
-    INJURY = "injury", "Injury"
-
     HOSPITALIZATION = "hospitalization", "Hospitalization"
-
     ALLERGY = "allergy", "Allergy"
-
-    MEDICATION_HISTORY = "medication_history", "Medication History"
-
     FAMILY_HISTORY = "family_history", "Family History"
-
     SOCIAL_HISTORY = "social_history", "Social History"
+    IMMUNIZATION = "immunization", "Immunization"
+    OTHER = "other", "Other"
 
 
 class ClinicalStatus(models.TextChoices):
-    """
-    Clinical status of a history entry.
-    """
+    """ClinicalStatus implementation."""
 
     ACTIVE = "active", "Active"
-
     RESOLVED = "resolved", "Resolved"
-
-    CHRONIC = "chronic", "Chronic"
-
     INACTIVE = "inactive", "Inactive"
+    HISTORY = "history", "History"
 
 
-__all__ = [
-    "ClinicalStatus",
+class AlcoholUse(models.TextChoices):
+    """AlcoholUse implementation."""
+
+    NONE = "none", "None"
+    OCCASIONAL = "occasional", "Occasional"
+    MODERATE = "moderate", "Moderate"
+    HEAVY = "heavy", "Heavy"
+    UNKNOWN = "unknown", "Unknown"
+
+
+__all__ = (
     "MedicalHistoryType",
-]
+    "ClinicalStatus",
+    "AlcoholUse",
+)

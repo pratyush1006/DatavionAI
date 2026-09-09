@@ -1,68 +1,78 @@
 """
-Invoice services.
+Billing Core Invoice service.
 """
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from decimal import Decimal
 from typing import Any
 
 from django.db import transaction
 
-from apps.billing.constants import InvoiceStatus
+from apps.billing.exceptions import (
+    BillingFinancialInvariantError,
+    BillingLifecycleError,
+)
 from apps.billing.models import Invoice, InvoiceItem
 
 
 class InvoiceService:
-    """
-    Application service responsible for invoice write operations.
-
-    This service is the single entry point for all invoice lifecycle
-    operations and provides a centralized location for future business
-    rules such as:
-
-    - Invoice number generation
-    - Balance calculation
-    - Status transitions
-    - Audit logging
-    - Notifications
-    - External integrations
-    """
+    """Mutate the invoice aggregate transactionally."""
 
     @staticmethod
     @transaction.atomic
     def create(
         *,
-        validated_data: Mapping[str, Any],
-        items: list[Mapping[str, Any]] | None = None,
-        performed_by: Any = None,
+        organization,
+        patient,
+        data: dict[str, Any],
+        items: list[dict[str, Any]],
+        performed_by,
     ) -> Invoice:
-        """
-        Create a new invoice with optional line items.
-        """
+        """Create an invoice and all line items atomically."""
+        if patient.organization_id != organization.pk:
+            raise BillingFinancialInvariantError(
+                "Patient and organization must match.",
+            )
 
-        invoice = Invoice(
-            **validated_data,
+        total = Decimal(
+            str(data["total_amount"]),
+        )
+        calculated = sum(
+            (
+                Decimal(str(item["quantity"])) * Decimal(str(item["unit_price"]))
+                for item in items
+            ),
+            Decimal("0.00"),
         )
 
-        invoice.full_clean()
+        if items and calculated != total:
+            raise BillingFinancialInvariantError(
+                "Invoice total must equal line item totals.",
+            )
 
+        invoice = Invoice(
+            organization=organization,
+            patient=patient,
+            invoice_number=data["invoice_number"],
+            invoice_date=data["invoice_date"],
+            due_date=data["due_date"],
+            total_amount=total,
+            paid_amount=Decimal("0.00"),
+            balance_amount=total,
+            status=data.get("status", "DRAFT"),
+            notes=data.get("notes", ""),
+        )
+        invoice.full_clean()
         invoice.save()
 
-        if items:
-            for item_data in items:
-                InvoiceItem.objects.create(
-                    invoice=invoice,
-                    **item_data,
-                )
-
-            invoice.update_status()
-
-            invoice.save(
-                update_fields=[
-                    "balance_amount",
-                    "status",
-                ],
+        for item in items:
+            InvoiceItem.objects.create(
+                invoice=invoice,
+                description=item["description"],
+                quantity=item["quantity"],
+                unit_price=item["unit_price"],
+                service_code=item.get("service_code", ""),
             )
 
         return invoice
@@ -71,106 +81,94 @@ class InvoiceService:
     @transaction.atomic
     def update(
         *,
-        instance: Invoice,
-        validated_data: Mapping[str, Any],
-        performed_by: Any = None,
+        invoice: Invoice,
+        data: dict[str, Any],
+        performed_by,
     ) -> Invoice:
-        """
-        Update an existing invoice.
-        """
+        """Update mutable invoice fields under a row lock."""
+        locked = Invoice.objects.select_for_update().get(pk=invoice.pk)
 
-        for field, value in validated_data.items():
-            setattr(
-                instance,
-                field,
-                value,
+        if locked.status == "VOID":
+            raise BillingLifecycleError(
+                "A void invoice cannot be updated.",
             )
 
-        instance.full_clean()
+        for field_name in (
+            "invoice_date",
+            "due_date",
+            "notes",
+        ):
+            if field_name in data:
+                setattr(
+                    locked,
+                    field_name,
+                    data[field_name],
+                )
 
-        instance.save()
+        if "total_amount" in data:
+            total = Decimal(
+                str(data["total_amount"]),
+            )
+            if total < locked.paid_amount:
+                raise BillingFinancialInvariantError(
+                    "Invoice total cannot be lower than paid amount.",
+                )
+            locked.total_amount = total
 
-        return instance
+        locked.balance_amount = locked.total_amount - locked.paid_amount
+        locked.recalculate_status()
+        locked.full_clean()
+        locked.save()
+
+        return locked
 
     @staticmethod
     @transaction.atomic
     def void(
         *,
-        instance: Invoice,
-        performed_by: Any = None,
+        invoice: Invoice,
+        performed_by,
     ) -> Invoice:
-        """
-        Void an invoice.
-        """
+        """Void an unpaid invoice."""
+        locked = Invoice.objects.select_for_update().get(pk=invoice.pk)
 
-        instance.status = InvoiceStatus.VOID
+        if locked.paid_amount > Decimal("0.00"):
+            raise BillingLifecycleError(
+                "An invoice with payments cannot be voided.",
+            )
 
-        instance.full_clean()
-
-        instance.save(
-            update_fields=[
+        locked.status = "VOID"
+        locked.is_active = False
+        locked.full_clean()
+        locked.save(
+            update_fields=(
                 "status",
-            ],
+                "is_active",
+                "updated_at",
+            ),
         )
 
-        return instance
+        return locked
 
     @staticmethod
     @transaction.atomic
-    def bulk_create(
+    def delete(
         *,
-        validated_data_list: list[Mapping[str, Any]],
-        performed_by: Any = None,
-    ) -> list[Invoice]:
-        """
-        Create multiple invoices.
-        """
+        invoice: Invoice,
+        performed_by,
+    ) -> Invoice:
+        """Soft-delete an invoice with no payments."""
+        locked = Invoice.objects.select_for_update().get(pk=invoice.pk)
 
-        invoices: list[Invoice] = []
-
-        for validated_data in validated_data_list:
-            items = validated_data.pop(
-                "items",
-                None,
+        if locked.paid_amount > Decimal("0.00"):
+            raise BillingLifecycleError(
+                "An invoice with payments cannot be deleted.",
             )
 
-            invoice = Invoice(
-                **validated_data,
-            )
-
-            invoice.full_clean()
-
-            invoice.save()
-
-            if items:
-                for item_data in items:
-                    InvoiceItem.objects.create(
-                        invoice=invoice,
-                        **item_data,
-                    )
-
-                invoice.update_status()
-
-                invoice.save(
-                    update_fields=[
-                        "balance_amount",
-                        "status",
-                    ],
-                )
-
-            invoices.append(invoice)
-
-        return invoices
+        locked.delete(
+            user_id=performed_by.pk,
+        )
+        return locked
 
 
-create_invoice = InvoiceService.create
-update_invoice = InvoiceService.update
-void_invoice = InvoiceService.void
-
-
-__all__ = [
-    "InvoiceService",
-    "create_invoice",
-    "update_invoice",
-    "void_invoice",
-]
+__all__ = ("InvoiceService",)

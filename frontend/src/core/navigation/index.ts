@@ -1,7 +1,51 @@
-export * from "./navigation.builder";
+/**
+ * =============================================================================
+ * DatavionOS
+ * File: src/core/navigation/index.ts
+ * =============================================================================
+ *
+ * Public navigation API.
+ *
+ * The navigation subsystem owns the frontend navigation presentation contract
+ * and the adapter that translates backend bootstrap navigation into that
+ * contract.
+ *
+ * =============================================================================
+ */
+
+/* =============================================================================
+ * Runtime Adapter
+ * =============================================================================
+ */
+
+export {
+  adaptBootstrapNavigation,
+} from "./navigation.adapter";
+
+/* =============================================================================
+ * Navigation Configuration
+ * =============================================================================
+ */
+
 export * from "./navigation.config";
-export * from "./navigation.constants";
-export * from "./navigation.helpers";
+
+/* =============================================================================
+ * Navigation Icons
+ * =============================================================================
+ */
+
 export * from "./navigation.icons";
+
+/* =============================================================================
+ * Navigation Types
+ * =============================================================================
+ */
+
 export * from "./navigation.types";
+
+/* =============================================================================
+ * Sidebar Groups
+ * =============================================================================
+ */
+
 export * from "./sidebar.items";

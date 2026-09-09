@@ -1,35 +1,35 @@
 """
 Notification channel abstractions for DatavionOS.
 
-Defines the contract for notification delivery channels.
+Defines the contract and concrete routing implementations
+for notification delivery channels.
 
-Supported implementations:
+Supported channels:
 
 - Email
 - SMS
-- Push notifications
-- In-app notifications
-- Webhooks
+- Push
+- In-app
+- Webhook
 
-Channel implementations should not contain business logic.
+Channels are transport/application infrastructure.
+They must not contain business logic.
 """
 
 from __future__ import annotations
 
-from abc import (
-    ABC,
-    abstractmethod,
-)
+from abc import ABC, abstractmethod
 
 from apps.common.notifications.models import (
     Notification,
     NotificationResult,
 )
+from apps.common.notifications.provider_registry import (
+    NotificationProviderRegistry,
+)
 
 
-class NotificationChannel(
-    ABC,
-):
+class NotificationChannel(ABC):
     """
     Base notification channel.
 
@@ -48,25 +48,20 @@ class NotificationChannel(
 
         Args:
             notification:
-                Notification request.
+                Canonical notification request.
 
         Returns:
-            Delivery result.
+            Notification delivery result.
         """
 
+        raise NotImplementedError
 
-class EmailNotificationChannel(
-    NotificationChannel,
-):
+
+class EmailNotificationChannel(NotificationChannel):
     """
-    Email notification channel placeholder.
+    Email notification channel.
 
-    Actual provider integrations will be implemented through
-    adapters:
-
-    - SMTP
-    - SendGrid
-    - AWS SES
+    Delegates actual delivery to the registered email provider.
     """
 
     name = "email"
@@ -76,28 +71,39 @@ class EmailNotificationChannel(
         notification: Notification,
     ) -> NotificationResult:
         """
-        Send email notification.
+        Deliver an email notification.
         """
+
+        provider = NotificationProviderRegistry.get_provider(
+            channel=self.name,
+        )
+
+        success = provider.send(
+            notification=notification,
+        )
+
+        if not success:
+            return NotificationResult(
+                success=False,
+                notification_id=notification.name,
+                status="failed",
+                message="Email delivery failed.",
+            )
 
         return NotificationResult(
             success=True,
             notification_id=notification.name,
             status="sent",
-            message="Email notification processed.",
+            message="Email notification sent successfully.",
         )
 
 
-class SMSNotificationChannel(
-    NotificationChannel,
-):
+class SMSNotificationChannel(NotificationChannel):
     """
-    SMS notification channel placeholder.
+    SMS notification channel.
 
-    Future providers:
-
-    - Twilio
-    - AWS SNS
-    - Regional SMS gateways
+    Provider integration is delegated to the notification
+    provider registry.
     """
 
     name = "sms"
@@ -107,20 +113,30 @@ class SMSNotificationChannel(
         notification: Notification,
     ) -> NotificationResult:
         """
-        Send SMS notification.
+        Deliver an SMS notification.
         """
 
+        provider = NotificationProviderRegistry.get_provider(
+            channel=self.name,
+        )
+
+        success = provider.send(
+            notification=notification,
+        )
+
         return NotificationResult(
-            success=True,
+            success=success,
             notification_id=notification.name,
-            status="sent",
-            message="SMS notification processed.",
+            status=("sent" if success else "failed"),
+            message=(
+                "SMS notification sent successfully."
+                if success
+                else "SMS delivery failed."
+            ),
         )
 
 
-class InAppNotificationChannel(
-    NotificationChannel,
-):
+class InAppNotificationChannel(NotificationChannel):
     """
     In-app notification channel.
     """
@@ -132,7 +148,7 @@ class InAppNotificationChannel(
         notification: Notification,
     ) -> NotificationResult:
         """
-        Create in-app notification.
+        Process an in-app notification.
         """
 
         return NotificationResult(
@@ -143,16 +159,9 @@ class InAppNotificationChannel(
         )
 
 
-class PushNotificationChannel(
-    NotificationChannel,
-):
+class PushNotificationChannel(NotificationChannel):
     """
-    Push notification channel placeholder.
-
-    Future providers:
-
-    - Firebase Cloud Messaging
-    - Apple Push Notification Service
+    Push notification channel.
     """
 
     name = "push"
@@ -162,20 +171,30 @@ class PushNotificationChannel(
         notification: Notification,
     ) -> NotificationResult:
         """
-        Send push notification.
+        Deliver a push notification.
         """
 
+        provider = NotificationProviderRegistry.get_provider(
+            channel=self.name,
+        )
+
+        success = provider.send(
+            notification=notification,
+        )
+
         return NotificationResult(
-            success=True,
+            success=success,
             notification_id=notification.name,
-            status="sent",
-            message="Push notification processed.",
+            status=("sent" if success else "failed"),
+            message=(
+                "Push notification sent successfully."
+                if success
+                else "Push notification failed."
+            ),
         )
 
 
-class WebhookNotificationChannel(
-    NotificationChannel,
-):
+class WebhookNotificationChannel(NotificationChannel):
     """
     Webhook notification channel.
     """
@@ -187,18 +206,30 @@ class WebhookNotificationChannel(
         notification: Notification,
     ) -> NotificationResult:
         """
-        Send webhook notification.
+        Deliver a webhook notification.
         """
 
+        provider = NotificationProviderRegistry.get_provider(
+            channel=self.name,
+        )
+
+        success = provider.send(
+            notification=notification,
+        )
+
         return NotificationResult(
-            success=True,
+            success=success,
             notification_id=notification.name,
-            status="sent",
-            message="Webhook notification processed.",
+            status=("sent" if success else "failed"),
+            message=(
+                "Webhook notification sent successfully."
+                if success
+                else "Webhook notification failed."
+            ),
         )
 
 
-__all__: tuple[str, ...] = (
+__all__ = (
     "EmailNotificationChannel",
     "InAppNotificationChannel",
     "NotificationChannel",

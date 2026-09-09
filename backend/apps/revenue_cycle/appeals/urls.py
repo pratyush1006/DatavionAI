@@ -1,32 +1,17 @@
 """
-URL patterns for the Claim Appeal module.
+Revenue Cycle Appeals URL configuration.
 """
 
 from __future__ import annotations
 
-from django.urls import path
-
-from apps.revenue_cycle.appeals.api.views import (
-    ClaimAppealListCreateAPIView,
-    ClaimAppealRetrieveUpdateDestroyAPIView,
-)
-
-app_name = "claim_appeals"
+from django.urls import include, path
 
 urlpatterns = [
     path(
         "",
-        ClaimAppealListCreateAPIView.as_view(),
-        name="list-create",
-    ),
-    path(
-        "<uuid:appeal_id>/",
-        ClaimAppealRetrieveUpdateDestroyAPIView.as_view(),
-        name="detail",
+        include("apps.revenue_cycle.appeals.api.urls"),
     ),
 ]
 
-__all__ = [
-    "app_name",
-    "urlpatterns",
-]
+
+__all__ = ("urlpatterns",)

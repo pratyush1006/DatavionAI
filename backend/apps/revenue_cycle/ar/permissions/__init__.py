@@ -1,15 +1,5 @@
-from .ar import (
-    AccountsReceivablePermission,
-    CanCreateAccountsReceivable,
-    CanDeleteAccountsReceivable,
-    CanUpdateAccountsReceivable,
-    CanViewAccountsReceivable,
-)
+"""Revenue Cycle ar permissions package."""
 
-__all__ = [
-    "CanCreateAccountsReceivable",
-    "CanDeleteAccountsReceivable",
-    "CanUpdateAccountsReceivable",
-    "CanViewAccountsReceivable",
-    "AccountsReceivablePermission",
-]
+from __future__ import annotations
+
+__all__ = ()

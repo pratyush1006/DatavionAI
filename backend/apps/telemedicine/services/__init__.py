@@ -1,13 +1,5 @@
-"""
-Telemedicine services module.
-"""
+from .participant import ParticipantService
+from .recording import RecordingService
+from .session import SessionService
 
-from __future__ import annotations
-
-from apps.telemedicine.services.recording import RecordingService
-from apps.telemedicine.services.session import SessionService
-
-__all__ = [
-    "RecordingService",
-    "SessionService",
-]
+__all__ = ["ParticipantService", "RecordingService", "SessionService"]

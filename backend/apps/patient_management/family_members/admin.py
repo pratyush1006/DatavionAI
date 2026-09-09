@@ -1,24 +1,16 @@
 """
-Admin configuration for the Family Members module.
+Admin configuration for Patient Family Members.
 """
 
 from __future__ import annotations
 
 from django.contrib import admin
 
-from apps.patient_management.family_members.models import (
-    FamilyMember,
-)
-
-__all__ = []
+from apps.patient_management.family_members.models import FamilyMember
 
 
 @admin.register(FamilyMember)
 class FamilyMemberAdmin(admin.ModelAdmin):
-    """
-    Admin configuration for FamilyMember.
-    """
-
     list_display = (
         "family_member_number",
         "full_name",
@@ -57,6 +49,7 @@ class FamilyMemberAdmin(admin.ModelAdmin):
 
     readonly_fields = (
         "id",
+        "family_member_number",
         "created_at",
         "updated_at",
         "deleted_at",
@@ -67,14 +60,14 @@ class FamilyMemberAdmin(admin.ModelAdmin):
         "patient",
     )
 
-    ordering = (
-        "first_name",
-        "last_name",
-    )
-
     list_select_related = (
         "organization",
         "patient",
+    )
+
+    ordering = (
+        "first_name",
+        "last_name",
     )
 
     date_hierarchy = "created_at"
@@ -149,3 +142,6 @@ class FamilyMemberAdmin(admin.ModelAdmin):
             },
         ),
     )
+
+
+__all__ = ()

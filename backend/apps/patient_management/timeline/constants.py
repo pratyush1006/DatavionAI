@@ -1,5 +1,5 @@
 """
-Constants for the Timeline module.
+Constants and enumerations for Patient Timeline.
 """
 
 from __future__ import annotations
@@ -8,48 +8,25 @@ from django.db import models
 
 
 class TimelineEventType(models.TextChoices):
-    """
-    Category of timeline event.
-    """
+    """Supported patient timeline event types."""
 
-    REGISTRATION = "registration", "Registration"
-
+    CLINICAL = "clinical", "Clinical"
     APPOINTMENT = "appointment", "Appointment"
-
-    ENCOUNTER = "encounter", "Encounter"
-
-    DIAGNOSIS = "diagnosis", "Diagnosis"
-
     MEDICATION = "medication", "Medication"
-
-    LAB = "lab", "Lab Result"
-
     DOCUMENT = "document", "Document"
-
     COMMUNICATION = "communication", "Communication"
-
-    CONSENT = "consent", "Consent"
-
-    REFERRAL = "referral", "Referral"
-
-    NOTE = "note", "Note"
-
     SYSTEM = "system", "System"
 
 
-class TimelineEventVisibility(models.TextChoices):
-    """
-    Visibility of the timeline event.
-    """
+class TimelineStatus(models.TextChoices):
+    """Lifecycle states for timeline entries."""
 
-    PUBLIC = "public", "Public"
-
-    INTERNAL = "internal", "Internal"
-
-    PATIENT = "patient", "Patient Visible"
+    DRAFT = "draft", "Draft"
+    ACTIVE = "active", "Active"
+    ARCHIVED = "archived", "Archived"
 
 
-__all__ = [
-    "TimelineEventVisibility",
+__all__ = (
     "TimelineEventType",
-]
+    "TimelineStatus",
+)

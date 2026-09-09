@@ -1,44 +1,33 @@
-"""
-Selectors for PatientPreference.
-"""
+"""Selectors for organization-scoped Patient Preferences."""
 
 from __future__ import annotations
 
-from django.db.models import QuerySet
-
-from apps.patient_management.preferences.models import (
-    PatientPreference,
-)
+from apps.patient_management.preferences.models import PatientPreference
 
 
-def get_patient_preferences() -> QuerySet[PatientPreference]:
-    """
-    Return all patient preferences.
-    """
-    return PatientPreference.objects.select_related(
-        "organization",
-        "patient",
-    ).all()
+class PatientPreferenceSelector:
+    """Read Patient Preferences through scoped selectors."""
 
+    @staticmethod
+    def list(*, organization_id, tenant_id):
+        """Return alive preferences inside one tenant and organization."""
 
-def get_patient_preference(
-    *,
-    organization_id: int,
-    patient_id: int,
-) -> PatientPreference:
-    """
-    Return a patient's preferences.
-    """
-    return (
-        PatientPreference.objects.by_organization(
-            organization_id,
+        return PatientPreference.objects.select_related(
+            "patient", "organization"
+        ).filter(
+            organization_id=organization_id,
+            organization__tenant_id=tenant_id,
         )
-        .by_patient(
-            patient_id,
+
+    @staticmethod
+    def get(*, preference_id, organization_id, tenant_id):
+        """Return one scoped preference."""
+
+        return PatientPreference.objects.select_related("patient", "organization").get(
+            id=preference_id,
+            organization_id=organization_id,
+            organization__tenant_id=tenant_id,
         )
-        .select_related(
-            "organization",
-            "patient",
-        )
-        .get()
-    )
+
+
+__all__ = ("PatientPreferenceSelector",)

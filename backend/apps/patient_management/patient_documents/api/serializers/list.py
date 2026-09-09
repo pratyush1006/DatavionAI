@@ -1,6 +1,4 @@
-"""
-List serializer for Patient Documents.
-"""
+"""Patient Document list serializer."""
 
 from __future__ import annotations
 
@@ -14,29 +12,29 @@ from apps.patient_management.patient_documents.models import (
 class PatientDocumentListSerializer(
     serializers.ModelSerializer,
 ):
-    """
-    Serializer for listing patient documents.
-    """
-
-    patient_name = serializers.CharField(
-        source="patient.full_name",
-        read_only=True,
-    )
+    """Serialize safe list metadata for patient documents."""
 
     class Meta:
-        model = PatientDocument
+        """Serializer metadata."""
 
+        model = PatientDocument
         fields = (
             "id",
-            "document_number",
-            "title",
             "patient",
-            "patient_name",
+            "title",
             "category",
             "status",
-            "visibility",
-            "current_version",
+            "original_filename",
+            "mime_type",
+            "file_size",
+            "checksum",
+            "is_confidential",
+            "uploaded_at",
+            "archived_at",
             "created_at",
+            "updated_at",
         )
-
         read_only_fields = fields
+
+
+__all__ = ("PatientDocumentListSerializer",)

@@ -1,0 +1,16 @@
+{
+  "module": "patient_emergency",
+  "version": "1.0.0",
+  "architecture": [
+    "api",
+    "rbac",
+    "workflow",
+    "policy",
+    "service",
+    "model",
+    "domain_event"
+  ],
+  "canonical_patient": "apps.patient_management.patients.models.Patient",
+  "migration_policy": "no_migrations_generated",
+  "backup_policy": "no_backup_generated"
+}

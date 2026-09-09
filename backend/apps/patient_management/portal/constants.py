@@ -1,5 +1,5 @@
 """
-Constants for the Patient Portal module.
+Constants for the Patient Portal bounded context.
 """
 
 from __future__ import annotations
@@ -8,34 +8,48 @@ from django.db import models
 
 
 class PortalAccountStatus(models.TextChoices):
-    """
-    Patient portal account status.
-    """
+    """Lifecycle states for a patient portal account."""
 
-    INVITED = "invited", "Invited"
-
-    ACTIVE = "active", "Active"
-
-    SUSPENDED = "suspended", "Suspended"
-
-    DEACTIVATED = "deactivated", "Deactivated"
+    INVITED = "INVITED", "Invited"
+    ACTIVE = "ACTIVE", "Active"
+    SUSPENDED = "SUSPENDED", "Suspended"
+    LOCKED = "LOCKED", "Locked"
+    DEACTIVATED = "DEACTIVATED", "Deactivated"
 
 
 class PortalAuthProvider(models.TextChoices):
-    """
-    Authentication provider for the portal.
-    """
+    """Supported authentication provider categories."""
 
-    LOCAL = "local", "Local"
-
-    GOOGLE = "google", "Google"
-
-    APPLE = "apple", "Apple"
-
-    OTP = "otp", "OTP"
+    LOCAL = "LOCAL", "Local"
+    GOOGLE = "GOOGLE", "Google"
+    MICROSOFT = "MICROSOFT", "Microsoft"
+    SSO = "SSO", "Single Sign-On"
 
 
-__all__ = [
+ALLOWED_STATUS_TRANSITIONS = {
+    PortalAccountStatus.INVITED: {
+        PortalAccountStatus.ACTIVE,
+        PortalAccountStatus.DEACTIVATED,
+    },
+    PortalAccountStatus.ACTIVE: {
+        PortalAccountStatus.SUSPENDED,
+        PortalAccountStatus.LOCKED,
+        PortalAccountStatus.DEACTIVATED,
+    },
+    PortalAccountStatus.SUSPENDED: {
+        PortalAccountStatus.ACTIVE,
+        PortalAccountStatus.DEACTIVATED,
+    },
+    PortalAccountStatus.LOCKED: {
+        PortalAccountStatus.ACTIVE,
+        PortalAccountStatus.DEACTIVATED,
+    },
+    PortalAccountStatus.DEACTIVATED: set(),
+}
+
+
+__all__ = (
+    "ALLOWED_STATUS_TRANSITIONS",
     "PortalAccountStatus",
     "PortalAuthProvider",
-]
+)

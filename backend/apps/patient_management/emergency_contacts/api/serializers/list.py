@@ -1,38 +1,30 @@
 """
-List serializer for Emergency Contacts.
+Serializer for listing patient emergency contacts.
 """
 
 from __future__ import annotations
 
 from rest_framework import serializers
 
-from ...models import EmergencyContact
+from apps.patient_management.emergency_contacts.models import (
+    EmergencyContact,
+)
 
 
 class EmergencyContactListSerializer(
     serializers.ModelSerializer,
 ):
     """
-    Serializer used for listing emergency contacts.
+    Lightweight read representation for emergency contact lists.
     """
 
-    patient_uuid = serializers.UUIDField(
-        source="patient.uuid",
+    patient_id = serializers.UUIDField(
+        source="patient_id",
         read_only=True,
     )
 
-    patient_name = serializers.CharField(
-        source="patient.full_name",
-        read_only=True,
-    )
-
-    organization_uuid = serializers.UUIDField(
-        source="organization.uuid",
-        read_only=True,
-    )
-
-    organization_name = serializers.CharField(
-        source="organization.name",
+    organization_id = serializers.UUIDField(
+        source="organization_id",
         read_only=True,
     )
 
@@ -40,20 +32,32 @@ class EmergencyContactListSerializer(
         model = EmergencyContact
 
         fields = (
-            "uuid",
+            "id",
+            "organization_id",
+            "patient_id",
             "emergency_contact_number",
-            "patient_uuid",
-            "patient_name",
-            "organization_uuid",
-            "organization_name",
             "first_name",
             "middle_name",
             "last_name",
             "relationship",
             "mobile_number",
+            "alternate_mobile_number",
+            "home_phone",
+            "work_phone",
+            "email",
             "preferred_contact_method",
             "is_primary",
             "priority_order",
+            "availability",
             "status",
             "is_verified",
+            "is_legal_guardian",
+            "has_medical_power_of_attorney",
+            "created_at",
+            "updated_at",
         )
+
+        read_only_fields = fields
+
+
+__all__ = ("EmergencyContactListSerializer",)

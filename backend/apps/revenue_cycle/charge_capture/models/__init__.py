@@ -1,5 +1,7 @@
-from .charge_capture import ChargeCapture
+"""Charge Capture domain models."""
 
-__all__ = [
-    "ChargeCapture",
-]
+from __future__ import annotations
+
+from .charge import Charge
+
+__all__ = ("Charge",)

@@ -1,31 +1,67 @@
 /**
- * Default organization form values.
+ * =============================================================================
+ * DatavionOS
+ * File: src/features/platform/organizations/domain/defaults.ts
+ * =============================================================================
  */
 
 import type {
   OrganizationFormValues,
 } from "./schema";
 
-export const organizationDefaults: OrganizationFormValues =
-  {
-    name: "",
+export const organizationDefaults:
+  OrganizationFormValues = {
+  name: "",
+  displayName: "",
+  code: "",
+  slug: "",
 
-    code: "",
+  category:
+    "healthcare_provider",
 
-    organizationType:
-      "HOSPITAL",
+  organizationType:
+    "hospital",
 
-    email: "",
+  size: "small",
 
-    phone: "",
+  status: "active",
 
-    address: "",
+  email: "",
 
-    city: "",
+  supportEmail: "",
 
-    state: "",
+  phone: "",
 
-    country: "India",
+  website: "",
 
-    isActive: true,
-  };
+  address: "",
+
+  city: "",
+
+  state: "",
+
+  country: "India",
+
+  countryRef: null,
+
+  regionRef: null,
+
+  cityRef: null,
+
+  postalCode: "",
+
+  timezone:
+    "Asia/Kolkata",
+
+  registrationNumber: "",
+
+  taxNumber: "",
+
+  licenseNumber: "",
+
+  accreditation: "",
+
+  description: "",
+
+  isDemo: false,
+};

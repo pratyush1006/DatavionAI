@@ -8,13 +8,13 @@ from decimal import Decimal
 
 from django.db import models
 
-from apps.clinical.patients.models import Patient
 from apps.core.models import BaseManager, BaseModel
 from apps.insurance.constants import (
     DEFAULT_CLAIM_STATUS,
     ClaimStatus,
 )
 from apps.insurance.models.enrollment import Enrollment
+from apps.patient_management.patients.models import Patient
 from apps.platform.organizations.models import Organization
 
 

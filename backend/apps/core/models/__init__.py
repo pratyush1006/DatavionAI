@@ -15,6 +15,7 @@ from __future__ import annotations
 # Base Models
 # ============================================================================
 from .active import ActiveModel
+from .auditable import AuditableModel
 from .base import BaseModel
 
 # ============================================================================
@@ -46,6 +47,7 @@ __all__: tuple[str, ...] = (
     # Base Models
     # ------------------------------------------------------------------
     "ActiveModel",
+    "AuditableModel",
     "BaseModel",
     "SoftDeleteModel",
     "TimeStampedModel",

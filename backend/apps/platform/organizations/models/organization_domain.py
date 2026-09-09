@@ -22,6 +22,9 @@ from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 
 from apps.core.models import BaseModel
+from apps.platform.organizations.managers.organization_domain import (
+    OrganizationDomainManager,
+)
 
 
 class OrganizationDomain(
@@ -188,6 +191,12 @@ class OrganizationDomain(
     )
 
     # ------------------------------------------------------------------
+    # Manager
+    # ------------------------------------------------------------------
+
+    objects = OrganizationDomainManager()
+
+    # ------------------------------------------------------------------
     # Metadata
     # ------------------------------------------------------------------
 
@@ -212,7 +221,7 @@ class OrganizationDomain(
                 condition=Q(
                     is_primary=True,
                 ),
-                name=("uq_org_primary_domain"),
+                name="uq_org_primary_domain",
             ),
         ]
 
@@ -222,13 +231,13 @@ class OrganizationDomain(
                     "organization",
                     "is_primary",
                 ],
-                name=("idx_org_primary_domain"),
+                name="idx_org_primary_domain",
             ),
             models.Index(
                 fields=[
                     "verification_status",
                 ],
-                name=("idx_domain_verification"),
+                name="idx_domain_verification",
             ),
         ]
 
@@ -239,9 +248,11 @@ class OrganizationDomain(
     def __str__(
         self,
     ) -> str:
+        """
+        Return the domain hostname.
+        """
+
         return self.domain
 
 
-__all__ = [
-    "OrganizationDomain",
-]
+__all__: tuple[str, ...] = ("OrganizationDomain",)

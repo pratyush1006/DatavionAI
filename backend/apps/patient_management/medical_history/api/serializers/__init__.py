@@ -1,15 +1,5 @@
-from .medical_history import (
-    PatientMedicalHistoryCreateSerializer,
-    PatientMedicalHistoryDetailSerializer,
-    PatientMedicalHistoryListSerializer,
-    PatientMedicalHistorySerializer,
-    PatientMedicalHistoryUpdateSerializer,
-)
+"""DatavionOS Medical History package."""
 
-__all__ = [
-    "PatientMedicalHistoryCreateSerializer",
-    "PatientMedicalHistoryDetailSerializer",
-    "PatientMedicalHistoryListSerializer",
-    "PatientMedicalHistorySerializer",
-    "PatientMedicalHistoryUpdateSerializer",
-]
+from __future__ import annotations
+
+__all__ = ()

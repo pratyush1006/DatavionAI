@@ -1,23 +1,32 @@
 /**
+ * =============================================================================
+ * DatavionOS
+ * File: src/features/platform/organizations/components/tables/organizations-table.tsx
+ * =============================================================================
+ *
  * Organizations table.
+ * =============================================================================
  */
 
 "use client";
 
 import type {
-  Organization,
+  OrganizationListItem,
 } from "../../domain";
 
 import {
   DataTable,
+  DataTableLoading,
   EntityTable,
 } from "@/components/common/table";
 
-import { columns } from "./columns";
+import {
+  columns,
+} from "./columns";
 
 export type OrganizationsTableProps =
   Readonly<{
-    data: Organization[];
+    data: OrganizationListItem[];
     isLoading?: boolean;
   }>;
 
@@ -26,13 +35,17 @@ export function OrganizationsTable({
   isLoading = false,
 }: OrganizationsTableProps) {
   return (
-    <DataTable
-      loading={isLoading}
-    >
-      <EntityTable
-        data={data}
-        columns={columns}
-      />
+    <DataTable>
+      {isLoading ? (
+        <DataTableLoading />
+      ) : (
+        <EntityTable
+          data={data}
+          columns={columns}
+          emptyTitle="No organizations found"
+          emptyDescription="There are no organizations available."
+        />
+      )}
     </DataTable>
   );
 }

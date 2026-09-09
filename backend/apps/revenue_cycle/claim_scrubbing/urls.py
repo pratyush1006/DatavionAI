@@ -1,32 +1,9 @@
-"""
-URL patterns for the Scrub Result module.
-"""
+"""Revenue Cycle claim scrubbing URL integration."""
 
 from __future__ import annotations
 
-from django.urls import path
+from django.urls import include, path
 
-from apps.revenue_cycle.claim_scrubbing.api.views import (
-    ClaimScrubResultListCreateAPIView,
-    ClaimScrubResultRetrieveUpdateDestroyAPIView,
-)
+urlpatterns = [path("", include("apps.revenue_cycle.claim_scrubbing.api.urls"))]
 
-app_name = "scrub_results"
-
-urlpatterns = [
-    path(
-        "",
-        ClaimScrubResultListCreateAPIView.as_view(),
-        name="list-create",
-    ),
-    path(
-        "<uuid:scrub_id>/",
-        ClaimScrubResultRetrieveUpdateDestroyAPIView.as_view(),
-        name="detail",
-    ),
-]
-
-__all__ = [
-    "app_name",
-    "urlpatterns",
-]
+__all__ = ("urlpatterns",)

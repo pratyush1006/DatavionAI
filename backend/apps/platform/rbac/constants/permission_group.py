@@ -68,6 +68,11 @@ class PermissionGroupCode(
 
     AI = "ai", "Artificial Intelligence"
 
+    TELEMEDICINE = (
+        "telemedicine",
+        "Telemedicine",
+    )
+
 
 __all__ = [
     "PermissionGroupCode",

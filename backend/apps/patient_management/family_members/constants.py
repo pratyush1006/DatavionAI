@@ -6,18 +6,8 @@ from __future__ import annotations
 
 from django.db.models import TextChoices
 
-__all__ = [
-    "FamilyMemberGender",
-    "FamilyMemberRelationship",
-    "FamilyMemberStatus",
-]
-
 
 class FamilyMemberRelationship(TextChoices):
-    """
-    Supported family relationships.
-    """
-
     FATHER = "FATHER", "Father"
     MOTHER = "MOTHER", "Mother"
     HUSBAND = "HUSBAND", "Husband"
@@ -35,7 +25,6 @@ class FamilyMemberRelationship(TextChoices):
 
     UNCLE = "UNCLE", "Uncle"
     AUNT = "AUNT", "Aunt"
-
     COUSIN = "COUSIN", "Cousin"
 
     GUARDIAN = "GUARDIAN", "Guardian"
@@ -52,15 +41,10 @@ class FamilyMemberRelationship(TextChoices):
     STEP_SISTER = "STEP_SISTER", "Step Sister"
 
     LEGAL_GUARDIAN = "LEGAL_GUARDIAN", "Legal Guardian"
-
     OTHER = "OTHER", "Other"
 
 
 class FamilyMemberGender(TextChoices):
-    """
-    Gender choices.
-    """
-
     MALE = "MALE", "Male"
     FEMALE = "FEMALE", "Female"
     OTHER = "OTHER", "Other"
@@ -68,9 +52,12 @@ class FamilyMemberGender(TextChoices):
 
 
 class FamilyMemberStatus(TextChoices):
-    """
-    Status of a family member record.
-    """
-
     ACTIVE = "ACTIVE", "Active"
     INACTIVE = "INACTIVE", "Inactive"
+
+
+__all__ = (
+    "FamilyMemberGender",
+    "FamilyMemberRelationship",
+    "FamilyMemberStatus",
+)

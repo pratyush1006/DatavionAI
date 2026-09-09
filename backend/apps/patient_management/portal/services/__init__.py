@@ -1,13 +1,11 @@
-from .portal import (
+"""
+Patient Portal service exports.
+"""
+
+from __future__ import annotations
+
+from apps.patient_management.portal.services.portal import (
     PatientPortalAccountService,
-    create_portal_account,
-    delete_portal_account,
-    update_portal_account,
 )
 
-__all__ = [
-    "PatientPortalAccountService",
-    "create_portal_account",
-    "delete_portal_account",
-    "update_portal_account",
-]
+__all__ = ("PatientPortalAccountService",)

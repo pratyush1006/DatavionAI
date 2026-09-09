@@ -1,54 +1,38 @@
 """
-Detail serializer for the Family Members module.
+Serializer for retrieving patient family members.
 """
 
 from __future__ import annotations
 
 from rest_framework import serializers
 
-from apps.patient_management.family_members.models import (
-    FamilyMember,
-)
-
-__all__ = [
-    "FamilyMemberDetailSerializer",
-]
+from apps.patient_management.family_members.models import FamilyMember
 
 
-class FamilyMemberDetailSerializer(
-    serializers.ModelSerializer,
-):
-    """
-    Serializer for retrieving a family member.
-    """
+class FamilyMemberDetailSerializer(serializers.ModelSerializer):
+    """Read-only Family Member detail representation."""
 
     full_name = serializers.ReadOnlyField()
-
     patient_name = serializers.CharField(
         source="patient.full_name",
         read_only=True,
     )
-
     patient_number = serializers.CharField(
         source="patient.patient_number",
         read_only=True,
     )
-
     organization_name = serializers.CharField(
         source="organization.name",
         read_only=True,
     )
-
     relationship_display = serializers.CharField(
         source="get_relationship_display",
         read_only=True,
     )
-
     gender_display = serializers.CharField(
         source="get_gender_display",
         read_only=True,
     )
-
     status_display = serializers.CharField(
         source="get_status_display",
         read_only=True,
@@ -56,7 +40,6 @@ class FamilyMemberDetailSerializer(
 
     class Meta:
         model = FamilyMember
-
         fields = (
             "id",
             "organization",
@@ -94,5 +77,7 @@ class FamilyMemberDetailSerializer(
             "updated_at",
             "deleted_at",
         )
-
         read_only_fields = fields
+
+
+__all__ = ("FamilyMemberDetailSerializer",)

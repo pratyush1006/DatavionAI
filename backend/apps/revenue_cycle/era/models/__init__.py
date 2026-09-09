@@ -1,5 +1,7 @@
-from .era import RemittanceAdvice
+"""Revenue Cycle ERA models."""
 
-__all__ = [
-    "RemittanceAdvice",
-]
+from __future__ import annotations
+
+from .era import ERA
+
+__all__ = ("ERA",)

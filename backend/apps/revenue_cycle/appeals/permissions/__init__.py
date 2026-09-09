@@ -1,15 +1,25 @@
-from .appeals import (
-    CanCreateClaimAppeal,
-    CanDeleteClaimAppeal,
-    CanUpdateClaimAppeal,
-    CanViewClaimAppeal,
-    ClaimAppealPermission,
-)
+"""
+Revenue Cycle Appeals RBAC permission exports.
+"""
 
-__all__ = [
-    "CanCreateClaimAppeal",
-    "CanDeleteClaimAppeal",
-    "CanUpdateClaimAppeal",
-    "CanViewClaimAppeal",
-    "ClaimAppealPermission",
-]
+from __future__ import annotations
+
+from apps.platform.rbac.permissions.base import RBACPermissionBase
+
+
+class AppealReadPermission(RBACPermissionBase):
+    """Authorize read access to appeals."""
+
+    permission_code = "revenue_cycle.appeals.read"
+
+
+class AppealManagePermission(RBACPermissionBase):
+    """Authorize mutation access to appeals."""
+
+    permission_code = "revenue_cycle.appeals.manage"
+
+
+__all__ = (
+    "AppealManagePermission",
+    "AppealReadPermission",
+)

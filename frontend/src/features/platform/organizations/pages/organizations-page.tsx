@@ -5,13 +5,8 @@
 "use client";
 
 import { ListPage } from "@/components/common/page";
-
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { EmptyState } from "@/components/common/page";
+import { Button } from "@/components/ui/button";
 
 import { CreateOrganizationDialog } from "../components/dialogs";
 import { OrganizationsTable } from "../components/tables";
@@ -21,6 +16,9 @@ export function OrganizationsPage() {
   const {
     data = [],
     isPending,
+    isError,
+    error,
+    refetch,
   } = useOrganizationsQuery();
 
   return (
@@ -29,24 +27,26 @@ export function OrganizationsPage() {
       description="Manage organizations across the Datavion AI platform."
       actions={<CreateOrganizationDialog />}
     >
-      <div className="mb-6">
-        <DropdownMenu>
-          <DropdownMenuTrigger className="rounded border px-4 py-2">
-            Open Menu
-          </DropdownMenuTrigger>
-
-          <DropdownMenuContent>
-            <DropdownMenuItem>
-              Test Item
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-
-      <OrganizationsTable
-        data={data}
-        isLoading={isPending}
-      />
+      {isError ? (
+        <EmptyState
+          title="Could not load organizations"
+          description={
+            error instanceof Error
+              ? error.message
+              : "Please check your connection and try again."
+          }
+          action={
+            <Button onClick={() => void refetch()}>
+              Try again
+            </Button>
+          }
+        />
+      ) : (
+        <OrganizationsTable
+          data={data}
+          isLoading={isPending}
+        />
+      )}
     </ListPage>
   );
 }

@@ -1,7 +1,5 @@
-# apps/patient_management/identifiers/apps.py
-
 """
-Application configuration for the Identifiers module.
+Application configuration for the Patient Identifiers module.
 """
 
 from __future__ import annotations
@@ -11,7 +9,7 @@ from django.utils.translation import gettext_lazy as _
 
 
 class IdentifiersConfig(AppConfig):
-    """Configuration for the Identifiers application."""
+    """Configuration for the Patient Identifiers application."""
 
     default_auto_field = "django.db.models.BigAutoField"
     name = "apps.patient_management.identifiers"
@@ -19,5 +17,18 @@ class IdentifiersConfig(AppConfig):
     verbose_name = _("Patient Identifiers")
 
     def ready(self) -> None:
-        """Register application components."""
-        from apps.patient_management.identifiers import signals  # noqa: F401
+        """
+        Register Patient Identifier workflows.
+
+        Workflow registration is intentionally performed during Django
+        application startup so the shared workflow registry knows about
+        the complete identifier lifecycle.
+        """
+        from apps.patient_management.identifiers.workflow_registry import (
+            register_identifier_workflows,
+        )
+
+        register_identifier_workflows()
+
+
+__all__ = ("IdentifiersConfig",)

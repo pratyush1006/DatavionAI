@@ -1,117 +1,89 @@
-"""
-Claim Submission models.
-"""
+"""Persistent claim submission aggregate."""
 
 from __future__ import annotations
 
+from django.conf import settings
 from django.db import models
 
-from apps.clinical.patients.models import Patient
-from apps.core.models import BaseManager, BaseModel
-from apps.insurance.models import Claim
+from apps.core.models.base import BaseModel
 from apps.platform.organizations.models import Organization
-from apps.revenue_cycle.constants import (
-    ClaimPriority,
+from apps.revenue_cycle.claim_submission.constants import (
     SubmissionMethod,
+    SubmissionStatus,
 )
 
 
 class ClaimSubmission(BaseModel):
-    """
-    Record of a claim submission to a payer or clearinghouse.
-    """
-
-    objects = BaseManager()
+    """Represent an auditable outbound claim submission."""
 
     organization = models.ForeignKey(
         Organization,
         on_delete=models.CASCADE,
-        related_name="claim_submissions",
+        related_name="revenue_cycle_claim_submissions",
     )
-
     patient = models.ForeignKey(
-        Patient,
-        on_delete=models.CASCADE,
-        related_name="claim_submissions",
+        "patient_core.Patient",
+        on_delete=models.PROTECT,
+        related_name="revenue_cycle_claim_submissions",
     )
-
-    claim = models.OneToOneField(
-        Claim,
-        on_delete=models.CASCADE,
-        related_name="submission",
-    )
-
+    claim_reference = models.CharField(max_length=100)
+    payer_id = models.CharField(max_length=100)
+    payer_name = models.CharField(max_length=200, blank=True)
     submission_method = models.CharField(
         max_length=20,
         choices=SubmissionMethod.choices,
-        default=SubmissionMethod.ELECTRONIC,
+        default=SubmissionMethod.EDI,
     )
-
-    priority = models.CharField(
+    status = models.CharField(
         max_length=20,
-        choices=ClaimPriority.choices,
-        default=ClaimPriority.NORMAL,
+        choices=SubmissionStatus.choices,
+        default=SubmissionStatus.PENDING,
+        db_index=True,
     )
-
-    submitted_at = models.DateTimeField(
+    payload = models.JSONField(default=dict, blank=True)
+    response_data = models.JSONField(default=dict, blank=True)
+    external_submission_id = models.CharField(max_length=150, blank=True)
+    rejection_code = models.CharField(max_length=100, blank=True)
+    rejection_reason = models.TextField(blank=True)
+    submitted_at = models.DateTimeField(null=True, blank=True)
+    accepted_at = models.DateTimeField(null=True, blank=True)
+    failed_at = models.DateTimeField(null=True, blank=True)
+    cancelled_at = models.DateTimeField(null=True, blank=True)
+    idempotency_key = models.CharField(max_length=150)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
         null=True,
         blank=True,
-    )
-
-    submitted_by = models.CharField(
-        max_length=150,
-        blank=True,
-    )
-
-    clearinghouse = models.CharField(
-        max_length=150,
-        blank=True,
-    )
-
-    acknowledgement_code = models.CharField(
-        max_length=50,
-        blank=True,
-    )
-
-    payer_control_number = models.CharField(
-        max_length=100,
-        blank=True,
-    )
-
-    transmission_status = models.CharField(
-        max_length=50,
-        blank=True,
-        help_text="Status returned by the clearinghouse.",
+        related_name="created_revenue_cycle_claim_submissions",
     )
 
     class Meta:
-        db_table = "claim_submissions"
+        """Define database constraints for claim submissions."""
 
-        verbose_name = "Claim Submission"
-
-        verbose_name_plural = "Claim Submissions"
-
-        ordering = (
-            "-submitted_at",
-            "-created_at",
-        )
-
+        db_table = "revenue_cycle_claim_submissions"
+        ordering = ("-created_at",)
+        constraints = [
+            models.UniqueConstraint(
+                fields=("organization", "idempotency_key"),
+                name="rc_claim_submission_org_idempotency_uniq",
+            ),
+            models.UniqueConstraint(
+                fields=("organization", "claim_reference"),
+                name="rc_claim_submission_org_reference_uniq",
+            ),
+        ]
         indexes = [
             models.Index(
-                fields=[
-                    "organization",
-                    "claim",
-                ],
-                name="sub_org_claim_idx",
+                fields=("organization", "status"), name="rc_claim_sub_org_status_idx"
+            ),
+            models.Index(
+                fields=("organization", "patient"), name="rc_claim_sub_org_patient_idx"
+            ),
+            models.Index(
+                fields=("organization", "payer_id"), name="rc_claim_sub_org_payer_idx"
             ),
         ]
 
-    def __str__(
-        self,
-    ) -> str:
-        return f"Submission {self.claim}"
 
-
-__all__ = [
-    "ClaimSubmission",
-]
+__all__ = ("ClaimSubmission",)

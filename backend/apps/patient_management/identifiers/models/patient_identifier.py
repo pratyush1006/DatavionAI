@@ -4,9 +4,8 @@ Patient identifier model.
 
 from __future__ import annotations
 
-from typing import ClassVar
+from typing import TYPE_CHECKING, ClassVar
 
-from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Q
@@ -31,16 +30,19 @@ from apps.patient_management.identifiers.validators import (
     validate_national_id,
     validate_passport,
 )
-from apps.patient_management.models import Patient
+from apps.patient_management.patients.models import Patient
 from apps.platform.organizations.models import Organization
 
 if TYPE_CHECKING:
-    User = get_user_model()
+    from apps.platform.accounts.models import User
 
 
 class PatientIdentifier(AuditableModel):
     """
-    Stores patient identifiers.
+    Stores a patient identifier.
+
+    Identifier values are tenant/organization scoped and are never exposed
+    through list/detail serializers in raw form.
     """
 
     VALIDATORS: ClassVar[dict[str, callable]] = {
@@ -163,42 +165,27 @@ class PatientIdentifier(AuditableModel):
         )
         indexes = [
             models.Index(
-                fields=[
-                    "organization",
-                    "patient",
-                ],
+                fields=["organization", "patient"],
                 name="patient_id_org_patient_idx",
             ),
             models.Index(
-                fields=[
-                    "organization",
-                    "identifier_type",
-                ],
+                fields=["organization", "identifier_type"],
                 name="patient_id_org_type_idx",
             ),
             models.Index(
-                fields=[
-                    "organization",
-                    "identifier_value",
-                ],
+                fields=["organization", "identifier_value"],
                 name="patient_id_org_value_idx",
             ),
             models.Index(
-                fields=[
-                    "status",
-                ],
+                fields=["status"],
                 name="patient_id_status_idx",
             ),
             models.Index(
-                fields=[
-                    "verification_status",
-                ],
+                fields=["verification_status"],
                 name="patient_id_verify_idx",
             ),
             models.Index(
-                fields=[
-                    "is_primary",
-                ],
+                fields=["is_primary"],
                 name="patient_id_primary_idx",
             ),
         ]
@@ -216,15 +203,13 @@ class PatientIdentifier(AuditableModel):
                     "patient",
                     "identifier_type",
                 ],
-                condition=Q(
-                    is_primary=True,
-                ),
+                condition=Q(is_primary=True),
                 name="uniq_primary_identifier_type",
             ),
         ]
 
     def __str__(self) -> str:
-        return f"{self.patient} - {self.identifier_type} ({self.identifier_value})"
+        return f"{self.patient} - {self.identifier_type}"
 
     @property
     def is_verified(self) -> bool:
@@ -251,9 +236,7 @@ class PatientIdentifier(AuditableModel):
         if not self.display_value:
             self.display_value = self.identifier_value
 
-        validator = self.VALIDATORS.get(
-            self.identifier_type,
-        )
+        validator = self.VALIDATORS.get(self.identifier_type)
 
         if validator is not None:
             validator(self.identifier_value)
@@ -364,9 +347,7 @@ class PatientIdentifier(AuditableModel):
             ],
         )
 
-    def reject(
-        self,
-    ) -> None:
+    def reject(self) -> None:
         self.verification_status = VerificationStatus.REJECTED
 
         self.save(

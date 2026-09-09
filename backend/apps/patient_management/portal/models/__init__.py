@@ -1,5 +1,9 @@
-from .portal import PatientPortalAccount
+"""
+Patient Portal model exports.
+"""
 
-__all__ = [
-    "PatientPortalAccount",
-]
+from __future__ import annotations
+
+from apps.patient_management.portal.models.portal import PatientPortalAccount
+
+__all__ = ("PatientPortalAccount",)

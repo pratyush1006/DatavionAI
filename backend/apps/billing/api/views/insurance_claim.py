@@ -1,14 +1,15 @@
 """
-API views for insurance claims.
+Billing Core Insurance Claim API views.
+
+HTTP orchestration for organization-scoped insurance claim operations.
 """
 
 from __future__ import annotations
 
-from typing import Final
+from decimal import Decimal
+from uuid import UUID
 
-from drf_spectacular.utils import extend_schema
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.request import Request
+from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -18,393 +19,303 @@ from apps.billing.api.serializers import (
     InsuranceClaimDetailSerializer,
     InsuranceClaimListSerializer,
     InsuranceClaimRejectSerializer,
-    InsuranceClaimUpdateSerializer,
 )
-from apps.billing.models import InsuranceClaim
+from apps.billing.api.views._base import BillingAPIViewMixin
 from apps.billing.permissions import (
     CanApproveClaim,
+    CanRejectClaim,
+    CanSettleClaim,
     CanSubmitClaim,
-    CanViewInvoice,
+    CanViewBilling,
 )
 from apps.billing.selectors import InsuranceClaimSelector
-from apps.billing.services import InsuranceClaimService
-from apps.common.api.responses import (
-    error_response,
-    success_response,
+from apps.billing.workflows import (
+    ClaimAppealWorkflow,
+    ClaimApprovalWorkflow,
+    ClaimCreationRequest,
+    ClaimCreationWorkflow,
+    ClaimRejectWorkflow,
+    ClaimSettleWorkflow,
+    ClaimTransitionRequest,
 )
-from apps.common.permissions import IsAuthenticatedAndActive
-
-CLAIM_TAG: Final[tuple[str, ...]] = ("Insurance Claims",)
 
 
-@extend_schema(tags=CLAIM_TAG)
-class InsuranceClaimListCreateAPIView(APIView):
-    """
-    API view for listing and creating insurance claims.
-    """
+class InsuranceClaimListCreateAPIView(BillingAPIViewMixin, APIView):
+    """List and submit organization-scoped insurance claims."""
 
-    permission_classes = (IsAuthenticatedAndActive,)
+    def get(self, request):
+        """Return organization-scoped insurance claims."""
+        organization = self.get_organization(request)
 
-    def get_permissions(
-        self,
-    ):
-        """
-        Return permissions for the current request.
-        """
-
-        if self.request.method == "POST":
-            return [
-                IsAuthenticated(),
-                CanSubmitClaim(),
-            ]
-
-        return [
-            IsAuthenticated(),
-            CanViewInvoice(),
-        ]
-
-    def get(
-        self,
-        request: Request,
-    ) -> Response:
-        """
-        List insurance claims.
-        """
-
-        queryset = InsuranceClaimSelector.queryset()
-
-        page = self.paginate_queryset(
-            queryset,
+        CanViewBilling().has_permission(
+            request,
+            self,
         )
 
-        if page is not None:
-            serializer = InsuranceClaimListSerializer(
-                page,
-                many=True,
-            )
-
-            return self.get_paginated_response(
-                serializer.data,
-            )
+        records = InsuranceClaimSelector.list(
+            tenant_id=organization.tenant_id,
+            organization_id=organization.pk,
+        )
 
         serializer = InsuranceClaimListSerializer(
-            queryset,
+            records,
             many=True,
         )
 
-        return success_response(
-            data=serializer.data,
-        )
+        return Response(serializer.data)
 
-    def post(
-        self,
-        request: Request,
-    ) -> Response:
-        """
-        Create an insurance claim.
-        """
+    def post(self, request):
+        """Submit an insurance claim through the workflow boundary."""
+        organization = self.get_organization(request)
+
+        CanSubmitClaim().has_permission(
+            request,
+            self,
+        )
 
         serializer = InsuranceClaimCreateSerializer(
             data=request.data,
         )
-
-        if not serializer.is_valid():
-            return error_response(
-                details=serializer.errors,
-            )
-
-        claim = serializer.save(
-            performed_by=request.user,
+        serializer.is_valid(
+            raise_exception=True,
         )
 
-        response_serializer = InsuranceClaimDetailSerializer(
-            claim,
+        data = dict(serializer.validated_data)
+
+        patient_id = data.pop("patient")
+        invoice_id = data.pop("invoice")
+
+        result = ClaimCreationWorkflow(
+            request=ClaimCreationRequest(
+                organization_id=organization.pk,
+                patient_id=patient_id,
+                invoice_id=invoice_id,
+                data=data,
+            ),
+        ).run(
+            context=self.workflow_context(
+                request,
+                "billing.claim.create",
+            ),
         )
 
-        return success_response(
-            message="Insurance claim submitted successfully.",
-            data=response_serializer.data,
-            status_code=201,
+        return Response(
+            InsuranceClaimDetailSerializer(
+                result.data,
+            ).data,
+            status=status.HTTP_201_CREATED,
         )
 
 
-@extend_schema(tags=CLAIM_TAG)
-class InsuranceClaimRetrieveUpdateAPIView(APIView):
-    """
-    Retrieve or update an insurance claim.
-    """
-
-    permission_classes = (IsAuthenticatedAndActive,)
-
-    def get_permissions(
-        self,
-    ):
-        """
-        Return permissions for the current request.
-        """
-
-        method = self.request.method
-
-        if method in ("PUT", "PATCH"):
-            return [
-                IsAuthenticated(),
-                CanApproveClaim(),
-            ]
-
-        return [
-            IsAuthenticated(),
-            CanViewInvoice(),
-        ]
-
-    def get_object(
-        self,
-        claim_id: str,
-    ) -> InsuranceClaim:
-        """
-        Return the requested claim.
-        """
-
-        return InsuranceClaimSelector.get(
-            claim_id=claim_id,
-        )
+class InsuranceClaimRetrieveUpdateAPIView(
+    BillingAPIViewMixin,
+    APIView,
+):
+    """Retrieve one organization-scoped insurance claim."""
 
     def get(
         self,
-        request: Request,
-        claim_id: str,
-    ) -> Response:
-        """
-        Retrieve an insurance claim.
-        """
+        request,
+        claim_id: UUID,
+    ):
+        """Return one organization-scoped insurance claim."""
+        organization = self.get_organization(request)
 
-        claim = self.get_object(
+        CanViewBilling().has_permission(
+            request,
+            self,
+        )
+
+        claim = InsuranceClaimSelector.get(
+            tenant_id=organization.tenant_id,
+            organization_id=organization.pk,
             claim_id=claim_id,
         )
 
-        serializer = InsuranceClaimDetailSerializer(
-            claim,
-        )
-
-        return success_response(
-            data=serializer.data,
-        )
-
-    def put(
-        self,
-        request: Request,
-        claim_id: str,
-    ) -> Response:
-        """
-        Update an insurance claim.
-        """
-
-        claim = self.get_object(
-            claim_id=claim_id,
-        )
-
-        serializer = InsuranceClaimUpdateSerializer(
-            instance=claim,
-            data=request.data,
-        )
-
-        if not serializer.is_valid():
-            return error_response(
-                details=serializer.errors,
-            )
-
-        updated_claim = serializer.save()
-
-        response_serializer = InsuranceClaimDetailSerializer(
-            updated_claim,
-        )
-
-        return success_response(
-            message="Insurance claim updated successfully.",
-            data=response_serializer.data,
-        )
-
-    def patch(
-        self,
-        request: Request,
-        claim_id: str,
-    ) -> Response:
-        """
-        Partially update an insurance claim.
-        """
-
-        claim = self.get_object(
-            claim_id=claim_id,
-        )
-
-        serializer = InsuranceClaimUpdateSerializer(
-            instance=claim,
-            data=request.data,
-            partial=True,
-        )
-
-        if not serializer.is_valid():
-            return error_response(
-                details=serializer.errors,
-            )
-
-        updated_claim = serializer.save()
-
-        response_serializer = InsuranceClaimDetailSerializer(
-            updated_claim,
-        )
-
-        return success_response(
-            message="Insurance claim updated successfully.",
-            data=response_serializer.data,
+        return Response(
+            InsuranceClaimDetailSerializer(
+                claim,
+            ).data,
         )
 
 
-@extend_schema(tags=CLAIM_TAG)
-class InsuranceClaimApproveAPIView(APIView):
-    """
-    Approve an insurance claim.
-    """
-
-    permission_classes = (IsAuthenticated, CanApproveClaim)
+class InsuranceClaimApproveAPIView(
+    BillingAPIViewMixin,
+    APIView,
+):
+    """Approve an insurance claim."""
 
     def post(
         self,
-        request: Request,
-        claim_id: str,
-    ) -> Response:
-        """
-        Approve an insurance claim.
-        """
+        request,
+        claim_id: UUID,
+    ):
+        """Approve an insurance claim through its workflow."""
+        organization = self.get_organization(request)
 
-        claim = InsuranceClaimSelector.get(
-            claim_id=claim_id,
+        CanApproveClaim().has_permission(
+            request,
+            self,
         )
 
         serializer = InsuranceClaimApproveSerializer(
             data=request.data,
-            context={"claim": claim},
+        )
+        serializer.is_valid(
+            raise_exception=True,
         )
 
-        if not serializer.is_valid():
-            return error_response(
-                details=serializer.errors,
-            )
-
-        approved_claim = InsuranceClaimService.approve(
-            instance=claim,
-            approved_amount=serializer.validated_data["approved_amount"],
-            performed_by=request.user,
+        result = ClaimApprovalWorkflow(
+            request=ClaimTransitionRequest(
+                organization_id=organization.pk,
+                claim_id=claim_id,
+            ),
+            approved_amount=Decimal(
+                str(
+                    serializer.validated_data["approved_amount"],
+                ),
+            ),
+        ).run(
+            context=self.workflow_context(
+                request,
+                "billing.claim.approve",
+            ),
         )
 
-        response_serializer = InsuranceClaimDetailSerializer(
-            approved_claim,
-        )
-
-        return success_response(
-            message="Insurance claim approved successfully.",
-            data=response_serializer.data,
+        return Response(
+            InsuranceClaimDetailSerializer(
+                result.data,
+            ).data,
         )
 
 
-@extend_schema(tags=CLAIM_TAG)
-class InsuranceClaimRejectAPIView(APIView):
-    """
-    Reject an insurance claim.
-    """
-
-    permission_classes = (IsAuthenticated, CanApproveClaim)
+class InsuranceClaimRejectAPIView(
+    BillingAPIViewMixin,
+    APIView,
+):
+    """Reject an insurance claim."""
 
     def post(
         self,
-        request: Request,
-        claim_id: str,
-    ) -> Response:
-        """
-        Reject an insurance claim.
-        """
+        request,
+        claim_id: UUID,
+    ):
+        """Reject an insurance claim through its workflow."""
+        organization = self.get_organization(request)
 
-        claim = InsuranceClaimSelector.get(
-            claim_id=claim_id,
+        CanRejectClaim().has_permission(
+            request,
+            self,
         )
 
         serializer = InsuranceClaimRejectSerializer(
             data=request.data,
         )
+        serializer.is_valid(
+            raise_exception=True,
+        )
 
-        if not serializer.is_valid():
-            return error_response(
-                details=serializer.errors,
-            )
-
-        rejected_claim = InsuranceClaimService.reject(
-            instance=claim,
+        result = ClaimRejectWorkflow(
+            request=ClaimTransitionRequest(
+                organization_id=organization.pk,
+                claim_id=claim_id,
+            ),
             rejection_reason=serializer.validated_data["rejection_reason"],
-            performed_by=request.user,
+        ).run(
+            context=self.workflow_context(
+                request,
+                "billing.claim.reject",
+            ),
         )
 
-        response_serializer = InsuranceClaimDetailSerializer(
-            rejected_claim,
-        )
-
-        return success_response(
-            message="Insurance claim rejected successfully.",
-            data=response_serializer.data,
+        return Response(
+            InsuranceClaimDetailSerializer(
+                result.data,
+            ).data,
         )
 
 
-@extend_schema(tags=CLAIM_TAG)
-class InsuranceClaimBulkCreateAPIView(APIView):
-    """
-    Bulk create insurance claims.
-    """
-
-    permission_classes = (IsAuthenticatedAndActive,)
+class InsuranceClaimAppealAPIView(
+    BillingAPIViewMixin,
+    APIView,
+):
+    """Appeal a rejected insurance claim."""
 
     def post(
         self,
-        request: Request,
-    ) -> Response:
-        """
-        Create multiple insurance claims.
-        """
+        request,
+        claim_id: UUID,
+    ):
+        """Appeal a rejected insurance claim through its workflow."""
+        organization = self.get_organization(request)
 
-        if not isinstance(request.data, list):
-            return error_response(
-                message="Expected a list of claims.",
-                status_code=400,
-            )
-
-        serializer = InsuranceClaimCreateSerializer(
-            data=request.data,
-            many=True,
+        CanApproveClaim().has_permission(
+            request,
+            self,
         )
 
-        if not serializer.is_valid():
-            return error_response(
-                details=serializer.errors,
-            )
-
-        claims = InsuranceClaimService.bulk_create(
-            validated_data_list=serializer.validated_data,
-            performed_by=request.user,
+        result = ClaimAppealWorkflow(
+            request=ClaimTransitionRequest(
+                organization_id=organization.pk,
+                claim_id=claim_id,
+            ),
+        ).run(
+            context=self.workflow_context(
+                request,
+                "billing.claim.appeal",
+            ),
         )
 
-        response_serializer = InsuranceClaimDetailSerializer(
-            claims,
-            many=True,
-        )
-
-        return success_response(
-            message="Insurance claims created successfully.",
-            data=response_serializer.data,
-            status_code=201,
+        return Response(
+            InsuranceClaimDetailSerializer(
+                result.data,
+            ).data,
         )
 
 
-__all__ = [
+class InsuranceClaimSettleAPIView(
+    BillingAPIViewMixin,
+    APIView,
+):
+    """Settle an approved insurance claim."""
+
+    def post(
+        self,
+        request,
+        claim_id: UUID,
+    ):
+        """Settle an approved insurance claim through its workflow."""
+        organization = self.get_organization(request)
+
+        CanSettleClaim().has_permission(
+            request,
+            self,
+        )
+
+        result = ClaimSettleWorkflow(
+            request=ClaimTransitionRequest(
+                organization_id=organization.pk,
+                claim_id=claim_id,
+            ),
+        ).run(
+            context=self.workflow_context(
+                request,
+                "billing.claim.settle",
+            ),
+        )
+
+        return Response(
+            InsuranceClaimDetailSerializer(
+                result.data,
+            ).data,
+        )
+
+
+__all__ = (
+    "InsuranceClaimAppealAPIView",
     "InsuranceClaimApproveAPIView",
-    "InsuranceClaimBulkCreateAPIView",
     "InsuranceClaimListCreateAPIView",
     "InsuranceClaimRejectAPIView",
     "InsuranceClaimRetrieveUpdateAPIView",
-]
+    "InsuranceClaimSettleAPIView",
+)

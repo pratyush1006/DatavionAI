@@ -1,73 +1,60 @@
 """
-Constants for the Master Patient Index (MPI) module.
+Domain constants for the Master Patient Index.
 """
 
 from __future__ import annotations
 
-from django.db.models import TextChoices
+from django.db import models
 
 
-class MPIStatus(TextChoices):
-    """
-    Status of the MPI record.
-    """
+class MPIRecordStatus(models.TextChoices):
+    """Lifecycle state of an MPI record."""
 
-    ACTIVE = "active", "Active"
-    INACTIVE = "inactive", "Inactive"
-    MERGED = "merged", "Merged"
-    ARCHIVED = "archived", "Archived"
+    ACTIVE = "ACTIVE", "Active"
+    MERGED = "MERGED", "Merged"
+    RETIRED = "RETIRED", "Retired"
 
 
-class MPIVerificationStatus(TextChoices):
-    """
-    Verification status.
-    """
+class MPIMatchStatus(models.TextChoices):
+    """Review state of an MPI candidate match."""
 
-    PENDING = "pending", "Pending"
-    VERIFIED = "verified", "Verified"
-    REJECTED = "rejected", "Rejected"
-
-
-class MPIMatchConfidence(TextChoices):
-    """
-    Confidence level for patient matching.
-    """
-
-    EXACT = "exact", "Exact Match"
-    HIGH = "high", "High"
-    MEDIUM = "medium", "Medium"
-    LOW = "low", "Low"
+    PENDING = "PENDING", "Pending"
+    CONFIRMED = "CONFIRMED", "Confirmed"
+    REJECTED = "REJECTED", "Rejected"
+    EXPIRED = "EXPIRED", "Expired"
 
 
-class MPIRecordSource(TextChoices):
-    """
-    Source of the MPI record.
-    """
+class MPIMergeStatus(models.TextChoices):
+    """Administrative status of an MPI merge operation."""
 
-    MANUAL = "manual", "Manual"
-    REGISTRATION = "registration", "Registration"
-    IMPORT = "import", "Import"
-    API = "api", "API"
-    ABHA = "abha", "ABHA"
-    HL7 = "hl7", "HL7"
-    FHIR = "fhir", "FHIR"
+    ACTIVE = "ACTIVE", "Active"
+    REVERSED = "REVERSED", "Reversed"
 
 
-class MPIMergeStatus(TextChoices):
-    """
-    Merge status.
-    """
+MPI_MATCH_THRESHOLD = 0.85
+MPI_REVIEW_THRESHOLD = 0.65
 
-    NOT_MERGED = "not_merged", "Not Merged"
-    PENDING = "pending", "Pending"
-    MERGED = "merged", "Merged"
-    UNMERGED = "unmerged", "Unmerged"
+MPI_MATCH_CLASS_AUTO = "AUTO_MATCH"
+MPI_MATCH_CLASS_REVIEW = "REVIEW"
+MPI_MATCH_CLASS_NO_MATCH = "NO_MATCH"
 
+ALLOWED_RECORD_TRANSITIONS = {
+    MPIRecordStatus.ACTIVE: {
+        MPIRecordStatus.MERGED,
+        MPIRecordStatus.RETIRED,
+    },
+    MPIRecordStatus.MERGED: set(),
+    MPIRecordStatus.RETIRED: set(),
+}
 
-__all__ = [
-    "MPIMatchConfidence",
+__all__ = (
+    "ALLOWED_RECORD_TRANSITIONS",
+    "MPI_MATCH_CLASS_AUTO",
+    "MPI_MATCH_CLASS_NO_MATCH",
+    "MPI_MATCH_CLASS_REVIEW",
+    "MPI_MATCH_THRESHOLD",
+    "MPI_REVIEW_THRESHOLD",
+    "MPIMatchStatus",
     "MPIMergeStatus",
-    "MPIRecordSource",
-    "MPIStatus",
-    "MPIVerificationStatus",
-]
+    "MPIRecordStatus",
+)

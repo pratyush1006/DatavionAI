@@ -1,51 +1,61 @@
-"""
-Create serializer for Patient Documents.
-"""
+"""Patient Document creation serializer."""
 
 from __future__ import annotations
 
 from rest_framework import serializers
 
-from apps.patient_management.patient_documents.models import (
-    PatientDocument,
-)
-from apps.patient_management.patient_documents.services import (
-    create_patient_document,
+from apps.patient_management.patient_documents.constants import (
+    PatientDocumentCategory,
 )
 
 
 class PatientDocumentCreateSerializer(
-    serializers.ModelSerializer,
+    serializers.Serializer,
 ):
-    """
-    Serializer for creating patient documents.
-    """
+    """Validate Patient Document creation input."""
 
-    class Meta:
-        model = PatientDocument
+    patient_id = serializers.UUIDField()
+    title = serializers.CharField(
+        max_length=255,
+    )
+    storage_key = serializers.CharField(
+        max_length=500,
+    )
+    category = serializers.ChoiceField(
+        choices=PatientDocumentCategory.choices,
+    )
+    description = serializers.CharField(
+        required=False,
+        allow_blank=True,
+    )
+    original_filename = serializers.CharField(
+        max_length=255,
+        required=False,
+        allow_blank=True,
+    )
+    mime_type = serializers.CharField(
+        max_length=150,
+        required=False,
+        allow_blank=True,
+    )
+    file_size = serializers.IntegerField(
+        min_value=0,
+        required=False,
+        default=0,
+    )
+    checksum = serializers.CharField(
+        max_length=255,
+        required=False,
+        allow_blank=True,
+    )
+    is_confidential = serializers.BooleanField(
+        required=False,
+        default=False,
+    )
+    metadata = serializers.JSONField(
+        required=False,
+        default=dict,
+    )
 
-        fields = (
-            "organization",
-            "patient",
-            "document_number",
-            "title",
-            "description",
-            "category",
-            "source",
-            "visibility",
-            "storage_backend",
-            "tags",
-            "expires_at",
-        )
 
-    def create(
-        self,
-        validated_data,
-    ):
-        """
-        Create a patient document.
-        """
-
-        return create_patient_document(
-            **validated_data,
-        )
+__all__ = ("PatientDocumentCreateSerializer",)

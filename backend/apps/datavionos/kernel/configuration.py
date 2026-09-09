@@ -42,8 +42,6 @@ class KernelConfiguration:
 
     enable_events: bool = True
 
-    enable_scheduler: bool = True
-
     enable_workflows: bool = True
 
     enable_messaging: bool = True
@@ -147,7 +145,6 @@ class KernelConfiguration:
             enable_commands=self.enable_commands,
             enable_queries=self.enable_queries,
             enable_events=self.enable_events,
-            enable_scheduler=self.enable_scheduler,
             enable_workflows=self.enable_workflows,
             enable_messaging=self.enable_messaging,
             enable_observability=self.enable_observability,

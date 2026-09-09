@@ -1,218 +1,147 @@
 """
-Consent model.
+Patient Consent model.
+
+Stores tenant-scoped consent decisions and their lifecycle metadata.
 """
 
 from __future__ import annotations
 
-from django.core.validators import MinValueValidator
+from django.conf import settings
 from django.db import models
-from django.db.models import Q
+from django.utils import timezone
 
-from apps.core.models import BaseModel
+from apps.core.models import (
+    BaseModel,
+)
 from apps.patient_management.consents.constants import (
-    ConsentMethod,
-    ConsentSource,
+    ConsentPurpose,
     ConsentStatus,
-    ConsentType,
 )
 from apps.patient_management.consents.managers import (
     ConsentManager,
 )
-from apps.patient_management.consents.validators import (
-    validate_consent_title,
-)
 from apps.patient_management.patients.models import Patient
 from apps.platform.organizations.models import Organization
 
-__all__ = [
-    "Consent",
-]
 
+class PatientConsent(BaseModel):
+    """
+    Represent a consent granted, pending, revoked, or expired for a patient.
 
-class Consent(BaseModel):
+    Patient and organization are deliberately both stored to make tenant and
+    organization boundaries explicit and queryable.
     """
-    Versioned patient consent.
-    """
+
+    objects = ConsentManager()
 
     organization = models.ForeignKey(
         Organization,
-        on_delete=models.PROTECT,
-        related_name="consents",
+        on_delete=models.CASCADE,
+        related_name="patient_consents",
+        help_text="Organization that owns the consent.",
     )
 
     patient = models.ForeignKey(
         Patient,
-        on_delete=models.PROTECT,
-        related_name="consents",
+        on_delete=models.CASCADE,
+        related_name="patient_consents",
+        help_text="Patient to whom the consent applies.",
     )
 
-    consent_number = models.CharField(
-        max_length=50,
-        unique=True,
-        db_index=True,
-    )
-
-    title = models.CharField(
-        max_length=255,
-        validators=[
-            validate_consent_title,
-        ],
-    )
-
-    description = models.TextField(
-        blank=True,
-    )
-
-    consent_type = models.CharField(
-        max_length=50,
-        choices=ConsentType.choices,
-        db_index=True,
+    purpose = models.CharField(
+        max_length=30,
+        choices=ConsentPurpose.choices,
+        help_text="Purpose covered by the consent.",
     )
 
     status = models.CharField(
         max_length=20,
         choices=ConsentStatus.choices,
-        default=ConsentStatus.DRAFT,
+        default=ConsentStatus.PENDING,
         db_index=True,
-    )
-
-    method = models.CharField(
-        max_length=30,
-        choices=ConsentMethod.choices,
-    )
-
-    source = models.CharField(
-        max_length=30,
-        choices=ConsentSource.choices,
-    )
-
-    version = models.PositiveIntegerField(
-        default=1,
-        validators=[
-            MinValueValidator(1),
-        ],
-    )
-
-    effective_date = models.DateField(
-        null=True,
-        blank=True,
-    )
-
-    expiry_date = models.DateField(
-        null=True,
-        blank=True,
     )
 
     granted_at = models.DateTimeField(
-        null=True,
         blank=True,
+        null=True,
     )
 
     revoked_at = models.DateTimeField(
-        null=True,
         blank=True,
+        null=True,
     )
 
-    withdrawn_at = models.DateTimeField(
-        null=True,
+    expires_at = models.DateTimeField(
         blank=True,
+        null=True,
     )
 
-    requested_by = models.ForeignKey(
-        "accounts.User",
-        null=True,
-        blank=True,
+    granted_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
-        related_name="requested_consents",
-    )
-
-    approved_by = models.ForeignKey(
-        "accounts.User",
         null=True,
         blank=True,
-        on_delete=models.SET_NULL,
-        related_name="approved_consents",
+        related_name="granted_patient_consents",
     )
 
-    doctor = models.ForeignKey(
-        "employees.Employee",
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name="patient_consents",
-    )
-
-    guardian = models.ForeignKey(
-        "patient_management.family_members.FamilyMember",
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name="guardian_consents",
-    )
-
-    document = models.ForeignKey(
-        "documents.Document",
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name="patient_consents",
-    )
-
-    remarks = models.TextField(
+    notes = models.TextField(
         blank=True,
     )
 
-    is_required = models.BooleanField(
-        default=False,
+    version = models.CharField(
+        max_length=50,
+        blank=True,
+        default="1",
     )
 
-    is_active = models.BooleanField(
-        default=True,
-        db_index=True,
+    evidence_reference = models.CharField(
+        max_length=255,
+        blank=True,
+        help_text="Reference to the consent evidence or source record.",
     )
-
-    objects = ConsentManager()
 
     class Meta:
-        ordering = [
-            "-created_at",
-        ]
+        """
+        Configure persistence and indexes for Patient Consents.
+        """
 
-        indexes = [
+        db_table = "patient_management_consents"
+        verbose_name = "Patient Consent"
+        verbose_name_plural = "Patient Consents"
+        ordering = ("-created_at",)
+        constraints = [
             models.Index(
                 fields=[
                     "organization",
                     "patient",
-                ],
-            ),
-            models.Index(
-                fields=[
                     "status",
-                    "consent_type",
                 ],
+                name="pm_consent_org_patient_status_idx",
             ),
         ]
 
-        constraints = [
-            models.UniqueConstraint(
-                fields=[
-                    "patient",
-                    "consent_type",
-                    "version",
-                ],
-                name="uq_patient_consent_version",
-            ),
-            models.UniqueConstraint(
-                fields=[
-                    "patient",
-                    "consent_type",
-                ],
-                condition=Q(
-                    is_active=True,
-                ),
-                name="uq_active_consent_per_type",
-            ),
-        ]
+    def __str__(
+        self,
+    ) -> str:
+        """
+        Return a stable human-readable representation.
+        """
+        return f"{self.patient_id} - {self.purpose} - {self.status}"
 
-    def __str__(self) -> str:
-        return f"{self.patient} - {self.get_consent_type_display()} (v{self.version})"
+    @property
+    def is_granted(
+        self,
+    ) -> bool:
+        """
+        Return whether the consent is currently granted.
+        """
+        if self.status != ConsentStatus.GRANTED:
+            return False
+
+        if self.expires_at is not None and self.expires_at <= timezone.now():
+            return False
+
+        return True
+
+
+__all__ = ("PatientConsent",)

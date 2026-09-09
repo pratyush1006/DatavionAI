@@ -1,5 +1,5 @@
-from .analytics import RcmMetricSelector
+"""Revenue Cycle analytics selectors package."""
 
-__all__ = [
-    "RcmMetricSelector",
-]
+from __future__ import annotations
+
+__all__ = ()

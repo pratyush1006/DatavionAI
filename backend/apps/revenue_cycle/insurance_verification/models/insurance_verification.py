@@ -1,136 +1,120 @@
-"""
-Insurance Verification models.
-"""
+"""Revenue Cycle Insurance Verification aggregate model."""
 
 from __future__ import annotations
 
-from decimal import Decimal
-
+from django.conf import settings
 from django.db import models
 
-from apps.clinical.patients.models import Patient
-from apps.core.models import BaseManager, BaseModel
-from apps.insurance.models import Enrollment
+from apps.core.models import BaseModel
+from apps.patient_management.patients.models import Patient
 from apps.platform.organizations.models import Organization
-from apps.revenue_cycle.constants import VerificationStatus
+from apps.revenue_cycle.insurance_verification.constants import (
+    VerificationMethod,
+    VerificationOutcome,
+    VerificationStatus,
+)
 
 
 class InsuranceVerification(BaseModel):
-    """
-    Verification of a patient's insurance coverage with the payer.
-    """
-
-    objects = BaseManager()
+    """Store an organization-scoped insurance verification transaction."""
 
     organization = models.ForeignKey(
         Organization,
-        on_delete=models.CASCADE,
-        related_name="insurance_verifications",
+        on_delete=models.PROTECT,
+        related_name="revenue_cycle_insurance_verifications",
     )
-
     patient = models.ForeignKey(
         Patient,
-        on_delete=models.CASCADE,
-        related_name="insurance_verifications",
+        on_delete=models.PROTECT,
+        related_name="revenue_cycle_insurance_verifications",
     )
-
-    enrollment = models.ForeignKey(
-        Enrollment,
-        on_delete=models.CASCADE,
-        related_name="verifications",
+    eligibility_reference = models.UUIDField(null=True, blank=True, db_index=True)
+    payer_id = models.CharField(max_length=100, db_index=True)
+    payer_name = models.CharField(max_length=255, blank=True)
+    member_id = models.CharField(max_length=100, db_index=True)
+    policy_number = models.CharField(max_length=100, blank=True)
+    group_number = models.CharField(max_length=100, blank=True)
+    subscriber_name = models.CharField(max_length=255, blank=True)
+    subscriber_relationship = models.CharField(max_length=50, blank=True)
+    verification_method = models.CharField(
+        max_length=30,
+        choices=tuple((item.value, item.value) for item in VerificationMethod),
+        default=VerificationMethod.MANUAL.value,
     )
-
-    verification_date = models.DateField(
-        help_text="Date the verification was performed.",
-    )
-
     status = models.CharField(
-        max_length=20,
-        choices=VerificationStatus.choices,
-        default=VerificationStatus.PENDING,
+        max_length=30,
+        choices=tuple((item.value, item.value) for item in VerificationStatus),
+        default=VerificationStatus.PENDING.value,
         db_index=True,
     )
-
-    verified_by = models.CharField(
-        max_length=150,
-        blank=True,
-        help_text="Name of the person who verified coverage.",
+    outcome = models.CharField(
+        max_length=30,
+        choices=tuple((item.value, item.value) for item in VerificationOutcome),
+        default=VerificationOutcome.UNKNOWN.value,
+        db_index=True,
     )
-
-    member_id = models.CharField(
-        max_length=100,
-        blank=True,
+    requested_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    verified_at = models.DateTimeField(null=True, blank=True)
+    coverage_start = models.DateField(null=True, blank=True)
+    coverage_end = models.DateField(null=True, blank=True)
+    copay_amount = models.DecimalField(
+        max_digits=12, decimal_places=2, null=True, blank=True
     )
-
-    plan_name = models.CharField(
-        max_length=200,
-        blank=True,
+    deductible_amount = models.DecimalField(
+        max_digits=12, decimal_places=2, null=True, blank=True
     )
-
-    coverage_active = models.BooleanField(
-        null=True,
-        blank=True,
-    )
-
-    deductible_remaining = models.DecimalField(
-        max_digits=12,
-        decimal_places=2,
-        null=True,
-        blank=True,
-        default=Decimal("0.00"),
-    )
-
-    copay = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        null=True,
-        blank=True,
-        default=Decimal("0.00"),
-    )
-
     coinsurance_percent = models.DecimalField(
-        max_digits=5,
-        decimal_places=2,
+        max_digits=5, decimal_places=2, null=True, blank=True
+    )
+    prior_authorization_required = models.BooleanField(default=False)
+    response_code = models.CharField(max_length=100, blank=True)
+    response_message = models.TextField(blank=True)
+    response_payload = models.JSONField(default=dict, blank=True)
+    request_reference = models.CharField(max_length=100, db_index=True)
+    idempotency_key = models.CharField(max_length=255, db_index=True)
+    failure_reason = models.TextField(blank=True)
+    verified_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        default=Decimal("0.00"),
-    )
-
-    notes = models.TextField(
-        blank=True,
-    )
-
-    reference_number = models.CharField(
-        max_length=100,
-        blank=True,
+        related_name="revenue_cycle_insurance_verifications_verified",
     )
 
     class Meta:
-        db_table = "insurance_verifications"
+        """Database metadata for Insurance Verification."""
 
-        verbose_name = "Insurance Verification"
-
-        verbose_name_plural = "Insurance Verifications"
-
-        ordering = ("-verification_date",)
-
-        indexes = [
+        db_table = "revenue_cycle_insurance_verification"
+        ordering = ("-requested_at",)
+        indexes = (
             models.Index(
-                fields=[
-                    "organization",
-                    "patient",
-                    "status",
-                ],
-                name="verif_org_pat_status_idx",
+                fields=("organization", "patient", "-requested_at"),
+                name="rc_iv_org_patient_req_idx",
             ),
-        ]
+            models.Index(
+                fields=("organization", "status"),
+                name="rc_iv_org_status_idx",
+            ),
+            models.Index(
+                fields=("organization", "payer_id", "member_id"),
+                name="rc_iv_org_payer_member_idx",
+            ),
+            models.Index(
+                fields=("organization", "outcome"),
+                name="rc_iv_org_outcome_idx",
+            ),
+        )
+        constraints = (
+            models.UniqueConstraint(
+                fields=("organization", "idempotency_key"),
+                name="rc_iv_org_idempotency_uniq",
+            ),
+        )
 
-    def __str__(
-        self,
-    ) -> str:
-        return f"Verification {self.patient} ({self.get_status_display()})"
+    def __str__(self) -> str:
+        """Return a stable verification representation."""
+
+        return f"{self.payer_id}:{self.member_id}:{self.request_reference}"
 
 
-__all__ = [
-    "InsuranceVerification",
-]
+__all__ = ("InsuranceVerification",)

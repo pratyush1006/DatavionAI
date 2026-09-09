@@ -1,8 +1,43 @@
 """
-Organization manager.
+Organization model manager.
 
-Provides manager entry points for the
-DatavionOS Organizations bounded context.
+Provides the default organization query interface for
+DatavionOS.
+
+Lifecycle semantics
+-------------------
+Organization.objects
+    Returns non-soft-deleted, non-archived organizations.
+
+Organization.objects.active()
+    Returns operationally active organizations.
+
+Organization.objects.inactive()
+    Returns inactive, non-archived organizations.
+
+Organization.objects.archived()
+    Returns archived, non-soft-deleted organizations.
+
+Organization.all_objects
+    Provided by SoftDeleteModel and includes soft-deleted
+    and non-soft-deleted organizations.
+
+Organization.deleted_objects
+    Provided by SoftDeleteModel and returns soft-deleted
+    organizations only.
+
+Important
+---------
+Organization archival is a business lifecycle state and is
+intentionally separate from soft deletion.
+
+An archived organization therefore has:
+
+    is_deleted = False
+    status = OrganizationStatus.ARCHIVED
+
+Such organizations must not appear through the normal
+Organization.objects manager.
 """
 
 from __future__ import annotations
@@ -10,6 +45,9 @@ from __future__ import annotations
 from typing import Any
 
 from apps.core.models.managers import BaseManager
+from apps.platform.organizations.constants import (
+    OrganizationStatus,
+)
 from apps.platform.organizations.querysets.organization import (
     OrganizationQuerySet,
 )
@@ -21,20 +59,41 @@ class OrganizationManager(
     """
     Manager for the Organization model.
 
-    Exposes reusable query helpers by
-    delegating to OrganizationQuerySet.
+    The default organization scope excludes:
+
+        - soft-deleted organizations
+        - archived organizations
+
+    Lifecycle-specific scopes are exposed explicitly through
+    manager methods.
     """
 
     def get_queryset(
         self,
     ) -> OrganizationQuerySet:
         """
-        Return the base organization queryset.
+        Return the default organization queryset.
+
+        Default visibility contract:
+
+            is_deleted = False
+            status != ARCHIVED
+
+        This ensures archived organizations do not leak into
+        normal organization queries.
         """
 
-        return OrganizationQuerySet(
-            self.model,
-            using=self._db,
+        return (
+            OrganizationQuerySet(
+                self.model,
+                using=self._db,
+            )
+            .filter(
+                is_deleted=False,
+            )
+            .exclude(
+                status=OrganizationStatus.ARCHIVED,
+            )
         )
 
     # ------------------------------------------------------------------
@@ -45,7 +104,13 @@ class OrganizationManager(
         self,
     ) -> OrganizationQuerySet:
         """
-        Return active organizations.
+        Return operationally active organizations.
+
+        Requires:
+
+            is_deleted = False
+            status = ACTIVE
+            is_active = True
         """
 
         return self.get_queryset().active()
@@ -54,10 +119,33 @@ class OrganizationManager(
         self,
     ) -> OrganizationQuerySet:
         """
-        Return inactive organizations.
+        Return inactive, non-archived organizations.
         """
 
         return self.get_queryset().inactive()
+
+    def archived(
+        self,
+    ) -> OrganizationQuerySet:
+        """
+        Return non-soft-deleted archived organizations.
+
+        Because get_queryset() intentionally excludes archived
+        organizations, this method must start from a queryset
+        that explicitly restores the archived scope.
+
+        The implementation therefore queries directly through
+        the model's base queryset rather than the normal
+        organization visibility scope.
+        """
+
+        return OrganizationQuerySet(
+            self.model,
+            using=self._db,
+        ).filter(
+            is_deleted=False,
+            status=OrganizationStatus.ARCHIVED,
+        )
 
     # ------------------------------------------------------------------
     # Verification
@@ -99,7 +187,8 @@ class OrganizationManager(
         tenant: Any,
     ) -> OrganizationQuerySet:
         """
-        Return organizations for the given tenant.
+        Return non-archived organizations belonging to
+        the specified tenant.
         """
 
         return self.get_queryset().for_tenant(
@@ -115,7 +204,7 @@ class OrganizationManager(
         category: str,
     ) -> OrganizationQuerySet:
         """
-        Filter organizations by category.
+        Return non-archived organizations by category.
         """
 
         return self.get_queryset().by_category(
@@ -127,7 +216,7 @@ class OrganizationManager(
         organization_type: str,
     ) -> OrganizationQuerySet:
         """
-        Filter organizations by type.
+        Return non-archived organizations by organization type.
         """
 
         return self.get_queryset().by_type(
@@ -139,7 +228,11 @@ class OrganizationManager(
         status: str,
     ) -> OrganizationQuerySet:
         """
-        Filter organizations by status.
+        Return non-archived organizations by lifecycle status.
+
+        Note:
+            Use archived() explicitly when querying archived
+            organizations.
         """
 
         return self.get_queryset().by_status(
@@ -151,7 +244,7 @@ class OrganizationManager(
         size: str,
     ) -> OrganizationQuerySet:
         """
-        Filter organizations by size.
+        Return non-archived organizations by size.
         """
 
         return self.get_queryset().by_size(
@@ -166,7 +259,7 @@ class OrganizationManager(
         self,
     ) -> OrganizationQuerySet:
         """
-        Return production organizations.
+        Return non-archived production organizations.
         """
 
         return self.get_queryset().production()
@@ -175,10 +268,24 @@ class OrganizationManager(
         self,
     ) -> OrganizationQuerySet:
         """
-        Return demo organizations.
+        Return non-archived demo organizations.
         """
 
         return self.get_queryset().demo()
+
+    # ------------------------------------------------------------------
+    # Query Optimization
+    # ------------------------------------------------------------------
+
+    def with_related(
+        self,
+    ) -> OrganizationQuerySet:
+        """
+        Return non-archived organizations with commonly
+        accessed related objects preloaded.
+        """
+
+        return self.get_queryset().with_related()
 
     # ------------------------------------------------------------------
     # Search
@@ -189,7 +296,7 @@ class OrganizationManager(
         query: str,
     ) -> OrganizationQuerySet:
         """
-        Search organizations.
+        Search non-archived organizations.
         """
 
         return self.get_queryset().search(

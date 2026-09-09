@@ -1,55 +1,37 @@
 """
-List serializer for Patient Consents.
+Patient Consent list serializer.
 """
 
 from __future__ import annotations
 
-from rest_framework import serializers
-
-from apps.patient_management.consents.models import Consent
-
-__all__ = [
-    "ConsentListSerializer",
-]
+from apps.patient_management.consents.api.serializers.base import (
+    PatientConsentBaseSerializer,
+)
 
 
-class ConsentListSerializer(
-    serializers.ModelSerializer,
+class PatientConsentListSerializer(
+    PatientConsentBaseSerializer,
 ):
     """
-    Serializer for listing consents.
+    Serialize Patient Consent records for collection endpoints.
     """
 
-    patient_name = serializers.CharField(
-        source="patient.full_name",
-        read_only=True,
-    )
-
-    consent_type_display = serializers.CharField(
-        source="get_consent_type_display",
-        read_only=True,
-    )
-
-    status_display = serializers.CharField(
-        source="get_status_display",
-        read_only=True,
-    )
-
-    class Meta:
-        model = Consent
+    class Meta(PatientConsentBaseSerializer.Meta):
+        """
+        Configure list serializer fields.
+        """
 
         fields = (
             "id",
-            "consent_number",
-            "patient_name",
-            "title",
-            "consent_type",
-            "consent_type_display",
+            "patient",
+            "purpose",
             "status",
-            "status_display",
+            "granted_at",
+            "revoked_at",
+            "expires_at",
             "version",
-            "effective_date",
-            "expiry_date",
-            "is_required",
-            "is_active",
+            "created_at",
         )
+
+
+__all__ = ("PatientConsentListSerializer",)

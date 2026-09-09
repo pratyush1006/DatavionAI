@@ -1,77 +1,27 @@
-"""
-Exceptions for the Patient Preferences module.
-"""
+"""Domain exceptions for Patient Preferences."""
 
 from __future__ import annotations
 
-from apps.common.exceptions import DatavionException
-from apps.common.exceptions.codes import ErrorCode
+
+class PatientPreferenceError(Exception):
+    """Base exception for Patient Preferences."""
 
 
-class PatientPreferenceError(DatavionException):
-    """
-    Base exception for patient preferences.
-    """
-
-    default_code = ErrorCode.VALIDATION_ERROR
-    default_detail = "Patient preference operation failed."
+class PreferenceOrganizationError(PatientPreferenceError):
+    """Raised when patient and organization boundaries do not match."""
 
 
-class PatientPreferenceNotFoundError(
-    PatientPreferenceError,
-):
-    """
-    Preference not found.
-    """
-
-    default_detail = "Patient preference not found."
+class PreferenceLifecycleError(PatientPreferenceError):
+    """Raised when a preference lifecycle operation is invalid."""
 
 
-class DuplicatePatientPreferenceError(
-    PatientPreferenceError,
-):
-    """
-    Duplicate preference.
-    """
-
-    default_detail = "Patient preference already exists."
+class PreferenceValidationError(PatientPreferenceError):
+    """Raised when preference data violates domain rules."""
 
 
-class CommunicationPreferenceError(
-    PatientPreferenceError,
-):
-    """
-    Communication preference error.
-    """
-
-    default_detail = "Communication preference operation failed."
-
-
-class CommunicationPreferenceNotFoundError(
-    CommunicationPreferenceError,
-):
-    """
-    Communication preference not found.
-    """
-
-    default_detail = "Communication preference not found."
-
-
-class DuplicateCommunicationPreferenceError(
-    CommunicationPreferenceError,
-):
-    """
-    Duplicate communication preference.
-    """
-
-    default_detail = "Communication preference already exists."
-
-
-__all__ = [
-    "CommunicationPreferenceError",
-    "CommunicationPreferenceNotFoundError",
-    "DuplicateCommunicationPreferenceError",
-    "DuplicatePatientPreferenceError",
+__all__ = (
     "PatientPreferenceError",
-    "PatientPreferenceNotFoundError",
-]
+    "PreferenceLifecycleError",
+    "PreferenceOrganizationError",
+    "PreferenceValidationError",
+)

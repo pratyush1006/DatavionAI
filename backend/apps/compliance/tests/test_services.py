@@ -4,7 +4,6 @@ Smoke tests for the Compliance (HIPAA) services.
 
 from __future__ import annotations
 
-from apps.clinical.patients.tests.factories import PatientFactory
 from apps.common.tests.base import BaseTestCase
 from apps.compliance.constants import (
     ConsentPurpose,
@@ -16,6 +15,7 @@ from apps.compliance.services import (
     FieldEncryption,
     PhiAccessLogger,
 )
+from apps.patient_management.patients.tests.factories import PatientFactory
 
 
 class ComplianceServiceTestCase(BaseTestCase):

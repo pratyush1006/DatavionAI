@@ -1,5 +1,5 @@
 """
-Validators for the Patient Consents module.
+Validation helpers for Patient Consents.
 """
 
 from __future__ import annotations
@@ -7,72 +7,46 @@ from __future__ import annotations
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 
-__all__ = [
-    "validate_consent_title",
-    "validate_effective_date",
-    "validate_expiry_date",
-    "validate_version",
-]
 
-
-def validate_consent_title(value: str) -> None:
-    """
-    Validate consent title.
-    """
-
-    if not value:
-        raise ValidationError(
-            "Consent title is required.",
-        )
-
-    if len(value.strip()) < 3:
-        raise ValidationError(
-            "Consent title is too short.",
-        )
-
-    if len(value.strip()) > 255:
-        raise ValidationError(
-            "Consent title cannot exceed 255 characters.",
-        )
-
-
-def validate_version(value: int) -> None:
-    """
-    Validate consent version.
-    """
-
-    if value < 1:
-        raise ValidationError(
-            "Version must be greater than zero.",
-        )
-
-
-def validate_effective_date(value) -> None:
-    """
-    Validate effective date.
-    """
-
-    if value is None:
-        return
-
-    if value < timezone.localdate():
-        raise ValidationError(
-            "Effective date cannot be in the past.",
-        )
-
-
-def validate_expiry_date(
-    effective_date,
-    expiry_date,
+def validate_consent_dates(
+    *,
+    expires_at=None,
+    granted_at=None,
 ) -> None:
     """
-    Validate expiry date.
+    Validate chronological Patient Consent timestamps.
     """
+    if expires_at is not None and granted_at is not None:
+        if expires_at <= granted_at:
+            raise ValidationError(
+                "Consent expiration must occur after consent grant time.",
+            )
 
-    if expiry_date is None:
-        return
-
-    if effective_date and expiry_date <= effective_date:
+    if expires_at is not None and expires_at <= timezone.now():
         raise ValidationError(
-            "Expiry date must be after the effective date.",
+            "Consent expiration must be in the future.",
         )
+
+
+def validate_consent_notes(
+    value: str,
+) -> str:
+    """
+    Normalize consent notes and reject excessively large values.
+    """
+    normalized = str(
+        value or "",
+    ).strip()
+
+    if len(normalized) > 10000:
+        raise ValidationError(
+            "Consent notes cannot exceed 10,000 characters.",
+        )
+
+    return normalized
+
+
+__all__ = (
+    "validate_consent_dates",
+    "validate_consent_notes",
+)

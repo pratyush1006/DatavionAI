@@ -1,5 +1,5 @@
 """
-URL configuration for the Patient Identifiers API.
+Patient Identifier API routes.
 """
 
 from __future__ import annotations
@@ -7,39 +7,55 @@ from __future__ import annotations
 from django.urls import path
 
 from apps.patient_management.identifiers.api.views import (
-    PatientIdentifierCreateAPIView,
-    PatientIdentifierDestroyAPIView,
-    PatientIdentifierListAPIView,
-    PatientIdentifierRetrieveAPIView,
-    PatientIdentifierUpdateAPIView,
+    PatientIdentifierActivateAPIView,
+    PatientIdentifierDeactivateAPIView,
+    PatientIdentifierListCreateAPIView,
+    PatientIdentifierRetrieveUpdateDestroyAPIView,
+    PatientIdentifierRevokeAPIView,
+    PatientIdentifierSetPrimaryAPIView,
+    PatientIdentifierVerifyAPIView,
 )
 
 app_name = "patient-identifiers"
 
+
 urlpatterns = [
     path(
         "",
-        PatientIdentifierListAPIView.as_view(),
-        name="list",
+        PatientIdentifierListCreateAPIView.as_view(),
+        name="identifier-list-create",
     ),
     path(
-        "create/",
-        PatientIdentifierCreateAPIView.as_view(),
-        name="create",
+        "<uuid:identifier_id>/",
+        PatientIdentifierRetrieveUpdateDestroyAPIView.as_view(),
+        name="identifier-detail",
     ),
     path(
-        "<uuid:pk>/",
-        PatientIdentifierRetrieveAPIView.as_view(),
-        name="detail",
+        "<uuid:identifier_id>/verify/",
+        PatientIdentifierVerifyAPIView.as_view(),
+        name="identifier-verify",
     ),
     path(
-        "<uuid:pk>/update/",
-        PatientIdentifierUpdateAPIView.as_view(),
-        name="update",
+        "<uuid:identifier_id>/activate/",
+        PatientIdentifierActivateAPIView.as_view(),
+        name="identifier-activate",
     ),
     path(
-        "<uuid:pk>/delete/",
-        PatientIdentifierDestroyAPIView.as_view(),
-        name="delete",
+        "<uuid:identifier_id>/deactivate/",
+        PatientIdentifierDeactivateAPIView.as_view(),
+        name="identifier-deactivate",
+    ),
+    path(
+        "<uuid:identifier_id>/revoke/",
+        PatientIdentifierRevokeAPIView.as_view(),
+        name="identifier-revoke",
+    ),
+    path(
+        "<uuid:identifier_id>/set-primary/",
+        PatientIdentifierSetPrimaryAPIView.as_view(),
+        name="identifier-set-primary",
     ),
 ]
+
+
+__all__ = ("urlpatterns",)

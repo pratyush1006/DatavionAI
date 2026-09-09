@@ -2,6 +2,8 @@
 Selectors for the Patient Registration module.
 """
 
+from __future__ import annotations
+
 from apps.patient_management.registration.selectors.registration import (
     get_completed_registrations,
     get_pending_verification_registrations,
@@ -12,11 +14,10 @@ from apps.patient_management.registration.selectors.registration import (
     get_today_registrations,
     list_organization_registrations,
     list_patient_registrations,
-    list_registrations,
     search_registrations,
 )
 
-__all__ = [
+__all__ = (
     "get_completed_registrations",
     "get_pending_verification_registrations",
     "get_ready_for_checkin_registrations",
@@ -26,6 +27,5 @@ __all__ = [
     "get_today_registrations",
     "list_organization_registrations",
     "list_patient_registrations",
-    "list_registrations",
     "search_registrations",
-]
+)

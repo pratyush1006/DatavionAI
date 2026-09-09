@@ -18,7 +18,12 @@ from apps.core.events.handlers import (
     AsyncEventHandler,
     EventHandler,
 )
-from apps.core.events.publisher import EventPublisher, publisher
+from apps.core.events.publisher import (
+    EventPublisher,
+    publish_after_commit,
+    publish_many_after_commit,
+    publisher,
+)
 from apps.core.events.registry import EventRegistry, registry
 
 __all__: tuple[str, ...] = (
@@ -33,6 +38,8 @@ __all__: tuple[str, ...] = (
     "EventRegistry",
     "HandlerExecutionError",
     "dispatcher",
+    "publish_after_commit",
+    "publish_many_after_commit",
     "publisher",
     "registry",
 )

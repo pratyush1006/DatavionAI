@@ -1,32 +1,12 @@
 """
-URL patterns for the Timeline Event module.
+Top-level URL configuration for Patient Timeline.
 """
 
 from __future__ import annotations
 
-from django.urls import path
+from django.urls import include, path
 
-from apps.patient_management.timeline.api.views import (
-    PatientTimelineEventListCreateAPIView,
-    PatientTimelineEventRetrieveUpdateDestroyAPIView,
-)
+urlpatterns = (path("", include("apps.patient_management.timeline.api.urls")),)
 
-app_name = "timeline_events"
 
-urlpatterns = [
-    path(
-        "",
-        PatientTimelineEventListCreateAPIView.as_view(),
-        name="list-create",
-    ),
-    path(
-        "<uuid:timeline_event_id>/",
-        PatientTimelineEventRetrieveUpdateDestroyAPIView.as_view(),
-        name="detail",
-    ),
-]
-
-__all__ = [
-    "app_name",
-    "urlpatterns",
-]
+__all__ = ("urlpatterns",)

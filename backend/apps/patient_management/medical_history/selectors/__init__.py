@@ -1,5 +1,5 @@
-from .medical_history import PatientMedicalHistorySelector
+"""DatavionOS Medical History package."""
 
-__all__ = [
-    "PatientMedicalHistorySelector",
-]
+from __future__ import annotations
+
+__all__ = ()

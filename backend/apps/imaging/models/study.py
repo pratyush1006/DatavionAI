@@ -26,7 +26,7 @@ class Study(BaseModel):
     )
 
     patient = models.ForeignKey(
-        "patients.Patient",
+        "patient_core.Patient",
         on_delete=models.CASCADE,
         related_name="imaging_studies",
         help_text="Patient associated with the imaging study.",

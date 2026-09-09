@@ -1,15 +1,23 @@
 """
-Serializers for the Patient Relationships module.
+Serializers for Patient Relationships.
 """
 
-from .create import RelationshipCreateSerializer
-from .detail import RelationshipDetailSerializer
-from .list import RelationshipListSerializer
-from .update import RelationshipUpdateSerializer
+from .create import (
+    PatientRelationshipCreateSerializer,
+)
+from .detail import (
+    PatientRelationshipDetailSerializer,
+)
+from .list import (
+    PatientRelationshipListSerializer,
+)
+from .update import (
+    PatientRelationshipUpdateSerializer,
+)
 
-__all__ = [
-    "RelationshipCreateSerializer",
-    "RelationshipDetailSerializer",
-    "RelationshipListSerializer",
-    "RelationshipUpdateSerializer",
-]
+__all__ = (
+    "PatientRelationshipCreateSerializer",
+    "PatientRelationshipDetailSerializer",
+    "PatientRelationshipListSerializer",
+    "PatientRelationshipUpdateSerializer",
+)

@@ -1,20 +1,16 @@
 """
 DatavionOS Module Context.
+
+Provides the runtime context shared with DatavionOS modules
+without coupling modules to a concrete dependency-injection
+container implementation.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Protocol, TypeVar
 
-from apps.datavionos.commands import (
-    CommandBus,
-)
-from apps.datavionos.container import (
-    ServiceProvider,
-)
-from apps.datavionos.events import (
-    EventBus,
-)
 from apps.datavionos.kernel import (
     KernelConfiguration,
     KernelEnvironment,
@@ -22,6 +18,29 @@ from apps.datavionos.kernel import (
 from apps.datavionos.queries import (
     QueryBus,
 )
+
+TService = TypeVar(
+    "TService",
+)
+
+
+class ServiceResolver(Protocol):
+    """
+    Runtime service-resolution contract.
+
+    The module layer depends only on this protocol and therefore
+    remains independent of any concrete dependency-injection
+    implementation.
+    """
+
+    def resolve(
+        self,
+        service_type: type[TService],
+    ) -> TService:
+        """
+        Resolve a registered service.
+        """
+        ...
 
 
 @dataclass(
@@ -33,12 +52,11 @@ class ModuleContext:
     Runtime context shared with every
     DatavionOS module.
 
-    Provides controlled access to the
-    platform infrastructure without
-    exposing kernel internals.
+    Provides controlled access to platform infrastructure
+    without exposing kernel or dependency-injection internals.
     """
 
-    service_provider: ServiceProvider
+    service_provider: ServiceResolver
 
     command_bus: CommandBus
 
@@ -85,14 +103,18 @@ class ModuleContext:
 
     def get_service(
         self,
-        service_type: type,
-    ) -> object:
+        service_type: type[TService],
+    ) -> TService:
         """
-        Resolve a service from the
-        dependency injection container.
+        Resolve a runtime service.
+
+        Service resolution is provided by the DatavionOS runtime
+        infrastructure through the ServiceResolver contract.
+        The module context is intentionally not coupled to a
+        concrete dependency-injection container.
         """
 
-        return self.service_provider.get_service(
+        return self.service_provider.resolve(
             service_type,
         )
 
@@ -108,4 +130,5 @@ class ModuleContext:
 
 __all__ = [
     "ModuleContext",
+    "ServiceResolver",
 ]

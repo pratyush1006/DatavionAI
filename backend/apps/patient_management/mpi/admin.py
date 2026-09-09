@@ -1,5 +1,5 @@
 """
-Admin configuration for the Master Patient Index.
+Django admin configuration for the Master Patient Index.
 """
 
 from __future__ import annotations
@@ -7,53 +7,52 @@ from __future__ import annotations
 from django.contrib import admin
 
 from apps.patient_management.mpi.models import (
-    MasterPatientIndex,
+    MPIMatchCandidate,
+    MPIRecord,
 )
 
 
-@admin.register(MasterPatientIndex)
-class MasterPatientIndexAdmin(admin.ModelAdmin):
-    """Admin for MasterPatientIndex."""
+@admin.register(MPIRecord)
+class MPIRecordAdmin(admin.ModelAdmin):
+    """Admin configuration for MPI records."""
 
     list_display = (
-        "mpi_id",
+        "enterprise_identifier",
         "patient",
         "organization",
         "status",
-        "verification_status",
-        "merge_status",
-        "created_at",
+        "match_score",
+        "confidence",
     )
-
     list_filter = (
         "status",
-        "verification_status",
-        "merge_status",
-        "record_source",
+        "source_system",
+        "is_active",
+        "is_deleted",
     )
-
     search_fields = (
-        "mpi_id",
-        "patient__first_name",
-        "patient__last_name",
-        "patient__patient_number",
-        "abha_number",
-        "aadhaar_number",
+        "enterprise_identifier",
+        "source_patient_identifier",
+        "patient__mrn",
     )
 
-    autocomplete_fields = (
-        "organization",
-        "patient",
-        "merged_into",
-    )
 
-    readonly_fields = (
-        "created_at",
-        "updated_at",
-    )
+@admin.register(MPIMatchCandidate)
+class MPIMatchCandidateAdmin(admin.ModelAdmin):
+    """Admin configuration for MPI candidate matches."""
 
-    list_select_related = (
-        "organization",
-        "patient",
-        "merged_into",
+    list_display = (
+        "left_record",
+        "right_record",
+        "score",
+        "status",
+        "reviewed_at",
     )
+    list_filter = ("status",)
+    ordering = ("-score",)
+
+
+__all__ = (
+    "MPIMatchCandidateAdmin",
+    "MPIRecordAdmin",
+)

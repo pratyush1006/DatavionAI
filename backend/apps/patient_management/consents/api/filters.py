@@ -1,5 +1,5 @@
 """
-Filters for the Patient Consents module.
+Filters for Patient Consent list endpoints.
 """
 
 from __future__ import annotations
@@ -7,77 +7,29 @@ from __future__ import annotations
 import django_filters
 
 from apps.patient_management.consents.models import (
-    Consent,
+    PatientConsent,
 )
 
-__all__ = [
-    "ConsentFilter",
-]
 
-
-class ConsentFilter(
+class PatientConsentFilter(
     django_filters.FilterSet,
 ):
     """
-    Consent filtering.
+    Filter Patient Consent records by common domain fields.
     """
 
-    created_before = django_filters.DateFilter(
-        field_name="created_at",
-        lookup_expr="date__lte",
-    )
-
-    created_after = django_filters.DateFilter(
-        field_name="created_at",
-        lookup_expr="date__gte",
-    )
-
-    effective_before = django_filters.DateFilter(
-        field_name="effective_date",
-        lookup_expr="lte",
-    )
-
-    effective_after = django_filters.DateFilter(
-        field_name="effective_date",
-        lookup_expr="gte",
-    )
-
-    expiry_before = django_filters.DateFilter(
-        field_name="expiry_date",
-        lookup_expr="lte",
-    )
-
-    expiry_after = django_filters.DateFilter(
-        field_name="expiry_date",
-        lookup_expr="gte",
-    )
-
-    search = django_filters.CharFilter(
-        method="filter_search",
-    )
-
     class Meta:
-        model = Consent
+        """
+        Configure supported consent filters.
+        """
 
+        model = PatientConsent
         fields = (
-            "organization",
             "patient",
-            "consent_type",
+            "organization",
+            "purpose",
             "status",
-            "method",
-            "source",
-            "is_required",
-            "is_active",
         )
 
-    def filter_search(
-        self,
-        queryset,
-        name,
-        value,
-    ):
-        return queryset.filter(
-            title__icontains=value,
-        ) | queryset.filter(
-            consent_number__icontains=value,
-        )
+
+__all__ = ("PatientConsentFilter",)

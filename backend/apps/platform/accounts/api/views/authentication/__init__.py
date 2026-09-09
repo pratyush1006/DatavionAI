@@ -10,6 +10,7 @@ from .auth import (
     LogoutAPIView,
     RefreshAPIView,
     RegisterAPIView,
+    ResendLoginOTPAPIView,
     VerifyLoginOTPAPIView,
 )
 from .me import (
@@ -38,6 +39,7 @@ __all__ = (
     "MicrosoftLoginAPIView",
     "RefreshAPIView",
     "RegisterAPIView",
+    "ResendLoginOTPAPIView",
     "ResendOTPAPIView",
     "ResetPasswordAPIView",
     "VerifyLoginOTPAPIView",

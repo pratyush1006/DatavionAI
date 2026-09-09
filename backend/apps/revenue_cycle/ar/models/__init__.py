@@ -1,5 +1,5 @@
-from .ar import AccountsReceivable
+"""Revenue Cycle ar models package."""
 
-__all__ = [
-    "AccountsReceivable",
-]
+from __future__ import annotations
+
+__all__ = ()

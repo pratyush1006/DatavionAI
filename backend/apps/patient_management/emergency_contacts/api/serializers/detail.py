@@ -1,47 +1,76 @@
 """
-Detail serializer for Emergency Contacts.
+Serializer for retrieving patient emergency contacts.
 """
 
 from __future__ import annotations
 
 from rest_framework import serializers
 
-from ...models import EmergencyContact
+from apps.patient_management.emergency_contacts.models import (
+    EmergencyContact,
+)
 
 
 class EmergencyContactDetailSerializer(
     serializers.ModelSerializer,
 ):
     """
-    Detailed emergency contact serializer.
+    Detailed read representation of a patient emergency contact.
+
+    This serializer is read-only and contains no mutation behavior.
     """
 
-    patient_uuid = serializers.UUIDField(
-        source="patient.uuid",
+    patient_id = serializers.UUIDField(
+        source="patient_id",
         read_only=True,
     )
 
-    patient_name = serializers.CharField(
-        source="patient.full_name",
-        read_only=True,
-    )
-
-    organization_uuid = serializers.UUIDField(
-        source="organization.uuid",
-        read_only=True,
-    )
-
-    organization_name = serializers.CharField(
-        source="organization.name",
-        read_only=True,
-    )
-
-    verified_by_name = serializers.CharField(
-        source="verified_by.get_full_name",
+    organization_id = serializers.UUIDField(
+        source="organization_id",
         read_only=True,
     )
 
     class Meta:
         model = EmergencyContact
 
-        fields = "__all__"
+        fields = (
+            "id",
+            "organization_id",
+            "patient_id",
+            "emergency_contact_number",
+            "first_name",
+            "middle_name",
+            "last_name",
+            "relationship",
+            "date_of_birth",
+            "mobile_number",
+            "alternate_mobile_number",
+            "home_phone",
+            "work_phone",
+            "email",
+            "preferred_contact_method",
+            "address_line_1",
+            "address_line_2",
+            "city",
+            "state",
+            "postal_code",
+            "country",
+            "is_primary",
+            "priority_order",
+            "availability",
+            "status",
+            "is_verified",
+            "verified_at",
+            "verified_by",
+            "is_legal_guardian",
+            "has_medical_power_of_attorney",
+            "notes",
+            "created_at",
+            "updated_at",
+            "deleted_at",
+        )
+
+        read_only_fields = fields
+
+
+__all__ = ("EmergencyContactDetailSerializer",)

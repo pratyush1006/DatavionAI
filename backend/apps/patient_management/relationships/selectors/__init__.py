@@ -1,17 +1,17 @@
 """
-Selectors for the Patient Relationships module.
+Selectors for Patient Relationships.
 """
 
-from .relationship import (
-    get_patient_relationships,
-    get_primary_relationship,
-    get_relationship_by_id,
-    get_relationships_by_type,
+from apps.patient_management.relationships.selectors.relationship import (
+    PatientRelationshipSelector,
+    get_patient_relationship,
+    get_patient_relationship_for_patient,
+    list_patient_relationships,
 )
 
-__all__ = [
-    "get_patient_relationships",
-    "get_primary_relationship",
-    "get_relationship_by_id",
-    "get_relationships_by_type",
-]
+__all__ = (
+    "PatientRelationshipSelector",
+    "get_patient_relationship",
+    "get_patient_relationship_for_patient",
+    "list_patient_relationships",
+)

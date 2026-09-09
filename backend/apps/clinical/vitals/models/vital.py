@@ -7,7 +7,6 @@ from __future__ import annotations
 from django.db import models
 
 from apps.clinical.encounters.models import Encounter
-from apps.clinical.patients.models import Patient
 from apps.clinical.providers.models import Provider
 from apps.clinical.vitals.constants import (
     DEFAULT_TEMPERATURE_UNIT,
@@ -19,6 +18,7 @@ from apps.core.models import (
     BaseManager,
     BaseModel,
 )
+from apps.patient_management.patients.models import Patient
 from apps.platform.organizations.models import Organization
 
 

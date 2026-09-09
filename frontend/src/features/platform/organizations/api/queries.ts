@@ -1,16 +1,24 @@
 /**
+ * =============================================================================
+ * DatavionOS
+ * File: src/features/platform/organizations/api/queries.ts
+ * =============================================================================
+ *
  * Organization query definitions.
+ * =============================================================================
  */
 
 import {
   queryOptions,
 } from "@tanstack/react-query";
 
-import { apiClient } from "@/core/api";
+import {
+  apiClient,
+} from "@/core/api";
 
 import type {
   Organization,
-  OrganizationType,
+  OrganizationListItem,
 } from "../domain";
 
 import {
@@ -21,94 +29,211 @@ import {
   organizationKeys,
 } from "./keys";
 
-type OrganizationDto = {
-  id: number;
-
-  uuid?: string;
-
-  name: string;
-
+/**
+ * Backend organization collection DTO.
+ */
+type OrganizationListDto = {
+  id: string;
+  display_name: string;
   code: string;
-
+  category: string;
   organization_type: string;
-
-  email: string;
-
-  phone: string;
-
-  address: string;
-
+  status: string;
   city: string;
-
-  state: string;
-
   country: string;
-
-  is_active: boolean;
-
-  created_at: string;
-
-  updated_at: string;
 };
 
-type OrganizationListResponse = {
-  data: OrganizationDto[];
+/**
+ * Backend organization detail DTO.
+ */
+type OrganizationDetailDto =
+  OrganizationListDto & {
+    name: string;
+    slug: string;
+    size: string;
+    email: string;
+    support_email: string;
+    phone: string;
+    website: string;
+    address: string;
+    state: string;
 
-  meta: {
-    pagination: {
-      count: number;
-      page: number;
-      page_size: number;
-      total_pages: number;
-      next: string | null;
-      previous: string | null;
-    };
+    country_ref: string | null;
+    region_ref: string | null;
+    city_ref: string | null;
+
+    postal_code: string;
+    timezone: string;
+    registration_number: string;
+    tax_number: string;
+    license_number: string;
+    accreditation: string;
+    verification_status: string;
+    description: string;
+    is_demo: boolean;
+    created_at: string;
+    updated_at: string;
   };
-};
 
-function mapOrganization(
-  dto: OrganizationDto,
+type OrganizationListResponse =
+  OrganizationListDto[];
+
+type OrganizationDetailResponse =
+  OrganizationDetailDto;
+
+function mapOrganizationListItem(
+  dto: OrganizationListDto,
+): OrganizationListItem {
+  return {
+    id: dto.id,
+
+    displayName:
+      dto.display_name,
+
+    code:
+      dto.code,
+
+    category:
+      dto.category,
+
+    organizationType:
+      dto.organization_type,
+
+    status:
+      dto.status,
+
+    city:
+      dto.city,
+
+    country:
+      dto.country,
+  };
+}
+
+function mapOrganizationDetail(
+  dto: OrganizationDetailDto,
 ): Organization {
   return {
     id: dto.id,
 
-    uuid: dto.uuid,
+    name:
+      dto.name,
 
-    name: dto.name,
+    displayName:
+      dto.display_name,
 
-    code: dto.code,
+    code:
+      dto.code,
+
+    slug:
+      dto.slug,
+
+    category:
+      dto.category,
 
     organizationType:
-      dto.organization_type.toUpperCase() as OrganizationType,
+      dto.organization_type,
 
-    email: dto.email,
+    size:
+      dto.size,
 
-    phone: dto.phone,
+    status:
+      dto.status,
 
-    address: dto.address,
+    email:
+      dto.email,
 
-    city: dto.city,
+    supportEmail:
+      dto.support_email,
 
-    state: dto.state,
+    phone:
+      dto.phone,
 
-    country: dto.country,
+    website:
+      dto.website,
 
-    isActive: dto.is_active,
+    address:
+      dto.address,
 
-    createdAt: dto.created_at,
+    city:
+      dto.city,
 
-    updatedAt: dto.updated_at,
+    state:
+      dto.state,
+
+    country:
+      dto.country,
+
+    countryRef:
+      dto.country_ref,
+
+    regionRef:
+      dto.region_ref,
+
+    cityRef:
+      dto.city_ref,
+
+    postalCode:
+      dto.postal_code,
+
+    timezone:
+      dto.timezone,
+
+    registrationNumber:
+      dto.registration_number,
+
+    taxNumber:
+      dto.tax_number,
+
+    licenseNumber:
+      dto.license_number,
+
+    accreditation:
+      dto.accreditation,
+
+    verificationStatus:
+      dto.verification_status,
+
+    description:
+      dto.description,
+
+    isDemo:
+      dto.is_demo,
+
+    createdAt:
+      dto.created_at,
+
+    updatedAt:
+      dto.updated_at,
   };
 }
 
-async function fetchOrganizations() {
-  const { data } =
-    await apiClient.get<OrganizationListResponse>(
+async function fetchOrganizations():
+  Promise<OrganizationListItem[]> {
+  const response =
+    await apiClient.get<
+      OrganizationListResponse
+    >(
       organizationEndpoints.collection,
     );
 
-  return data.data.map(
-    mapOrganization,
+  return response.data.map(
+    mapOrganizationListItem,
+  );
+}
+
+async function fetchOrganization(
+  id: string,
+): Promise<Organization> {
+  const response =
+    await apiClient.get<
+      OrganizationDetailResponse
+    >(
+      organizationEndpoints.byId(id),
+    );
+
+  return mapOrganizationDetail(
+    response.data,
   );
 }
 
@@ -120,5 +245,21 @@ export const organizationQueries = {
 
       queryFn:
         fetchOrganizations,
+    }),
+
+  detail: (
+    id: string,
+    enabled = true,
+  ) =>
+    queryOptions({
+      queryKey:
+        organizationKeys.detail(id),
+
+      queryFn: () =>
+        fetchOrganization(id),
+
+      enabled:
+        enabled &&
+        id.trim().length > 0,
     }),
 } as const;

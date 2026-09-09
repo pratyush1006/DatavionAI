@@ -21,7 +21,7 @@ from apps.platform.organizations.api.organization_domain.serializers import (
 from apps.platform.organizations.models import (
     OrganizationDomain,
 )
-from apps.platform.organizations.permissions.organization_domain import (
+from apps.platform.organizations.permissions.domain import (
     CanCreateOrganizationDomain,
     CanViewOrganizationDomain,
 )

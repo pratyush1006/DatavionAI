@@ -1,47 +1,114 @@
 """
-Selectors for the Emergency Contacts module.
+Organization-scoped selectors for Emergency Contacts.
 """
 
 from __future__ import annotations
+
+from typing import TYPE_CHECKING
+from uuid import UUID
 
 from django.db.models import QuerySet
 
 from ..models import EmergencyContact
 
-
-def get_emergency_contact_by_uuid(
-    uuid,
-) -> EmergencyContact:
-    return EmergencyContact.objects.get(
-        uuid=uuid,
-    )
+if TYPE_CHECKING:
+    from apps.platform.organizations.models import Organization
 
 
-def list_emergency_contacts() -> QuerySet[EmergencyContact]:
-    return EmergencyContact.objects.all()
+class EmergencyContactSelector:
+    """Read-only, organization-scoped EmergencyContact queries."""
+
+    @staticmethod
+    def queryset(
+        *,
+        organization: Organization,
+    ) -> QuerySet[EmergencyContact]:
+        return EmergencyContact.objects.for_organization(organization).with_related()
+
+    @classmethod
+    def get(
+        cls,
+        *,
+        organization: Organization,
+        emergency_contact_id: UUID,
+    ) -> EmergencyContact:
+        return cls.queryset(
+            organization=organization,
+        ).get(
+            pk=emergency_contact_id,
+        )
+
+    @classmethod
+    def list(
+        cls,
+        *,
+        organization: Organization,
+    ) -> QuerySet[EmergencyContact]:
+        return cls.queryset(
+            organization=organization,
+        )
+
+    @classmethod
+    def list_by_patient(
+        cls,
+        *,
+        organization: Organization,
+        patient_id: UUID,
+    ) -> QuerySet[EmergencyContact]:
+        return cls.queryset(
+            organization=organization,
+        ).filter(
+            patient_id=patient_id,
+        )
+
+    @classmethod
+    def get_primary(
+        cls,
+        *,
+        organization: Organization,
+        patient_id: UUID,
+    ) -> EmergencyContact | None:
+        return (
+            cls.list_by_patient(
+                organization=organization,
+                patient_id=patient_id,
+            )
+            .primary()
+            .first()
+        )
+
+    @classmethod
+    def search(
+        cls,
+        *,
+        organization: Organization,
+        query: str,
+    ) -> QuerySet[EmergencyContact]:
+        return cls.queryset(
+            organization=organization,
+        ).search(query)
+
+    @classmethod
+    def list_active(
+        cls,
+        *,
+        organization: Organization,
+    ) -> QuerySet[EmergencyContact]:
+        return cls.queryset(
+            organization=organization,
+        ).active()
+
+    @classmethod
+    def list_verified(
+        cls,
+        *,
+        organization: Organization,
+    ) -> QuerySet[EmergencyContact]:
+        return cls.queryset(
+            organization=organization,
+        ).verified()
 
 
-def list_patient_emergency_contacts(
-    patient,
-) -> QuerySet[EmergencyContact]:
-    return EmergencyContact.objects.for_patient(patient)
-
-
-def list_organization_emergency_contacts(
-    organization,
-) -> QuerySet[EmergencyContact]:
-    return EmergencyContact.objects.for_organization(organization)
-
-
-def get_primary_emergency_contact(
-    patient,
-) -> EmergencyContact | None:
-    return EmergencyContact.objects.for_patient(patient).primary().first()
-
-
-def search_emergency_contacts(
-    query: str,
-):
-    return EmergencyContact.objects.search(
-        query,
-    )
+__all__ = [
+    "EmergencyContactSelector",
+]

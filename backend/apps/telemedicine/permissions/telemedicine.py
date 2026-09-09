@@ -1,89 +1,45 @@
-"""
-Telemedicine permission classes.
-"""
-
-from __future__ import annotations
-
 from apps.common.permissions.base import BasePermission
 
 
 class TelemedicinePermission:
-    """
-    Telemedicine permission codes.
-    """
-
     VIEW = "telemedicine.view"
     CREATE = "telemedicine.create"
     UPDATE = "telemedicine.update"
-    DELETE = "telemedicine.delete"
+    CANCEL = "telemedicine.cancel"
+    PREPARE = "telemedicine.prepare"
     START = "telemedicine.start"
-    END = "telemedicine.end"
-    RECORD = "telemedicine.record"
+    COMPLETE = "telemedicine.complete"
+    PARTICIPANT = "telemedicine.participant.manage"
+    RECORDING = "telemedicine.recording.manage"
 
 
 class CanViewTelemedicineSession(BasePermission):
-    """
-    Permission required to view telemedicine sessions.
-    """
-
     permission_code = TelemedicinePermission.VIEW
 
 
 class CanCreateTelemedicineSession(BasePermission):
-    """
-    Permission required to create telemedicine sessions.
-    """
-
     permission_code = TelemedicinePermission.CREATE
 
 
-class CanUpdateTelemedicineSession(BasePermission):
-    """
-    Permission required to update telemedicine sessions.
-    """
-
-    permission_code = TelemedicinePermission.UPDATE
+class CanCancelTelemedicineSession(BasePermission):
+    permission_code = TelemedicinePermission.CANCEL
 
 
-class CanDeleteTelemedicineSession(BasePermission):
-    """
-    Permission required to delete telemedicine sessions.
-    """
-
-    permission_code = TelemedicinePermission.DELETE
+class CanPrepareTelemedicineSession(BasePermission):
+    permission_code = TelemedicinePermission.PREPARE
 
 
 class CanStartTelemedicineSession(BasePermission):
-    """
-    Permission required to start a telemedicine session.
-    """
-
     permission_code = TelemedicinePermission.START
 
 
-class CanEndTelemedicineSession(BasePermission):
-    """
-    Permission required to end a telemedicine session.
-    """
-
-    permission_code = TelemedicinePermission.END
+class CanCompleteTelemedicineSession(BasePermission):
+    permission_code = TelemedicinePermission.COMPLETE
 
 
-class CanRecordTelemedicineSession(BasePermission):
-    """
-    Permission required to record a telemedicine session.
-    """
-
-    permission_code = TelemedicinePermission.RECORD
+class CanManageTelemedicineParticipant(BasePermission):
+    permission_code = TelemedicinePermission.PARTICIPANT
 
 
-__all__ = [
-    "CanCreateTelemedicineSession",
-    "CanDeleteTelemedicineSession",
-    "CanEndTelemedicineSession",
-    "CanRecordTelemedicineSession",
-    "CanStartTelemedicineSession",
-    "CanUpdateTelemedicineSession",
-    "CanViewTelemedicineSession",
-    "TelemedicinePermission",
-]
+class CanManageTelemedicineRecording(BasePermission):
+    permission_code = TelemedicinePermission.RECORDING

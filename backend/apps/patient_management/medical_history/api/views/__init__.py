@@ -1,9 +1,5 @@
-from .medical_history import (
-    PatientMedicalHistoryListCreateAPIView,
-    PatientMedicalHistoryRetrieveUpdateDestroyAPIView,
-)
+"""DatavionOS Medical History package."""
 
-__all__ = [
-    "PatientMedicalHistoryListCreateAPIView",
-    "PatientMedicalHistoryRetrieveUpdateDestroyAPIView",
-]
+from __future__ import annotations
+
+__all__ = ()

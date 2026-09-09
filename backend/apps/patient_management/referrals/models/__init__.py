@@ -1,5 +1,11 @@
-from .referrals import PatientReferral
+"""
+Patient Referral models.
+"""
 
-__all__ = [
-    "PatientReferral",
-]
+from __future__ import annotations
+
+from apps.patient_management.referrals.models.referral import (
+    PatientReferral,
+)
+
+__all__ = ("PatientReferral",)

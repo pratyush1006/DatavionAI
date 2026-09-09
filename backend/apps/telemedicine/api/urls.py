@@ -1,50 +1,31 @@
-"""
-Telemedicine API URL patterns.
-"""
-
-from __future__ import annotations
-
 from django.urls import path
 
-from apps.telemedicine.api.views import (
-    TelemedicineSessionBulkCreateAPIView,
-    TelemedicineSessionEndAPIView,
-    TelemedicineSessionListCreateAPIView,
-    TelemedicineSessionRetrieveUpdateDestroyAPIView,
-    TelemedicineSessionStartAPIView,
-)
-
-app_name = "telemedicine"
+from apps.telemedicine.api.views import *
 
 urlpatterns = [
+    path("sessions/", TelemedicineSessionListCreateAPIView.as_view()),
+    path("sessions/<uuid:session_id>/", TelemedicineSessionDetailAPIView.as_view()),
     path(
-        "sessions/",
-        TelemedicineSessionListCreateAPIView.as_view(),
-        name="session-list-create",
+        "sessions/<uuid:session_id>/<str:action>/",
+        TelemedicineSessionActionAPIView.as_view(),
     ),
     path(
-        "sessions/<uuid:session_id>/",
-        TelemedicineSessionRetrieveUpdateDestroyAPIView.as_view(),
-        name="session-detail",
+        "sessions/<uuid:session_id>/participants/",
+        ParticipantListCreateAPIView.as_view(),
     ),
     path(
-        "sessions/<uuid:session_id>/start/",
-        TelemedicineSessionStartAPIView.as_view(),
-        name="session-start",
+        "participants/<uuid:participant_id>/<str:action>/",
+        ParticipantActionAPIView.as_view(),
     ),
     path(
-        "sessions/<uuid:session_id>/end/",
-        TelemedicineSessionEndAPIView.as_view(),
-        name="session-end",
+        "participants/<uuid:participant_id>/media-state/",
+        ParticipantMediaStateAPIView.as_view(),
+    ),
+    path("sessions/<uuid:session_id>/recordings/", RecordingListAPIView.as_view()),
+    path(
+        "sessions/<uuid:session_id>/recordings/start/", RecordingStartAPIView.as_view()
     ),
     path(
-        "sessions/bulk/",
-        TelemedicineSessionBulkCreateAPIView.as_view(),
-        name="session-bulk-create",
+        "recordings/<uuid:recording_id>/finalize/", RecordingFinalizeAPIView.as_view()
     ),
-]
-
-__all__ = [
-    "app_name",
-    "urlpatterns",
 ]

@@ -19,6 +19,7 @@ from apps.platform.rbac.constants import (
     PermissionAction,
     PermissionModule,
     SystemRole,
+    permission_actions_for,
 )
 
 
@@ -26,11 +27,15 @@ def permissions_for(
     module: PermissionModule,
     *actions: PermissionAction,
 ) -> list[str]:
-    """
-    Build permission codes for a module.
-    """
+    allowed_actions = frozenset(
+        permission_actions_for(module),
+    )
 
-    return [f"{module.value}.{action.value}" for action in actions]
+    return [
+        f"{module.value}.{action.value}"
+        for action in actions
+        if action in allowed_actions
+    ]
 
 
 SYSTEM_ROLE_PERMISSIONS = {
@@ -45,6 +50,41 @@ SYSTEM_ROLE_PERMISSIONS = {
     # =========================================================================
     SystemRole.ORGANIZATION_OWNER.value: (
         permissions_for(
+            PermissionModule.TELEMEDICINE,
+            PermissionAction.VIEW,
+            PermissionAction.CREATE,
+            PermissionAction.UPDATE,
+            PermissionAction.DELETE,
+            PermissionAction.ACTIVATE,
+            PermissionAction.DEACTIVATE,
+            PermissionAction.SUSPEND,
+            PermissionAction.RESTORE,
+            PermissionAction.APPROVE,
+            PermissionAction.ASSIGN,
+            PermissionAction.CONTRACT,
+            PermissionAction.ONBOARD,
+            PermissionAction.OFFBOARD,
+            PermissionAction.VERIFY,
+            PermissionAction.RELEASE,
+            PermissionAction.SIGN,
+            PermissionAction.UPLOAD,
+            PermissionAction.DOWNLOAD,
+            PermissionAction.EXPORT,
+            PermissionAction.IMPORT,
+            PermissionAction.SHARE,
+            PermissionAction.PRINT,
+            PermissionAction.CANCEL,
+            PermissionAction.SCHEDULE,
+            PermissionAction.CONFIRM,
+            PermissionAction.PREPARE,
+            PermissionAction.START,
+            PermissionAction.COMPLETE,
+            PermissionAction.NO_SHOW,
+            PermissionAction.FAIL,
+            PermissionAction.PARTICIPANT_MANAGE,
+            PermissionAction.RECORDING_MANAGE,
+        )
+        + permissions_for(
             PermissionModule.ORGANIZATIONS,
             *PermissionAction,
         )
@@ -95,6 +135,23 @@ SYSTEM_ROLE_PERMISSIONS = {
     # =========================================================================
     SystemRole.ORGANIZATION_ADMIN.value: (
         permissions_for(
+            PermissionModule.TELEMEDICINE,
+            PermissionAction.VIEW,
+            PermissionAction.CREATE,
+            PermissionAction.UPDATE,
+            PermissionAction.DELETE,
+            PermissionAction.CANCEL,
+            PermissionAction.SCHEDULE,
+            PermissionAction.CONFIRM,
+            PermissionAction.PREPARE,
+            PermissionAction.START,
+            PermissionAction.COMPLETE,
+            PermissionAction.NO_SHOW,
+            PermissionAction.FAIL,
+            PermissionAction.PARTICIPANT_MANAGE,
+            PermissionAction.RECORDING_MANAGE,
+        )
+        + permissions_for(
             PermissionModule.PATIENTS,
             *PermissionAction,
         )
@@ -134,6 +191,22 @@ SYSTEM_ROLE_PERMISSIONS = {
     # =========================================================================
     SystemRole.DOCTOR.value: (
         permissions_for(
+            PermissionModule.TELEMEDICINE,
+            PermissionAction.VIEW,
+            PermissionAction.CREATE,
+            PermissionAction.UPDATE,
+            PermissionAction.CANCEL,
+            PermissionAction.SCHEDULE,
+            PermissionAction.CONFIRM,
+            PermissionAction.PREPARE,
+            PermissionAction.START,
+            PermissionAction.COMPLETE,
+            PermissionAction.NO_SHOW,
+            PermissionAction.FAIL,
+            PermissionAction.PARTICIPANT_MANAGE,
+            PermissionAction.RECORDING_MANAGE,
+        )
+        + permissions_for(
             PermissionModule.PATIENTS,
             PermissionAction.VIEW,
             PermissionAction.UPDATE,
@@ -173,6 +246,19 @@ SYSTEM_ROLE_PERMISSIONS = {
     # =========================================================================
     SystemRole.CONSULTANT.value: (
         permissions_for(
+            PermissionModule.TELEMEDICINE,
+            PermissionAction.VIEW,
+            PermissionAction.CREATE,
+            PermissionAction.UPDATE,
+            PermissionAction.SCHEDULE,
+            PermissionAction.CONFIRM,
+            PermissionAction.PREPARE,
+            PermissionAction.START,
+            PermissionAction.COMPLETE,
+            PermissionAction.PARTICIPANT_MANAGE,
+            PermissionAction.RECORDING_MANAGE,
+        )
+        + permissions_for(
             PermissionModule.PATIENTS,
             PermissionAction.VIEW,
         )
@@ -190,6 +276,11 @@ SYSTEM_ROLE_PERMISSIONS = {
     # =========================================================================
     SystemRole.NURSE.value: (
         permissions_for(
+            PermissionModule.TELEMEDICINE,
+            PermissionAction.VIEW,
+            PermissionAction.PARTICIPANT_MANAGE,
+        )
+        + permissions_for(
             PermissionModule.PATIENTS,
             PermissionAction.VIEW,
             PermissionAction.UPDATE,
@@ -260,6 +351,16 @@ SYSTEM_ROLE_PERMISSIONS = {
     # =========================================================================
     SystemRole.RECEPTIONIST.value: (
         permissions_for(
+            PermissionModule.TELEMEDICINE,
+            PermissionAction.VIEW,
+            PermissionAction.CREATE,
+            PermissionAction.UPDATE,
+            PermissionAction.DELETE,
+            PermissionAction.CANCEL,
+            PermissionAction.SCHEDULE,
+            PermissionAction.CONFIRM,
+        )
+        + permissions_for(
             PermissionModule.PATIENTS,
             PermissionAction.VIEW,
             PermissionAction.CREATE,
@@ -278,6 +379,10 @@ SYSTEM_ROLE_PERMISSIONS = {
     # =========================================================================
     SystemRole.PATIENT.value: (
         permissions_for(
+            PermissionModule.TELEMEDICINE,
+            PermissionAction.VIEW,
+        )
+        + permissions_for(
             PermissionModule.PATIENTS,
             PermissionAction.VIEW,
         )

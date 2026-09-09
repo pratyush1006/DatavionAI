@@ -1,14 +1,10 @@
 """
-API views for invoices.
+Billing Core Invoice API views.
 """
 
 from __future__ import annotations
 
-from typing import Final
-
-from drf_spectacular.utils import extend_schema
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.request import Request
+from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -18,386 +14,101 @@ from apps.billing.api.serializers import (
     InvoiceListSerializer,
     InvoiceUpdateSerializer,
 )
-from apps.billing.models import Invoice
+from apps.billing.api.views._base import BillingAPIViewMixin
 from apps.billing.permissions import (
     CanCreateInvoice,
     CanDeleteInvoice,
     CanUpdateInvoice,
-    CanViewInvoice,
-    CanVoidInvoice,
+    CanViewBilling,
 )
 from apps.billing.selectors import InvoiceSelector
-from apps.billing.services import InvoiceService
-from apps.common.api.responses import (
-    error_response,
-    success_response,
+from apps.billing.workflows import (
+    InvoiceCreationRequest,
+    InvoiceCreationWorkflow,
+    InvoiceDeleteWorkflow,
+    InvoiceMutationRequest,
+    InvoiceUpdateWorkflow,
 )
-from apps.common.permissions import IsAuthenticatedAndActive
-
-INVOICE_TAG: Final[tuple[str, ...]] = ("Invoices",)
 
 
-@extend_schema(tags=INVOICE_TAG)
-class InvoiceListCreateAPIView(APIView):
-    """
-    API view for listing and creating invoices.
-    """
+class InvoiceListCreateAPIView(BillingAPIViewMixin, APIView):
+    """List and create organization-scoped invoices."""
 
-    permission_classes = (IsAuthenticatedAndActive,)
-
-    def get_permissions(
-        self,
-    ):
-        """
-        Return permissions for the current request.
-        """
-
-        if self.request.method == "POST":
-            return [
-                IsAuthenticated(),
-                CanCreateInvoice(),
-            ]
-
-        return [
-            IsAuthenticated(),
-            CanViewInvoice(),
-        ]
-
-    def get(
-        self,
-        request: Request,
-    ) -> Response:
-        """
-        List invoices.
-        """
-
-        queryset = InvoiceSelector.queryset()
-
-        page = self.paginate_queryset(
-            queryset,
+    def get(self, request):
+        """List invoices through a tenant-scoped selector."""
+        organization = self.get_organization(request)
+        CanViewBilling().has_permission(request, self)
+        records = InvoiceSelector.list(
+            tenant_id=organization.tenant_id,
+            organization_id=organization.pk,
         )
+        return Response(InvoiceListSerializer(records, many=True).data)
 
-        if page is not None:
-            serializer = InvoiceListSerializer(
-                page,
-                many=True,
-            )
-
-            return self.get_paginated_response(
-                serializer.data,
-            )
-
-        serializer = InvoiceListSerializer(
-            queryset,
-            many=True,
-        )
-
-        return success_response(
-            data=serializer.data,
-        )
-
-    def post(
-        self,
-        request: Request,
-    ) -> Response:
-        """
-        Create an invoice.
-        """
-
-        serializer = InvoiceCreateSerializer(
-            data=request.data,
-        )
-
-        if not serializer.is_valid():
-            return error_response(
-                details=serializer.errors,
-            )
-
-        items = serializer.validated_data.pop(
-            "items",
-            None,
-        )
-
-        invoice = InvoiceService.create(
-            validated_data=serializer.validated_data,
-            items=items,
-        )
-
-        response_serializer = InvoiceDetailSerializer(
-            invoice,
-        )
-
-        return success_response(
-            message="Invoice created successfully.",
-            data=response_serializer.data,
-            status_code=201,
+    def post(self, request):
+        """Create an invoice through the workflow boundary."""
+        organization = self.get_organization(request)
+        CanCreateInvoice().has_permission(request, self)
+        serializer = InvoiceCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = dict(serializer.validated_data)
+        patient_id = data.pop("patient")
+        items = data.pop("items", [])
+        result = InvoiceCreationWorkflow(
+            request=InvoiceCreationRequest(
+                organization_id=organization.pk,
+                patient_id=patient_id,
+                data=data,
+                items=items,
+            ),
+        ).run(context=self.workflow_context(request, "billing.invoice.create"))
+        return Response(
+            InvoiceDetailSerializer(result.data).data, status=status.HTTP_201_CREATED
         )
 
 
-@extend_schema(tags=INVOICE_TAG)
-class InvoiceRetrieveUpdateDestroyAPIView(APIView):
-    """
-    Retrieve, update, or delete an invoice.
-    """
+class InvoiceRetrieveUpdateDestroyAPIView(BillingAPIViewMixin, APIView):
+    """Retrieve, update, or delete an invoice through workflow boundaries."""
 
-    permission_classes = (IsAuthenticatedAndActive,)
-
-    def get_permissions(
-        self,
-    ):
-        """
-        Return permissions for the current request.
-        """
-
-        method = self.request.method
-
-        if method == "GET":
-            return [
-                IsAuthenticated(),
-                CanViewInvoice(),
-            ]
-
-        if method in ("PUT", "PATCH"):
-            return [
-                IsAuthenticated(),
-                CanUpdateInvoice(),
-            ]
-
-        if method == "DELETE":
-            return [
-                IsAuthenticated(),
-                CanDeleteInvoice(),
-            ]
-
-        return super().get_permissions()
-
-    def get_object(
-        self,
-        invoice_id: str,
-    ) -> Invoice:
-        """
-        Return the requested invoice.
-        """
-
-        return InvoiceSelector.get(
-            invoice_id=invoice_id,
-        )
-
-    def get(
-        self,
-        request: Request,
-        invoice_id: str,
-    ) -> Response:
-        """
-        Retrieve an invoice.
-        """
-
-        invoice = self.get_object(
-            invoice_id=invoice_id,
-        )
-
-        serializer = InvoiceDetailSerializer(
-            invoice,
-        )
-
-        return success_response(
-            data=serializer.data,
-        )
-
-    def put(
-        self,
-        request: Request,
-        invoice_id: str,
-    ) -> Response:
-        """
-        Update an invoice.
-        """
-
-        invoice = self.get_object(
-            invoice_id=invoice_id,
-        )
-
-        serializer = InvoiceUpdateSerializer(
-            instance=invoice,
-            data=request.data,
-        )
-
-        if not serializer.is_valid():
-            return error_response(
-                details=serializer.errors,
-            )
-
-        updated_invoice = InvoiceService.update(
-            instance=invoice,
-            validated_data=serializer.validated_data,
-        )
-
-        response_serializer = InvoiceDetailSerializer(
-            updated_invoice,
-        )
-
-        return success_response(
-            message="Invoice updated successfully.",
-            data=response_serializer.data,
-        )
-
-    def patch(
-        self,
-        request: Request,
-        invoice_id: str,
-    ) -> Response:
-        """
-        Partially update an invoice.
-        """
-
-        invoice = self.get_object(
-            invoice_id=invoice_id,
-        )
-
-        serializer = InvoiceUpdateSerializer(
-            instance=invoice,
-            data=request.data,
-            partial=True,
-        )
-
-        if not serializer.is_valid():
-            return error_response(
-                details=serializer.errors,
-            )
-
-        updated_invoice = InvoiceService.update(
-            instance=invoice,
-            validated_data=serializer.validated_data,
-        )
-
-        response_serializer = InvoiceDetailSerializer(
-            updated_invoice,
-        )
-
-        return success_response(
-            message="Invoice updated successfully.",
-            data=response_serializer.data,
-        )
-
-    def delete(
-        self,
-        request: Request,
-        invoice_id: str,
-    ) -> Response:
-        """
-        Delete an invoice.
-        """
-
-        invoice = self.get_object(
-            invoice_id=invoice_id,
-        )
-
-        invoice.delete()
-
-        return success_response(
-            message="Invoice deleted successfully.",
-        )
-
-
-@extend_schema(tags=INVOICE_TAG)
-class InvoiceVoidAPIView(APIView):
-    """
-    Void an invoice.
-    """
-
-    permission_classes = (IsAuthenticated, CanVoidInvoice)
-
-    def post(
-        self,
-        request: Request,
-        invoice_id: str,
-    ) -> Response:
-        """
-        Void an invoice.
-        """
-
+    def get(self, request, invoice_id):
+        """Retrieve one organization-scoped invoice."""
+        organization = self.get_organization(request)
+        CanViewBilling().has_permission(request, self)
         invoice = InvoiceSelector.get(
+            tenant_id=organization.tenant_id,
+            organization_id=organization.pk,
             invoice_id=invoice_id,
         )
+        return Response(InvoiceDetailSerializer(invoice).data)
 
-        voided_invoice = InvoiceService.void(
-            instance=invoice,
-            performed_by=request.user,
-        )
+    def patch(self, request, invoice_id):
+        """Update an invoice through the workflow boundary."""
+        organization = self.get_organization(request)
+        CanUpdateInvoice().has_permission(request, self)
+        serializer = InvoiceUpdateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        result = InvoiceUpdateWorkflow(
+            request=InvoiceMutationRequest(
+                organization_id=organization.pk,
+                invoice_id=invoice_id,
+                data=serializer.validated_data,
+            ),
+        ).run(context=self.workflow_context(request, "billing.invoice.update"))
+        return Response(InvoiceDetailSerializer(result.data).data)
 
-        serializer = InvoiceDetailSerializer(
-            voided_invoice,
-        )
-
-        return success_response(
-            message="Invoice voided successfully.",
-            data=serializer.data,
-        )
-
-
-@extend_schema(tags=INVOICE_TAG)
-class InvoiceBulkCreateAPIView(APIView):
-    """
-    Bulk create invoices.
-    """
-
-    permission_classes = (IsAuthenticatedAndActive,)
-
-    def post(
-        self,
-        request: Request,
-    ) -> Response:
-        """
-        Create multiple invoices.
-        """
-
-        if not isinstance(request.data, list):
-            return error_response(
-                message="Expected a list of invoices.",
-                status_code=400,
-            )
-
-        serializer = InvoiceCreateSerializer(
-            data=request.data,
-            many=True,
-        )
-
-        if not serializer.is_valid():
-            return error_response(
-                details=serializer.errors,
-            )
-
-        validated_data_list = []
-
-        for item in serializer.validated_data:
-            items = item.pop("items", None)
-            validated_data_list.append(
-                {
-                    **item,
-                    "items": items,
-                }
-            )
-
-        invoices = InvoiceService.bulk_create(
-            validated_data_list=validated_data_list,
-            performed_by=request.user,
-        )
-
-        response_serializer = InvoiceDetailSerializer(
-            invoices,
-            many=True,
-        )
-
-        return success_response(
-            message="Invoices created successfully.",
-            data=response_serializer.data,
-            status_code=201,
-        )
+    def delete(self, request, invoice_id):
+        """Soft-delete an invoice through the workflow boundary."""
+        organization = self.get_organization(request)
+        CanDeleteInvoice().has_permission(request, self)
+        result = InvoiceDeleteWorkflow(
+            request=InvoiceMutationRequest(
+                organization_id=organization.pk,
+                invoice_id=invoice_id,
+            ),
+        ).run(context=self.workflow_context(request, "billing.invoice.delete"))
+        return Response(InvoiceDetailSerializer(result.data).data)
 
 
-__all__ = [
-    "InvoiceBulkCreateAPIView",
+__all__ = (
     "InvoiceListCreateAPIView",
     "InvoiceRetrieveUpdateDestroyAPIView",
-    "InvoiceVoidAPIView",
-]
+)

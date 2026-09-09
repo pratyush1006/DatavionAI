@@ -41,7 +41,7 @@ class PatientIdentifierAdmin(admin.ModelAdmin):
     search_fields = (
         "identifier_value",
         "display_value",
-        "patient__medical_record_number",
+        "patient__mrn",
         "patient__first_name",
         "patient__last_name",
     )

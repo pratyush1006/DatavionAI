@@ -1,32 +1,29 @@
-"""
-URL patterns for the Eligibility Check module.
-"""
+"""Revenue Cycle Eligibility URL routes."""
 
 from __future__ import annotations
 
 from django.urls import path
 
 from apps.revenue_cycle.eligibility.api.views import (
-    EligibilityCheckListCreateAPIView,
-    EligibilityCheckRetrieveUpdateDestroyAPIView,
+    EligibilityDetailAPIView,
+    EligibilityLifecycleAPIView,
+    EligibilityListCreateAPIView,
+    EligibilityRestoreAPIView,
 )
 
-app_name = "eligibility_checks"
-
+app_name = "revenue_cycle_eligibility"
 urlpatterns = [
+    path("", EligibilityListCreateAPIView.as_view(), name="list-create"),
+    path("<uuid:eligibility_id>/", EligibilityDetailAPIView.as_view(), name="detail"),
     path(
-        "",
-        EligibilityCheckListCreateAPIView.as_view(),
-        name="list-create",
+        "<uuid:eligibility_id>/lifecycle/",
+        EligibilityLifecycleAPIView.as_view(),
+        name="lifecycle",
     ),
     path(
-        "<uuid:eligibility_id>/",
-        EligibilityCheckRetrieveUpdateDestroyAPIView.as_view(),
-        name="detail",
+        "<uuid:eligibility_id>/restore/",
+        EligibilityRestoreAPIView.as_view(),
+        name="restore",
     ),
 ]
-
-__all__ = [
-    "app_name",
-    "urlpatterns",
-]
+__all__ = ("app_name", "urlpatterns")

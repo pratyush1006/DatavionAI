@@ -1,87 +1,105 @@
-"""
-Serializers for the PaymentPosting module.
-"""
+"""Serializers for payment posting APIs."""
 
 from __future__ import annotations
 
+from decimal import Decimal
+
 from rest_framework import serializers
 
-from apps.revenue_cycle.payment_posting.models import PaymentPosting
-
-WRITE_FIELDS: tuple[str, ...] = (
-    "patient",
-    "payment",
-    "invoice",
-    "amount",
-    "posting_date",
-    "status",
-    "posted_by",
-    "notes",
-)
-
-DETAIL_FIELDS: tuple[str, ...] = (
-    "organization",
-    "patient",
-    "payment",
-    "invoice",
-    "amount",
-    "posting_date",
-    "status",
-    "posted_by",
-    "notes",
-    "organization",
-    "is_active",
-    "created_at",
-    "updated_at",
-)
-
-LIST_FIELDS: tuple[str, ...] = (
-    "organization",
-    "patient",
-    "payment",
-    "invoice",
-    "amount",
-    "posting_date",
-    "status",
-    "posted_by",
-    "notes",
-)
-
-READ_ONLY_FIELDS: tuple[str, ...] = ("id", "created_at", "updated_at")
+from ...models import PaymentPosting
 
 
 class PaymentPostingSerializer(serializers.ModelSerializer):
+    """Serialize payment posting resources."""
+
     class Meta:
+        """Configure the resource serializer."""
+
         model = PaymentPosting
-        fields = DETAIL_FIELDS
-        read_only_fields = READ_ONLY_FIELDS
+        fields = (
+            "id",
+            "patient",
+            "invoice",
+            "payer_name",
+            "payer_claim_reference",
+            "source",
+            "status",
+            "amount",
+            "adjustment_amount",
+            "posted_at",
+            "reversed_at",
+            "external_reference",
+            "idempotency_key",
+            "notes",
+            "posted_by",
+            "reversal_reason",
+            "created_at",
+            "updated_at",
+        )
+        read_only_fields = (
+            "id",
+            "status",
+            "posted_at",
+            "reversed_at",
+            "posted_by",
+            "created_at",
+            "updated_at",
+        )
 
 
-class PaymentPostingCreateSerializer(PaymentPostingSerializer):
-    class Meta(PaymentPostingSerializer.Meta):
-        fields = WRITE_FIELDS
-        read_only_fields = READ_ONLY_FIELDS
+class PaymentPostingCreateSerializer(serializers.Serializer):
+    """Validate payment posting creation input."""
+
+    patient = serializers.UUIDField()
+    invoice = serializers.UUIDField(required=False, allow_null=True)
+    payer_name = serializers.CharField(required=False, allow_blank=True, max_length=200)
+    payer_claim_reference = serializers.CharField(
+        required=False, allow_blank=True, max_length=100
+    )
+    source = serializers.ChoiceField(
+        choices=[
+            choice.value
+            for choice in __import__(
+                "apps.revenue_cycle.payment_posting.constants",
+                fromlist=["PaymentPostingSource"],
+            ).PaymentPostingSource
+        ]
+    )
+    amount = serializers.DecimalField(
+        max_digits=14, decimal_places=2, min_value=Decimal("0.01")
+    )
+    adjustment_amount = serializers.DecimalField(
+        max_digits=14, decimal_places=2, min_value=Decimal("0.00"), required=False
+    )
+    external_reference = serializers.CharField(
+        required=False, allow_blank=True, max_length=150
+    )
+    idempotency_key = serializers.CharField(max_length=150)
+    notes = serializers.CharField(required=False, allow_blank=True)
 
 
-class PaymentPostingUpdateSerializer(PaymentPostingSerializer):
-    class Meta(PaymentPostingSerializer.Meta):
-        fields = WRITE_FIELDS
-        read_only_fields = READ_ONLY_FIELDS
+class PaymentPostingUpdateSerializer(serializers.Serializer):
+    """Validate mutable payment posting input."""
+
+    payer_name = serializers.CharField(required=False, allow_blank=True, max_length=200)
+    payer_claim_reference = serializers.CharField(
+        required=False, allow_blank=True, max_length=100
+    )
+    source = serializers.CharField(required=False, max_length=20)
+    amount = serializers.DecimalField(
+        max_digits=14, decimal_places=2, min_value=Decimal("0.01"), required=False
+    )
+    adjustment_amount = serializers.DecimalField(
+        max_digits=14, decimal_places=2, min_value=Decimal("0.00"), required=False
+    )
+    external_reference = serializers.CharField(
+        required=False, allow_blank=True, max_length=150
+    )
+    notes = serializers.CharField(required=False, allow_blank=True)
 
 
-class PaymentPostingListSerializer(PaymentPostingSerializer):
-    class Meta(PaymentPostingSerializer.Meta):
-        fields = LIST_FIELDS
-        read_only_fields = READ_ONLY_FIELDS
-
-
-PaymentPostingDetailSerializer = PaymentPostingSerializer
-
-
-__all__ = [
+__all__ = (
     "PaymentPostingCreateSerializer",
-    "PaymentPostingDetailSerializer",
-    "PaymentPostingListSerializer",
     "PaymentPostingSerializer",
     "PaymentPostingUpdateSerializer",
-]
+)

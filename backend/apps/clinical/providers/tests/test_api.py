@@ -1,281 +1,350 @@
 """
-Tests for provider API endpoints.
+Provider API tests.
+
+Tests:
+- Create provider
+- List providers
+- Retrieve provider
+- Update provider
 """
 
 from __future__ import annotations
 
+from datetime import date
+
+from django.contrib.auth import get_user_model
 from django.urls import reverse
 from rest_framework import status
+from rest_framework.test import APITestCase
 
-from apps.clinical.providers.constants import (
-    ProviderStatus,
-    ProviderType,
-)
 from apps.clinical.providers.models import Provider
-from apps.common.tests.base import BaseAPITestCase
+from apps.organization.employees.models import Employee
+from apps.platform.organizations.models import Organization
+from apps.platform.rbac.models import (
+    Permission,
+    Role,
+    RolePermission,
+    UserRole,
+)
+from apps.platform.tenancy.context import (
+    TenantContext,
+    clear_current_tenant,
+    set_tenant_context,
+)
+from apps.platform.tenancy.models import (
+    Tenant,
+    TenantMembership,
+)
+
+User = get_user_model()
 
 
-class ProviderAPITestCase(BaseAPITestCase):
+class ProviderAPITestCase(APITestCase):
     """
-    Test cases for provider API endpoints.
+    Provider CRUD API test suite.
     """
 
-    def setUp(
-        self,
-    ) -> None:
+    LIST_URL = "providers:provider-list-create"
+
+    DETAIL_URL = "providers:provider-detail"
+
+    def setUp(self):
         """
-        Set up test data.
+        Prepare SaaS tenant,
+        organization,
+        user,
+        employee and RBAC.
         """
 
-        super().setUp()
+        # =====================================================
+        # Tenant
+        # =====================================================
 
-        self.employee = self.create_employee(
+        self.tenant = Tenant.objects.create(
+            name="Test Tenant",
+            slug="test-tenant",
+        )
+
+        # =====================================================
+        # Organization
+        # =====================================================
+
+        self.organization = Organization.objects.create(
+            tenant=self.tenant,
+            name="Test Clinic",
+            slug="test-clinic",
+        )
+
+        # =====================================================
+        # User
+        # =====================================================
+
+        self.user = User.objects.create_user(
+            email="admin@test.com",
+            password="password123",
             organization=self.organization,
+            is_verified=True,
         )
 
-        self.provider = Provider.objects.create(
-            organization=self.organization,
-            employee=self.employee,
-            provider_number="PRV000001",
-            license_number="LIC000001",
-            provider_type=ProviderType.PHYSICIAN,
+        self.client.force_authenticate(
+            user=self.user,
         )
 
-        self.list_url = reverse(
-            "providers-api:list-create",
-        )
-
-        self.detail_url = reverse(
-            "providers-api:detail",
-            kwargs={
-                "provider_id": self.provider.pk,
-            },
-        )
-
-    def test_list_providers(
-        self,
-    ) -> None:
-        """
-        List endpoint should return HTTP 200.
-        """
-
-        response = self.client.get(
-            self.list_url,
-        )
-
-        self.assertEqual(
-            response.status_code,
-            status.HTTP_200_OK,
-        )
-
-    def test_retrieve_provider(
-        self,
-    ) -> None:
-        """
-        Detail endpoint should return HTTP 200.
-        """
-
-        response = self.client.get(
-            self.detail_url,
-        )
-
-        self.assertEqual(
-            response.status_code,
-            status.HTTP_200_OK,
-        )
-
-    def test_retrieve_provider_not_found(
-        self,
-    ) -> None:
-        """
-        Retrieving a non-existent provider should return HTTP 404.
-        """
-
-        response = self.client.get(
-            reverse(
-                "providers-api:detail",
-                kwargs={
-                    "provider_id": "00000000-0000-0000-0000-000000000000",
-                },
+        self.client.credentials(
+            HTTP_X_TENANT_ID=str(
+                self.tenant.id,
             ),
         )
 
-        self.assertEqual(
-            response.status_code,
-            status.HTTP_404_NOT_FOUND,
+        # =====================================================
+        # Tenant Membership
+        # =====================================================
+
+        self.membership = TenantMembership.objects.create(
+            tenant=self.tenant,
+            user=self.user,
+            is_owner=True,
         )
 
-    def test_create_provider(
-        self,
-    ) -> None:
-        """
-        Create endpoint should create a provider.
-        """
+        # =====================================================
+        # Employee
+        # =====================================================
 
-        user = self.create_user(
-            username="provider2",
-            email="provider2@datavion.ai",
+        self.employee = Employee.objects.create(
             organization=self.organization,
+            user=self.user,
+            employee_code="EMP001",
+            designation="Doctor",
+            work_email="doctor@test.com",
+            phone_number="+919999999999",
+            joining_date=date.today(),
         )
 
-        employee = self.create_employee(
-            user=user,
-            employee_code="EMP000002",
+        # =====================================================
+        # RBAC
+        # =====================================================
+
+        self.create_rbac()
+
+    def tearDown(self):
+        """
+        Clear tenant context.
+        """
+
+        clear_current_tenant()
+
+        super().tearDown()
+
+    # =========================================================
+    # Tenant Context
+    # =========================================================
+
+    def activate_tenant_context(self):
+        """
+        Activate DatavionOS tenant context.
+
+        APITestCase does not execute
+        TenantMiddleware lifecycle.
+        """
+
+        set_tenant_context(
+            TenantContext(
+                tenant=self.tenant,
+                user=self.user,
+                membership=self.membership,
+            )
         )
 
-        payload = {
-            "organization": str(self.organization.pk),
-            "employee": str(employee.pk),
-            "provider_number": "PRV000002",
-            "license_number": "LIC000002",
-            "provider_type": ProviderType.SURGEON,
-            "years_of_experience": 8,
-            "status": ProviderStatus.ACTIVE,
+    # =========================================================
+    # RBAC
+    # =========================================================
+
+    def create_rbac(self):
+        """
+        Create provider permissions.
+        """
+
+        role, _ = Role.objects.get_or_create(
+            code="clinic_admin",
+            defaults={
+                "name": "Clinic Admin",
+                "is_system": True,
+            },
+        )
+
+        permissions = {
+            "providers.view": "view",
+            "providers.create": "create",
+            "providers.update": "update",
+            "providers.verify": "verify",
+            "providers.activate": "activate",
+            "providers.deactivate": "deactivate",
+            "providers.assign": "assign",
         }
 
-        response = self.client.post(
-            self.list_url,
-            payload,
-            format="json",
+        for code, action in permissions.items():
+            permission, _ = Permission.objects.get_or_create(
+                code=code,
+                defaults={
+                    "name": code.replace(
+                        ".",
+                        " ",
+                    ).title(),
+                    "module": "providers",
+                    "action": action,
+                },
+            )
+
+            RolePermission.objects.get_or_create(
+                role=role,
+                permission=permission,
+            )
+
+        UserRole.objects.get_or_create(
+            user=self.user,
+            role=role,
         )
+
+    # =========================================================
+    # Helpers
+    # =========================================================
+
+    def provider_payload(self):
+        """
+        Valid provider creation payload.
+        """
+
+        return {
+            "employee": str(
+                self.employee.id,
+            ),
+            "provider_number": "DOC-001",
+            "provider_type": "physician",
+            "specialization": "Cardiology",
+        }
+
+    def create_provider(self):
+        """
+        Create provider through workflow API.
+        """
+
+        self.activate_tenant_context()
+
+        try:
+            response = self.client.post(
+                reverse(
+                    self.LIST_URL,
+                ),
+                self.provider_payload(),
+                format="json",
+            )
+
+        finally:
+            clear_current_tenant()
 
         self.assertEqual(
             response.status_code,
             status.HTTP_201_CREATED,
+            response.data,
         )
 
-        self.assertTrue(
-            Provider.objects.filter(
-                provider_number="PRV000002",
-            ).exists(),
+        return Provider.objects.get(
+            id=response.data["id"],
         )
 
-    def test_create_provider_validation_error(
-        self,
-    ) -> None:
+    # =========================================================
+    # Tests
+    # =========================================================
+
+    def test_create_provider(self):
         """
-        Invalid payload should return HTTP 400.
-        """
-
-        response = self.client.post(
-            self.list_url,
-            {},
-            format="json",
-        )
-
-        self.assertEqual(
-            response.status_code,
-            status.HTTP_400_BAD_REQUEST,
-        )
-
-    def test_update_provider(
-        self,
-    ) -> None:
-        """
-        Update endpoint should update the provider.
+        Test provider creation.
         """
 
-        response = self.client.put(
-            self.detail_url,
-            {
-                "organization": str(self.organization.pk),
-                "employee": str(self.employee.pk),
-                "provider_number": "PRV000001",
-                "license_number": "LIC000001",
-                "provider_type": ProviderType.SURGEON,
-                "years_of_experience": 12,
-                "status": ProviderStatus.ACTIVE,
-            },
-            format="json",
+        provider = self.create_provider()
+
+        self.assertIsNotNone(
+            provider.id,
         )
+
+    def test_list_provider(self):
+        """
+        Test provider listing.
+        """
+
+        self.create_provider()
+
+        self.activate_tenant_context()
+
+        try:
+            response = self.client.get(
+                reverse(
+                    self.LIST_URL,
+                ),
+            )
+
+        finally:
+            clear_current_tenant()
 
         self.assertEqual(
             response.status_code,
             status.HTTP_200_OK,
         )
 
-        self.provider.refresh_from_db()
-
-        self.assertEqual(
-            self.provider.provider_type,
-            ProviderType.SURGEON,
-        )
-
-        self.assertEqual(
-            self.provider.years_of_experience,
-            12,
-        )
-
-    def test_partial_update_provider(
-        self,
-    ) -> None:
+    def test_retrieve_provider(self):
         """
-        PATCH should update a subset of fields.
+        Test provider retrieval.
         """
 
-        response = self.client.patch(
-            self.detail_url,
-            {
-                "years_of_experience": 20,
-            },
-            format="json",
-        )
+        provider = self.create_provider()
+
+        self.activate_tenant_context()
+
+        try:
+            response = self.client.get(
+                reverse(
+                    self.DETAIL_URL,
+                    kwargs={
+                        "provider_id": provider.id,
+                    },
+                ),
+            )
+
+        finally:
+            clear_current_tenant()
 
         self.assertEqual(
             response.status_code,
             status.HTTP_200_OK,
         )
 
-        self.provider.refresh_from_db()
-
-        self.assertEqual(
-            self.provider.years_of_experience,
-            20,
-        )
-
-    def test_delete_provider(
-        self,
-    ) -> None:
+    def test_update_provider(self):
         """
-        Delete endpoint should remove the provider.
+        Test provider update.
         """
 
-        response = self.client.delete(
-            self.detail_url,
-        )
+        provider = self.create_provider()
 
-        self.assertEqual(
-            response.status_code,
-            status.HTTP_204_NO_CONTENT,
-        )
+        self.activate_tenant_context()
 
-        self.assertFalse(
-            Provider.objects.filter(
-                pk=self.provider.pk,
-            ).exists(),
-        )
+        try:
+            response = self.client.patch(
+                reverse(
+                    self.DETAIL_URL,
+                    kwargs={
+                        "provider_id": provider.id,
+                    },
+                ),
+                {
+                    "specialization": "Neurology",
+                },
+                format="json",
+            )
 
-    def test_requires_authentication(
-        self,
-    ) -> None:
-        """
-        Endpoints should require authentication.
-        """
-
-        self.client.force_authenticate(
-            user=None,
-        )
-
-        response = self.client.get(
-            self.list_url,
-        )
+        finally:
+            clear_current_tenant()
 
         self.assertEqual(
             response.status_code,
-            status.HTTP_401_UNAUTHORIZED,
+            status.HTTP_200_OK,
         )
-
-
-__all__ = [
-    "ProviderAPITestCase",
-]

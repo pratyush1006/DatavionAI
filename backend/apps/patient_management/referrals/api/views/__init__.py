@@ -1,9 +1,19 @@
-from .referrals import (
+"""
+Patient Referral API views.
+"""
+
+from __future__ import annotations
+
+from apps.patient_management.referrals.api.views.referral import (
+    PatientReferralDetailAPIView,
     PatientReferralListCreateAPIView,
-    PatientReferralRetrieveUpdateDestroyAPIView,
+    PatientReferralRestoreAPIView,
+    PatientReferralTransitionAPIView,
 )
 
-__all__ = [
+__all__ = (
+    "PatientReferralDetailAPIView",
     "PatientReferralListCreateAPIView",
-    "PatientReferralRetrieveUpdateDestroyAPIView",
-]
+    "PatientReferralRestoreAPIView",
+    "PatientReferralTransitionAPIView",
+)

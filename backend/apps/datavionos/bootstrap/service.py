@@ -8,11 +8,11 @@ Responsibilities:
 - Resolve tenant context
 - Resolve organization context
 - Resolve SaaS entitlements
-- Initialize platform capabilities
-- Load enabled modules
+- Resolve tenant-aware module availability
 - Build navigation
 - Build dashboard
-- Return bootstrap result
+- Resolve branding
+- Return immutable bootstrap result
 
 Architecture:
 
@@ -22,16 +22,34 @@ Organization
    |
 DatavionOS Bootstrap Kernel
    |
-   +── Entitlement Resolver
+   +--> Entitlement Resolver
    |
-   +── Module Registry
+   +--> Module Availability Selector
+   |       |
+   |       +--> Module Registry
+   |       +--> Tenant Eligibility
+   |       +--> SaaS Module Entitlements
    |
-   +── Navigation Registry
+   +--> Navigation Builder
    |
-   +── Dashboard Registry
+   +--> Dashboard Builder
+   |
+   +--> Branding Resolver
+   |
+   v
+Platform Bootstrap Result
 
+Domain logic stays inside domain services/selectors/builders.
 
-Domain logic stays inside domain services.
+This service intentionally does not query:
+
+- Subscription models
+- Module entitlement models
+- Module registry internals
+- Billing databases
+- Tenant databases
+
+Those responsibilities belong to their respective layers.
 """
 
 from __future__ import annotations
@@ -39,8 +57,23 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
+from apps.datavionos.builders.dashboard import (
+    DashboardBuilder,
+    DashboardCard,
+)
+from apps.datavionos.builders.navigation import (
+    NavigationBuilder,
+    NavigationItem,
+)
+from apps.datavionos.resolvers.branding import (
+    BrandingResolver,
+)
 from apps.datavionos.resolvers.entitlement import (
     EntitlementResolver,
+)
+from apps.datavionos.selectors.module_availability import (
+    ModuleAvailabilitySelector,
+    module_availability_selector,
 )
 
 
@@ -50,20 +83,23 @@ from apps.datavionos.resolvers.entitlement import (
 )
 class PlatformBootstrapResult:
     """
-    Result returned by platform bootstrap.
+    Immutable result returned by DatavionOS bootstrap.
+
+    The result contains already-resolved runtime data and does not
+    perform additional business-logic resolution.
     """
 
     tenant: Any
 
     organization: Any | None = None
 
-    branding: Any | None = None
+    branding: dict[str, Any] | None = None
 
     feature_flags: dict[str, bool] | None = None
 
-    navigation: list[Any] | None = None
+    navigation: list[NavigationItem] | None = None
 
-    dashboard: list[Any] | None = None
+    dashboard: list[DashboardCard] | None = None
 
     modules: list[Any] | None = None
 
@@ -74,34 +110,95 @@ class PlatformBootstrapService:
     """
     DatavionOS kernel bootstrap orchestrator.
 
-    Converts SaaS subscription entitlements into
-    runtime platform configuration.
+    Converts tenant context and SaaS entitlement capabilities into
+    the runtime platform configuration consumed by the frontend.
+
+    Resolution flow:
+
+        tenant
+          |
+          +--> organization
+          |
+          +--> entitlement capabilities
+          |
+          +--> module availability
+          |
+          +--> navigation
+          |
+          +--> dashboard
+          |
+          +--> branding
+          |
+          v
+        bootstrap result
     """
+
+    def __init__(
+        self,
+        *,
+        module_selector: ModuleAvailabilitySelector | None = None,
+        navigation_builder: NavigationBuilder | None = None,
+        dashboard_builder: DashboardBuilder | None = None,
+        branding_resolver: BrandingResolver | None = None,
+    ) -> None:
+        """
+        Initialize bootstrap orchestration dependencies.
+
+        Dependencies are injectable to keep the orchestration layer
+        testable without changing runtime behavior.
+        """
+
+        self._module_selector = module_selector or module_availability_selector
+
+        self._navigation_builder = navigation_builder or NavigationBuilder()
+
+        self._dashboard_builder = dashboard_builder or DashboardBuilder()
+
+        self._branding_resolver = branding_resolver or BrandingResolver()
+
+    # ==================================================================
+    # Bootstrap
+    # ==================================================================
 
     def bootstrap(
         self,
         *,
         tenant: Any,
         organization: Any | None = None,
+        permissions: set[str] | frozenset[str] | None = None,
     ) -> PlatformBootstrapResult:
         """
-        Bootstrap DatavionOS runtime.
+        Bootstrap the DatavionOS runtime.
+
+        Resolution order:
+
+        1. Validate runtime tenant context
+        2. Resolve SaaS capabilities
+        3. Resolve tenant-aware modules
+        4. Resolve feature flags
+        5. Build navigation
+        6. Build dashboard
+        7. Resolve branding
+        8. Return immutable bootstrap result
+
+        Subscription and billing rules are delegated to
+        EntitlementResolver.
+
+        Module entitlement resolution is performed once and the
+        resulting capability snapshot is passed into
+        ModuleAvailabilitySelector.
         """
 
         self._bootstrap_rbac(
             tenant,
         )
 
-        capabilities = (
-            EntitlementResolver.resolve(
-                organization=organization,
-            )
-            if organization
-            else {}
+        resolved_permissions = self._resolve_permissions(
+            permissions,
         )
 
-        branding = self._bootstrap_branding(
-            tenant,
+        capabilities = self._resolve_capabilities(
+            organization=organization,
         )
 
         feature_flags = self._bootstrap_feature_flags(
@@ -109,15 +206,24 @@ class PlatformBootstrapService:
         )
 
         modules = self._bootstrap_modules(
-            capabilities,
+            tenant=tenant,
+            capabilities=capabilities,
         )
 
         navigation = self._bootstrap_navigation(
-            modules,
+            modules=modules,
+            permissions=resolved_permissions,
+            feature_flags=feature_flags,
         )
 
         dashboard = self._bootstrap_dashboard(
-            modules,
+            modules=modules,
+            permissions=resolved_permissions,
+            feature_flags=feature_flags,
+        )
+
+        branding = self._bootstrap_branding(
+            organization=organization,
         )
 
         return PlatformBootstrapResult(
@@ -131,156 +237,241 @@ class PlatformBootstrapService:
             capabilities=capabilities,
         )
 
-    # ==============================================================
+    # ==================================================================
+    # Permissions
+    # ==================================================================
+
+    @staticmethod
+    def _resolve_permissions(
+        permissions: set[str] | frozenset[str] | None,
+    ) -> set[str]:
+        """
+        Normalize effective runtime permissions.
+
+        RBAC resolution belongs to PlatformBootstrapSelector.
+
+        The bootstrap service only consumes the already-resolved
+        permission set.
+        """
+
+        if permissions is None:
+            return set()
+
+        return set(
+            permissions,
+        )
+
+    # ==================================================================
+    # SaaS Entitlements
+    # ==================================================================
+
+    @staticmethod
+    def _resolve_capabilities(
+        *,
+        organization: Any | None,
+    ) -> dict[str, Any]:
+        """
+        Resolve SaaS runtime capabilities.
+
+        EntitlementResolver is the sole DatavionOS boundary into
+        SaaS billing entitlement resolution.
+
+        Missing organization intentionally fails closed.
+        """
+
+        if organization is None:
+            return {
+                "modules": {},
+                "features": {},
+                "limits": {},
+                "capabilities": {},
+            }
+
+        capabilities = EntitlementResolver.resolve(
+            organization=organization,
+        )
+
+        if not isinstance(
+            capabilities,
+            dict,
+        ):
+            return {
+                "modules": {},
+                "features": {},
+                "limits": {},
+                "capabilities": {},
+            }
+
+        return capabilities
+
+    # ==================================================================
     # RBAC
-    # ==============================================================
+    # ==================================================================
 
     def _bootstrap_rbac(
         self,
         tenant: Any,
     ) -> None:
         """
-        Initialize tenant RBAC.
+        Initialize tenant RBAC integration.
 
-        RBAC remains inside RBAC domain services.
+        RBAC resolution remains inside PlatformBootstrapSelector
+        and the platform RBAC domain.
+
+        This hook intentionally performs no resolution itself.
         """
 
         return
 
-    # ==============================================================
+    # ==================================================================
     # Branding
-    # ==============================================================
+    # ==================================================================
 
     def _bootstrap_branding(
         self,
-        tenant: Any,
-    ) -> Any | None:
+        organization: Any | None,
+    ) -> dict[str, Any]:
         """
-        Resolve tenant branding.
+        Resolve organization branding.
 
-        Future:
+        Branding resolution is delegated to BrandingResolver.
 
-        - Organization logo
-        - Theme
-        - White labeling
+        The resolver owns the branding defaults and organization-specific
+        branding policy. The bootstrap service only orchestrates it.
         """
 
-        return None
+        branding = self._branding_resolver.resolve(
+            organization=organization,
+        )
 
-    # ==============================================================
+        if not isinstance(
+            branding,
+            dict,
+        ):
+            return {}
+
+        return dict(
+            branding,
+        )
+
+    # ==================================================================
     # Feature Flags
-    # ==============================================================
+    # ==================================================================
 
+    @staticmethod
     def _bootstrap_feature_flags(
-        self,
         capabilities: dict[str, Any],
     ) -> dict[str, bool]:
         """
-        Resolve enabled features.
+        Resolve enabled runtime feature flags.
+
+        Missing or malformed feature payloads fail closed.
         """
 
-        return capabilities.get(
+        features = capabilities.get(
             "features",
             {},
         )
 
-    # ==============================================================
+        if not isinstance(
+            features,
+            dict,
+        ):
+            return {}
+
+        return {str(feature): bool(enabled) for feature, enabled in features.items()}
+
+    # ==================================================================
     # Modules
-    # ==============================================================
+    # ==================================================================
 
     def _bootstrap_modules(
         self,
+        *,
+        tenant: Any,
         capabilities: dict[str, Any],
     ) -> list[Any]:
         """
-        Resolve enabled modules.
+        Resolve tenant-aware runtime modules.
 
         Flow:
 
-        SaaS Plan
-            |
-            v
-        Subscription Snapshot
-            |
-            v
-        Entitlement Resolver
-            |
-            v
-        Module Registry
-            |
-            v
-        Platform Modules
+            SaaS EntitlementResolver
+                        |
+                        v
+                    capabilities
+                        |
+                        v
+            ModuleAvailabilitySelector
+                        |
+                  +-----+-----+
+                  |           |
+            ModuleRegistry  Tenant Type
+                  |           |
+                  +-----+-----+
+                        |
+                        v
+                  ModuleContract[]
         """
 
-        from apps.datavionos.registries.module import (
-            ModuleRegistry,
+        if tenant is None:
+            return []
+
+        return self._module_selector.get(
+            tenant=tenant,
+            capabilities=capabilities,
         )
 
-        return ModuleRegistry.resolve_enabled(
-            capabilities.get(
-                "modules",
-                {},
-            )
-        )
-
-    # ==============================================================
+    # ==================================================================
     # Navigation
-    # ==============================================================
+    # ==================================================================
 
     def _bootstrap_navigation(
         self,
+        *,
         modules: list[Any],
-    ) -> list[Any]:
+        permissions: set[str],
+        feature_flags: dict[str, bool],
+    ) -> list[NavigationItem]:
         """
-        Resolve navigation.
+        Build runtime navigation.
 
-        Flow:
+        NavigationBuilder receives only already-resolved runtime
+        modules and access context.
 
-        Enabled Modules
-              |
-              v
-        Navigation Registry
-              |
-              v
-        Frontend Sidebar
+        It does not perform subscription or billing resolution.
         """
 
-        from apps.datavionos.registries.navigation import (
-            NavigationRegistry,
+        return self._navigation_builder.build(
+            modules=modules,
+            permissions=permissions,
+            feature_flags=feature_flags,
         )
 
-        return NavigationRegistry.resolve(
-            modules,
-        )
-
-    # ==============================================================
+    # ==================================================================
     # Dashboard
-    # ==============================================================
+    # ==================================================================
 
     def _bootstrap_dashboard(
         self,
+        *,
         modules: list[Any],
-    ) -> list[Any]:
+        permissions: set[str],
+        feature_flags: dict[str, bool],
+    ) -> list[DashboardCard]:
         """
-        Resolve dashboard widgets.
+        Build runtime dashboard.
 
-        Flow:
+        DashboardBuilder receives only already-resolved runtime
+        modules and access context.
 
-        Enabled Modules
-              |
-              v
-        Dashboard Registry
-              |
-              v
-        Frontend Dashboard
+        It does not perform subscription or billing resolution.
         """
 
-        from apps.datavionos.registries.dashboard import (
-            DashboardRegistry,
-        )
-
-        return DashboardRegistry.resolve(
-            modules,
+        return self._dashboard_builder.build(
+            modules=modules,
+            permissions=permissions,
+            feature_flags=feature_flags,
         )
 
 

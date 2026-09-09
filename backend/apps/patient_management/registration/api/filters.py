@@ -5,7 +5,6 @@ Filters for the Patient Registration module.
 from __future__ import annotations
 
 import django_filters
-
 from apps.patient_management.registration.models import (
     PatientRegistration,
 )

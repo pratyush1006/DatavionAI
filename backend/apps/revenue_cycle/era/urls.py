@@ -1,32 +1,27 @@
-"""
-URL patterns for the Remittance Advice module.
-"""
+"""URL configuration for Revenue Cycle ERA."""
 
 from __future__ import annotations
 
 from django.urls import path
 
-from apps.revenue_cycle.era.api.views import (
-    RemittanceAdviceListCreateAPIView,
-    RemittanceAdviceRetrieveUpdateDestroyAPIView,
+from .api.views import (
+    ERADetailAPIView,
+    ERAListCreateAPIView,
+    ERAPostAPIView,
+    ERARestoreAPIView,
+    ERAReverseAPIView,
+    ERAValidateAPIView,
 )
 
-app_name = "remittances"
+app_name = "revenue_cycle_era"
 
-urlpatterns = [
-    path(
-        "",
-        RemittanceAdviceListCreateAPIView.as_view(),
-        name="list-create",
-    ),
-    path(
-        "<uuid:remittance_id>/",
-        RemittanceAdviceRetrieveUpdateDestroyAPIView.as_view(),
-        name="detail",
-    ),
-]
+urlpatterns = (
+    path("", ERAListCreateAPIView.as_view(), name="list-create"),
+    path("<uuid:era_id>/", ERADetailAPIView.as_view(), name="detail"),
+    path("<uuid:era_id>/validate/", ERAValidateAPIView.as_view(), name="validate"),
+    path("<uuid:era_id>/post/", ERAPostAPIView.as_view(), name="post"),
+    path("<uuid:era_id>/reverse/", ERAReverseAPIView.as_view(), name="reverse"),
+    path("<uuid:era_id>/restore/", ERARestoreAPIView.as_view(), name="restore"),
+)
 
-__all__ = [
-    "app_name",
-    "urlpatterns",
-]
+__all__ = ("app_name", "urlpatterns")

@@ -16,7 +16,7 @@ from apps.platform.organizations.api.organization_domain.serializers import (
     OrganizationDomainDetailSerializer,
     OrganizationDomainUpdateSerializer,
 )
-from apps.platform.organizations.permissions.organization_domain import (
+from apps.platform.organizations.permissions.domain import (
     CanDeleteOrganizationDomain,
     CanUpdateOrganizationDomain,
     CanViewOrganizationDomain,

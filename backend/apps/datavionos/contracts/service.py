@@ -71,7 +71,7 @@ class ServiceContract(BaseContract):
         Validate the service contract.
         """
 
-        super().validate()
+        BaseContract.validate(self)
 
         if not self.display_name.strip():
             raise ValueError(

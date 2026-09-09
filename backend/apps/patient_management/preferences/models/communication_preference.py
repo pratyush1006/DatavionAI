@@ -1,127 +1,74 @@
-"""
-Patient communication preference model.
-"""
+"""Patient communication-channel preference model."""
 
 from __future__ import annotations
 
 from django.db import models
 
-from apps.common.models import BaseModel
-from apps.patient_management.patients.models import Patient
-from apps.platform.notifications.constants import (
-    NotificationChannelType,
+from apps.core.models import (
+    BaseModel,
+    SoftDeleteManager,
 )
-from apps.platform.organizations.models import Organization
+from apps.patient_management.preferences.constants import PreferenceChannel
+from apps.patient_management.preferences.models.preference import PatientPreference
+from apps.patient_management.preferences.querysets import (
+    PatientCommunicationPreferenceQuerySet,
+)
 
 
 class PatientCommunicationPreference(BaseModel):
-    """
-    Stores notification channel preferences for a patient.
-    """
+    """Store consent-like routing choices for one communication channel."""
 
-    organization = models.ForeignKey(
-        Organization,
-        on_delete=models.CASCADE,
-        related_name="patient_communication_preferences",
-    )
-
-    patient = models.ForeignKey(
-        Patient,
+    preference = models.ForeignKey(
+        PatientPreference,
         on_delete=models.CASCADE,
         related_name="communication_preferences",
     )
-
     channel = models.CharField(
-        max_length=32,
-        choices=NotificationChannelType.choices,
+        max_length=20,
+        choices=(
+            (item.value, item.name.replace("_", " ").title())
+            for item in PreferenceChannel
+        ),
     )
-
-    priority = models.PositiveSmallIntegerField(
-        default=1,
-    )
-
     enabled = models.BooleanField(
         default=True,
     )
-
-    appointment_notifications = models.BooleanField(
+    appointment_reminders = models.BooleanField(
         default=True,
     )
-
-    clinical_notifications = models.BooleanField(
+    clinical_updates = models.BooleanField(
         default=True,
     )
-
-    laboratory_notifications = models.BooleanField(
+    administrative_updates = models.BooleanField(
         default=True,
     )
-
-    radiology_notifications = models.BooleanField(
-        default=True,
-    )
-
-    pharmacy_notifications = models.BooleanField(
-        default=True,
-    )
-
-    billing_notifications = models.BooleanField(
-        default=True,
-    )
-
-    insurance_notifications = models.BooleanField(
-        default=True,
-    )
-
-    marketing_notifications = models.BooleanField(
+    marketing_messages = models.BooleanField(
         default=False,
     )
 
-    emergency_notifications = models.BooleanField(
-        default=True,
-    )
-
-    ai_assistant_notifications = models.BooleanField(
-        default=True,
-    )
+    objects = SoftDeleteManager.from_queryset(PatientCommunicationPreferenceQuerySet)()
 
     class Meta:
-        verbose_name = "Patient Communication Preference"
+        """Define database constraints."""
 
-        verbose_name_plural = "Patient Communication Preferences"
-
-        ordering = ("priority",)
-
-        constraints = [
+        db_table = "patient_management_communication_preference"
+        constraints = (
             models.UniqueConstraint(
-                fields=[
-                    "organization",
-                    "patient",
-                    "channel",
-                ],
-                name="uq_patient_channel",
+                fields=("preference", "channel"),
+                name="patcomm_pref_channel_uniq",
             ),
-        ]
+        )
+        indexes = (
+            models.Index(
+                fields=("preference", "channel"),
+                name="patcomm_pref_channel_idx",
+            ),
+        )
 
-        indexes = [
-            models.Index(
-                fields=[
-                    "organization",
-                    "patient",
-                ],
-            ),
-            models.Index(
-                fields=[
-                    "channel",
-                ],
-            ),
-            models.Index(
-                fields=[
-                    "enabled",
-                ],
-            ),
-        ]
+    def __str__(self) -> str:
+        """Return a stable human-readable identifier."""
 
-    def __str__(
-        self,
-    ) -> str:
-        return f"{self.patient} - {self.get_channel_display()}"
+        return f"{self.preference_id}:{self.channel}"
+
+
+__all__ = ("PatientCommunicationPreference",)

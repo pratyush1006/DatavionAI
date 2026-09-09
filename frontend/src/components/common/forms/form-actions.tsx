@@ -1,5 +1,15 @@
 /**
- * Standard form action buttons.
+ * =============================================================================
+ * DatavionOS
+ * File:
+ * src/components/common/forms/form-actions.tsx
+ * =============================================================================
+ *
+ * Standard form action buttons with contextual feedback.
+ *
+ * Action success/error messages are rendered directly below the action buttons.
+ * Global toast notifications should not be used for contextual form results.
+ * =============================================================================
  */
 
 "use client";
@@ -12,29 +22,53 @@ import {
   X,
 } from "lucide-react";
 
+import { ActionFeedback } from "@/components/common/feedback";
+
 import { Button } from "@/components/ui/button";
 
 import { cn } from "@/lib/utils";
 
-export type FormActionsProps = Readonly<{
-  isSubmitting?: boolean;
+export type FormActionsProps =
+  Readonly<{
+    isSubmitting?: boolean;
 
-  isEdit?: boolean;
+    isEdit?: boolean;
 
-  submitLabel?: string;
+    submitLabel?: string;
 
-  submittingLabel?: string;
+    submittingLabel?: string;
 
-  cancelLabel?: string;
+    cancelLabel?: string;
 
-  onCancel?: () => void;
+    onCancel?: () => void;
 
-  submitIcon?: ReactNode;
+    submitIcon?: ReactNode;
 
-  children?: ReactNode;
+    /**
+     * Success feedback rendered below the action buttons.
+     */
+    successMessage?: string | null;
 
-  className?: string;
-}>;
+    /**
+     * Error feedback rendered below the action buttons.
+     */
+    errorMessage?: string | null;
+
+    /**
+     * Informational feedback rendered below the action buttons.
+     */
+    infoMessage?: string | null;
+
+    /**
+     * Additional content rendered in the action row.
+     *
+     * Existing consumers use this for validation messages and other
+     * contextual content.
+     */
+    children?: ReactNode;
+
+    className?: string;
+  }>;
 
 export function FormActions({
   isSubmitting = false,
@@ -44,6 +78,9 @@ export function FormActions({
   cancelLabel = "Cancel",
   onCancel,
   submitIcon,
+  successMessage,
+  errorMessage,
+  infoMessage,
   children,
   className,
 }: FormActionsProps) {
@@ -62,45 +99,59 @@ export function FormActions({
   return (
     <div
       className={cn(
-        "flex items-center justify-end gap-3 border-t pt-6",
+        "border-t pt-6",
         className,
       )}
     >
-      {children}
+      <div className="flex items-center justify-end gap-3">
+        {children}
 
-      {onCancel && (
+        {onCancel && (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onCancel}
+            disabled={isSubmitting}
+          >
+            <X className="mr-2 h-4 w-4" />
+
+            {cancelLabel}
+          </Button>
+        )}
+
         <Button
-          type="button"
-          variant="outline"
-          onClick={onCancel}
+          type="submit"
           disabled={isSubmitting}
         >
-          <X className="mr-2 h-4 w-4" />
+          {isSubmitting ? (
+            <>
+              <Loader2
+                className="mr-2 h-4 w-4 animate-spin"
+                aria-hidden="true"
+              />
 
-          {cancelLabel}
+              {loadingLabel}
+            </>
+          ) : (
+            <>
+              {submitIcon ?? (
+                <Save
+                  className="mr-2 h-4 w-4"
+                  aria-hidden="true"
+                />
+              )}
+
+              {label}
+            </>
+          )}
         </Button>
-      )}
+      </div>
 
-      <Button
-        type="submit"
-        disabled={isSubmitting}
-      >
-        {isSubmitting ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-
-            {loadingLabel}
-          </>
-        ) : (
-          <>
-            {submitIcon ?? (
-              <Save className="mr-2 h-4 w-4" />
-            )}
-
-            {label}
-          </>
-        )}
-      </Button>
+      <ActionFeedback
+        successMessage={successMessage}
+        errorMessage={errorMessage}
+        infoMessage={infoMessage}
+      />
     </div>
   );
 }

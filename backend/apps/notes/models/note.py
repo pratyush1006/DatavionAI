@@ -7,10 +7,10 @@ from __future__ import annotations
 from django.db import models
 
 from apps.clinical.encounters.models import Encounter
-from apps.clinical.patients.models import Patient
 from apps.core.models import BaseManager, BaseModel
 from apps.notes.constants.notes import DEFAULT_NOTE_TYPE, NoteType
 from apps.organization.employees.models import Employee
+from apps.patient_management.patients.models import Patient
 from apps.platform.organizations.models import Organization
 
 

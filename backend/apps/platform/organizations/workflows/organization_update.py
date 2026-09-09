@@ -45,21 +45,49 @@ from apps.platform.organizations.tasks import (
 class OrganizationUpdateRequest:
     """
     Organization update workflow request.
+
+    This DTO mirrors the Organization update API contract while keeping
+    workflow orchestration independent from DRF serializers.
+
+    Nullable fields use ``None`` for both an omitted value and an
+    explicitly supplied null value. Field presence is therefore tracked
+    separately by ``metadata`` when the API needs to distinguish those
+    cases, particularly for nullable Geography references.
     """
 
     organization_id: UUID
 
     name: str | None = None
-
-    slug: str | None = None
+    display_name: str | None = None
+    category: str | None = None
+    organization_type: str | None = None
+    status: str | None = None
+    size: str | None = None
 
     email: str | None = None
-
+    support_email: str | None = None
     phone: str | None = None
-
     website: str | None = None
 
+    address: str | None = None
+    city: str | None = None
+    state: str | None = None
+    country: str | None = None
+
+    country_ref: Any | None = None
+    region_ref: Any | None = None
+    city_ref: Any | None = None
+
+    postal_code: str | None = None
+    timezone: str | None = None
+
+    registration_number: str | None = None
+    tax_number: str | None = None
+    license_number: str | None = None
+    accreditation: str | None = None
+
     description: str | None = None
+    is_demo: bool | None = None
 
     metadata: dict[str, Any] = field(
         default_factory=dict,
@@ -76,9 +104,7 @@ class OrganizationUpdateData:
     """
 
     organization_id: UUID
-
     updated: bool
-
     event_id: UUID | None = None
 
 
@@ -93,7 +119,9 @@ class OrganizationUpdateWorkflow(
     - Validate authorization policy
     - Execute organization update service
     - Publish organization updated event
-    - Dispatch post commit tasks
+    - Dispatch post-commit tasks
+
+    Business validation remains in the serializer/service layers.
     """
 
     def __init__(
@@ -102,11 +130,9 @@ class OrganizationUpdateWorkflow(
         request: OrganizationUpdateRequest,
         policy: OrganizationPolicy | None = None,
     ) -> None:
-
         super().__init__()
 
         self._request = request
-
         self._policy = policy or OrganizationPolicy()
 
     @property
@@ -158,20 +184,54 @@ class OrganizationUpdateWorkflow(
         #
         # Partial update payload.
         #
-        # Only supplied fields are updated.
+        # The view stores the fields supplied by the API request in
+        # request.metadata["_provided_fields"].
         #
+        # This allows PATCH to distinguish:
+        #
+        #     omitted field
+        #         -> leave existing value unchanged
+        #
+        #     explicitly supplied null
+        #         -> clear the value
+        #
+        #     supplied value
+        #         -> replace the value
+        #
+        provided_fields = self._provided_fields()
+
+        field_values: dict[str, Any] = {
+            "name": request.name,
+            "display_name": request.display_name,
+            "category": request.category,
+            "organization_type": request.organization_type,
+            "status": request.status,
+            "size": request.size,
+            "email": request.email,
+            "support_email": request.support_email,
+            "phone": request.phone,
+            "website": request.website,
+            "address": request.address,
+            "city": request.city,
+            "state": request.state,
+            "country": request.country,
+            "country_ref": request.country_ref,
+            "region_ref": request.region_ref,
+            "city_ref": request.city_ref,
+            "postal_code": request.postal_code,
+            "timezone": request.timezone,
+            "registration_number": request.registration_number,
+            "tax_number": request.tax_number,
+            "license_number": request.license_number,
+            "accreditation": request.accreditation,
+            "description": request.description,
+            "is_demo": request.is_demo,
+        }
+
         validated_data = {
-            key: value
-            for key, value in {
-                "name": request.name,
-                "slug": request.slug,
-                "email": request.email,
-                "phone": request.phone,
-                "website": request.website,
-                "description": request.description,
-                "metadata": request.metadata,
-            }.items()
-            if value is not None
+            field_name: field_values[field_name]
+            for field_name in provided_fields
+            if field_name in field_values
         }
 
         organization = update_organization(
@@ -209,8 +269,70 @@ class OrganizationUpdateWorkflow(
                 updated=True,
                 event_id=event.event_id,
             ),
-            message=("Organization updated successfully."),
+            message="Organization updated successfully.",
             code="organization_updated",
+        )
+
+    def _provided_fields(self) -> tuple[str, ...]:
+        """
+        Return fields explicitly supplied by the API request.
+
+        The view layer is responsible for capturing request-field
+        presence because a workflow DTO alone cannot distinguish an
+        omitted nullable field from an explicitly supplied ``None``.
+        """
+
+        provided_fields = self._request.metadata.get(
+            "_provided_fields",
+        )
+
+        if provided_fields is None:
+            #
+            # Backward-compatible fallback for direct workflow callers.
+            #
+            return tuple(
+                field_name
+                for field_name, value in {
+                    "name": self._request.name,
+                    "display_name": self._request.display_name,
+                    "category": self._request.category,
+                    "organization_type": self._request.organization_type,
+                    "status": self._request.status,
+                    "size": self._request.size,
+                    "email": self._request.email,
+                    "support_email": self._request.support_email,
+                    "phone": self._request.phone,
+                    "website": self._request.website,
+                    "address": self._request.address,
+                    "city": self._request.city,
+                    "state": self._request.state,
+                    "country": self._request.country,
+                    "country_ref": self._request.country_ref,
+                    "region_ref": self._request.region_ref,
+                    "city_ref": self._request.city_ref,
+                    "postal_code": self._request.postal_code,
+                    "timezone": self._request.timezone,
+                    "registration_number": self._request.registration_number,
+                    "tax_number": self._request.tax_number,
+                    "license_number": self._request.license_number,
+                    "accreditation": self._request.accreditation,
+                    "description": self._request.description,
+                    "is_demo": self._request.is_demo,
+                }.items()
+                if value is not None
+            )
+
+        if not isinstance(
+            provided_fields,
+            (list, tuple, set, frozenset),
+        ):
+            raise TypeError(
+                "Organization update metadata '_provided_fields' "
+                "must be a collection of field names.",
+            )
+
+        return tuple(
+            field_name for field_name in provided_fields if isinstance(field_name, str)
         )
 
     def _get_organization(

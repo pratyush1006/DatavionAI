@@ -1,5 +1,5 @@
 """
-Create serializer for patient addresses.
+Create serializer for Patient Addresses.
 """
 
 from __future__ import annotations
@@ -9,16 +9,12 @@ from rest_framework import serializers
 from apps.patient_management.addresses.models import Address
 
 
-class AddressCreateSerializer(serializers.ModelSerializer):
-    """
-    Serializer for creating a patient address.
-    """
-
+class AddressCreateSerializer(
+    serializers.ModelSerializer,
+):
     class Meta:
         model = Address
         fields = (
-            "id",
-            "organization",
             "patient",
             "address_type",
             "address_use",
@@ -28,7 +24,9 @@ class AddressCreateSerializer(serializers.ModelSerializer):
             "state",
             "country",
             "postal_code",
-            "status",
             "source",
             "is_primary",
         )
+
+
+__all__ = ("AddressCreateSerializer",)

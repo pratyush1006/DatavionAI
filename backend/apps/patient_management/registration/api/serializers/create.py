@@ -1,17 +1,18 @@
 """
 Create serializer for the Patient Registration module.
+
+The serializer performs API-level validation and representation only.
+Organization resolution, authorization, workflow orchestration, domain
+validation, registration-number generation, persistence, and event
+publication are handled by the workflow and domain service layers.
 """
 
 from __future__ import annotations
 
-from rest_framework import serializers
-
 from apps.patient_management.registration.models import (
     PatientRegistration,
 )
-from apps.patient_management.registration.services import (
-    PatientRegistrationService,
-)
+from rest_framework import serializers
 
 
 class PatientRegistrationCreateSerializer(
@@ -19,6 +20,10 @@ class PatientRegistrationCreateSerializer(
 ):
     """
     Serializer for creating a patient registration.
+
+    Organization is intentionally not accepted from the client. The active
+    organization is resolved by the API/workflow context to prevent
+    cross-organization registration creation.
     """
 
     class Meta:
@@ -44,22 +49,20 @@ class PatientRegistrationCreateSerializer(
             "verified_by",
             "checked_in_at",
             "completed_at",
+            "cancellation_reason",
+            "cancellation_notes",
             "created_at",
             "updated_at",
         )
 
-    def create(
-        self,
-        validated_data: dict,
-    ) -> PatientRegistration:
+    def validate_notes(self, value: str | None) -> str | None:
         """
-        Create a patient registration.
+        Normalize optional registration notes.
         """
+        if value is None:
+            return None
 
-        request = self.context["request"]
+        return value.strip()
 
-        return PatientRegistrationService.create_registration(
-            organization=request.user.organization,
-            created_by=request.user,
-            **validated_data,
-        )
+
+__all__ = ("PatientRegistrationCreateSerializer",)

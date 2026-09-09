@@ -1,0 +1,20 @@
+{
+  "installer": "DatavionOS Patient Communication Production Installer",
+  "version": "1.0.0",
+  "module": "apps.patient_management.communication",
+  "canonical_patient": "apps.patient_management.patients.models.Patient",
+  "persistence_base": "apps.core.models.BaseModel",
+  "architecture": "API -> RBAC -> Workflow -> Policy -> Service -> Model -> Domain Event",
+  "fresh_install": true,
+  "delete_existing_module_before_install": true,
+  "migrations_generated": false,
+  "backup_generated": false,
+  "pycache_generated": false,
+  "workflow_names": [
+    "patient_communication.create",
+    "patient_communication.update",
+    "patient_communication.delete",
+    "patient_communication.restore",
+    "patient_communication.lifecycle"
+  ]
+}

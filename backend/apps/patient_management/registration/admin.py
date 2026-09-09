@@ -1,5 +1,9 @@
 """
-Admin configuration for the Patient Registration module.
+Django admin configuration for the Patient Registration module.
+
+The admin interface is intended for inspection and controlled management.
+Lifecycle mutations must use the canonical workflow layer rather than
+performing direct queryset updates.
 """
 
 from __future__ import annotations
@@ -16,6 +20,11 @@ from apps.patient_management.registration.models import (
 class PatientRegistrationAdmin(admin.ModelAdmin):
     """
     Admin interface for PatientRegistration.
+
+    The admin is read-oriented with respect to lifecycle state. Lifecycle
+    transitions are intentionally not implemented through direct queryset
+    updates so that policy, service, audit, and domain-event behavior remain
+    consistent across application entry points.
     """
 
     list_display = (
@@ -44,18 +53,23 @@ class PatientRegistrationAdmin(admin.ModelAdmin):
         "registration_number",
         "patient__first_name",
         "patient__last_name",
-        "patient__medical_record_number",
+        "patient__mrn",
     )
 
     ordering = ("-registration_datetime",)
 
     readonly_fields = (
         "uuid",
-        "created_at",
-        "updated_at",
+        "registration_number",
+        "registration_status",
+        "verified",
+        "verification_method",
+        "verified_by",
         "verified_at",
         "checked_in_at",
         "completed_at",
+        "created_at",
+        "updated_at",
     )
 
     autocomplete_fields = (
@@ -75,8 +89,6 @@ class PatientRegistrationAdmin(admin.ModelAdmin):
     list_per_page = 50
 
     save_on_top = True
-
-    actions = ("mark_verified",)
 
     fieldsets = (
         (
@@ -143,18 +155,5 @@ class PatientRegistrationAdmin(admin.ModelAdmin):
         ),
     )
 
-    @admin.action(
-        description=_("Mark selected registrations as verified"),
-    )
-    def mark_verified(
-        self,
-        request,
-        queryset,
-    ) -> None:
-        """
-        Mark registrations as verified.
-        """
 
-        queryset.update(
-            verified=True,
-        )
+__all__ = ("PatientRegistrationAdmin",)

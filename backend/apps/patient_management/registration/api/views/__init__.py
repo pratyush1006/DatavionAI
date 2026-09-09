@@ -1,27 +1,31 @@
 """
-Views for the Patient Registration module.
+API views for the Patient Registration module.
 """
 
-from apps.patient_management.registration.api.views.create import (
-    PatientRegistrationCreateAPIView,
+from __future__ import annotations
+
+from apps.patient_management.registration.api.views.lifecycle import (
+    PatientRegistrationCancelAPIView,
+    PatientRegistrationCheckInAPIView,
+    PatientRegistrationCompleteAPIView,
+    PatientRegistrationNoShowAPIView,
+    PatientRegistrationRejectAPIView,
+    PatientRegistrationVerifyAPIView,
 )
-from apps.patient_management.registration.api.views.delete import (
-    PatientRegistrationDeleteAPIView,
+from apps.patient_management.registration.api.views.list_create import (
+    PatientRegistrationListCreateAPIView,
 )
-from apps.patient_management.registration.api.views.detail import (
-    PatientRegistrationDetailAPIView,
-)
-from apps.patient_management.registration.api.views.list import (
-    PatientRegistrationListAPIView,
-)
-from apps.patient_management.registration.api.views.update import (
-    PatientRegistrationUpdateAPIView,
+from apps.patient_management.registration.api.views.retrieve_update_destroy import (
+    PatientRegistrationRetrieveUpdateDestroyAPIView,
 )
 
-__all__ = [
-    "PatientRegistrationCreateAPIView",
-    "PatientRegistrationDeleteAPIView",
-    "PatientRegistrationDetailAPIView",
-    "PatientRegistrationListAPIView",
-    "PatientRegistrationUpdateAPIView",
-]
+__all__ = (
+    "PatientRegistrationCancelAPIView",
+    "PatientRegistrationCheckInAPIView",
+    "PatientRegistrationCompleteAPIView",
+    "PatientRegistrationListCreateAPIView",
+    "PatientRegistrationNoShowAPIView",
+    "PatientRegistrationRejectAPIView",
+    "PatientRegistrationRetrieveUpdateDestroyAPIView",
+    "PatientRegistrationVerifyAPIView",
+)

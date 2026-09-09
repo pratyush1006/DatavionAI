@@ -1,112 +1,138 @@
 /**
- * Delete organization dialog.
+ * =============================================================================
+ * DatavionOS
+ * File:
+ * src/features/platform/organizations/components/dialogs/delete-organization-dialog.tsx
+ * =============================================================================
+ *
+ * Organization archive dialog.
+ *
+ * Organization deletion is implemented as a soft archive. The record remains
+ * retained by the platform and is removed from the normal active collection.
+ *
+ * The dialog is controlled by the parent row action so that it remains outside
+ * the Radix dropdown lifecycle.
+ *
+ * Contextual mutation feedback is rendered directly below the Archive button.
+ * =============================================================================
  */
 
 "use client";
-
-import { useState } from "react";
-
-import { AxiosError } from "axios";
-import { Trash2 } from "lucide-react";
-import { toast } from "sonner";
 
 import {
   ConfirmDialog,
 } from "@/components/common/dialogs";
 
-import { Button } from "@/components/ui/button";
-
 import type {
-  Organization,
+  OrganizationListItem,
 } from "../../domain";
 
 import {
   useDeleteOrganizationMutation,
 } from "../../hooks";
 
-type ApiError = {
-  error?: {
-    message?: string;
-  };
-};
+/* =============================================================================
+ * Props
+ * =============================================================================
+ */
 
 export type DeleteOrganizationDialogProps =
   Readonly<{
-    organization: Organization;
+    organization:
+      OrganizationListItem;
+
+    open:
+      boolean;
+
+    onOpenChange:
+      (open: boolean) => void;
   }>;
+
+/* =============================================================================
+ * Component
+ * =============================================================================
+ */
 
 export function DeleteOrganizationDialog({
   organization,
+  open,
+  onOpenChange,
 }: DeleteOrganizationDialogProps) {
-  const [open, setOpen] =
-    useState(false);
-
   const mutation =
     useDeleteOrganizationMutation();
 
-  async function handleDelete() {
+  /* ===========================================================================
+   * Archive
+   * =========================================================================== */
+
+  async function handleDelete(): Promise<void> {
     try {
       await mutation.mutateAsync(
         organization.id,
       );
-
-      toast.success(
-        "Organization deleted successfully.",
-      );
-
-      setOpen(false);
-    } catch (error) {
-      const axiosError =
-        error as AxiosError<ApiError>;
-
-      const message =
-        axiosError.response?.data?.error
-          ?.message ??
-        "Unable to delete organization.";
-
-      toast.error(message);
+    } catch {
+      /**
+       * The mutation error is exposed through mutation.error and rendered by
+       * ConfirmDialog below.
+       *
+       * We intentionally do not close the dialog on failure so the user can
+       * see the contextual error and retry.
+       */
     }
   }
 
+  /* ===========================================================================
+   * Mutation feedback
+   * =========================================================================== */
+
+  const successMessage =
+    mutation.isSuccess
+      ? "Organization archived successfully."
+      : null;
+
+  const errorMessage =
+    mutation.error instanceof Error
+      ? mutation.error.message
+      : mutation.error
+        ? "Unable to archive organization."
+        : null;
+
+  /* ===========================================================================
+   * Render
+   * =========================================================================== */
+
   return (
-    <>
-      <Button
-        variant="ghost"
-        size="icon-sm"
-        onClick={() =>
-          setOpen(true)
-        }
-      >
-        <Trash2 className="h-4 w-4" />
-
-        <span className="sr-only">
-          Delete organization
-        </span>
-      </Button>
-
-      <ConfirmDialog
-        open={open}
-        onOpenChange={setOpen}
-        title="Delete Organization"
-        description={
-          <>
-            Are you sure you want to delete{" "}
-            <strong>
-              {organization.name}
-            </strong>
-            ? This action cannot be
-            undone.
-          </>
-        }
-        confirmLabel="Delete"
-        confirmVariant="destructive"
-        isLoading={
-          mutation.isPending
-        }
-        onConfirm={
-          handleDelete
-        }
-      />
-    </>
+    <ConfirmDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title="Archive Organization"
+      description={
+        <>
+          Are you sure you want to archive{" "}
+          <strong>
+            {
+              organization.displayName ||
+              organization.code
+            }
+          </strong>
+          ? Archived organizations are retained by the platform.
+        </>
+      }
+      confirmLabel="Archive"
+      cancelLabel="Cancel"
+      confirmVariant="destructive"
+      isLoading={
+        mutation.isPending
+      }
+      successMessage={
+        successMessage
+      }
+      errorMessage={
+        errorMessage
+      }
+      onConfirm={
+        handleDelete
+      }
+    />
   );
 }

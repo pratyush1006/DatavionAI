@@ -1,74 +1,98 @@
 /**
- * Reusable enterprise list page layout.
+ * =============================================================================
+ * DatavionOS
+ * File: src/components/common/page/list-page.tsx
+ * =============================================================================
+ *
+ * Reusable enterprise list-page layout.
+ * =============================================================================
  */
 
 "use client";
 
 import type { ReactNode } from "react";
 
-import { PageContainer } from "@/components/layout/page-container";
-import { PageHeader } from "@/components/layout/page-header";
+import {
+    PageContainer,
+} from "@/components/layout/page-container";
+
+import {
+    PageHeader,
+} from "@/components/layout/page-header";
 
 import { cn } from "@/lib/utils";
 
-export type ListPageProps = Readonly<{
-  title: string;
+/* =============================================================================
+ * Types
+ * =============================================================================
+ */
 
-  description?: string;
+export type ListPageProps =
+    Readonly<{
+        title: string;
 
-  actions?: ReactNode;
+        description?: string;
 
-  toolbar?: ReactNode;
+        actions?: ReactNode;
 
-  filters?: ReactNode;
+        toolbar?: ReactNode;
 
-  children: ReactNode;
+        filters?: ReactNode;
 
-  footer?: ReactNode;
+        children: ReactNode;
 
-  className?: string;
-}>;
+        footer?: ReactNode;
+
+        className?: string;
+    }>;
+
+/* =============================================================================
+ * Component
+ * =============================================================================
+ */
 
 export function ListPage({
-  title,
-  description,
-  actions,
-  toolbar,
-  filters,
-  children,
-  footer,
-  className,
+    title,
+    description,
+    actions,
+    toolbar,
+    filters,
+    children,
+    footer,
+    className,
 }: ListPageProps) {
-  return (
-    <PageContainer
-      className={cn(
-        "space-y-6",
-        className,
-      )}
-    >
-      <PageHeader
-        title={title}
-        description={description}
-        actions={actions}
-      />
+    return (
+        <PageContainer>
+            <div
+                className={cn(
+                    "space-y-6",
+                    className,
+                )}
+            >
+                <PageHeader
+                    title={title}
+                    description={description}
+                    actions={actions}
+                />
 
-      {(toolbar || filters) && (
-        <section className="space-y-4">
-          {toolbar}
+                {(toolbar || filters) && (
+                    <section className="space-y-4">
+                        {toolbar}
 
-          {filters}
-        </section>
-      )}
+                        {filters}
+                    </section>
+                )}
 
-      <main className="space-y-6">
-        {children}
-      </main>
+                <main className="space-y-6">
+                    {children}
+                </main>
 
-      {footer && (
-        <footer>
-          {footer}
-        </footer>
-      )}
-    </PageContainer>
-  );
+                {footer && (
+                    <footer>
+                        {footer}
+                    </footer>
+                )}
+            </div>
+        </PageContainer>
+    );
 }

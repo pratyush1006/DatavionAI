@@ -1,21 +1,21 @@
-"""DatavionOS module registry initializer.
+"""
+DatavionOS module registry initializer.
 
-DatavionOS module contracts are used by navigation/dashboard builders.
-The current kernel bootstrap flow in this repo does not populate the
-global `module_registry`, so we ensure AI module contracts are registered
-during Django app startup.
-
-This initializer is intentionally lightweight and idempotent.
+Module definitions are discovered from the DatavionOS module package;
+this initializer contains no module-specific list.
 """
 
 from __future__ import annotations
 
-from apps.datavionos.modules.registration import (
-    register_datavionos_modules,
-)
+from apps.datavionos.modules.registration import register_datavionos_modules
 
 
 def initialize_module_registry() -> None:
-    """Register all platform module contracts required by DatavionOS."""
+    """Discover and register all DatavionOS module contracts."""
 
     register_datavionos_modules()
+
+
+__all__ = [
+    "initialize_module_registry",
+]

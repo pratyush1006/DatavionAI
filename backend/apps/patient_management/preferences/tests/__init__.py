@@ -1,3 +1,1 @@
-"""
-Shared testing infrastructure for DatavionAI.
-"""
+"""Patient Preferences tests."""

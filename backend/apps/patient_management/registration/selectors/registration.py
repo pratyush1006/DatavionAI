@@ -4,6 +4,9 @@ Selectors for the Patient Registration module.
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+from uuid import UUID
+
 from django.db.models import QuerySet
 
 from apps.common.exceptions import ObjectNotFoundException
@@ -11,21 +14,25 @@ from apps.patient_management.registration.models import (
     PatientRegistration,
 )
 
+if TYPE_CHECKING:
+    from apps.platform.organizations.models import Organization
+
 
 def get_registration_by_uuid(
-    uuid: str,
+    *,
+    uuid: UUID | str,
+    organization: Organization,
 ) -> PatientRegistration:
     """
-    Retrieve a registration by UUID.
+    Retrieve a registration by UUID within an organization.
 
-    Raises:
-        ObjectNotFoundException:
-            If the registration does not exist.
+    Organization scoping is mandatory to prevent cross-organization access.
     """
 
     try:
         return PatientRegistration.objects.get(
             uuid=uuid,
+            organization=organization,
         )
     except PatientRegistration.DoesNotExist as exc:
         raise ObjectNotFoundException(
@@ -34,11 +41,12 @@ def get_registration_by_uuid(
 
 
 def get_registration_by_number(
-    organization,
+    *,
+    organization: Organization,
     registration_number: str,
 ) -> PatientRegistration:
     """
-    Retrieve a registration by registration number.
+    Retrieve a registration by registration number within an organization.
     """
 
     try:
@@ -52,108 +60,157 @@ def get_registration_by_number(
         ) from exc
 
 
-def list_registrations() -> QuerySet[PatientRegistration]:
-    """
-    Return all registrations.
-    """
-
-    return PatientRegistration.objects.all()
-
-
 def list_organization_registrations(
-    organization,
+    *,
+    organization: Organization,
 ) -> QuerySet[PatientRegistration]:
     """
-    Return registrations for an organization.
+    Return registrations belonging to an organization.
     """
 
     return PatientRegistration.objects.for_organization(
         organization,
-    ).recent()
+    ).ordered()
 
 
 def list_patient_registrations(
-    patient,
+    *,
+    organization: Organization,
+    patient_id: UUID | str,
 ) -> QuerySet[PatientRegistration]:
     """
-    Return registrations for a patient.
+    Return registrations for a patient within an organization.
+
+    The patient ID is scoped through the registration organization boundary,
+    preventing registrations belonging to another organization from being
+    returned.
     """
 
-    return PatientRegistration.objects.for_patient(
-        patient,
-    ).recent()
+    return (
+        PatientRegistration.objects.for_organization(
+            organization,
+        )
+        .filter(
+            patient_id=patient_id,
+        )
+        .ordered()
+    )
 
 
 def get_today_registrations(
-    organization,
+    *,
+    organization: Organization,
 ) -> QuerySet[PatientRegistration]:
     """
-    Return today's registrations.
+    Return today's registrations for an organization.
     """
 
-    return PatientRegistration.objects.for_organization(
-        organization,
-    ).today()
+    return (
+        PatientRegistration.objects.for_organization(
+            organization,
+        )
+        .today()
+        .ordered()
+    )
 
 
 def get_completed_registrations(
-    organization,
+    *,
+    organization: Organization,
 ) -> QuerySet[PatientRegistration]:
     """
-    Return completed registrations.
+    Return completed registrations for an organization.
     """
 
-    return PatientRegistration.objects.for_organization(
-        organization,
-    ).completed()
+    return (
+        PatientRegistration.objects.for_organization(
+            organization,
+        )
+        .completed()
+        .ordered()
+    )
 
 
 def get_pending_verification_registrations(
-    organization,
+    *,
+    organization: Organization,
 ) -> QuerySet[PatientRegistration]:
     """
     Return registrations awaiting verification.
     """
 
-    return PatientRegistration.objects.for_organization(
-        organization,
-    ).pending_verification()
+    return (
+        PatientRegistration.objects.for_organization(
+            organization,
+        )
+        .pending_verification()
+        .ordered()
+    )
 
 
 def get_ready_for_checkin_registrations(
-    organization,
+    *,
+    organization: Organization,
 ) -> QuerySet[PatientRegistration]:
     """
     Return registrations ready for check-in.
     """
 
-    return PatientRegistration.objects.for_organization(
-        organization,
-    ).ready_for_checkin()
+    return (
+        PatientRegistration.objects.for_organization(
+            organization,
+        )
+        .ready_for_checkin()
+        .ordered()
+    )
 
 
 def get_ready_for_completion_registrations(
-    organization,
+    *,
+    organization: Organization,
 ) -> QuerySet[PatientRegistration]:
     """
     Return registrations ready for completion.
     """
 
-    return PatientRegistration.objects.for_organization(
-        organization,
-    ).ready_for_completion()
+    return (
+        PatientRegistration.objects.for_organization(
+            organization,
+        )
+        .ready_for_completion()
+        .ordered()
+    )
 
 
 def search_registrations(
-    organization,
+    *,
+    organization: Organization,
     query: str,
 ) -> QuerySet[PatientRegistration]:
     """
-    Search registrations.
+    Search registrations within an organization.
     """
 
-    return PatientRegistration.objects.for_organization(
-        organization,
-    ).search(
-        query,
+    return (
+        PatientRegistration.objects.for_organization(
+            organization,
+        )
+        .search(
+            query,
+        )
+        .ordered()
     )
+
+
+__all__ = (
+    "get_completed_registrations",
+    "get_pending_verification_registrations",
+    "get_ready_for_checkin_registrations",
+    "get_ready_for_completion_registrations",
+    "get_registration_by_number",
+    "get_registration_by_uuid",
+    "get_today_registrations",
+    "list_organization_registrations",
+    "list_patient_registrations",
+    "search_registrations",
+)

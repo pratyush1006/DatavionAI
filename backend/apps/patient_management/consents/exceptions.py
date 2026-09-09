@@ -1,58 +1,32 @@
 """
-Custom exceptions for the Patient Consents module.
+Patient Consent domain exceptions.
+
+Domain-specific exceptions for consent validation and lifecycle handling.
 """
 
 from __future__ import annotations
 
-from apps.common.exceptions import DatavionException
-from apps.common.exceptions.codes import ErrorCode
 
-
-class ConsentError(DatavionException):
+class PatientConsentError(Exception):
     """
-    Base consent exception.
+    Base exception for Patient Consent domain errors.
     """
 
-    default_code = ErrorCode.VALIDATION_ERROR
-    default_detail = "Consent operation failed."
 
-
-class DuplicateConsentError(ConsentError):
+class PatientConsentValidationError(PatientConsentError):
     """
-    Raised when a duplicate consent exists.
+    Raised when Patient Consent data fails domain validation.
     """
 
-    default_detail = "An active consent already exists."
 
-
-class ConsentExpiredError(ConsentError):
+class PatientConsentNotFoundError(PatientConsentError):
     """
-    Raised when a consent has expired.
+    Raised when a requested Patient Consent cannot be found.
     """
 
-    default_detail = "The consent has expired."
 
-
-class ConsentRevokedError(ConsentError):
-    """
-    Raised when a consent has been revoked.
-    """
-
-    default_detail = "The consent has been revoked."
-
-
-class InvalidConsentError(ConsentError):
-    """
-    Raised when a consent is invalid.
-    """
-
-    default_detail = "The consent is invalid."
-
-
-__all__ = [
-    "ConsentError",
-    "ConsentExpiredError",
-    "ConsentRevokedError",
-    "DuplicateConsentError",
-    "InvalidConsentError",
-]
+__all__ = (
+    "PatientConsentError",
+    "PatientConsentValidationError",
+    "PatientConsentNotFoundError",
+)

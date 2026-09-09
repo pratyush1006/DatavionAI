@@ -1,21 +1,9 @@
-"""
-URL configuration for the Patient Documents module.
-"""
+"""Compatibility URL export for Patient Documents."""
 
 from __future__ import annotations
 
-from django.urls import (
-    include,
-    path,
+from apps.patient_management.patient_documents.api.urls import (
+    urlpatterns,
 )
 
-app_name = "patient-documents"
-
-urlpatterns = [
-    path(
-        "",
-        include(
-            "apps.patient_management.patient_documents.api.urls.patient_document",
-        ),
-    ),
-]
+__all__ = ("urlpatterns",)

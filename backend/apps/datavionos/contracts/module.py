@@ -228,7 +228,7 @@ class ModuleContract(
         Validate module definition.
         """
 
-        super().validate()
+        BaseContract.validate(self)
 
         if not self.identifier.strip():
             raise ValueError(

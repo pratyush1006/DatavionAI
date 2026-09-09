@@ -10,7 +10,6 @@ from django.db import models
 
 from apps.clinical.encounters.models import Encounter
 from apps.clinical.medications.models import Medication
-from apps.clinical.patients.models import Patient
 from apps.clinical.prescriptions.constants import (
     DEFAULT_PRESCRIPTION_FREQUENCY,
     DEFAULT_PRESCRIPTION_STATUS,
@@ -22,6 +21,7 @@ from apps.core.models import (
     BaseManager,
     BaseModel,
 )
+from apps.patient_management.patients.models import Patient
 from apps.platform.organizations.models import Organization
 
 

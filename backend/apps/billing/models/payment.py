@@ -33,7 +33,7 @@ class Payment(BaseModel):
     )
 
     patient = models.ForeignKey(
-        "patients.Patient",
+        "patient_core.Patient",
         on_delete=models.CASCADE,
         related_name="payments",
         help_text="Patient who made the payment.",

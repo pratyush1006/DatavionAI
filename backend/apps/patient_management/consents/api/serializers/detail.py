@@ -1,56 +1,27 @@
 """
-Detail serializer for Patient Consents.
+Patient Consent detail serializer.
 """
 
 from __future__ import annotations
 
-from rest_framework import serializers
-
-from apps.patient_management.consents.models import Consent
-
-__all__ = [
-    "ConsentDetailSerializer",
-]
+from apps.patient_management.consents.api.serializers.base import (
+    PatientConsentBaseSerializer,
+)
 
 
-class ConsentDetailSerializer(
-    serializers.ModelSerializer,
+class PatientConsentDetailSerializer(
+    PatientConsentBaseSerializer,
 ):
     """
-    Detailed serializer for a consent.
+    Serialize a complete Patient Consent representation.
     """
 
-    organization_name = serializers.CharField(
-        source="organization.name",
-        read_only=True,
-    )
+    class Meta(PatientConsentBaseSerializer.Meta):
+        """
+        Configure detail serializer fields.
+        """
 
-    patient_name = serializers.CharField(
-        source="patient.full_name",
-        read_only=True,
-    )
+        fields = PatientConsentBaseSerializer.Meta.fields
 
-    consent_type_display = serializers.CharField(
-        source="get_consent_type_display",
-        read_only=True,
-    )
 
-    status_display = serializers.CharField(
-        source="get_status_display",
-        read_only=True,
-    )
-
-    method_display = serializers.CharField(
-        source="get_method_display",
-        read_only=True,
-    )
-
-    source_display = serializers.CharField(
-        source="get_source_display",
-        read_only=True,
-    )
-
-    class Meta:
-        model = Consent
-
-        fields = "__all__"
+__all__ = ("PatientConsentDetailSerializer",)

@@ -1,9 +1,19 @@
-from .portal import (
+"""
+Patient Portal API view exports.
+"""
+
+from __future__ import annotations
+
+from apps.patient_management.portal.api.views.portal import (
+    PatientPortalAccountDetailAPIView,
+    PatientPortalAccountLifecycleAPIView,
     PatientPortalAccountListCreateAPIView,
-    PatientPortalAccountRetrieveUpdateDestroyAPIView,
+    PatientPortalAccountRestoreAPIView,
 )
 
-__all__ = [
+__all__ = (
+    "PatientPortalAccountDetailAPIView",
+    "PatientPortalAccountLifecycleAPIView",
     "PatientPortalAccountListCreateAPIView",
-    "PatientPortalAccountRetrieveUpdateDestroyAPIView",
-]
+    "PatientPortalAccountRestoreAPIView",
+)

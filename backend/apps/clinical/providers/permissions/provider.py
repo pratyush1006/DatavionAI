@@ -1,62 +1,138 @@
 """
-Provider permissions.
+Provider RBAC permissions.
+
+Provider bounded context permission adapters.
+
+Uses DatavionOS centralized RBAC engine.
+
+Permission convention:
+
+    providers.<action>
+
+Examples:
+
+    providers.view
+    providers.create
+    providers.update
+    providers.verify
+    providers.activate
+    providers.deactivate
+    providers.assign
 """
 
 from __future__ import annotations
 
-from apps.common.permissions import BasePermission
+from apps.platform.rbac.permissions.base import (
+    RBACPermissionBase,
+)
 
 
-class ProviderPermission:
+class CanViewProvider(
+    RBACPermissionBase,
+):
     """
-    Provider permission codes.
-    """
-
-    VIEW = "provider.view"
-
-    CREATE = "provider.create"
-
-    UPDATE = "provider.update"
-
-    DELETE = "provider.delete"
-
-
-class CanViewProvider(BasePermission):
-    """
-    Permission to view providers.
+    Allows viewing providers.
     """
 
-    permission_code = ProviderPermission.VIEW
+    message = "You do not have permission to view providers."
+
+    permission_code = "providers.view"
 
 
-class CanCreateProvider(BasePermission):
+class CanCreateProvider(
+    RBACPermissionBase,
+):
     """
-    Permission to create providers.
-    """
-
-    permission_code = ProviderPermission.CREATE
-
-
-class CanUpdateProvider(BasePermission):
-    """
-    Permission to update providers.
+    Allows creating providers.
     """
 
-    permission_code = ProviderPermission.UPDATE
+    message = "You do not have permission to create providers."
+
+    permission_code = "providers.create"
 
 
-class CanDeleteProvider(BasePermission):
+class CanUpdateProvider(
+    RBACPermissionBase,
+):
     """
-    Permission to delete providers.
+    Allows updating providers.
     """
 
-    permission_code = ProviderPermission.DELETE
+    message = "You do not have permission to update providers."
+
+    permission_code = "providers.update"
 
 
-__all__ = [
-    "ProviderPermission",
+class CanVerifyProvider(
+    RBACPermissionBase,
+):
+    """
+    Allows verifying providers.
+
+    Used by:
+
+    - ProviderVerificationWorkflow
+    """
+
+    message = "You do not have permission to verify providers."
+
+    permission_code = "providers.verify"
+
+
+class CanActivateProvider(
+    RBACPermissionBase,
+):
+    """
+    Allows activating providers.
+
+    Used by:
+
+    - ProviderActivationWorkflow
+    """
+
+    message = "You do not have permission to activate providers."
+
+    permission_code = "providers.activate"
+
+
+class CanDeactivateProvider(
+    RBACPermissionBase,
+):
+    """
+    Allows deactivating providers.
+
+    Used by:
+
+    - ProviderDeactivationWorkflow
+    """
+
+    message = "You do not have permission to deactivate providers."
+
+    permission_code = "providers.deactivate"
+
+
+class CanAssignProvider(
+    RBACPermissionBase,
+):
+    """
+    Allows assigning providers.
+
+    Used by:
+
+    - ProviderAssignmentWorkflow
+    """
+
+    message = "You do not have permission to assign providers."
+
+    permission_code = "providers.assign"
+
+
+__all__ = (
     "CanViewProvider",
     "CanCreateProvider",
     "CanUpdateProvider",
-    "CanDeleteProvider",
-]
+    "CanVerifyProvider",
+    "CanActivateProvider",
+    "CanDeactivateProvider",
+    "CanAssignProvider",
+)

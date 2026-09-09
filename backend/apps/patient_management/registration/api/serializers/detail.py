@@ -1,21 +1,24 @@
 """
 Detail serializer for the Patient Registration module.
+
+The serializer is responsible only for API representation.
+Authorization, workflow orchestration, and persistence remain outside
+the serializer layer.
 """
 
 from __future__ import annotations
 
-from rest_framework import serializers
-
 from apps.patient_management.registration.models import (
     PatientRegistration,
 )
+from rest_framework import serializers
 
 
 class PatientRegistrationDetailSerializer(
     serializers.ModelSerializer,
 ):
     """
-    Serializer for retrieving a patient registration.
+    Read-only serializer for retrieving a patient registration.
     """
 
     patient_uuid = serializers.UUIDField(
@@ -29,7 +32,7 @@ class PatientRegistrationDetailSerializer(
     )
 
     medical_record_number = serializers.CharField(
-        source="patient.medical_record_number",
+        source="patient.mrn",
         read_only=True,
     )
 
@@ -87,3 +90,6 @@ class PatientRegistrationDetailSerializer(
         )
 
         read_only_fields = fields
+
+
+__all__ = ("PatientRegistrationDetailSerializer",)

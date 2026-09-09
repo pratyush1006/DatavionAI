@@ -1,3 +1,3 @@
 """
-Patient Addresses module.
+DatavionOS Patient Addresses bounded context.
 """

@@ -29,7 +29,8 @@ from .organization_domain import (
     domain_exists,
     get_domain_by_id,
     get_domain_by_name,
-    get_domains,
+    get_organization_domain,
+    get_organization_domains,
     get_primary_domain,
     get_verified_domains,
 )
@@ -86,7 +87,8 @@ __all__: tuple[str, ...] = (
     "domain_exists",
     "get_domain_by_id",
     "get_domain_by_name",
-    "get_domains",
+    "get_organization_domain",
+    "get_organization_domains",
     "get_primary_domain",
     "get_verified_domains",
     # Features

@@ -1,5 +1,9 @@
-from .insurance_verification import InsuranceVerification
+"""Revenue Cycle Insurance Verification models."""
 
-__all__ = [
-    "InsuranceVerification",
-]
+from __future__ import annotations
+
+from apps.revenue_cycle.insurance_verification.models.insurance_verification import (
+    InsuranceVerification,
+)
+
+__all__ = ("InsuranceVerification",)

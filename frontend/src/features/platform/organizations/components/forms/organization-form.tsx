@@ -1,22 +1,45 @@
 /**
- * Organization form.
+ * =============================================================================
+ * DatavionOS
+ * File:
+ * src/features/platform/organizations/components/forms/organization-form.tsx
+ * =============================================================================
+ *
+ * Organization create/edit form.
+ *
+ * Responsibilities
+ * ----------------
+ * - Validate organization form data.
+ * - Render organization form sections.
+ * - Handle client-side validation feedback.
+ * - Render contextual mutation feedback below the action buttons.
+ * - Keep mutation feedback separate from global toast notifications.
+ * =============================================================================
  */
 
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  zodResolver,
+} from "@hookform/resolvers/zod";
+
 import {
   useEffect,
   useMemo,
 } from "react";
-import { useForm } from "react-hook-form";
+
+import {
+  useForm,
+} from "react-hook-form";
 
 import {
   AppForm,
   FormActions,
 } from "@/components/common/forms";
 
-import { Form } from "@/components/ui/form";
+import {
+  Form,
+} from "@/components/ui/form";
 
 import {
   organizationDefaults,
@@ -28,50 +51,92 @@ import {
   AddressInformation,
   ContactInformation,
   GeneralInformation,
+  LegalInformation,
 } from "./sections";
 
-export type OrganizationFormProps = Readonly<{
-  defaultValues?: Partial<OrganizationFormValues>;
+/* =============================================================================
+ * Props
+ * =============================================================================
+ */
 
-  isSubmitting?: boolean;
+export type OrganizationFormProps =
+  Readonly<{
+    defaultValues?: Partial<OrganizationFormValues>;
 
-  isEdit?: boolean;
+    isSubmitting?: boolean;
 
-  onSubmit: (
-    values: OrganizationFormValues,
-  ) => void | Promise<void>;
+    isEdit?: boolean;
 
-  onCancel?: () => void;
-}>;
+    /**
+     * Contextual success message rendered directly below the submit button.
+     */
+    successMessage?: string | null;
+
+    /**
+     * Contextual error message rendered directly below the submit button.
+     */
+    errorMessage?: string | null;
+
+    /**
+     * Contextual informational message rendered directly below the submit button.
+     */
+    infoMessage?: string | null;
+
+    onSubmit: (
+      values: OrganizationFormValues,
+    ) => void | Promise<void>;
+
+    onCancel?: () => void;
+  }>;
+
+/* =============================================================================
+ * Component
+ * =============================================================================
+ */
 
 export function OrganizationForm({
   defaultValues,
   isSubmitting = false,
   isEdit = false,
+  successMessage,
+  errorMessage,
+  infoMessage,
   onSubmit,
   onCancel,
 }: OrganizationFormProps) {
-  const initialValues = useMemo(
-    () => ({
-      ...organizationDefaults,
-      ...defaultValues,
-    }),
-    [defaultValues],
-  );
+  const initialValues =
+    useMemo(
+      () => ({
+        ...organizationDefaults,
+        ...defaultValues,
+      }),
+      [defaultValues],
+    );
 
   const form =
     useForm<OrganizationFormValues>({
-      resolver: zodResolver(
-        organizationSchema,
-      ),
-
-      defaultValues: initialValues,
-
+      resolver:
+        zodResolver(
+          organizationSchema,
+        ),
+      defaultValues:
+        initialValues,
       mode: "onBlur",
     });
 
+  const firstError =
+    Object.values(
+      form.formState.errors,
+    ).find(
+      (error) =>
+        typeof error?.message ===
+        "string",
+    );
+
   useEffect(() => {
-    form.reset(initialValues);
+    form.reset(
+      initialValues,
+    );
   }, [
     form,
     initialValues,
@@ -82,6 +147,10 @@ export function OrganizationForm({
       <AppForm
         onSubmit={form.handleSubmit(
           onSubmit,
+          () =>
+            form.setFocus(
+              "name",
+            ),
         )}
       >
         <GeneralInformation
@@ -97,9 +166,15 @@ export function OrganizationForm({
           form={form}
         />
 
+        <LegalInformation
+          form={form}
+        />
+
         <FormActions
           isEdit={isEdit}
-          isSubmitting={isSubmitting}
+          isSubmitting={
+            isSubmitting
+          }
           onCancel={onCancel}
           submitLabel={
             isEdit
@@ -111,7 +186,27 @@ export function OrganizationForm({
               ? "Updating..."
               : "Creating..."
           }
-        />
+          successMessage={
+            successMessage
+          }
+          errorMessage={
+            errorMessage
+          }
+          infoMessage={
+            infoMessage
+          }
+        >
+          {firstError?.message && (
+            <p
+              role="alert"
+              className="mr-auto text-sm text-destructive"
+            >
+              {
+                firstError.message
+              }
+            </p>
+          )}
+        </FormActions>
       </AppForm>
     </Form>
   );

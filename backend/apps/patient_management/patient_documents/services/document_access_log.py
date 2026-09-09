@@ -1,41 +1,37 @@
-"""
-Services for document access logs.
-"""
+"""Domain service for Patient Document access auditing."""
 
 from __future__ import annotations
 
 from django.db import transaction
 
 from apps.patient_management.patient_documents.models import (
-    DocumentAccessLog,
-    PatientDocument,
+    PatientDocumentAccessLog,
 )
 
 
-@transaction.atomic
-def create_document_access_log(
-    *,
-    document: PatientDocument,
-    user,
-    action: str,
-    ip_address: str | None = None,
-    user_agent: str = "",
-    remarks: str = "",
-) -> DocumentAccessLog:
-    """
-    Create a document access log entry.
-    """
+class PatientDocumentAccessLogService:
+    """Persist auditable document-access records."""
 
-    return DocumentAccessLog.objects.create(
-        document=document,
-        user=user,
-        action=action,
-        ip_address=ip_address,
-        user_agent=user_agent,
-        remarks=remarks,
-    )
+    @staticmethod
+    @transaction.atomic
+    def record(
+        *,
+        patient_document,
+        user,
+        action: str,
+        ip_address: str | None = None,
+        user_agent: str = "",
+        metadata: dict | None = None,
+    ) -> PatientDocumentAccessLog:
+        """Record one document access event."""
+        return PatientDocumentAccessLog.objects.create(
+            patient_document=patient_document,
+            user=user,
+            action=action,
+            ip_address=ip_address,
+            user_agent=user_agent[:1000],
+            metadata=metadata or {},
+        )
 
 
-__all__ = [
-    "create_document_access_log",
-]
+__all__ = ("PatientDocumentAccessLogService",)

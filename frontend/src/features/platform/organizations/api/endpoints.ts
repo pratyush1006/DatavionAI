@@ -12,6 +12,7 @@ export const organizationEndpoints = {
     BASE_ENDPOINT,
 
   byId: (
-    id: number | string,
-  ) => `${BASE_ENDPOINT}${id}/`,
+    id: string,
+  ) =>
+    `${BASE_ENDPOINT}${encodeURIComponent(id)}/`,
 } as const;

@@ -16,6 +16,7 @@ from apps.platform.accounts.api.views.authentication import (
     MicrosoftLoginAPIView,
     RefreshAPIView,
     RegisterAPIView,
+    ResendLoginOTPAPIView,
     ResendOTPAPIView,
     ResetPasswordAPIView,
     VerifyLoginOTPAPIView,
@@ -38,6 +39,11 @@ urlpatterns = [
         "login/",
         LoginAPIView.as_view(),
         name="login",
+    ),
+    path(
+        "login/resend-otp/",
+        ResendLoginOTPAPIView.as_view(),
+        name="resend-login-otp",
     ),
     path(
         "login/verify-otp/",

@@ -13,62 +13,33 @@ free of framework-specific dependencies.
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import (
-    Any,
-    Literal,
-    NewType,
-)
-
-# ============================================================================
-# Identifier Types
-# ============================================================================
+from typing import Any, Literal, NewType, TypeAlias
 
 Identifier = NewType("Identifier", str)
-
 TenantIdentifier = NewType("TenantIdentifier", str)
-
 WorkspaceIdentifier = NewType("WorkspaceIdentifier", str)
-
 UserIdentifier = NewType("UserIdentifier", str)
-
 PluginName = NewType("PluginName", str)
-
 CapabilityName = NewType("CapabilityName", str)
-
 PermissionName = NewType("PermissionName", str)
-
 FeatureFlag = NewType("FeatureFlag", str)
 
-# ============================================================================
-# Collection Types
-# ============================================================================
+Metadata: TypeAlias = dict[str, Any]
+Context: TypeAlias = dict[str, Any]
+Properties: TypeAlias = dict[str, Any]
+Labels: TypeAlias = dict[str, str]
+TagSet: TypeAlias = set[str]
+ReadonlyMetadata: TypeAlias = Mapping[str, Any]
+ReadonlyContext: TypeAlias = Mapping[str, Any]
 
-type Metadata = dict[str, Any]
-
-type Context = dict[str, Any]
-
-type Properties = dict[str, Any]
-
-type Labels = dict[str, str]
-
-type TagSet = set[str]
-
-type ReadonlyMetadata = Mapping[str, Any]
-
-type ReadonlyContext = Mapping[str, Any]
-
-# ============================================================================
-# Common Literal Types
-# ============================================================================
-
-type Environment = Literal[
+Environment: TypeAlias = Literal[
     "development",
     "testing",
     "staging",
     "production",
 ]
 
-type LifecycleState = Literal[
+LifecycleState: TypeAlias = Literal[
     "registered",
     "initialized",
     "starting",
@@ -78,7 +49,7 @@ type LifecycleState = Literal[
     "failed",
 ]
 
-type PluginStatus = Literal[
+PluginStatus: TypeAlias = Literal[
     "discovered",
     "registered",
     "loaded",
@@ -87,14 +58,10 @@ type PluginStatus = Literal[
     "failed",
 ]
 
-type CapabilityStatus = Literal[
+CapabilityStatus: TypeAlias = Literal[
     "enabled",
     "disabled",
 ]
-
-# ============================================================================
-# Public Exports
-# ============================================================================
 
 __all__ = [
     "CapabilityName",

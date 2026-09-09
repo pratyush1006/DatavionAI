@@ -6,7 +6,6 @@ from __future__ import annotations
 
 from django.db import models
 
-from apps.clinical.patients.models import Patient
 from apps.core.models import BaseManager, BaseModel
 from apps.insurance.constants import (
     DEFAULT_AUTHORIZATION_STATUS,
@@ -14,6 +13,7 @@ from apps.insurance.constants import (
     AuthorizationStatus,
 )
 from apps.insurance.models.enrollment import Enrollment
+from apps.patient_management.patients.models import Patient
 from apps.platform.organizations.models import Organization
 
 

@@ -1,16 +1,13 @@
-"""
-Telemedicine session model.
-"""
-
 from __future__ import annotations
 
 import uuid
 
+from django.core.exceptions import ValidationError
 from django.db import models
 
-from apps.clinical.patients.models import Patient
 from apps.clinical.providers.models import Provider
 from apps.core.models import BaseManager, BaseModel
+from apps.patient_management.patients.models import Patient
 from apps.platform.organizations.models import Organization
 from apps.telemedicine.constants import (
     DEFAULT_SESSION_STATUS,
@@ -20,163 +17,84 @@ from apps.telemedicine.constants import (
 
 
 class TelemedicineSession(BaseModel):
-    """
-    Represents a virtual consultation session.
-    """
-
     objects = BaseManager()
-
     organization = models.ForeignKey(
-        Organization,
-        on_delete=models.CASCADE,
-        related_name="telemedicine_sessions",
-        help_text="Organization that owns the session.",
+        Organization, on_delete=models.CASCADE, related_name="telemedicine_sessions"
     )
-
     patient = models.ForeignKey(
-        Patient,
-        on_delete=models.CASCADE,
-        related_name="telemedicine_sessions",
-        help_text="Patient participating in the session.",
+        Patient, on_delete=models.CASCADE, related_name="telemedicine_sessions"
     )
-
     provider = models.ForeignKey(
-        Provider,
-        on_delete=models.CASCADE,
-        related_name="telemedicine_sessions",
-        help_text="Provider conducting the session.",
+        Provider, on_delete=models.PROTECT, related_name="telemedicine_sessions"
     )
-
     appointment = models.OneToOneField(
         "appointments.Appointment",
         on_delete=models.SET_NULL,
         related_name="telemedicine_session",
         null=True,
         blank=True,
-        help_text="Associated appointment, if any.",
     )
-
-    session_id = models.CharField(
-        max_length=100,
-        unique=True,
-        help_text="Unique session identifier.",
-    )
-
-    scheduled_start = models.DateTimeField(
-        help_text="Scheduled session start time.",
-    )
-
-    scheduled_end = models.DateTimeField(
-        help_text="Scheduled session end time.",
-    )
-
-    actual_start = models.DateTimeField(
-        null=True,
-        blank=True,
-        help_text="Actual session start time.",
-    )
-
-    actual_end = models.DateTimeField(
-        null=True,
-        blank=True,
-        help_text="Actual session end time.",
-    )
-
+    session_id = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    scheduled_start = models.DateTimeField()
+    scheduled_end = models.DateTimeField()
+    actual_start = models.DateTimeField(null=True, blank=True)
+    actual_end = models.DateTimeField(null=True, blank=True)
     status = models.CharField(
         max_length=20,
         choices=SessionStatus.choices,
         default=DEFAULT_SESSION_STATUS,
         db_index=True,
-        help_text="Session lifecycle status.",
     )
-
     session_type = models.CharField(
-        max_length=20,
-        choices=SessionType.choices,
-        default=SessionType.VIDEO,
-        help_text="Type of telemedicine session.",
+        max_length=20, choices=SessionType.choices, default=SessionType.VIDEO
     )
-
-    connection_url = models.URLField(
-        help_text="URL for joining the session.",
-    )
-
-    connection_id = models.CharField(
-        max_length=100,
-        blank=True,
-        help_text="Connection identifier from the telephony provider.",
-    )
-
-    recording_url = models.URLField(
-        blank=True,
-        help_text="URL of the session recording.",
-    )
-
-    recording_consent = models.BooleanField(
-        default=False,
-        help_text="Whether the patient consented to recording.",
-    )
-
-    notes = models.TextField(
-        blank=True,
-        help_text="Session notes.",
-    )
+    connection_url = models.URLField(blank=True)
+    connection_id = models.CharField(max_length=128, blank=True)
+    provider_name = models.CharField(max_length=100, blank=True)
+    recording_consent = models.BooleanField(default=False)
+    cancellation_reason = models.TextField(blank=True)
+    failure_reason = models.TextField(blank=True)
+    notes = models.TextField(blank=True)
 
     class Meta:
         db_table = "telemedicine_sessions"
-
-        verbose_name = "Telemedicine Session"
-
-        verbose_name_plural = "Telemedicine Sessions"
-
         ordering = ("-scheduled_start",)
-
         indexes = [
             models.Index(
-                fields=[
-                    "patient",
-                    "scheduled_start",
-                ],
-                name="tele_session_patient_start_idx",
+                fields=["organization", "status"], name="tele_sess_org_status_idx"
             ),
             models.Index(
-                fields=[
-                    "provider",
-                    "scheduled_start",
-                ],
-                name="tele_sess_prov_start_idx",
+                fields=["patient", "scheduled_start"], name="tele_sess_pat_start_idx"
             ),
             models.Index(
-                fields=[
-                    "organization",
-                    "status",
-                ],
-                name="tele_session_org_status_idx",
+                fields=["provider", "scheduled_start"], name="tele_sess_prov_start_idx"
             ),
-            models.Index(
-                fields=[
-                    "appointment",
-                ],
-                name="tele_session_appointment_idx",
-            ),
+            models.Index(fields=["appointment"], name="tele_sess_appt_idx"),
         ]
 
-    def save(self, *args, **kwargs) -> None:
-        """
-        Generate session_id if not set and validate before saving.
-        """
+    def clean(self):
+        super().clean()
+        if self.scheduled_end <= self.scheduled_start:
+            raise ValidationError(
+                {"scheduled_end": "Session end must be after session start."}
+            )
+        for field, label in (
+            ("appointment", "Appointment"),
+            ("provider", "Provider"),
+            ("patient", "Patient"),
+        ):
+            obj_id = getattr(self, field + "_id", None)
+            if obj_id:
+                obj = (
+                    type(getattr(self, field))
+                    .objects.filter(pk=obj_id)
+                    .values_list("organization_id", flat=True)
+                    .first()
+                )
+                if obj and obj != self.organization_id:
+                    raise ValidationError(
+                        {field: f"{label} belongs to another organization."}
+                    )
 
-        if not self.session_id:
-            self.session_id = str(uuid.uuid4())
-
-        self.full_clean()
-
-        super().save(*args, **kwargs)
-
-    def __str__(self) -> str:
-        return f"{self.session_id} | {self.patient.full_name} | {self.status}"
-
-
-__all__ = [
-    "TelemedicineSession",
-]
+    def __str__(self):
+        return f"{self.session_id} | {self.status}"

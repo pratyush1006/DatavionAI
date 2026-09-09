@@ -1,101 +1,261 @@
-"""
-API views for the Insurance Verification module.
-"""
+"""Insurance Verification API views."""
 
 from __future__ import annotations
 
-from typing import Final
+from uuid import UUID
 
-from django.db.models import QuerySet
-from drf_spectacular.utils import extend_schema
+from django.core.exceptions import ObjectDoesNotExist
+from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
-from apps.common.api.base_generics import (
-    BaseListCreateAPIView,
-    BaseRetrieveUpdateDestroyAPIView,
-)
+from apps.core.workflows import WorkflowContext
 from apps.revenue_cycle.insurance_verification.api.serializers import (
-    InsuranceVerificationCreateSerializer,
     InsuranceVerificationDetailSerializer,
-    InsuranceVerificationListSerializer,
-    InsuranceVerificationUpdateSerializer,
+    InsuranceVerificationLifecycleSerializer,
+    InsuranceVerificationWriteSerializer,
 )
-from apps.revenue_cycle.insurance_verification.models import InsuranceVerification
-from apps.revenue_cycle.insurance_verification.permissions import (
+from apps.revenue_cycle.insurance_verification.policies import (
+    can_create,
+    can_delete,
+    can_restore,
+    can_transition,
+    can_update,
+    can_view,
+)
+from apps.revenue_cycle.insurance_verification.rbac import (
     CanCreateInsuranceVerification,
     CanDeleteInsuranceVerification,
+    CanRestoreInsuranceVerification,
+    CanTransitionInsuranceVerification,
     CanUpdateInsuranceVerification,
     CanViewInsuranceVerification,
 )
 from apps.revenue_cycle.insurance_verification.selectors import (
-    InsuranceVerificationSelector,
+    get_verification,
+    list_verifications,
 )
-from apps.revenue_cycle.insurance_verification.services import (
-    InsuranceVerificationService,
+from apps.revenue_cycle.insurance_verification.workflows import (
+    InsuranceVerificationCreateRequest,
+    InsuranceVerificationCreationWorkflow,
+    InsuranceVerificationDeleteRequest,
+    InsuranceVerificationDeletionWorkflow,
+    InsuranceVerificationLifecycleRequest,
+    InsuranceVerificationLifecycleWorkflow,
+    InsuranceVerificationRestoreRequest,
+    InsuranceVerificationRestoreWorkflow,
+    InsuranceVerificationUpdateRequest,
+    InsuranceVerificationUpdateWorkflow,
 )
 
-TAG: Final[tuple[str, ...]] = ("Insurance Verification",)
+
+def _tenant(request) -> UUID:
+    """Resolve the explicit tenant context or reject the request."""
+
+    tenant = getattr(request, "tenant", None)
+    if tenant is None or getattr(tenant, "pk", None) is None:
+        raise ValueError("Explicit request.tenant is required.")
+    return tenant.pk
 
 
-@extend_schema(tags=TAG)
-class InsuranceVerificationListCreateAPIView(BaseListCreateAPIView):
-    permission_classes_map = {
-        "GET": (IsAuthenticated, CanViewInsuranceVerification),
-        "POST": (IsAuthenticated, CanCreateInsuranceVerification),
-    }
+def _organization(request):
+    """Resolve explicit organization context and validate its tenant."""
 
-    serializer_classes = {
-        "GET": InsuranceVerificationListSerializer,
-        "POST": InsuranceVerificationCreateSerializer,
-    }
-
-    detail_serializer_class = InsuranceVerificationDetailSerializer
-
-    create_service = InsuranceVerificationService.create
-
-    create_success_message = "Insurance Verification created successfully."
-
-    ordering = ("-created_at",)
-    ordering_fields = ("created_at",)
-    filterset_fields = ("is_active",)
-
-    def get_queryset(
-        self,
-    ) -> QuerySet[InsuranceVerification]:
-        return InsuranceVerificationSelector.queryset()
+    organization = getattr(request, "organization", None)
+    if organization is None or getattr(organization, "pk", None) is None:
+        raise ValueError("Explicit request.organization is required.")
+    tenant = getattr(request, "tenant", None)
+    if tenant is None or organization.tenant_id != tenant.pk:
+        raise ValueError("Organization does not belong to the active tenant.")
+    return organization
 
 
-@extend_schema(tags=TAG)
-class InsuranceVerificationRetrieveUpdateDestroyAPIView(
-    BaseRetrieveUpdateDestroyAPIView,
-):
-    lookup_url_kwarg = "verification_id"
+def _context(request, operation: str) -> WorkflowContext:
+    """Build the standard Revenue Cycle workflow context."""
 
-    permission_classes_map = {
-        "GET": (IsAuthenticated, CanViewInsuranceVerification),
-        "PUT": (IsAuthenticated, CanUpdateInsuranceVerification),
-        "PATCH": (IsAuthenticated, CanUpdateInsuranceVerification),
-        "DELETE": (IsAuthenticated, CanDeleteInsuranceVerification),
-    }
+    return WorkflowContext.create(
+        actor=request.user,
+        organization_id=_organization(request).pk,
+        tenant_id=_tenant(request),
+        operation=operation,
+    )
 
-    serializer_classes = {
-        "GET": InsuranceVerificationDetailSerializer,
-        "PUT": InsuranceVerificationUpdateSerializer,
-        "PATCH": InsuranceVerificationUpdateSerializer,
-    }
 
-    update_service = InsuranceVerificationService.update
-    delete_service = InsuranceVerificationService.delete
+class InsuranceVerificationListCreateAPIView(APIView):
+    """List and create Insurance Verification records."""
 
-    def get_object(
-        self,
-    ) -> InsuranceVerification:
-        return InsuranceVerificationSelector.get(
-            verification_id=self.kwargs[self.lookup_url_kwarg],
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request):
+        """Return tenant-safe verification records."""
+
+        organization = _organization(request)
+        if not can_view(user=request.user, organization_id=organization.pk):
+            CanViewInsuranceVerification().has_permission(request, self)
+        patient_id = request.query_params.get("patient_id")
+        queryset = list_verifications(
+            tenant_id=_tenant(request),
+            organization_id=organization.pk,
+            patient_id=patient_id,
+        )
+        return Response(InsuranceVerificationDetailSerializer(queryset, many=True).data)
+
+    def post(self, request):
+        """Create a verification through the workflow boundary."""
+
+        organization = _organization(request)
+        if not can_create(user=request.user, organization_id=organization.pk):
+            CanCreateInsuranceVerification().has_permission(request, self)
+        serializer = InsuranceVerificationWriteSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        patient_id = serializer.validated_data.pop("patient_id", None)
+        payer_id = serializer.validated_data.pop("payer_id", "")
+        member_id = serializer.validated_data.pop("member_id", "")
+        request_reference = request.data.get("request_reference", "")
+        idempotency_key = request.headers.get(
+            "Idempotency-Key", request.data.get("idempotency_key", "")
+        )
+        workflow = InsuranceVerificationCreationWorkflow(
+            request=InsuranceVerificationCreateRequest(
+                organization_id=organization.pk,
+                patient_id=patient_id,
+                payer_id=payer_id,
+                member_id=member_id,
+                request_reference=request_reference,
+                idempotency_key=idempotency_key,
+                data=serializer.validated_data,
+            )
+        )
+        result = workflow.execute(
+            context=_context(request, "revenue_cycle.insurance_verification.create")
+        )
+        return Response(
+            InsuranceVerificationDetailSerializer(result.data).data,
+            status=status.HTTP_201_CREATED,
         )
 
 
-__all__ = [
+class InsuranceVerificationDetailAPIView(APIView):
+    """Retrieve, update, and delete one Insurance Verification."""
+
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request, verification_id):
+        """Return one tenant-safe verification."""
+
+        organization = _organization(request)
+        if not can_view(user=request.user, organization_id=organization.pk):
+            CanViewInsuranceVerification().has_permission(request, self)
+        verification = get_verification(
+            tenant_id=_tenant(request),
+            organization_id=organization.pk,
+            verification_id=verification_id,
+        )
+        return Response(InsuranceVerificationDetailSerializer(verification).data)
+
+    def patch(self, request, verification_id):
+        """Update a verification through the workflow boundary."""
+
+        organization = _organization(request)
+        if not can_update(user=request.user, organization_id=organization.pk):
+            CanUpdateInsuranceVerification().has_permission(request, self)
+        serializer = InsuranceVerificationWriteSerializer(
+            data=request.data, partial=True
+        )
+        serializer.is_valid(raise_exception=True)
+        result = InsuranceVerificationUpdateWorkflow(
+            request=InsuranceVerificationUpdateRequest(
+                organization_id=organization.pk,
+                tenant_id=_tenant(request),
+                verification_id=verification_id,
+                data=serializer.validated_data,
+            )
+        ).execute(
+            context=_context(request, "revenue_cycle.insurance_verification.update")
+        )
+        return Response(InsuranceVerificationDetailSerializer(result.data).data)
+
+    def delete(self, request, verification_id):
+        """Soft-delete a verification through the workflow boundary."""
+
+        organization = _organization(request)
+        if not can_delete(user=request.user, organization_id=organization.pk):
+            CanDeleteInsuranceVerification().has_permission(request, self)
+        result = InsuranceVerificationDeletionWorkflow(
+            request=InsuranceVerificationDeleteRequest(
+                organization_id=organization.pk,
+                tenant_id=_tenant(request),
+                verification_id=verification_id,
+                deleted_by_id=request.user.pk,
+            )
+        ).execute(
+            context=_context(request, "revenue_cycle.insurance_verification.delete")
+        )
+        return Response(InsuranceVerificationDetailSerializer(result.data).data)
+
+
+class InsuranceVerificationLifecycleAPIView(APIView):
+    """Transition Insurance Verification lifecycle state."""
+
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request, verification_id):
+        """Apply a strict lifecycle transition."""
+
+        organization = _organization(request)
+        if not can_transition(user=request.user, organization_id=organization.pk):
+            CanTransitionInsuranceVerification().has_permission(request, self)
+        serializer = InsuranceVerificationLifecycleSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        result = InsuranceVerificationLifecycleWorkflow(
+            request=InsuranceVerificationLifecycleRequest(
+                organization_id=organization.pk,
+                tenant_id=_tenant(request),
+                verification_id=verification_id,
+                actor_id=request.user.pk,
+                **serializer.validated_data,
+            )
+        ).execute(
+            context=_context(request, "revenue_cycle.insurance_verification.lifecycle")
+        )
+        return Response(InsuranceVerificationDetailSerializer(result.data).data)
+
+
+class InsuranceVerificationRestoreAPIView(APIView):
+    """Restore a deleted Insurance Verification."""
+
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request, verification_id):
+        """Restore through the workflow boundary."""
+
+        organization = _organization(request)
+        if not can_restore(user=request.user, organization_id=organization.pk):
+            CanRestoreInsuranceVerification().has_permission(request, self)
+        try:
+            result = InsuranceVerificationRestoreWorkflow(
+                request=InsuranceVerificationRestoreRequest(
+                    organization_id=organization.pk,
+                    tenant_id=_tenant(request),
+                    verification_id=verification_id,
+                )
+            ).execute(
+                context=_context(
+                    request, "revenue_cycle.insurance_verification.restore"
+                )
+            )
+        except ObjectDoesNotExist:
+            return Response(
+                {"detail": "Insurance verification record not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        return Response(InsuranceVerificationDetailSerializer(result.data).data)
+
+
+__all__ = (
+    "InsuranceVerificationDetailAPIView",
+    "InsuranceVerificationLifecycleAPIView",
     "InsuranceVerificationListCreateAPIView",
-    "InsuranceVerificationRetrieveUpdateDestroyAPIView",
-]
+    "InsuranceVerificationRestoreAPIView",
+)

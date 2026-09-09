@@ -1,12 +1,15 @@
 """
 Shared constants for the Patient Management application.
+
+This module exposes shared Patient Management constants while keeping
+Patient-specific constants owned by the canonical Patients module.
 """
 
 from __future__ import annotations
 
 from django.db import models
 
-from apps.clinical.patients.constants import (
+from apps.patient_management.patients.constants import (
     PatientGender,
     PatientMaritalStatus,
 )
@@ -18,33 +21,23 @@ class RelationshipType(models.TextChoices):
     """
 
     SPOUSE = "spouse", "Spouse"
-
     PARENT = "parent", "Parent"
-
     CHILD = "child", "Child"
-
     SIBLING = "sibling", "Sibling"
-
     GUARDIAN = "guardian", "Guardian"
-
     GRANDPARENT = "grandparent", "Grandparent"
-
     OTHER = "other", "Other"
 
 
 class ContactMethod(models.TextChoices):
     """
-    Preferred communication channel.
+    Preferred communication channel for patient communication.
     """
 
     EMAIL = "email", "Email"
-
     SMS = "sms", "SMS"
-
     PHONE = "phone", "Phone"
-
     PORTAL = "portal", "Portal"
-
     POST = "post", "Post"
 
 
@@ -54,19 +47,12 @@ class DocumentCategory(models.TextChoices):
     """
 
     ID_PROOF = "id_proof", "ID Proof"
-
     INSURANCE = "insurance", "Insurance"
-
     CONSENT_FORM = "consent_form", "Consent Form"
-
     CLINICAL_NOTE = "clinical_note", "Clinical Note"
-
     IMAGING = "imaging", "Imaging"
-
     LAB_REPORT = "lab_report", "Lab Report"
-
     DISCHARGE_SUMMARY = "discharge_summary", "Discharge Summary"
-
     OTHER = "other", "Other"
 
 
@@ -76,13 +62,9 @@ class ReferralStatus(models.TextChoices):
     """
 
     PENDING = "pending", "Pending"
-
     ACCEPTED = "accepted", "Accepted"
-
     DECLINED = "declined", "Declined"
-
     COMPLETED = "completed", "Completed"
-
     CANCELLED = "cancelled", "Cancelled"
 
 
@@ -92,9 +74,7 @@ class ReferralPriority(models.TextChoices):
     """
 
     ROUTINE = "routine", "Routine"
-
     URGENT = "urgent", "Urgent"
-
     STAT = "stat", "STAT"
 
 

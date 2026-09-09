@@ -1,15 +1,5 @@
-from .billing import (
-    BillingBatchPermission,
-    CanCreateBillingBatch,
-    CanDeleteBillingBatch,
-    CanUpdateBillingBatch,
-    CanViewBillingBatch,
-)
+"""Revenue Cycle billing permissions package."""
 
-__all__ = [
-    "CanCreateBillingBatch",
-    "CanDeleteBillingBatch",
-    "CanUpdateBillingBatch",
-    "CanViewBillingBatch",
-    "BillingBatchPermission",
-]
+from __future__ import annotations
+
+__all__ = ()

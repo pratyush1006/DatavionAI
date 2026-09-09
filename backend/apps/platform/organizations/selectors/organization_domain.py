@@ -25,22 +25,22 @@ if TYPE_CHECKING:
 type OrganizationDomainQuerySet = QuerySet[OrganizationDomain]
 
 
-def get_domains(
+def get_organization_domains(
     *,
     organization: Organization | Any | None = None,
     verification_status: str | None = None,
     domain_type: str | None = None,
+    is_primary: bool | None = None,
+    ssl_enabled: bool | None = None,
 ) -> OrganizationDomainQuerySet:
     """
     Return organization domains.
 
-    Supports filtering by organization,
-    verification status and domain type.
+    Supports organization, verification,
+    domain type, primary and SSL filtering.
     """
 
-    queryset = OrganizationDomain.objects.select_related(
-        "organization",
-    )
+    queryset = OrganizationDomain.objects.select_related("organization")
 
     if organization is not None:
         queryset = queryset.filter(
@@ -57,18 +57,41 @@ def get_domains(
             domain_type=domain_type,
         )
 
+    if is_primary is not None:
+        queryset = queryset.filter(
+            is_primary=is_primary,
+        )
+
+    if ssl_enabled is not None:
+        queryset = queryset.filter(
+            ssl_enabled=ssl_enabled,
+        )
+
     return queryset
+
+
+def get_organization_domain(
+    *,
+    pk: Any,
+) -> OrganizationDomain:
+    """
+    Return a single organization domain by primary key.
+    """
+
+    return get_object_or_404(
+        get_organization_domains(),
+        pk=pk,
+    )
 
 
 def get_domain_by_id(
     domain_id: Any,
 ) -> OrganizationDomain:
     """
-    Return a domain by primary key.
+    Backward-compatible selector for domain primary key lookup.
     """
 
-    return get_object_or_404(
-        get_domains(),
+    return get_organization_domain(
         pk=domain_id,
     )
 
@@ -81,10 +104,10 @@ def get_primary_domain(
     """
 
     return get_object_or_404(
-        get_domains(
+        get_organization_domains(
             organization=organization,
+            is_primary=True,
         ),
-        is_primary=True,
     )
 
 
@@ -95,7 +118,7 @@ def get_verified_domains(
     Return verified domains.
     """
 
-    return get_domains(
+    return get_organization_domains(
         organization=organization,
         verification_status=(OrganizationDomain.VerificationStatus.VERIFIED),
     )
@@ -105,14 +128,14 @@ def get_domain_by_name(
     domain: str,
 ) -> OrganizationDomain:
     """
-    Return a domain by its hostname.
+    Return a domain by hostname.
     """
 
+    normalized_domain = domain.strip().lower()
+
     return get_object_or_404(
-        OrganizationDomain.objects.select_related(
-            "organization",
-        ),
-        domain=domain.strip().lower(),
+        get_organization_domains(),
+        domain=normalized_domain,
     )
 
 
@@ -133,7 +156,8 @@ __all__: tuple[str, ...] = (
     "domain_exists",
     "get_domain_by_id",
     "get_domain_by_name",
-    "get_domains",
+    "get_organization_domain",
+    "get_organization_domains",
     "get_primary_domain",
     "get_verified_domains",
 )

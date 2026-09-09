@@ -1,5 +1,5 @@
 """
-Patient Relationship model.
+Patient relationship domain model.
 """
 
 from __future__ import annotations
@@ -8,341 +8,233 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from apps.core.models import BaseModel
+from apps.core.models import (
+    AllObjectsManager,
+    BaseModel,
+    DeletedObjectsManager,
+)
 from apps.patient_management.patients.models import Patient
 from apps.patient_management.relationships.constants import (
-    RelationshipSource,
     RelationshipStatus,
     RelationshipType,
-    RelationshipVerificationStatus,
+    VerificationStatus,
 )
-from apps.patient_management.relationships.managers import (
-    PatientRelationshipManager,
-)
-from apps.patient_management.relationships.validators import (
-    validate_relationship_notes,
-    validate_relationship_strength,
-)
+from apps.patient_management.relationships.managers import PatientRelationshipManager
 from apps.platform.organizations.models import Organization
 
 
 class PatientRelationship(BaseModel):
     """
-    Represents a relationship between two patients or between
-    a patient and an external individual/entity.
+    Relationship between a patient and another patient or an
+    external individual/entity.
     """
+
+    objects = PatientRelationshipManager()
+    all_objects = AllObjectsManager()
+    deleted_objects = DeletedObjectsManager()
 
     organization = models.ForeignKey(
         Organization,
         on_delete=models.CASCADE,
         related_name="patient_relationships",
+        help_text=_("Organization that owns the relationship."),
     )
 
     patient = models.ForeignKey(
         Patient,
         on_delete=models.CASCADE,
-        related_name="relationships",
+        related_name="patient_relationships",
+        help_text=_("Primary patient."),
     )
 
     related_patient = models.ForeignKey(
         Patient,
+        on_delete=models.CASCADE,
         null=True,
         blank=True,
-        on_delete=models.CASCADE,
-        related_name="related_to",
+        related_name="related_patient_relationships",
+        help_text=_("Related patient, when the relationship is internal."),
     )
 
     relationship_type = models.CharField(
-        max_length=50,
+        max_length=30,
         choices=RelationshipType.choices,
+        help_text=_("Type of relationship."),
     )
 
     relationship_name = models.CharField(
-        max_length=255,
+        max_length=150,
         blank=True,
+        help_text=_(
+            "External person's or entity's relationship name "
+            "when related_patient is not supplied."
+        ),
     )
 
-    relationship_strength = models.PositiveSmallIntegerField(
-        default=5,
-        validators=[
-            validate_relationship_strength,
-        ],
+    is_primary = models.BooleanField(
+        default=False,
+        help_text=_("Whether this is the patient's primary relationship."),
     )
 
     status = models.CharField(
         max_length=20,
         choices=RelationshipStatus.choices,
         default=RelationshipStatus.ACTIVE,
+        db_index=True,
     )
 
     verification_status = models.CharField(
         max_length=20,
-        choices=RelationshipVerificationStatus.choices,
-        default=RelationshipVerificationStatus.PENDING,
+        choices=VerificationStatus.choices,
+        default=VerificationStatus.PENDING,
+        db_index=True,
     )
 
-    source = models.CharField(
-        max_length=20,
-        choices=RelationshipSource.choices,
-        default=RelationshipSource.MANUAL,
-    )
-
-    is_primary = models.BooleanField(
-        default=False,
-    )
-
-    start_date = models.DateField(
+    effective_from = models.DateField(
         null=True,
         blank=True,
     )
 
-    end_date = models.DateField(
+    effective_to = models.DateField(
         null=True,
         blank=True,
     )
 
     notes = models.TextField(
         blank=True,
-        validators=[
-            validate_relationship_notes,
-        ],
     )
 
-    objects = PatientRelationshipManager()
-
     class Meta:
+        db_table = "patient_relationships"
+
         verbose_name = _("Patient Relationship")
         verbose_name_plural = _("Patient Relationships")
 
-        ordering = ("-created_at",)
-
-        indexes = [
-            models.Index(
-                fields=[
-                    "organization",
-                    "patient",
-                ],
-            ),
-            models.Index(
-                fields=[
-                    "relationship_type",
-                ],
-            ),
-            models.Index(
-                fields=[
-                    "status",
-                ],
-            ),
-            models.Index(
-                fields=[
-                    "verification_status",
-                ],
-            ),
-            models.Index(
-                fields=[
-                    "is_primary",
-                ],
-            ),
-            models.Index(
-                fields=[
-                    "related_patient",
-                ],
-            ),
-        ]
+        ordering = (
+            "-is_primary",
+            "relationship_type",
+            "created_at",
+        )
 
         constraints = [
             models.UniqueConstraint(
-                fields=[
+                fields=(
+                    "organization",
                     "patient",
                     "related_patient",
                     "relationship_type",
-                ],
-                name="unique_patient_relationship",
+                ),
+                condition=models.Q(
+                    related_patient__isnull=False,
+                    is_active=True,
+                ),
+                name="uq_patient_relationship_internal",
+            ),
+            models.UniqueConstraint(
+                fields=(
+                    "organization",
+                    "patient",
+                    "relationship_name",
+                    "relationship_type",
+                ),
+                condition=models.Q(
+                    related_patient__isnull=True,
+                    is_active=True,
+                ),
+                name="uq_patient_relationship_external",
+            ),
+            models.UniqueConstraint(
+                fields=(
+                    "organization",
+                    "patient",
+                ),
+                condition=models.Q(
+                    is_primary=True,
+                    is_active=True,
+                ),
+                name="uq_patient_primary_relationship",
             ),
         ]
 
-    def __str__(
-        self,
-    ) -> str:
-        if self.related_patient:
-            return (
-                f"{self.patient} → "
-                f"{self.related_patient} "
-                f"({self.get_relationship_type_display()})"
-            )
+        indexes = [
+            models.Index(
+                fields=(
+                    "organization",
+                    "patient",
+                    "status",
+                ),
+                name="rel_org_pat_status_idx",
+            ),
+            models.Index(
+                fields=(
+                    "organization",
+                    "related_patient",
+                ),
+                name="rel_org_related_idx",
+            ),
+            models.Index(
+                fields=(
+                    "patient",
+                    "relationship_type",
+                ),
+                name="rel_patient_type_idx",
+            ),
+            models.Index(
+                fields=("verification_status",),
+                name="rel_verification_idx",
+            ),
+        ]
 
-        return (
-            f"{self.patient} → "
-            f"{self.relationship_name} "
-            f"({self.get_relationship_type_display()})"
-        )
-
-    @property
-    def is_active(
-        self,
-    ) -> bool:
-        """
-        Return whether the relationship is active.
-        """
-        return self.status == RelationshipStatus.ACTIVE
-
-    @property
-    def is_verified(
-        self,
-    ) -> bool:
-        """
-        Return whether the relationship is verified.
-        """
-        return self.verification_status == RelationshipVerificationStatus.VERIFIED
-
-    @property
-    def is_external_relationship(
-        self,
-    ) -> bool:
-        """
-        Return whether this relationship references an
-        external individual instead of another patient.
-        """
-        return self.related_patient_id is None
-
-    def clean(
-        self,
-    ) -> None:
-        """
-        Validate the relationship.
-        """
+    def clean(self) -> None:
         super().clean()
 
-        if self.related_patient and self.related_patient_id == self.patient_id:
+        if (
+            self.related_patient_id
+            and self.patient_id
+            and self.related_patient_id == self.patient_id
+        ):
             raise ValidationError(
                 {
                     "related_patient": _(
-                        "A patient cannot have a relationship with themselves.",
-                    ),
-                },
+                        "A patient cannot have a relationship with themselves."
+                    )
+                }
             )
 
-        if not self.related_patient and not self.relationship_name:
+        if not self.related_patient_id and not self.relationship_name.strip():
             raise ValidationError(
                 {
                     "relationship_name": _(
-                        "Relationship name is required for external relationships.",
-                    ),
-                },
+                        "Relationship name is required for an external relationship."
+                    )
+                }
             )
 
-        if self.start_date and self.end_date and self.end_date < self.start_date:
-            raise ValidationError(
-                {
-                    "end_date": _(
-                        "End date cannot be earlier than start date.",
-                    ),
-                },
-            )
+        if self.effective_from and self.effective_to:
+            if self.effective_to < self.effective_from:
+                raise ValidationError(
+                    {
+                        "effective_to": _(
+                            "Effective end date cannot be before the start date."
+                        )
+                    }
+                )
 
-    def save(
-        self,
-        *args,
-        **kwargs,
-    ) -> None:
-        """
-        Validate before saving.
-        """
-        self.full_clean()
+    @property
+    def is_external(self) -> bool:
+        return self.related_patient_id is None
 
-        super().save(
-            *args,
-            **kwargs,
+    @property
+    def is_verified(self) -> bool:
+        return self.verification_status == VerificationStatus.VERIFIED
+
+    def __str__(self) -> str:
+        target = (
+            str(self.related_patient)
+            if self.related_patient_id
+            else self.relationship_name
         )
+        return f"{self.patient} → {target} ({self.get_relationship_type_display()})"
 
-    def activate(
-        self,
-    ) -> None:
-        """
-        Activate the relationship.
-        """
-        self.status = RelationshipStatus.ACTIVE
 
-        self.save(
-            update_fields=[
-                "status",
-                "updated_at",
-            ],
-        )
-
-    def deactivate(
-        self,
-    ) -> None:
-        """
-        Deactivate the relationship.
-        """
-        self.status = RelationshipStatus.INACTIVE
-
-        self.save(
-            update_fields=[
-                "status",
-                "updated_at",
-            ],
-        )
-
-    def verify(
-        self,
-    ) -> None:
-        """
-        Mark the relationship as verified.
-        """
-        self.verification_status = RelationshipVerificationStatus.VERIFIED
-
-        self.save(
-            update_fields=[
-                "verification_status",
-                "updated_at",
-            ],
-        )
-
-    def terminate(
-        self,
-        *,
-        end_date=None,
-    ) -> None:
-        """
-        Terminate the relationship.
-        """
-        from django.utils import timezone
-
-        self.status = RelationshipStatus.TERMINATED
-        self.end_date = end_date or timezone.localdate()
-
-        self.save(
-            update_fields=[
-                "status",
-                "end_date",
-                "updated_at",
-            ],
-        )
-
-    def mark_as_primary(
-        self,
-    ) -> None:
-        """
-        Mark this relationship as the primary relationship
-        for the patient and relationship type.
-        """
-        type(self).objects.filter(
-            patient=self.patient,
-            relationship_type=self.relationship_type,
-            is_primary=True,
-        ).exclude(
-            pk=self.pk,
-        ).update(
-            is_primary=False,
-        )
-
-        self.is_primary = True
-
-        self.save(
-            update_fields=[
-                "is_primary",
-                "updated_at",
-            ],
-        )
+__all__ = ("PatientRelationship",)

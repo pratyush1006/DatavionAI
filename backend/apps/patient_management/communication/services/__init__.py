@@ -1,13 +1,9 @@
-from .communication import (
+"""Patient Communication service exports."""
+
+from __future__ import annotations
+
+from apps.patient_management.communication.services.communication import (
     PatientCommunicationService,
-    create_communication,
-    delete_communication,
-    update_communication,
 )
 
-__all__ = [
-    "PatientCommunicationService",
-    "create_communication",
-    "delete_communication",
-    "update_communication",
-]
+__all__ = ("PatientCommunicationService",)

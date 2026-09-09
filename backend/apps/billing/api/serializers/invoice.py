@@ -1,5 +1,5 @@
 """
-Invoice serializers for the Billing application.
+Billing Core Invoice API serializers.
 """
 
 from __future__ import annotations
@@ -9,292 +9,125 @@ from decimal import Decimal
 from rest_framework import serializers
 
 from apps.billing.models import Invoice, InvoiceItem
-from apps.billing.services import create_invoice, update_invoice
-from apps.common.api.serializers import BaseModelSerializer
-
-
-class InvoiceBaseSerializer(BaseModelSerializer):
-    """
-    Base serializer containing shared normalization logic for invoice serializers.
-    """
-
-    class Meta:
-        model = Invoice
-        fields: tuple[str, ...] = ()
-
-    def validate_invoice_number(
-        self,
-        value: str,
-    ) -> str:
-        """
-        Normalize the invoice number.
-        """
-
-        return self._normalize_text(
-            value,
-        ).upper()
-
-    def validate_total_amount(
-        self,
-        value: Decimal,
-    ) -> Decimal:
-        """
-        Validate that total_amount is positive.
-        """
-
-        if value <= Decimal("0.00"):
-            raise serializers.ValidationError("Total amount must be greater than zero.")
-
-        return value
-
-
-class InvoiceListSerializer(InvoiceBaseSerializer):
-    """
-    Serializer used for listing invoices.
-    """
-
-    class Meta(InvoiceBaseSerializer.Meta):
-        fields = (
-            "id",
-            "invoice_number",
-            "patient",
-            "invoice_date",
-            "due_date",
-            "total_amount",
-            "paid_amount",
-            "balance_amount",
-            "status",
-            "is_active",
-        )
-        read_only_fields = (
-            "id",
-            "paid_amount",
-            "balance_amount",
-            "is_active",
-            "created_at",
-            "updated_at",
-        )
-
-
-class InvoiceDetailSerializer(InvoiceBaseSerializer):
-    """
-    Serializer used for retrieving invoice details.
-    """
-
-    items = serializers.SerializerMethodField()
-
-    class Meta(InvoiceBaseSerializer.Meta):
-        fields = (
-            "id",
-            "organization",
-            "patient",
-            "invoice_number",
-            "invoice_date",
-            "due_date",
-            "total_amount",
-            "paid_amount",
-            "balance_amount",
-            "status",
-            "notes",
-            "items",
-            "is_active",
-            "created_at",
-            "updated_at",
-        )
-        read_only_fields = (
-            "id",
-            "paid_amount",
-            "balance_amount",
-            "is_active",
-            "created_at",
-            "updated_at",
-        )
-
-    def get_items(
-        self,
-        instance: Invoice,
-    ) -> list[dict[str, object]]:
-        """
-        Return the invoice line items.
-        """
-
-        items = instance.items.filter(
-            is_active=True,
-        )
-
-        serializer = InvoiceItemSerializer(
-            items,
-            many=True,
-        )
-
-        return serializer.data
-
-
-class InvoiceItemSerializer(serializers.ModelSerializer):
-    """
-    Serializer for invoice line items.
-    """
-
-    class Meta:
-        model = InvoiceItem
-        fields = (
-            "id",
-            "invoice",
-            "description",
-            "quantity",
-            "unit_price",
-            "total_price",
-            "service_code",
-            "is_active",
-            "created_at",
-            "updated_at",
-        )
-        read_only_fields = (
-            "id",
-            "total_price",
-            "is_active",
-            "created_at",
-            "updated_at",
-        )
 
 
 class InvoiceItemCreateSerializer(serializers.ModelSerializer):
-    """
-    Serializer for creating invoice line items.
-    """
+    """Validate invoice line-item input."""
 
     class Meta:
+        """Serializer metadata."""
+
         model = InvoiceItem
-        fields = (
-            "description",
-            "quantity",
-            "unit_price",
-            "service_code",
-        )
+        fields = ("description", "quantity", "unit_price", "service_code")
 
-    def validate_quantity(
-        self,
-        value: int,
-    ) -> int:
-        """
-        Validate that quantity is positive.
-        """
-
-        if value < 1:
-            raise serializers.ValidationError("Quantity must be at least 1.")
-
+    def validate_quantity(self, value: int) -> int:
+        """Require positive quantity."""
+        if value <= 0:
+            raise serializers.ValidationError("Quantity must be greater than zero.")
         return value
 
-    def validate_unit_price(
-        self,
-        value: Decimal,
-    ) -> Decimal:
-        """
-        Validate that unit_price is non-negative.
-        """
-
+    def validate_unit_price(self, value: Decimal) -> Decimal:
+        """Reject negative unit prices."""
         if value < Decimal("0.00"):
             raise serializers.ValidationError("Unit price cannot be negative.")
-
         return value
 
 
-class InvoiceCreateSerializer(InvoiceBaseSerializer):
-    """
-    Serializer used for creating invoices.
-    """
+class InvoiceCreateSerializer(serializers.Serializer):
+    """Validate invoice creation input."""
 
-    items = InvoiceItemCreateSerializer(
-        many=True,
-        required=False,
+    patient = serializers.UUIDField()
+    invoice_number = serializers.CharField(max_length=50)
+    invoice_date = serializers.DateField()
+    due_date = serializers.DateField()
+    total_amount = serializers.DecimalField(
+        max_digits=12, decimal_places=2, min_value=Decimal("0.00")
     )
+    notes = serializers.CharField(required=False, allow_blank=True)
+    items = InvoiceItemCreateSerializer(many=True, required=False)
 
-    class Meta(InvoiceBaseSerializer.Meta):
+    def validate_invoice_number(self, value: str) -> str:
+        """Normalize invoice number."""
+        value = value.strip()
+        if not value:
+            raise serializers.ValidationError("Invoice number cannot be empty.")
+        return value
+
+    def validate(self, attrs: dict) -> dict:
+        """Validate invoice date ordering."""
+        if attrs["due_date"] < attrs["invoice_date"]:
+            raise serializers.ValidationError("Due date cannot be before invoice date.")
+        return attrs
+
+
+class InvoiceUpdateSerializer(serializers.Serializer):
+    """Validate mutable invoice fields."""
+
+    invoice_date = serializers.DateField(required=False)
+    due_date = serializers.DateField(required=False)
+    total_amount = serializers.DecimalField(
+        max_digits=12, decimal_places=2, min_value=Decimal("0.00"), required=False
+    )
+    notes = serializers.CharField(required=False, allow_blank=True)
+
+
+class InvoiceListSerializer(serializers.ModelSerializer):
+    """Serialize invoice collection records."""
+
+    class Meta:
+        """Serializer metadata."""
+
+        model = Invoice
         fields = (
+            "id",
             "organization",
             "patient",
             "invoice_number",
             "invoice_date",
             "due_date",
             "total_amount",
+            "paid_amount",
             "balance_amount",
             "status",
             "notes",
-            "items",
-        )
-        read_only_fields = (
-            "id",
-            "paid_amount",
             "is_active",
             "created_at",
             "updated_at",
         )
 
-    def create(
-        self,
-        validated_data: dict[str, object],
-    ):
-        """
-        Create an invoice.
-        """
 
-        items = validated_data.pop(
-            "items",
-            None,
-        )
+class InvoiceDetailSerializer(serializers.ModelSerializer):
+    """Serialize one invoice with line items."""
 
-        return create_invoice(
-            validated_data=validated_data,
-            items=items,
-        )
+    items = InvoiceItemCreateSerializer(many=True, read_only=True)
 
+    class Meta:
+        """Serializer metadata."""
 
-class InvoiceUpdateSerializer(InvoiceBaseSerializer):
-    """
-    Serializer used for updating invoices.
-    """
-
-    class Meta(InvoiceBaseSerializer.Meta):
+        model = Invoice
         fields = (
+            "id",
+            "organization",
+            "patient",
             "invoice_number",
             "invoice_date",
             "due_date",
             "total_amount",
+            "paid_amount",
             "balance_amount",
             "status",
             "notes",
-        )
-        read_only_fields = (
-            "id",
-            "organization",
-            "patient",
-            "paid_amount",
+            "items",
             "is_active",
             "created_at",
             "updated_at",
         )
 
-    def update(
-        self,
-        instance: Invoice,
-        validated_data: dict[str, object],
-    ) -> Invoice:
-        """
-        Update an invoice.
-        """
 
-        return update_invoice(
-            instance=instance,
-            validated_data=validated_data,
-        )
-
-
-__all__ = [
-    "InvoiceBaseSerializer",
+__all__ = (
     "InvoiceCreateSerializer",
     "InvoiceDetailSerializer",
     "InvoiceItemCreateSerializer",
-    "InvoiceItemSerializer",
     "InvoiceListSerializer",
     "InvoiceUpdateSerializer",
-]
+)

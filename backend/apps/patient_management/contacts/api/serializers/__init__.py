@@ -1,15 +1,23 @@
 """
-Serializers for the Contacts API.
+Patient Contacts API serializers.
 """
 
-from .create import ContactCreateSerializer
-from .detail import ContactDetailSerializer
-from .list import ContactListSerializer
-from .update import ContactUpdateSerializer
+from apps.patient_management.contacts.api.serializers.create import (
+    ContactCreateSerializer,
+)
+from apps.patient_management.contacts.api.serializers.detail import (
+    ContactDetailSerializer,
+)
+from apps.patient_management.contacts.api.serializers.list import (
+    ContactListSerializer,
+)
+from apps.patient_management.contacts.api.serializers.update import (
+    ContactUpdateSerializer,
+)
 
-__all__ = [
+__all__ = (
     "ContactCreateSerializer",
     "ContactDetailSerializer",
     "ContactListSerializer",
     "ContactUpdateSerializer",
-]
+)

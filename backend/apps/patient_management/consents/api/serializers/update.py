@@ -1,43 +1,64 @@
 """
-Update serializer for Patient Consents.
+Patient Consent update serializer.
+
+Lifecycle fields remain workflow-controlled.
 """
 
 from __future__ import annotations
 
-from rest_framework import serializers
-
-from apps.patient_management.consents.models import Consent
-from apps.patient_management.consents.services import (
-    update_consent,
+from apps.patient_management.consents.api.serializers.base import (
+    PatientConsentBaseSerializer,
+)
+from apps.patient_management.consents.validators import (
+    validate_consent_dates,
+    validate_consent_notes,
 )
 
-__all__ = [
-    "ConsentUpdateSerializer",
-]
 
-
-class ConsentUpdateSerializer(
-    serializers.ModelSerializer,
+class PatientConsentUpdateSerializer(
+    PatientConsentBaseSerializer,
 ):
     """
-    Serializer for updating a consent.
+    Validate mutable Patient Consent fields.
     """
 
-    class Meta:
-        model = Consent
+    class Meta(PatientConsentBaseSerializer.Meta):
+        """
+        Configure update serializer fields.
+        """
 
-        exclude = (
-            "id",
-            "created_at",
-            "updated_at",
+        fields = (
+            "purpose",
+            "expires_at",
+            "notes",
+            "version",
+            "evidence_reference",
         )
 
-    def update(
+    def validate_notes(
         self,
-        instance,
-        validated_data,
+        value,
     ):
-        return update_consent(
-            consent=instance,
-            **validated_data,
+        """
+        Validate and normalize consent notes.
+        """
+        return validate_consent_notes(
+            value,
         )
+
+    def validate(
+        self,
+        attrs,
+    ):
+        """
+        Validate update-side consent dates.
+        """
+        validate_consent_dates(
+            expires_at=attrs.get(
+                "expires_at",
+            ),
+        )
+        return attrs
+
+
+__all__ = ("PatientConsentUpdateSerializer",)

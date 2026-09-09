@@ -1,176 +1,54 @@
-"""
-Constants for the Patient Preferences module.
-"""
+"""Constants and enumerations for Patient Preferences."""
 
 from __future__ import annotations
 
-from django.db.models import TextChoices
+from enum import StrEnum
 
 
-class Language(TextChoices):
-    """
-    Supported patient languages.
-    """
+class PreferenceChannel(StrEnum):
+    """Supported patient communication channels."""
 
-    ENGLISH = (
-        "en",
-        "English",
-    )
-
-    HINDI = (
-        "hi",
-        "Hindi",
-    )
-
-    TAMIL = (
-        "ta",
-        "Tamil",
-    )
-
-    TELUGU = (
-        "te",
-        "Telugu",
-    )
-
-    KANNADA = (
-        "kn",
-        "Kannada",
-    )
-
-    MALAYALAM = (
-        "ml",
-        "Malayalam",
-    )
-
-    BENGALI = (
-        "bn",
-        "Bengali",
-    )
-
-    MARATHI = (
-        "mr",
-        "Marathi",
-    )
-
-    GUJARATI = (
-        "gu",
-        "Gujarati",
-    )
-
-    PUNJABI = (
-        "pa",
-        "Punjabi",
-    )
+    EMAIL = "EMAIL"
+    SMS = "SMS"
+    PHONE = "PHONE"
+    PUSH = "PUSH"
+    PORTAL = "PORTAL"
 
 
-class CommunicationChannel(TextChoices):
-    """
-    Preferred communication channels.
-    """
+class PreferenceLanguage(StrEnum):
+    """Common supported language identifiers."""
 
-    EMAIL = (
-        "email",
-        "Email",
-    )
-
-    SMS = (
-        "sms",
-        "SMS",
-    )
-
-    WHATSAPP = (
-        "whatsapp",
-        "WhatsApp",
-    )
-
-    PHONE = (
-        "phone",
-        "Phone Call",
-    )
-
-    PUSH = (
-        "push",
-        "Push Notification",
-    )
+    ENGLISH = "en"
+    HINDI = "hi"
 
 
-class ReminderPreference(TextChoices):
-    """
-    Appointment reminder preferences.
-    """
+class PreferenceDateFormat(StrEnum):
+    """Supported display date formats."""
 
-    NONE = (
-        "none",
-        "None",
-    )
-
-    ONE_HOUR = (
-        "1h",
-        "1 Hour Before",
-    )
-
-    SIX_HOURS = (
-        "6h",
-        "6 Hours Before",
-    )
-
-    TWELVE_HOURS = (
-        "12h",
-        "12 Hours Before",
-    )
-
-    ONE_DAY = (
-        "24h",
-        "1 Day Before",
-    )
-
-    TWO_DAYS = (
-        "48h",
-        "2 Days Before",
-    )
+    ISO = "YYYY-MM-DD"
+    DMY = "DD-MM-YYYY"
+    MDY = "MM-DD-YYYY"
 
 
-class ThemePreference(TextChoices):
-    """
-    Patient portal theme.
-    """
+class PreferenceTimeFormat(StrEnum):
+    """Supported display time formats."""
 
-    SYSTEM = (
-        "system",
-        "System",
-    )
-
-    LIGHT = (
-        "light",
-        "Light",
-    )
-
-    DARK = (
-        "dark",
-        "Dark",
-    )
+    TWELVE_HOUR = "12H"
+    TWENTY_FOUR_HOUR = "24H"
 
 
-class PreferenceStatus(TextChoices):
-    """
-    Preference status.
-    """
+DEFAULT_LANGUAGE = PreferenceLanguage.ENGLISH
+DEFAULT_TIMEZONE = "UTC"
+DEFAULT_DATE_FORMAT = PreferenceDateFormat.ISO
+DEFAULT_TIME_FORMAT = PreferenceTimeFormat.TWENTY_FOUR_HOUR
 
-    ACTIVE = (
-        "active",
-        "Active",
-    )
-
-    INACTIVE = (
-        "inactive",
-        "Inactive",
-    )
-
-
-__all__ = [
-    "CommunicationChannel",
-    "Language",
-    "PreferenceStatus",
-    "ReminderPreference",
-    "ThemePreference",
-]
+__all__ = (
+    "DEFAULT_DATE_FORMAT",
+    "DEFAULT_LANGUAGE",
+    "DEFAULT_TIMEZONE",
+    "DEFAULT_TIME_FORMAT",
+    "PreferenceChannel",
+    "PreferenceDateFormat",
+    "PreferenceLanguage",
+    "PreferenceTimeFormat",
+)

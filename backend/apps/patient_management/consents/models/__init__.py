@@ -1,9 +1,11 @@
 """
-Consent models.
+Patient Consent model exports.
 """
 
-from .consent import Consent
+from __future__ import annotations
 
-__all__ = [
-    "Consent",
-]
+from .consent import (
+    PatientConsent,
+)
+
+__all__ = ("PatientConsent",)

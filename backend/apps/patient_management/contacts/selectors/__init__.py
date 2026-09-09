@@ -1,17 +1,11 @@
 """
-Selectors for the Contacts module.
+Patient Contact selectors.
+
+Public selector exports for the Contacts bounded context.
 """
 
-from .contact import (
-    get_contact_by_id,
-    get_contact_by_value,
-    get_patient_contacts,
-    get_primary_contact,
+from apps.patient_management.contacts.selectors.contact import (
+    ContactSelector,
 )
 
-__all__ = [
-    "get_contact_by_id",
-    "get_contact_by_value",
-    "get_patient_contacts",
-    "get_primary_contact",
-]
+__all__ = ("ContactSelector",)

@@ -1,8 +1,14 @@
 /**
  * Enterprise entity table.
+ *
+ * TanStack Table intentionally opts out of React Compiler memoization because
+ * its table instance exposes mutable/function-based APIs that the compiler
+ * cannot safely memoize.
  */
 
 "use client";
+
+"use no memo";
 
 import type {
   ColumnDef,
@@ -16,10 +22,6 @@ import {
 } from "@tanstack/react-table";
 
 import {
-  DataTableEmpty,
-} from "./data-table-empty";
-
-import {
   Table,
   TableBody,
   TableCell,
@@ -29,6 +31,8 @@ import {
 } from "@/components/ui/table";
 
 import { cn } from "@/lib/utils";
+
+import { DataTableEmpty } from "./data-table-empty";
 
 export type EntityTableProps<TData> = Readonly<{
   data: readonly TData[];
@@ -57,11 +61,15 @@ export function EntityTable<TData>({
   const table = useReactTable({
     data: [...data],
     columns: [...columns],
-    getCoreRowModel:
-      getCoreRowModel(),
+    getCoreRowModel: getCoreRowModel(),
   });
 
   onTableReady?.(table);
+
+  const rows = table.getRowModel().rows;
+
+  const columnCount =
+    table.getVisibleLeafColumns().length;
 
   return (
     <div
@@ -75,14 +83,10 @@ export function EntityTable<TData>({
           {table
             .getHeaderGroups()
             .map((headerGroup) => (
-              <TableRow
-                key={headerGroup.id}
-              >
+              <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map(
                   (header) => (
-                    <TableHead
-                      key={header.id}
-                    >
+                    <TableHead key={header.id}>
                       {header.isPlaceholder
                         ? null
                         : flexRender(
@@ -98,50 +102,40 @@ export function EntityTable<TData>({
         </TableHeader>
 
         <TableBody>
-          {table
-            .getRowModel()
-            .rows.length > 0 ? (
-            table
-              .getRowModel()
-              .rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={
-                    row.getIsSelected()
-                      ? "selected"
-                      : undefined
-                  }
-                >
-                  {row
-                    .getVisibleCells()
-                    .map((cell) => (
-                      <TableCell
-                        key={cell.id}
-                      >
-                        {flexRender(
-                          cell.column
-                            .columnDef.cell,
-                          cell.getContext(),
-                        )}
-                      </TableCell>
-                    ))}
-                </TableRow>
-              ))
+          {rows.length > 0 ? (
+            rows.map((row) => (
+              <TableRow
+                key={row.id}
+                data-state={
+                  row.getIsSelected()
+                    ? "selected"
+                    : undefined
+                }
+              >
+                {row
+                  .getVisibleCells()
+                  .map((cell) => (
+                    <TableCell key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
+                    </TableCell>
+                  ))}
+              </TableRow>
+            ))
           ) : (
             <TableRow>
               <TableCell
-                colSpan={
-                  columns.length
-                }
+                colSpan={Math.max(
+                  columnCount,
+                  1,
+                )}
                 className="p-0"
               >
                 <DataTableEmpty
-                  title={
-                    emptyTitle
-                  }
-                  description={
-                    emptyDescription
-                  }
+                  title={emptyTitle}
+                  description={emptyDescription}
                 />
               </TableCell>
             </TableRow>

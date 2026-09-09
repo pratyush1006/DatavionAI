@@ -1,3 +1,7 @@
 """
-API package for the Patient Consents module.
+Patient Consent API package.
 """
+
+from __future__ import annotations
+
+__all__ = ()

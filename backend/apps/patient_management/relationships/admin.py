@@ -1,59 +1,29 @@
-"""
-Admin configuration for Patient Relationships.
-"""
-
-from __future__ import annotations
-
 from django.contrib import admin
 
-from apps.patient_management.relationships.models import (
-    PatientRelationship,
-)
+from apps.patient_management.relationships.models import PatientRelationship
 
 
 @admin.register(PatientRelationship)
 class PatientRelationshipAdmin(admin.ModelAdmin):
-    """Admin for PatientRelationship."""
-
     list_display = (
+        "id",
+        "organization",
         "patient",
         "related_patient",
         "relationship_type",
+        "is_primary",
         "status",
         "verification_status",
-        "is_primary",
-        "created_at",
+        "is_active",
+        "is_deleted",
     )
-
     list_filter = (
         "relationship_type",
         "status",
         "verification_status",
-        "source",
         "is_primary",
+        "is_active",
+        "is_deleted",
     )
-
-    search_fields = (
-        "patient__first_name",
-        "patient__last_name",
-        "related_patient__first_name",
-        "related_patient__last_name",
-        "relationship_name",
-    )
-
-    autocomplete_fields = (
-        "organization",
-        "patient",
-        "related_patient",
-    )
-
-    readonly_fields = (
-        "created_at",
-        "updated_at",
-    )
-
-    list_select_related = (
-        "organization",
-        "patient",
-        "related_patient",
-    )
+    search_fields = ("id", "relationship_name", "notes")
+    readonly_fields = ("id", "created_at", "updated_at", "deleted_at")

@@ -1,5 +1,8 @@
 """
 Organization queryset exports.
+
+Central queryset registry for the
+DatavionOS Organizations bounded context.
 """
 
 from .organization import (
@@ -7,6 +10,9 @@ from .organization import (
 )
 from .organization_branding import (
     OrganizationBrandingQuerySet,
+)
+from .organization_domain import (
+    OrganizationDomainQuerySet,
 )
 from .organization_feature import (
     OrganizationFeatureQuerySet,
@@ -24,6 +30,7 @@ from .organization_profile import (
 __all__: tuple[str, ...] = (
     "OrganizationQuerySet",
     "OrganizationBrandingQuerySet",
+    "OrganizationDomainQuerySet",
     "OrganizationFeatureQuerySet",
     "OrganizationHierarchyQuerySet",
     "OrganizationModuleQuerySet",

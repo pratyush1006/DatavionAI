@@ -1,64 +1,71 @@
-"""
-Services for document versions.
-"""
+"""Domain services for patient document versions."""
 
 from __future__ import annotations
 
 from django.db import transaction
 
+from apps.patient_management.patient_documents.constants import (
+    DocumentVersionStatus,
+)
 from apps.patient_management.patient_documents.models import (
-    DocumentVersion,
     PatientDocument,
+    PatientDocumentVersion,
 )
 
 
-@transaction.atomic
-def create_document_version(
-    *,
-    document: PatientDocument,
-    file,
-    original_filename: str,
-    mime_type: str,
-    file_size: int,
-    checksum: str,
-    uploaded_by,
-    remarks: str = "",
-) -> DocumentVersion:
-    """
-    Create a new document version.
-    """
+class PatientDocumentVersionService:
+    """Create immutable version metadata records."""
 
-    DocumentVersion.objects.filter(
-        document=document,
-        is_current=True,
-    ).update(
-        is_current=False,
-    )
+    @staticmethod
+    @transaction.atomic
+    def create(
+        *,
+        patient_document,
+        storage_key: str,
+        performed_by,
+        original_filename: str = "",
+        mime_type: str = "",
+        file_size: int = 0,
+        checksum: str = "",
+        notes: str = "",
+    ) -> PatientDocumentVersion:
+        """Create the next sequential version."""
+        parent_document = PatientDocument.objects.select_for_update().get(
+            pk=patient_document.pk,
+        )
 
-    version = document.current_version + 1
+        latest = (
+            PatientDocumentVersion.objects.select_for_update()
+            .filter(
+                patient_document=patient_document,
+            )
+            .order_by(
+                "-version_number",
+            )
+            .first()
+        )
 
-    document.current_version = version
-    document.save(
-        update_fields=[
-            "current_version",
-            "updated_at",
-        ],
-    )
+        next_number = latest.version_number + 1 if latest is not None else 1
 
-    return DocumentVersion.objects.create(
-        document=document,
-        version=version,
-        file=file,
-        original_filename=original_filename,
-        mime_type=mime_type,
-        file_size=file_size,
-        checksum=checksum,
-        uploaded_by=uploaded_by,
-        remarks=remarks,
-        is_current=True,
-    )
+        PatientDocumentVersion.objects.filter(
+            patient_document=patient_document,
+            status=DocumentVersionStatus.ACTIVE,
+        ).update(
+            status=DocumentVersionStatus.SUPERSEDED,
+        )
+
+        return PatientDocumentVersion.objects.create(
+            patient_document=patient_document,
+            version_number=next_number,
+            storage_key=storage_key,
+            original_filename=original_filename,
+            mime_type=mime_type,
+            file_size=file_size,
+            checksum=checksum,
+            status=DocumentVersionStatus.ACTIVE,
+            notes=notes,
+            created_by=performed_by,
+        )
 
 
-__all__ = [
-    "create_document_version",
-]
+__all__ = ("PatientDocumentVersionService",)

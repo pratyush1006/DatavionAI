@@ -1,5 +1,5 @@
 """
-URL patterns for the Patient Consents API.
+Patient Consent endpoint routes.
 """
 
 from __future__ import annotations
@@ -7,39 +7,39 @@ from __future__ import annotations
 from django.urls import path
 
 from apps.patient_management.consents.api.views import (
-    ConsentCreateAPIView,
-    ConsentDeleteAPIView,
-    ConsentDetailAPIView,
-    ConsentListAPIView,
-    ConsentUpdateAPIView,
+    PatientConsentGrantView,
+    PatientConsentListCreateView,
+    PatientConsentRestoreView,
+    PatientConsentRetrieveUpdateDestroyView,
+    PatientConsentRevokeView,
 )
-
-app_name = "consents-api"
 
 urlpatterns = [
     path(
         "",
-        ConsentListAPIView.as_view(),
-        name="list",
+        PatientConsentListCreateView.as_view(),
+        name="consent-list-create",
     ),
     path(
-        "create/",
-        ConsentCreateAPIView.as_view(),
-        name="create",
+        "<uuid:pk>/",
+        PatientConsentRetrieveUpdateDestroyView.as_view(),
+        name="consent-detail",
     ),
     path(
-        "<uuid:id>/",
-        ConsentDetailAPIView.as_view(),
-        name="detail",
+        "<uuid:pk>/grant/",
+        PatientConsentGrantView.as_view(),
+        name="consent-grant",
     ),
     path(
-        "<uuid:id>/update/",
-        ConsentUpdateAPIView.as_view(),
-        name="update",
+        "<uuid:pk>/revoke/",
+        PatientConsentRevokeView.as_view(),
+        name="consent-revoke",
     ),
     path(
-        "<uuid:id>/delete/",
-        ConsentDeleteAPIView.as_view(),
-        name="delete",
+        "<uuid:pk>/restore/",
+        PatientConsentRestoreView.as_view(),
+        name="consent-restore",
     ),
 ]
+
+__all__ = ("urlpatterns",)

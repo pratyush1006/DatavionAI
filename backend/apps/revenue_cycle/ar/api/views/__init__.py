@@ -1,9 +1,5 @@
-from .ar import (
-    AccountsReceivableListCreateAPIView,
-    AccountsReceivableRetrieveUpdateDestroyAPIView,
-)
+"""Revenue Cycle ar api/views package."""
 
-__all__ = [
-    "AccountsReceivableListCreateAPIView",
-    "AccountsReceivableRetrieveUpdateDestroyAPIView",
-]
+from __future__ import annotations
+
+__all__ = ()

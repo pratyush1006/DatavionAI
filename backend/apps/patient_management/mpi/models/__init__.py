@@ -1,9 +1,13 @@
 """
-Master Patient Index models.
+Master Patient Index model exports.
 """
 
-from .mpi import MasterPatientIndex
+from __future__ import annotations
 
-__all__ = [
-    "MasterPatientIndex",
-]
+from apps.patient_management.mpi.models.match import MPIMatchCandidate
+from apps.patient_management.mpi.models.record import MPIRecord
+
+__all__ = (
+    "MPIMatchCandidate",
+    "MPIRecord",
+)

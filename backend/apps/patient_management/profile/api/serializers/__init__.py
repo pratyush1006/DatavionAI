@@ -1,3 +1,7 @@
+"""
+Patient Profile API serializers.
+"""
+
 from .profile import (
     ProfileCreateSerializer,
     ProfileDetailSerializer,
@@ -6,10 +10,10 @@ from .profile import (
     ProfileUpdateSerializer,
 )
 
-__all__ = [
+__all__ = (
     "ProfileCreateSerializer",
     "ProfileDetailSerializer",
     "ProfileListSerializer",
     "ProfileSerializer",
     "ProfileUpdateSerializer",
-]
+)

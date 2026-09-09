@@ -1,0 +1,1 @@
+"""Normalized healthcare measurement vocabulary."""

@@ -1,15 +1,5 @@
-from .analytics import (
-    CanCreateRcmMetric,
-    CanDeleteRcmMetric,
-    CanUpdateRcmMetric,
-    CanViewRcmMetric,
-    RcmMetricPermission,
-)
+"""Revenue Cycle analytics permissions package."""
 
-__all__ = [
-    "CanCreateRcmMetric",
-    "CanDeleteRcmMetric",
-    "CanUpdateRcmMetric",
-    "CanViewRcmMetric",
-    "RcmMetricPermission",
-]
+from __future__ import annotations
+
+__all__ = ()

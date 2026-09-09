@@ -1,50 +1,32 @@
-"""
-Validators for the Patient Preferences module.
-"""
+"""Validation helpers for Patient Preferences."""
 
 from __future__ import annotations
 
-from django.core.exceptions import ValidationError
+from apps.patient_management.preferences.constants import (
+    PreferenceDateFormat,
+    PreferenceLanguage,
+    PreferenceTimeFormat,
+)
+from apps.patient_management.preferences.exceptions import PreferenceValidationError
 
 
-def validate_timezone(
-    value: str,
-) -> None:
-    """
-    Validate timezone.
-    """
-    if not value.strip():
-        raise ValidationError(
-            "Timezone cannot be empty.",
-        )
+def validate_preference_data(data):
+    """Validate supported display preference values."""
+
+    language = data.get("language")
+    date_format = data.get("date_format")
+    time_format = data.get("time_format")
+
+    if language and language not in {item.value for item in PreferenceLanguage}:
+        raise PreferenceValidationError("Unsupported preference language.")
+
+    if date_format and date_format not in {item.value for item in PreferenceDateFormat}:
+        raise PreferenceValidationError("Unsupported preference date format.")
+
+    if time_format and time_format not in {item.value for item in PreferenceTimeFormat}:
+        raise PreferenceValidationError("Unsupported preference time format.")
+
+    return data
 
 
-def validate_language(
-    value: str,
-) -> None:
-    """
-    Validate language.
-    """
-    if not value.strip():
-        raise ValidationError(
-            "Language cannot be empty.",
-        )
-
-
-def validate_preferred_name(
-    value: str,
-) -> None:
-    """
-    Validate preferred display name.
-    """
-    if len(value) > 100:
-        raise ValidationError(
-            "Preferred name cannot exceed 100 characters.",
-        )
-
-
-__all__ = [
-    "validate_language",
-    "validate_preferred_name",
-    "validate_timezone",
-]
+__all__ = ("validate_preference_data",)

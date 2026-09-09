@@ -5,9 +5,9 @@ Built-in RBAC permissions.
 from __future__ import annotations
 
 from apps.platform.rbac.constants import (
-    PermissionAction,
     PermissionModule,
     PermissionScope,
+    permission_actions_for,
 )
 
 
@@ -21,7 +21,7 @@ def build_permissions() -> list[dict[str, object]]:
     display_order = 0
 
     for module in PermissionModule:
-        for action in PermissionAction:
+        for action in permission_actions_for(module):
             permissions.append(
                 {
                     "name": (f"{action.label} {module.label}"),

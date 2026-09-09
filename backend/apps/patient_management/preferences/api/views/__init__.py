@@ -1,31 +1,19 @@
-"""
-API views for the Patient Preferences module.
-"""
+"""Patient Preferences API view exports."""
 
-from .communication_preference import (
-    PatientCommunicationPreferenceCreateAPIView,
-    PatientCommunicationPreferenceDeleteAPIView,
-    PatientCommunicationPreferenceDetailAPIView,
-    PatientCommunicationPreferenceListAPIView,
-    PatientCommunicationPreferenceUpdateAPIView,
-)
-from .preference import (
-    PatientPreferenceCreateAPIView,
+from __future__ import annotations
+
+from apps.patient_management.preferences.api.views.preference import (
+    PatientCommunicationPreferenceAPIView,
     PatientPreferenceDeleteAPIView,
     PatientPreferenceDetailAPIView,
-    PatientPreferenceListAPIView,
-    PatientPreferenceUpdateAPIView,
+    PatientPreferenceListCreateAPIView,
+    PatientPreferenceRestoreAPIView,
 )
 
-__all__ = [
-    "PatientCommunicationPreferenceCreateAPIView",
-    "PatientCommunicationPreferenceDeleteAPIView",
-    "PatientCommunicationPreferenceDetailAPIView",
-    "PatientCommunicationPreferenceListAPIView",
-    "PatientCommunicationPreferenceUpdateAPIView",
-    "PatientPreferenceCreateAPIView",
+__all__ = (
+    "PatientCommunicationPreferenceAPIView",
     "PatientPreferenceDeleteAPIView",
     "PatientPreferenceDetailAPIView",
-    "PatientPreferenceListAPIView",
-    "PatientPreferenceUpdateAPIView",
-]
+    "PatientPreferenceListCreateAPIView",
+    "PatientPreferenceRestoreAPIView",
+)

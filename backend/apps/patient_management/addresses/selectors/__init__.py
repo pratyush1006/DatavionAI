@@ -1,17 +1,9 @@
 """
-Selectors for the Addresses module.
+Patient Address selectors.
 """
 
-from .address import (
-    get_address_by_id,
-    get_address_by_value,
-    get_patient_addresses,
-    get_primary_address,
+from apps.patient_management.addresses.selectors.address import (
+    AddressSelector,
 )
 
-__all__ = [
-    "get_address_by_id",
-    "get_address_by_value",
-    "get_patient_addresses",
-    "get_primary_address",
-]
+__all__ = ("AddressSelector",)

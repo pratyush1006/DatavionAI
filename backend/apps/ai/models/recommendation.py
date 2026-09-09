@@ -30,7 +30,7 @@ class Recommendation(BaseModel):
     )
 
     patient = models.ForeignKey(
-        "patients.Patient",
+        "patient_core.Patient",
         on_delete=models.CASCADE,
         related_name="recommendations",
         help_text="Patient associated with the recommendation.",

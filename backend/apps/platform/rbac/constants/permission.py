@@ -167,6 +167,11 @@ class PermissionModule(
         "Artificial Intelligence",
     )
 
+    TELEMEDICINE = (
+        "telemedicine",
+        "Telemedicine",
+    )
+
 
 class PermissionAction(
     models.TextChoices,
@@ -327,6 +332,85 @@ class PermissionAction(
         "Print",
     )
 
+    CANCEL = (
+        "cancel",
+        "Cancel",
+    )
+
+    SCHEDULE = (
+        "schedule",
+        "Schedule",
+    )
+
+    CONFIRM = (
+        "confirm",
+        "Confirm",
+    )
+
+    PREPARE = (
+        "prepare",
+        "Prepare",
+    )
+
+    START = (
+        "start",
+        "Start",
+    )
+
+    COMPLETE = (
+        "complete",
+        "Complete",
+    )
+
+    NO_SHOW = (
+        "no_show",
+        "No Show",
+    )
+
+    FAIL = (
+        "fail",
+        "Fail",
+    )
+
+    PARTICIPANT_MANAGE = (
+        "participant.manage",
+        "Manage Participants",
+    )
+
+    RECORDING_MANAGE = (
+        "recording.manage",
+        "Manage Recording",
+    )
+
+
+_TELEMEDICINE_ACTION_VALUES = frozenset(
+    {
+        "cancel",
+        "schedule",
+        "confirm",
+        "prepare",
+        "start",
+        "complete",
+        "no_show",
+        "fail",
+        "participant.manage",
+        "recording.manage",
+    }
+)
+
+
+def permission_actions_for(
+    module: PermissionModule,
+) -> tuple[PermissionAction, ...]:
+    if module == PermissionModule.TELEMEDICINE:
+        return tuple(PermissionAction)
+
+    return tuple(
+        action
+        for action in PermissionAction
+        if action.value not in _TELEMEDICINE_ACTION_VALUES
+    )
+
 
 class PermissionScope(
     models.TextChoices,
@@ -437,6 +521,7 @@ class SystemRole(
 __all__ = [
     "PermissionAction",
     "PermissionModule",
+    "permission_actions_for",
     "PermissionScope",
     "SystemRole",
 ]

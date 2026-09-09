@@ -4,7 +4,9 @@
 
 "use client";
 
-import type { UseFormReturn } from "react-hook-form";
+import type {
+  UseFormReturn,
+} from "react-hook-form";
 
 import {
   ControlledInput,
@@ -16,9 +18,11 @@ import type {
   OrganizationFormValues,
 } from "../../../domain";
 
-export type ContactInformationProps = Readonly<{
-  form: UseFormReturn<OrganizationFormValues>;
-}>;
+export type ContactInformationProps =
+  Readonly<{
+    form:
+      UseFormReturn<OrganizationFormValues>;
+  }>;
 
 export function ContactInformation({
   form,
@@ -36,6 +40,17 @@ export function ContactInformation({
           type="email"
           placeholder="info@organization.com"
           required
+          autoComplete="email"
+        />
+
+        <ControlledInput
+          form={form}
+          name="supportEmail"
+          label="Support Email"
+          type="email"
+          placeholder="support@organization.com"
+          required
+          autoComplete="email"
         />
 
         <ControlledInput
@@ -44,6 +59,16 @@ export function ContactInformation({
           label="Phone Number"
           placeholder="+91 9876543210"
           required
+          autoComplete="tel"
+        />
+
+        <ControlledInput
+          form={form}
+          name="website"
+          label="Website"
+          placeholder="https://organization.com"
+          type="url"
+          autoComplete="url"
         />
       </FormGrid>
     </FormSection>

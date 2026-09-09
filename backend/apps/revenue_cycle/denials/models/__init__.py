@@ -1,5 +1,7 @@
-from .denials import ClaimDenial
+"""Denial models."""
 
-__all__ = [
-    "ClaimDenial",
-]
+from __future__ import annotations
+
+from .denial import Denial
+
+__all__ = ("Denial",)

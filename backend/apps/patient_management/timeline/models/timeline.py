@@ -1,110 +1,104 @@
 """
-Timeline models.
+Patient Timeline domain model.
 """
 
 from __future__ import annotations
 
+from django.conf import settings
 from django.db import models
 
-from apps.clinical.patients.models import Patient
-from apps.core.models import BaseManager, BaseModel
+from apps.core.models import BaseModel
+from apps.patient_management.patients.models import Patient
 from apps.patient_management.timeline.constants import (
     TimelineEventType,
-    TimelineEventVisibility,
+    TimelineStatus,
 )
+from apps.patient_management.timeline.managers import TimelineEntryManager
+from apps.patient_management.timeline.validators import validate_timeline_title
 from apps.platform.organizations.models import Organization
 
 
-class PatientTimelineEvent(BaseModel):
-    """
-    A chronological event on the patient timeline.
-    """
-
-    objects = BaseManager()
+class TimelineEntry(BaseModel):
+    """Represent a chronological event in a patient's record."""
 
     organization = models.ForeignKey(
         Organization,
-        on_delete=models.CASCADE,
-        related_name="patient_timeline_events",
+        on_delete=models.PROTECT,
+        related_name="timeline_entries",
     )
-
     patient = models.ForeignKey(
         Patient,
         on_delete=models.CASCADE,
-        related_name="timeline_events",
+        related_name="timeline_entries",
     )
-
     event_type = models.CharField(
-        max_length=20,
+        max_length=32,
         choices=TimelineEventType.choices,
-        default=TimelineEventType.NOTE,
-        db_index=True,
+        default=TimelineEventType.SYSTEM,
     )
-
     title = models.CharField(
         max_length=255,
-        help_text="Short event title.",
+        validators=(validate_timeline_title,),
     )
-
     description = models.TextField(
         blank=True,
-        help_text="Event details.",
+        default="",
     )
-
-    occurred_at = models.DateTimeField(
-        help_text="When the event occurred.",
+    occurred_at = models.DateTimeField()
+    status = models.CharField(
+        max_length=32,
+        choices=TimelineStatus.choices,
+        default=TimelineStatus.ACTIVE,
     )
-
-    visibility = models.CharField(
-        max_length=20,
-        choices=TimelineEventVisibility.choices,
-        default=TimelineEventVisibility.INTERNAL,
-    )
-
-    reference_type = models.CharField(
-        max_length=50,
+    metadata = models.JSONField(
+        default=dict,
         blank=True,
-        help_text="Related entity type (e.g. Appointment).",
     )
-
-    reference_id = models.UUIDField(
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
         null=True,
         blank=True,
-        help_text="Related entity identifier.",
+        on_delete=models.SET_NULL,
+        related_name="created_timeline_entries",
     )
 
-    created_by = models.CharField(
-        max_length=150,
-        blank=True,
-        help_text="Actor who created the event.",
-    )
+    objects = TimelineEntryManager()
 
     class Meta:
-        db_table = "patient_timeline_events"
+        """Configure TimelineEntry persistence behavior."""
 
-        verbose_name = "Patient Timeline Event"
-
-        verbose_name_plural = "Patient Timeline Events"
-
-        ordering = ("-occurred_at",)
-
-        indexes = [
+        ordering = (
+            "-occurred_at",
+            "-created_at",
+        )
+        indexes = (
             models.Index(
-                fields=[
+                fields=(
                     "organization",
                     "patient",
-                    "event_type",
-                ],
-                name="timeline_org_pat_type_idx",
+                    "occurred_at",
+                ),
             ),
-        ]
+            models.Index(
+                fields=(
+                    "organization",
+                    "status",
+                    "is_deleted",
+                ),
+            ),
+            models.Index(
+                fields=(
+                    "organization",
+                    "is_active",
+                    "occurred_at",
+                ),
+            ),
+        )
 
-    def __str__(
-        self,
-    ) -> str:
-        return f"{self.get_event_type_display()}: {self.title}"
+    def __str__(self) -> str:
+        """Return a readable Timeline entry label."""
+
+        return f"{self.title} ({self.patient_id})"
 
 
-__all__ = [
-    "PatientTimelineEvent",
-]
+__all__ = ("TimelineEntry",)

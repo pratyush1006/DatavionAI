@@ -1,31 +1,21 @@
-"""
-Patient Preference serializers.
-"""
+"""Patient Preferences serializer exports."""
 
-from .create import (
-    PatientCommunicationPreferenceCreateSerializer,
+from __future__ import annotations
+
+from apps.patient_management.preferences.api.serializers.preference import (
+    PatientCommunicationPreferenceRequestSerializer,
+    PatientCommunicationPreferenceSerializer,
     PatientPreferenceCreateSerializer,
-)
-from .detail import (
-    PatientCommunicationPreferenceDetailSerializer,
     PatientPreferenceDetailSerializer,
-)
-from .list import (
-    PatientCommunicationPreferenceListSerializer,
     PatientPreferenceListSerializer,
-)
-from .update import (
-    PatientCommunicationPreferenceUpdateSerializer,
     PatientPreferenceUpdateSerializer,
 )
 
-__all__ = [
-    "PatientCommunicationPreferenceCreateSerializer",
-    "PatientCommunicationPreferenceDetailSerializer",
-    "PatientCommunicationPreferenceListSerializer",
-    "PatientCommunicationPreferenceUpdateSerializer",
+__all__ = (
+    "PatientCommunicationPreferenceRequestSerializer",
+    "PatientCommunicationPreferenceSerializer",
     "PatientPreferenceCreateSerializer",
     "PatientPreferenceDetailSerializer",
     "PatientPreferenceListSerializer",
     "PatientPreferenceUpdateSerializer",
-]
+)

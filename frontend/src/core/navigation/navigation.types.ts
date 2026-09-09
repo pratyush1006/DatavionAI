@@ -1,8 +1,25 @@
 /**
- * Navigation type definitions.
+ * =============================================================================
+ * DatavionOS
+ * File: src/core/navigation/navigation.types.ts
+ * =============================================================================
+ *
+ * Frontend navigation presentation contracts.
+ *
+ * The backend remains authoritative for runtime navigation visibility,
+ * permissions, routes, ordering, and module availability.
+ *
+ * This file defines only the frontend presentation model.
+ *
+ * =============================================================================
  */
 
 import type { LucideIcon } from "lucide-react";
+
+/* =============================================================================
+ * Portal
+ * =============================================================================
+ */
 
 export type NavigationPortal =
   | "staff"
@@ -10,30 +27,76 @@ export type NavigationPortal =
   | "organization"
   | "platform";
 
+/* =============================================================================
+ * Navigation Group
+ * =============================================================================
+ *
+ * These are frontend presentation groups.
+ *
+ * Backend categories are adapted into these groups by:
+ *
+ *     @/core/navigation/navigation.adapter
+ *
+ * =============================================================================
+ */
+
 export type NavigationGroup =
   | "dashboard"
   | "clinical"
   | "diagnostics"
   | "operations"
+  | "ai"
   | "reports"
   | "administration";
 
+/* =============================================================================
+ * Navigation Item
+ * =============================================================================
+ */
+
 export interface NavigationItem {
-  id: string;
+  /**
+   * Stable frontend navigation identifier.
+   */
+  readonly id: string;
 
-  label: string;
+  /**
+   * User-facing navigation label.
+   */
+  readonly label: string;
 
-  href: string;
+  /**
+   * Frontend application route.
+   */
+  readonly href: string;
 
-  icon: LucideIcon;
+  /**
+   * Resolved Lucide icon component.
+   */
+  readonly icon: LucideIcon;
 
-  group: NavigationGroup;
+  /**
+   * Frontend presentation group.
+   */
+  readonly group: NavigationGroup;
 
-  module: string;
+  /**
+   * Canonical runtime module identifier.
+   */
+  readonly module: string;
 
-  permissions: string[];
+  /**
+   * Effective permissions supplied by the backend.
+   */
+  readonly permissions: string[];
 
-  portals: NavigationPortal[];
+  /**
+   * Application portals where this item is presented.
+   */
+  readonly portals: NavigationPortal[];
 
-  children?: NavigationItem[];
+  /**
+   * Optional nested navigation items.
+   */
+  readonly children?: NavigationItem[];
 }

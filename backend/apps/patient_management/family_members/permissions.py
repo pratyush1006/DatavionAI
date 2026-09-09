@@ -1,46 +1,79 @@
 """
-Permissions for the Family Members module.
+RBAC permissions for the Patient Family Members module.
+
+These classes are thin adapters over the centralized DatavionOS
+RBAC permission engine.
 """
 
 from __future__ import annotations
 
-__all__ = [
-    "FamilyMemberPermission",
-]
+from apps.platform.rbac.permissions import RBACPermissionBase
 
 
-class FamilyMemberPermission:
-    """
-    Permission constants for the Family Members module.
-    """
+class CanViewFamilyMember(RBACPermissionBase):
+    permission_code = "family_members.view"
+    message = "You do not have permission to view patient family members."
 
-    MODULE = "patient_management.family_members"
 
-    VIEW = f"{MODULE}.view"
-    LIST = f"{MODULE}.list"
-    CREATE = f"{MODULE}.create"
-    UPDATE = f"{MODULE}.update"
-    DELETE = f"{MODULE}.delete"
-    RESTORE = f"{MODULE}.restore"
+class CanCreateFamilyMember(RBACPermissionBase):
+    permission_code = "family_members.create"
+    message = "You do not have permission to create patient family members."
 
-    VIEW_SENSITIVE = f"{MODULE}.view_sensitive"
 
-    MANAGE_NEXT_OF_KIN = f"{MODULE}.manage_next_of_kin"
-    MANAGE_EMERGENCY_CONTACT = f"{MODULE}.manage_emergency_contact"
+class CanUpdateFamilyMember(RBACPermissionBase):
+    permission_code = "family_members.update"
+    message = "You do not have permission to update patient family members."
 
-    EXPORT = f"{MODULE}.export"
-    IMPORT = f"{MODULE}.import"
 
-    ALL = (
-        VIEW,
-        LIST,
-        CREATE,
-        UPDATE,
-        DELETE,
-        RESTORE,
-        VIEW_SENSITIVE,
-        MANAGE_NEXT_OF_KIN,
-        MANAGE_EMERGENCY_CONTACT,
-        EXPORT,
-        IMPORT,
+class CanDeleteFamilyMember(RBACPermissionBase):
+    permission_code = "family_members.delete"
+    message = "You do not have permission to delete patient family members."
+
+
+class CanRestoreFamilyMember(RBACPermissionBase):
+    permission_code = "family_members.restore"
+    message = "You do not have permission to restore patient family members."
+
+
+class CanViewSensitiveFamilyMember(RBACPermissionBase):
+    permission_code = "family_members.view_sensitive"
+    message = "You do not have permission to view sensitive family-member information."
+
+
+class CanManageNextOfKinFamilyMember(RBACPermissionBase):
+    permission_code = "family_members.manage_next_of_kin"
+    message = (
+        "You do not have permission to manage family-member next-of-kin designations."
     )
+
+
+class CanManageEmergencyContactFamilyMember(RBACPermissionBase):
+    permission_code = "family_members.manage_emergency_contact"
+    message = (
+        "You do not have permission to manage family-member "
+        "emergency-contact designations."
+    )
+
+
+class CanExportFamilyMembers(RBACPermissionBase):
+    permission_code = "family_members.export"
+    message = "You do not have permission to export family-member data."
+
+
+class CanImportFamilyMembers(RBACPermissionBase):
+    permission_code = "family_members.import"
+    message = "You do not have permission to import family-member data."
+
+
+__all__ = (
+    "CanViewFamilyMember",
+    "CanCreateFamilyMember",
+    "CanUpdateFamilyMember",
+    "CanDeleteFamilyMember",
+    "CanRestoreFamilyMember",
+    "CanViewSensitiveFamilyMember",
+    "CanManageNextOfKinFamilyMember",
+    "CanManageEmergencyContactFamilyMember",
+    "CanExportFamilyMembers",
+    "CanImportFamilyMembers",
+)

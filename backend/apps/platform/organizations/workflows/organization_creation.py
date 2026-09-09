@@ -4,6 +4,7 @@ Organization creation workflow.
 Coordinates the organization creation process.
 
 The workflow is responsible for:
+
 - Policy validation
 - Domain service orchestration
 - Domain event publishing
@@ -15,6 +16,7 @@ Business rules remain inside the domain service layer.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
 from uuid import UUID
 
 from apps.core.workflows import (
@@ -46,23 +48,45 @@ from apps.platform.organizations.tasks import (
 class OrganizationCreationRequest:
     """
     Organization creation request.
+
+    This DTO mirrors the writable Organization creation API contract.
+    Validation and normalization are performed by the serializer before
+    this request reaches the workflow.
     """
 
+    name: str
+    code: str
+    slug: str
     organization_type: str
 
-    name: str
-
-    code: str
-
-    slug: str
+    display_name: str | None = None
+    category: str | None = None
+    size: str | None = None
 
     email: str | None = None
-
+    support_email: str | None = None
     phone: str | None = None
-
     website: str | None = None
 
+    address: str | None = None
+    city: str | None = None
+    state: str | None = None
+    country: str | None = None
+
+    country_ref: Any | None = None
+    region_ref: Any | None = None
+    city_ref: Any | None = None
+
+    postal_code: str | None = None
+    timezone: str | None = None
+
+    registration_number: str | None = None
+    tax_number: str | None = None
+    license_number: str | None = None
+    accreditation: str | None = None
+
     description: str | None = None
+    is_demo: bool | None = None
 
 
 @dataclass(
@@ -76,9 +100,7 @@ class OrganizationCreationData:
     """
 
     organization_id: UUID
-
     created: bool
-
     event_id: UUID | None = None
 
 
@@ -94,6 +116,8 @@ class OrganizationCreationWorkflow(
     - Execute organization creation service
     - Publish organization created event
     - Dispatch post-commit tasks
+
+    Business validation remains in the serializer/service layers.
     """
 
     def __init__(
@@ -105,7 +129,6 @@ class OrganizationCreationWorkflow(
         super().__init__()
 
         self._request = request
-
         self._policy = policy or OrganizationPolicy()
 
     def _run(
@@ -135,18 +158,57 @@ class OrganizationCreationWorkflow(
             id=context.tenant_id,
         )
 
-        organization = create_organization(
-            validated_data={
-                "tenant": tenant,
-                "organization_type": (self._request.organization_type),
-                "name": self._request.name,
-                "code": self._request.code,
-                "slug": self._request.slug,
-                "email": self._request.email,
-                "phone": self._request.phone,
-                "website": self._request.website,
-                "description": self._request.description,
+        validated_data: dict[str, Any] = {
+            "tenant": tenant,
+            "name": self._request.name,
+            "code": self._request.code,
+            "slug": self._request.slug,
+            "organization_type": self._request.organization_type,
+        }
+
+        optional_fields = (
+            "display_name",
+            "category",
+            "size",
+            "email",
+            "support_email",
+            "phone",
+            "website",
+            "address",
+            "city",
+            "state",
+            "country",
+            "country_ref",
+            "region_ref",
+            "city_ref",
+            "postal_code",
+            "timezone",
+            "registration_number",
+            "tax_number",
+            "license_number",
+            "accreditation",
+            "description",
+            "is_demo",
+        )
+
+        request_values = {
+            field_name: getattr(
+                self._request,
+                field_name,
+            )
+            for field_name in optional_fields
+        }
+
+        validated_data.update(
+            {
+                field_name: value
+                for field_name, value in request_values.items()
+                if value is not None
             },
+        )
+
+        organization = create_organization(
+            validated_data=validated_data,
         )
 
         event = OrganizationCreatedEvent(

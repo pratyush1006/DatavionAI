@@ -1,79 +1,144 @@
 /**
- * Organization domain types.
+ * =============================================================================
+ * DatavionOS
+ * File: src/features/platform/organizations/domain/types.ts
+ * =============================================================================
+ *
+ * Organization domain contracts.
+ * =============================================================================
  */
 
 import type {
   OrganizationFormValues,
+  OrganizationUpdateFormValues,
 } from "./schema";
 
 /**
- * Supported organization types.
+ * Organization identifier.
  */
-export const ORGANIZATION_TYPES = [
-  "HOSPITAL",
-  "CLINIC",
-  "LABORATORY",
-  "RADIOLOGY",
-  "PHARMACY",
-  "BLOOD_BANK",
-  "CORPORATE",
-] as const;
+export type OrganizationId = string;
 
 /**
- * Organization type.
+ * Backend organization lifecycle status.
  */
-export type OrganizationType =
-  (typeof ORGANIZATION_TYPES)[number];
+export type OrganizationStatus = string;
 
 /**
- * Organization entity.
+ * Backend organization category.
+ */
+export type OrganizationCategory = string;
+
+/**
+ * Backend organization size.
+ */
+export type OrganizationSize = string;
+
+/**
+ * Backend organization type.
+ */
+export type OrganizationType = string;
+
+/**
+ * Organization entity used by the frontend.
+ *
+ * Geography reference IDs are authoritative identifiers.
+ * Legacy country/state/city strings are retained for compatibility and display.
  */
 export interface Organization {
-  id: number;
+  readonly id: OrganizationId;
 
-  uuid?: string;
+  readonly name: string;
 
-  name: string;
+  readonly displayName: string;
 
-  code: string;
+  readonly code: string;
 
-  organizationType: OrganizationType;
+  readonly slug: string;
 
-  email: string;
+  readonly category: OrganizationCategory;
 
-  phone: string;
+  readonly organizationType: OrganizationType;
 
-  address: string;
+  readonly size: OrganizationSize;
 
-  city: string;
+  readonly status: OrganizationStatus;
 
-  state: string;
+  readonly email: string;
 
-  country: string;
+  readonly supportEmail: string;
 
-  isActive: boolean;
+  readonly phone: string;
 
-  createdAt: string;
+  readonly website: string;
 
-  updatedAt: string;
+  readonly address: string;
+
+  readonly city: string;
+
+  readonly state: string;
+
+  readonly country: string;
+
+  readonly countryRef: string | null;
+
+  readonly regionRef: string | null;
+
+  readonly cityRef: string | null;
+
+  readonly postalCode: string;
+
+  readonly timezone: string;
+
+  readonly registrationNumber: string;
+
+  readonly taxNumber: string;
+
+  readonly licenseNumber: string;
+
+  readonly accreditation: string;
+
+  readonly verificationStatus: string;
+
+  readonly description: string;
+
+  readonly isDemo: boolean;
+
+  readonly createdAt: string;
+
+  readonly updatedAt: string;
 }
 
 /**
- * Payload for creating an organization.
- *
- * Derived from the validated form schema to
- * avoid duplicating field definitions.
+ * Organization collection representation.
+ */
+export interface OrganizationListItem {
+  readonly id: OrganizationId;
+
+  readonly displayName: string;
+
+  readonly code: string;
+
+  readonly category: OrganizationCategory;
+
+  readonly organizationType: OrganizationType;
+
+  readonly status: OrganizationStatus;
+
+  readonly city: string;
+
+  readonly country: string;
+}
+
+/**
+ * Create payload.
  */
 export type CreateOrganizationPayload =
   OrganizationFormValues;
 
 /**
- * Payload for updating an organization.
+ * Update payload.
  *
- * Organization code is immutable after creation.
+ * Code and slug remain immutable after creation.
  */
 export type UpdateOrganizationPayload =
-  Omit<
-    OrganizationFormValues,
-    "code"
-  >;
+  OrganizationUpdateFormValues;

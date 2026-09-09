@@ -1,82 +1,42 @@
-"""
-Telemedicine recording model.
-"""
-
 from __future__ import annotations
+
+import uuid
 
 from django.db import models
 
 from apps.core.models import BaseManager, BaseModel
+from apps.telemedicine.constants import RecordingStatus
 
 
 class Recording(BaseModel):
-    """
-    Represents a recording of a telemedicine session.
-    """
-
     objects = BaseManager()
-
     session = models.ForeignKey(
         "telemedicine.TelemedicineSession",
         on_delete=models.CASCADE,
         related_name="recordings",
-        help_text="Session that was recorded.",
     )
-
-    recording_url = models.URLField(
-        help_text="URL where the recording is stored.",
+    recording_id = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    status = models.CharField(
+        max_length=20,
+        choices=RecordingStatus.choices,
+        default=RecordingStatus.REQUESTED,
+        db_index=True,
     )
-
-    duration_seconds = models.PositiveIntegerField(
-        null=True,
-        blank=True,
-        help_text="Recording duration in seconds.",
-    )
-
-    file_size_bytes = models.PositiveIntegerField(
-        null=True,
-        blank=True,
-        help_text="Recording file size in bytes.",
-    )
-
-    transcript_url = models.URLField(
-        blank=True,
-        help_text="URL of the transcript file.",
-    )
-
-    transcript_text = models.TextField(
-        blank=True,
-        help_text="Transcript text content.",
-    )
-
-    is_processed = models.BooleanField(
-        default=False,
-        help_text="Whether the recording has been processed.",
-    )
+    recording_url = models.URLField(blank=True)
+    transcript_url = models.URLField(blank=True)
+    transcript_text = models.TextField(blank=True)
+    duration_seconds = models.PositiveIntegerField(null=True, blank=True)
+    file_size_bytes = models.PositiveBigIntegerField(null=True, blank=True)
+    started_at = models.DateTimeField(null=True, blank=True)
+    finalized_at = models.DateTimeField(null=True, blank=True)
+    error_message = models.TextField(blank=True)
 
     class Meta:
         db_table = "telemedicine_recordings"
-
-        verbose_name = "Telemedicine Recording"
-
-        verbose_name_plural = "Telemedicine Recordings"
-
         ordering = ("-created_at",)
-
         indexes = [
-            models.Index(
-                fields=[
-                    "session",
-                    "created_at",
-                ],
-                name="tele_record_sess_crt_idx",
-            ),
+            models.Index(fields=["session", "status"], name="tele_rec_sess_status_idx")
         ]
 
-    def __str__(self) -> str:
-        return f"Recording - {self.session.session_id} ({self.duration_seconds}s)"
-
-
-__all__ = [
-    "Recording",
-]
+    def __str__(self):
+        return f"{self.recording_id} | {self.status}"

@@ -1,45 +1,53 @@
 """
-URL configuration for the Addresses API.
+URL configuration for Patient Addresses.
 """
-
-from __future__ import annotations
 
 from django.urls import path
 
 from apps.patient_management.addresses.api.views import (
-    AddressCreateAPIView,
-    AddressDestroyAPIView,
-    AddressListAPIView,
-    AddressRetrieveAPIView,
-    AddressUpdateAPIView,
+    AddressActivateAPIView,
+    AddressDeactivateAPIView,
+    AddressListCreateAPIView,
+    AddressRetrieveUpdateDestroyAPIView,
+    AddressSetPrimaryAPIView,
+    AddressVerifyAPIView,
 )
 
 app_name = "patient-addresses"
 
-urlpatterns = [
+
+urlpatterns = (
     path(
         "",
-        AddressListAPIView.as_view(),
-        name="list",
+        AddressListCreateAPIView.as_view(),
+        name="list-create",
     ),
     path(
-        "create/",
-        AddressCreateAPIView.as_view(),
-        name="create",
-    ),
-    path(
-        "<uuid:pk>/",
-        AddressRetrieveAPIView.as_view(),
+        "<uuid:address_id>/",
+        AddressRetrieveUpdateDestroyAPIView.as_view(),
         name="detail",
     ),
     path(
-        "<uuid:pk>/update/",
-        AddressUpdateAPIView.as_view(),
-        name="update",
+        "<uuid:address_id>/verify/",
+        AddressVerifyAPIView.as_view(),
+        name="verify",
     ),
     path(
-        "<uuid:pk>/delete/",
-        AddressDestroyAPIView.as_view(),
-        name="delete",
+        "<uuid:address_id>/activate/",
+        AddressActivateAPIView.as_view(),
+        name="activate",
     ),
-]
+    path(
+        "<uuid:address_id>/deactivate/",
+        AddressDeactivateAPIView.as_view(),
+        name="deactivate",
+    ),
+    path(
+        "<uuid:address_id>/set-primary/",
+        AddressSetPrimaryAPIView.as_view(),
+        name="set-primary",
+    ),
+)
+
+
+__all__ = ("urlpatterns",)

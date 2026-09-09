@@ -1,5 +1,5 @@
 """
-Update serializer for patient addresses.
+Update serializer for Patient Addresses.
 """
 
 from __future__ import annotations
@@ -9,11 +9,9 @@ from rest_framework import serializers
 from apps.patient_management.addresses.models import Address
 
 
-class AddressUpdateSerializer(serializers.ModelSerializer):
-    """
-    Serializer for updating a patient address.
-    """
-
+class AddressUpdateSerializer(
+    serializers.ModelSerializer,
+):
     class Meta:
         model = Address
         fields = (
@@ -25,7 +23,8 @@ class AddressUpdateSerializer(serializers.ModelSerializer):
             "state",
             "country",
             "postal_code",
-            "status",
-            "source",
             "is_primary",
         )
+
+
+__all__ = ("AddressUpdateSerializer",)

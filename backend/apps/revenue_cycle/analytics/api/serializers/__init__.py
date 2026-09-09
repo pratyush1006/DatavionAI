@@ -1,15 +1,5 @@
-from .analytics import (
-    RcmMetricCreateSerializer,
-    RcmMetricDetailSerializer,
-    RcmMetricListSerializer,
-    RcmMetricSerializer,
-    RcmMetricUpdateSerializer,
-)
+"""Revenue Cycle analytics api/serializers package."""
 
-__all__ = [
-    "RcmMetricCreateSerializer",
-    "RcmMetricDetailSerializer",
-    "RcmMetricListSerializer",
-    "RcmMetricSerializer",
-    "RcmMetricUpdateSerializer",
-]
+from __future__ import annotations
+
+__all__ = ()

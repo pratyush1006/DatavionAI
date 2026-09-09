@@ -1,15 +1,5 @@
-from .ar import (
-    AccountsReceivableCreateSerializer,
-    AccountsReceivableDetailSerializer,
-    AccountsReceivableListSerializer,
-    AccountsReceivableSerializer,
-    AccountsReceivableUpdateSerializer,
-)
+"""Revenue Cycle ar api/serializers package."""
 
-__all__ = [
-    "AccountsReceivableCreateSerializer",
-    "AccountsReceivableDetailSerializer",
-    "AccountsReceivableListSerializer",
-    "AccountsReceivableSerializer",
-    "AccountsReceivableUpdateSerializer",
-]
+from __future__ import annotations
+
+__all__ = ()

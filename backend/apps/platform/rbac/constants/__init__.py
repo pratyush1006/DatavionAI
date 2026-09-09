@@ -22,6 +22,7 @@ from .permission import (
     PermissionModule,
     PermissionScope,
     SystemRole,
+    permission_actions_for,
 )
 
 # ============================================================================
@@ -85,6 +86,7 @@ __all__ = [
     # =========================================================================
     "PermissionAction",
     "PermissionModule",
+    "permission_actions_for",
     "PermissionScope",
     "SystemRole",
     # =========================================================================

@@ -1,27 +1,21 @@
-"""
-Telemedicine permissions module.
-"""
-
-from __future__ import annotations
-
-from apps.telemedicine.permissions.telemedicine import (
+from .telemedicine import (
+    CanCancelTelemedicineSession,
+    CanCompleteTelemedicineSession,
     CanCreateTelemedicineSession,
-    CanDeleteTelemedicineSession,
-    CanEndTelemedicineSession,
-    CanRecordTelemedicineSession,
+    CanManageTelemedicineParticipant,
+    CanManageTelemedicineRecording,
+    CanPrepareTelemedicineSession,
     CanStartTelemedicineSession,
-    CanUpdateTelemedicineSession,
     CanViewTelemedicineSession,
-    TelemedicinePermission,
 )
 
 __all__ = [
+    "CanCancelTelemedicineSession",
+    "CanCompleteTelemedicineSession",
     "CanCreateTelemedicineSession",
-    "CanDeleteTelemedicineSession",
-    "CanEndTelemedicineSession",
-    "CanRecordTelemedicineSession",
+    "CanManageTelemedicineParticipant",
+    "CanManageTelemedicineRecording",
+    "CanPrepareTelemedicineSession",
     "CanStartTelemedicineSession",
-    "CanUpdateTelemedicineSession",
     "CanViewTelemedicineSession",
-    "TelemedicinePermission",
 ]

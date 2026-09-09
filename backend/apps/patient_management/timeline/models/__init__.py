@@ -1,5 +1,9 @@
-from .timeline import PatientTimelineEvent
+"""
+Patient Timeline model exports.
+"""
 
-__all__ = [
-    "PatientTimelineEvent",
-]
+from __future__ import annotations
+
+from apps.patient_management.timeline.models.timeline import TimelineEntry
+
+__all__ = ("TimelineEntry",)

@@ -3,6 +3,12 @@ Read-only selectors for the Organizations application.
 
 Selectors provide optimized read access for APIs,
 dashboards, AI services, and platform workflows.
+
+Security
+--------
+Tenant-aware callers must provide ``tenant`` when resolving an
+organization. Tenant isolation is enforced at the queryset level
+before object-level RBAC permissions are evaluated.
 """
 
 from __future__ import annotations
@@ -30,7 +36,7 @@ ORGANIZATION_LIST_FIELDS: Final[tuple[str, ...]] = (
     "code",
     "category",
     "organization_type",
-    "organization_size",
+    "size",
     "status",
     "verification_status",
     "city",
@@ -49,11 +55,17 @@ def get_organizations(
     """
     Return organizations.
 
-    Supports:
+    Args:
+        include_inactive:
+            Include inactive organizations when True.
 
-    - tenant isolation
-    - inactive filtering
-    - related-object optimization
+        tenant:
+            Optional tenant context. When supplied, the queryset is
+            strictly scoped to that tenant.
+
+        with_related:
+            Load related objects using the organization's queryset
+            optimization method.
     """
 
     queryset = Organization.objects.only(
@@ -84,6 +96,7 @@ def get_active_organizations(
 
     return get_organizations(
         tenant=tenant,
+        include_inactive=False,
     )
 
 
@@ -93,6 +106,9 @@ def get_verified_organizations(
 ) -> OrganizationQuerySet:
     """
     Return verified organizations.
+
+    Inactive organizations are included because verification status
+    and lifecycle status are independent concerns.
     """
 
     return get_organizations(
@@ -104,17 +120,31 @@ def get_verified_organizations(
 def get_organization_by_id(
     organization_id: Any,
     *,
+    tenant: Tenant | Any | None = None,
     with_related: bool = False,
 ) -> Organization:
     """
     Return an organization by primary key.
+
+    When ``tenant`` is supplied, the lookup is strictly scoped to
+    that tenant.
+
+    This provides tenant isolation at the database-query level before
+    object-level RBAC permissions are evaluated.
+
+    Inactive organizations are intentionally included because detail,
+    update, delete, restore, and lifecycle operations may need to
+    resolve inactive organizations.
     """
 
+    queryset = get_organizations(
+        tenant=tenant,
+        include_inactive=True,
+        with_related=with_related,
+    )
+
     return get_object_or_404(
-        get_organizations(
-            include_inactive=True,
-            with_related=with_related,
-        ),
+        queryset,
         pk=organization_id,
     )
 
@@ -128,14 +158,14 @@ def get_organization_by_code(
     Return an organization by tenant-scoped code.
     """
 
-    code = code.strip().upper()
+    normalized_code = code.strip().upper()
 
     return get_object_or_404(
         get_organizations(
             tenant=tenant,
             include_inactive=True,
         ),
-        code=code,
+        code=normalized_code,
     )
 
 
@@ -148,14 +178,14 @@ def get_organization_by_slug(
     Return an organization by tenant-scoped slug.
     """
 
-    slug = slug.strip().lower()
+    normalized_slug = slug.strip().lower()
 
     return get_object_or_404(
         get_organizations(
             tenant=tenant,
             include_inactive=True,
         ),
-        slug=slug,
+        slug=normalized_slug,
     )
 
 
@@ -166,6 +196,8 @@ def search_organizations(
 ) -> OrganizationQuerySet:
     """
     Search organizations.
+
+    Search remains tenant-scoped whenever a tenant is supplied.
     """
 
     return get_organizations(
@@ -183,10 +215,10 @@ def organization_exists(
     include_inactive: bool = True,
 ) -> bool:
     """
-    Check whether an organization exists.
+    Check whether an organization code exists within a tenant.
     """
 
-    code = code.strip().upper()
+    normalized_code = code.strip().upper()
 
     return (
         get_organizations(
@@ -194,7 +226,7 @@ def organization_exists(
             include_inactive=include_inactive,
         )
         .filter(
-            code=code,
+            code=normalized_code,
         )
         .exists()
     )
@@ -202,6 +234,8 @@ def organization_exists(
 
 def get_organization_summary(
     organization_id: Any,
+    *,
+    tenant: Tenant | Any | None = None,
 ) -> dict[str, Any]:
     """
     Return a lightweight organization summary.
@@ -212,10 +246,14 @@ def get_organization_summary(
     - bootstrap APIs
     - AI context
     - navigation
+
+    Tenant context is propagated to prevent an organization outside
+    the active tenant boundary from being resolved accidentally.
     """
 
     organization = get_organization_by_id(
         organization_id,
+        tenant=tenant,
     )
 
     return {

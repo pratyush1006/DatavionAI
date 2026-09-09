@@ -1,14 +1,10 @@
 """
-API views for payments.
+Billing Core Payment API views.
 """
 
 from __future__ import annotations
 
-from typing import Final
-
-from drf_spectacular.utils import extend_schema
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.request import Request
+from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -17,191 +13,97 @@ from apps.billing.api.serializers import (
     PaymentListSerializer,
     PaymentSerializer,
 )
-from apps.billing.permissions import CanProcessPayment, CanViewInvoice
+from apps.billing.api.views._base import BillingAPIViewMixin
+from apps.billing.permissions import CanProcessPayment, CanViewBilling
 from apps.billing.selectors import PaymentSelector
-from apps.billing.services import PaymentService
-from apps.common.api.responses import (
-    error_response,
-    success_response,
-)
-from apps.common.permissions import IsAuthenticatedAndActive
-
-PAYMENT_TAG: Final[tuple[str, ...]] = ("Payments",)
+from apps.billing.workflows import PaymentCreationRequest, PaymentCreationWorkflow
 
 
-@extend_schema(tags=PAYMENT_TAG)
-class PaymentListCreateAPIView(APIView):
-    """
-    API view for listing and creating payments.
-    """
+class PaymentListCreateAPIView(BillingAPIViewMixin, APIView):
+    """List and create payments through Billing Core boundaries."""
 
-    permission_classes = (IsAuthenticatedAndActive,)
-
-    def get_permissions(
-        self,
-    ):
-        """
-        Return permissions for the current request.
-        """
-
-        if self.request.method == "POST":
-            return [
-                IsAuthenticated(),
-                CanProcessPayment(),
-            ]
-
-        return [
-            IsAuthenticated(),
-            CanViewInvoice(),
-        ]
-
-    def get(
-        self,
-        request: Request,
-    ) -> Response:
-        """
-        List payments.
-        """
-
-        queryset = PaymentSelector.queryset()
-
-        page = self.paginate_queryset(
-            queryset,
+    def get(self, request):
+        """List organization-scoped payments."""
+        organization = self.get_organization(request)
+        CanViewBilling().has_permission(request, self)
+        records = PaymentSelector.list(
+            tenant_id=organization.tenant_id,
+            organization_id=organization.pk,
         )
+        return Response(PaymentListSerializer(records, many=True).data)
 
-        if page is not None:
-            serializer = PaymentListSerializer(
-                page,
-                many=True,
-            )
-
-            return self.get_paginated_response(
-                serializer.data,
-            )
-
-        serializer = PaymentListSerializer(
-            queryset,
-            many=True,
-        )
-
-        return success_response(
-            data=serializer.data,
-        )
-
-    def post(
-        self,
-        request: Request,
-    ) -> Response:
-        """
-        Create a payment.
-        """
-
-        serializer = PaymentCreateSerializer(
-            data=request.data,
-        )
-
-        if not serializer.is_valid():
-            return error_response(
-                details=serializer.errors,
-            )
-
-        payment = PaymentService.create(
-            validated_data=serializer.validated_data,
-            performed_by=request.user,
-        )
-
-        response_serializer = PaymentSerializer(
-            payment,
-        )
-
-        return success_response(
-            message="Payment recorded successfully.",
-            data=response_serializer.data,
-            status_code=201,
+    def post(self, request):
+        """Record a payment through the workflow boundary."""
+        organization = self.get_organization(request)
+        CanProcessPayment().has_permission(request, self)
+        serializer = PaymentCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = dict(serializer.validated_data)
+        invoice_id = data.pop("invoice")
+        patient_id = data.pop("patient")
+        data["invoice_id"] = invoice_id
+        result = PaymentCreationWorkflow(
+            request=PaymentCreationRequest(
+                organization_id=organization.pk,
+                patient_id=patient_id,
+                data=data,
+            ),
+        ).run(context=self.workflow_context(request, "billing.payment.create"))
+        return Response(
+            PaymentSerializer(result.data).data, status=status.HTTP_201_CREATED
         )
 
 
-@extend_schema(tags=PAYMENT_TAG)
-class PaymentRetrieveAPIView(APIView):
-    """
-    Retrieve a payment.
-    """
+class PaymentRetrieveAPIView(BillingAPIViewMixin, APIView):
+    """Retrieve one organization-scoped payment."""
 
-    permission_classes = (IsAuthenticated, CanViewInvoice)
-
-    def get(
-        self,
-        request: Request,
-        payment_id: str,
-    ) -> Response:
-        """
-        Retrieve a payment.
-        """
-
+    def get(self, request, payment_id):
+        """Return one payment."""
+        organization = self.get_organization(request)
+        CanViewBilling().has_permission(request, self)
         payment = PaymentSelector.get(
+            tenant_id=organization.tenant_id,
+            organization_id=organization.pk,
             payment_id=payment_id,
         )
-
-        serializer = PaymentSerializer(
-            payment,
-        )
-
-        return success_response(
-            data=serializer.data,
-        )
+        return Response(PaymentSerializer(payment).data)
 
 
-@extend_schema(tags=PAYMENT_TAG)
-class PaymentBulkCreateAPIView(APIView):
-    """
-    Bulk create payments.
-    """
+class PaymentBulkCreateAPIView(BillingAPIViewMixin, APIView):
+    """Create payments through the workflow boundary one aggregate at a time."""
 
-    permission_classes = (IsAuthenticatedAndActive,)
-
-    def post(
-        self,
-        request: Request,
-    ) -> Response:
-        """
-        Create multiple payments.
-        """
-
+    def post(self, request):
+        """Create a batch of payments."""
         if not isinstance(request.data, list):
-            return error_response(
-                message="Expected a list of payments.",
-                status_code=400,
+            return Response(
+                {"detail": "Expected a list of payments."},
+                status=status.HTTP_400_BAD_REQUEST,
             )
-
-        serializer = PaymentCreateSerializer(
-            data=request.data,
-            many=True,
-        )
-
-        if not serializer.is_valid():
-            return error_response(
-                details=serializer.errors,
-            )
-
-        payments = PaymentService.bulk_create(
-            validated_data_list=serializer.validated_data,
-            performed_by=request.user,
-        )
-
-        response_serializer = PaymentSerializer(
-            payments,
-            many=True,
-        )
-
-        return success_response(
-            message="Payments created successfully.",
-            data=response_serializer.data,
-            status_code=201,
+        organization = self.get_organization(request)
+        CanProcessPayment().has_permission(request, self)
+        created = []
+        for payload in request.data:
+            serializer = PaymentCreateSerializer(data=payload)
+            serializer.is_valid(raise_exception=True)
+            data = dict(serializer.validated_data)
+            invoice_id = data.pop("invoice")
+            patient_id = data.pop("patient")
+            data["invoice_id"] = invoice_id
+            result = PaymentCreationWorkflow(
+                request=PaymentCreationRequest(
+                    organization_id=organization.pk,
+                    patient_id=patient_id,
+                    data=data,
+                ),
+            ).run(context=self.workflow_context(request, "billing.payment.create"))
+            created.append(result.data)
+        return Response(
+            PaymentSerializer(created, many=True).data, status=status.HTTP_201_CREATED
         )
 
 
-__all__ = [
+__all__ = (
     "PaymentBulkCreateAPIView",
     "PaymentListCreateAPIView",
     "PaymentRetrieveAPIView",
-]
+)

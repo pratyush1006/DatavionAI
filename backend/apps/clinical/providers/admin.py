@@ -33,7 +33,6 @@ class ProviderAdmin(admin.ModelAdmin):
 
     search_fields = (
         "provider_number",
-        "license_number",
         "employee__first_name",
         "employee__middle_name",
         "employee__last_name",

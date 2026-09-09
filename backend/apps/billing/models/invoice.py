@@ -31,7 +31,7 @@ class Invoice(BaseModel):
     )
 
     patient = models.ForeignKey(
-        "patients.Patient",
+        "patient_core.Patient",
         on_delete=models.CASCADE,
         related_name="invoices",
         help_text="Patient associated with the invoice.",

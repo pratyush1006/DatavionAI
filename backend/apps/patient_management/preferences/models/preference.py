@@ -1,135 +1,83 @@
-"""
-Patient preference model.
-"""
+"""Patient-level general preference model."""
 
 from __future__ import annotations
 
 from django.db import models
 
-from apps.common.models import BaseModel
+from apps.core.models import (
+    BaseModel,
+    SoftDeleteManager,
+)
 from apps.patient_management.patients.models import Patient
 from apps.patient_management.preferences.constants import (
-    Language,
-    PreferenceStatus,
-    ReminderPreference,
-    ThemePreference,
+    DEFAULT_DATE_FORMAT,
+    DEFAULT_LANGUAGE,
+    DEFAULT_TIME_FORMAT,
+    DEFAULT_TIMEZONE,
 )
-from apps.patient_management.preferences.managers import (
-    PatientPreferenceManager,
-)
-from apps.patient_management.preferences.validators import (
-    validate_language,
-    validate_preferred_name,
-    validate_timezone,
-)
+from apps.patient_management.preferences.querysets import PatientPreferenceQuerySet
 from apps.platform.organizations.models import Organization
 
 
 class PatientPreference(BaseModel):
-    """
-    Stores global patient preferences.
-    """
-
-    organization = models.ForeignKey(
-        Organization,
-        on_delete=models.CASCADE,
-        related_name="patient_preferences",
-    )
+    """Store display, accessibility, and notification preferences."""
 
     patient = models.OneToOneField(
         Patient,
         on_delete=models.CASCADE,
         related_name="preferences",
     )
-
-    language = models.CharField(
-        max_length=10,
-        choices=Language.choices,
-        default=Language.ENGLISH,
-        validators=[
-            validate_language,
-        ],
+    organization = models.ForeignKey(
+        Organization,
+        on_delete=models.PROTECT,
+        related_name="patient_preferences",
     )
-
+    language = models.CharField(
+        max_length=20,
+        default=DEFAULT_LANGUAGE.value,
+    )
     timezone = models.CharField(
         max_length=100,
-        default="Asia/Kolkata",
-        validators=[
-            validate_timezone,
-        ],
+        default=DEFAULT_TIMEZONE,
     )
-
-    preferred_name = models.CharField(
-        max_length=100,
-        blank=True,
-        validators=[
-            validate_preferred_name,
-        ],
-    )
-
-    portal_theme = models.CharField(
+    date_format = models.CharField(
         max_length=20,
-        choices=ThemePreference.choices,
-        default=ThemePreference.SYSTEM,
+        default=DEFAULT_DATE_FORMAT.value,
     )
-
-    appointment_reminder = models.CharField(
+    time_format = models.CharField(
         max_length=10,
-        choices=ReminderPreference.choices,
-        default=ReminderPreference.ONE_DAY,
+        default=DEFAULT_TIME_FORMAT.value,
+    )
+    accessibility = models.JSONField(
+        default=dict,
+        blank=True,
+    )
+    notification_preferences = models.JSONField(
+        default=dict,
+        blank=True,
     )
 
-    accessibility_mode = models.BooleanField(
-        default=False,
-    )
-
-    ai_personalization = models.BooleanField(
-        default=True,
-    )
-
-    data_sharing_consent = models.BooleanField(
-        default=False,
-    )
-
-    status = models.CharField(
-        max_length=20,
-        choices=PreferenceStatus.choices,
-        default=PreferenceStatus.ACTIVE,
-    )
-
-    objects = PatientPreferenceManager()
+    objects = SoftDeleteManager.from_queryset(PatientPreferenceQuerySet)()
 
     class Meta:
-        verbose_name = "Patient Preference"
-        verbose_name_plural = "Patient Preferences"
+        """Define database constraints and indexes."""
 
-        ordering = ("patient",)
-
-        indexes = [
+        db_table = "patient_management_patient_preference"
+        indexes = (
             models.Index(
-                fields=[
-                    "organization",
-                    "patient",
-                ],
+                fields=("organization", "patient"),
+                name="patpref_org_patient_idx",
             ),
             models.Index(
-                fields=[
-                    "status",
-                ],
+                fields=("organization", "language"),
+                name="patpref_org_lang_idx",
             ),
-        ]
+        )
 
-        constraints = [
-            models.UniqueConstraint(
-                fields=[
-                    "organization",
-                    "patient",
-                ],
-                name="uq_patient_preference",
-            ),
-        ]
+    def __str__(self) -> str:
+        """Return a stable human-readable identifier."""
 
-    def __str__(
-        self,
-    ) -> str:
-        return self.preferred_name or str(self.patient)
+        return f"Preferences for patient {self.patient_id}"
+
+
+__all__ = ("PatientPreference",)

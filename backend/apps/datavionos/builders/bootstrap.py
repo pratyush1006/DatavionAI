@@ -1,10 +1,22 @@
 """
-Platform bootstrap builder.
+DatavionOS platform bootstrap builder.
 
-Builds the DatavionOS runtime bootstrap payload.
+Builds the immutable runtime bootstrap payload consumed by
+DatavionOS frontend applications.
 
-The bootstrap payload is the runtime contract between
-the DatavionOS backend kernel and frontend applications.
+The builder is intentionally a pure assembly layer.
+
+It does NOT:
+
+- resolve subscriptions
+- resolve module availability
+- evaluate RBAC
+- evaluate feature entitlements
+- resolve navigation
+- resolve dashboard content
+
+Those responsibilities belong to the appropriate
+selectors, resolvers, builders, and services.
 """
 
 from __future__ import annotations
@@ -17,8 +29,8 @@ from apps.datavionos.builders.dashboard import (
 from apps.datavionos.builders.navigation import (
     NavigationItem,
 )
-from apps.datavionos.registries.module import (
-    PlatformModule,
+from apps.datavionos.contracts.module import (
+    ModuleContract,
 )
 from apps.datavionos.selectors.bootstrap import (
     PlatformBootstrapContext,
@@ -37,17 +49,23 @@ class PlatformBootstrap:
 
     - user context
     - tenant context
-    - modules
+    - organization context
+    - employee context
+    - platform roles
+    - organization roles
+    - effective permissions
+    - available modules
     - navigation
     - dashboard
     - feature flags
     - subscription
     - branding
+    - preferences
     """
 
     context: PlatformBootstrapContext
 
-    modules: tuple[PlatformModule, ...]
+    modules: tuple[ModuleContract, ...]
 
     navigation: tuple[NavigationItem, ...]
 
@@ -64,26 +82,35 @@ class PlatformBootstrap:
 
 class PlatformBootstrapBuilder:
     """
-    Builds immutable DatavionOS bootstrap payload.
+    Assemble the immutable DatavionOS bootstrap payload.
 
-    This layer does not resolve business rules.
-    It only assembles already resolved runtime data.
+    This class contains no business logic.
+
+    All supplied runtime data must already have been resolved by
+    the appropriate upstream services/selectors/builders.
     """
 
     def build(
         self,
         *,
         context: PlatformBootstrapContext,
-        modules: list[PlatformModule],
-        navigation: list[NavigationItem],
-        dashboard: list[DashboardCard],
+        modules: list[ModuleContract] | tuple[ModuleContract, ...],
+        navigation: list[NavigationItem] | tuple[NavigationItem, ...],
+        dashboard: list[DashboardCard] | tuple[DashboardCard, ...],
         branding: dict[str, object] | None = None,
         feature_flags: dict[str, bool] | None = None,
         subscription: dict[str, object] | None = None,
         preferences: dict[str, object] | None = None,
     ) -> PlatformBootstrap:
         """
-        Create runtime bootstrap object.
+        Create the immutable runtime bootstrap payload.
+
+        Collections are normalized to tuples so the resulting
+        bootstrap contract cannot be mutated after construction.
+
+        Mutable mapping inputs are copied to prevent callers from
+        mutating the bootstrap payload through their original
+        dictionary references.
         """
 
         return PlatformBootstrap(
@@ -97,10 +124,14 @@ class PlatformBootstrapBuilder:
             dashboard=tuple(
                 dashboard,
             ),
-            branding=(branding or {}),
-            feature_flags=(feature_flags or {}),
-            subscription=subscription,
-            preferences=preferences,
+            branding=dict(
+                branding or {},
+            ),
+            feature_flags=dict(
+                feature_flags or {},
+            ),
+            subscription=(dict(subscription) if subscription is not None else None),
+            preferences=(dict(preferences) if preferences is not None else None),
         )
 
 

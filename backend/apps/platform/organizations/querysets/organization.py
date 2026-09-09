@@ -3,21 +3,44 @@ Organization queryset.
 
 Reusable database query scopes for
 DatavionOS organization management.
+
+The queryset is intentionally responsible only
+for database-level filtering and optimization.
+
+Lifecycle semantics:
+
+    active
+        is_active=True AND status=ACTIVE
+
+    inactive
+        is_active=False AND status!=ARCHIVED
+
+    archived
+        is_deleted=False AND status=ARCHIVED
+
+Soft deletion remains independent from organization
+archival:
+
+    is_deleted=True
+        The record has been soft-deleted.
+
+    status=ARCHIVED
+        The organization has been archived as a
+        business lifecycle state.
+
+This distinction is important for auditability,
+recovery and enterprise lifecycle management.
 """
 
 from __future__ import annotations
-
-from typing import TYPE_CHECKING
 
 from django.db import models
 
 from apps.core.models import BaseQuerySet
 from apps.platform.organizations.constants import (
+    OrganizationStatus,
     VerificationStatus,
 )
-
-if TYPE_CHECKING:
-    pass
 
 
 class OrganizationQuerySet(
@@ -39,22 +62,48 @@ class OrganizationQuerySet(
         self,
     ) -> OrganizationQuerySet:
         """
-        Return active organizations.
+        Return organizations that are operationally active.
+
+        Archived organizations must never be returned
+        by the active scope, even if their is_active flag
+        was not changed during archival.
         """
 
         return self.filter(
             is_active=True,
+            status=OrganizationStatus.ACTIVE,
         )
 
     def inactive(
         self,
     ) -> OrganizationQuerySet:
         """
-        Return inactive organizations.
+        Return organizations that are inactive but
+        have not been archived.
         """
 
         return self.filter(
             is_active=False,
+        ).exclude(
+            status=OrganizationStatus.ARCHIVED,
+        )
+
+    def archived(
+        self,
+    ) -> OrganizationQuerySet:
+        """
+        Return organizations archived at the
+        business lifecycle level.
+
+        This does not mean soft-deleted. Archived
+        organizations remain recoverable through the
+        organization lifecycle unless explicitly
+        soft-deleted.
+        """
+
+        return self.filter(
+            status=OrganizationStatus.ARCHIVED,
+            is_deleted=False,
         )
 
     # ------------------------------------------------------------------
@@ -76,8 +125,7 @@ class OrganizationQuerySet(
         self,
     ) -> OrganizationQuerySet:
         """
-        Return organizations that are
-        not yet verified.
+        Return organizations that are not yet verified.
         """
 
         return self.exclude(
@@ -88,8 +136,7 @@ class OrganizationQuerySet(
         self,
     ) -> OrganizationQuerySet:
         """
-        Return organizations awaiting
-        verification.
+        Return organizations awaiting verification.
         """
 
         return self.filter(
@@ -105,8 +152,8 @@ class OrganizationQuerySet(
         tenant,
     ) -> OrganizationQuerySet:
         """
-        Return organizations for
-        the specified tenant.
+        Return organizations belonging to the
+        specified tenant.
         """
 
         return self.filter(
@@ -122,7 +169,7 @@ class OrganizationQuerySet(
         category: str,
     ) -> OrganizationQuerySet:
         """
-        Filter by category.
+        Filter by organization category.
         """
 
         return self.filter(
@@ -240,6 +287,9 @@ class OrganizationQuerySet(
     ) -> OrganizationQuerySet:
         """
         Load commonly accessed related objects.
+
+        Uses only relations that actually exist on
+        the Organization model.
         """
 
         return self.select_related(
@@ -248,7 +298,7 @@ class OrganizationQuerySet(
             "profile",
             "branding",
             "domains",
-            "features",
+            "feature_entitlements",
             "module_entitlements",
         )
 
@@ -261,8 +311,8 @@ class OrganizationQuerySet(
         query: str,
     ) -> OrganizationQuerySet:
         """
-        Search organizations using common
-        business identity fields.
+        Search organizations using common business
+        identity and geographic fields.
         """
 
         query = query.strip()

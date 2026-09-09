@@ -1,15 +1,7 @@
-from .denials import (
-    ClaimDenialCreateSerializer,
-    ClaimDenialDetailSerializer,
-    ClaimDenialListSerializer,
-    ClaimDenialSerializer,
-    ClaimDenialUpdateSerializer,
-)
+"""Denials API serializers."""
 
-__all__ = [
-    "ClaimDenialCreateSerializer",
-    "ClaimDenialDetailSerializer",
-    "ClaimDenialListSerializer",
-    "ClaimDenialSerializer",
-    "ClaimDenialUpdateSerializer",
-]
+from __future__ import annotations
+
+from .denial import DenialSerializer, DenialTransitionSerializer
+
+__all__ = ("DenialSerializer", "DenialTransitionSerializer")

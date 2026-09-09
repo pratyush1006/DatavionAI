@@ -1,32 +1,12 @@
-"""
-URL patterns for the Medical History module.
-"""
+"""Urls."""
 
 from __future__ import annotations
 
-from django.urls import path
+from django.urls import include, path
 
-from apps.patient_management.medical_history.api.views import (
-    PatientMedicalHistoryListCreateAPIView,
-    PatientMedicalHistoryRetrieveUpdateDestroyAPIView,
-)
+app_name = "medical_history"
 
-app_name = "medical_histories"
+urlpatterns = [path("", include("apps.patient_management.medical_history.api.urls"))]
 
-urlpatterns = [
-    path(
-        "",
-        PatientMedicalHistoryListCreateAPIView.as_view(),
-        name="list-create",
-    ),
-    path(
-        "<uuid:medical_history_id>/",
-        PatientMedicalHistoryRetrieveUpdateDestroyAPIView.as_view(),
-        name="detail",
-    ),
-]
 
-__all__ = [
-    "app_name",
-    "urlpatterns",
-]
+__all__ = ("app_name",)

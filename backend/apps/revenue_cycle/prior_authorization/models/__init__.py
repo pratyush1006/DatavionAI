@@ -1,5 +1,9 @@
-from .prior_authorization import PriorAuthorizationRequest
+"""Revenue Cycle Prior Authorization models."""
 
-__all__ = [
-    "PriorAuthorizationRequest",
-]
+from __future__ import annotations
+
+from apps.revenue_cycle.prior_authorization.models.prior_authorization import (
+    PriorAuthorization,
+)
+
+__all__ = ("PriorAuthorization",)

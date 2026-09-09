@@ -1,15 +1,7 @@
-from .era import (
-    RemittanceAdviceCreateSerializer,
-    RemittanceAdviceDetailSerializer,
-    RemittanceAdviceListSerializer,
-    RemittanceAdviceSerializer,
-    RemittanceAdviceUpdateSerializer,
-)
+"""Public serializer exports for Revenue Cycle ERA."""
 
-__all__ = [
-    "RemittanceAdviceCreateSerializer",
-    "RemittanceAdviceDetailSerializer",
-    "RemittanceAdviceListSerializer",
-    "RemittanceAdviceSerializer",
-    "RemittanceAdviceUpdateSerializer",
-]
+from __future__ import annotations
+
+from .era import ERAInputSerializer, ERAOutputSerializer
+
+__all__ = ("ERAInputSerializer", "ERAOutputSerializer")

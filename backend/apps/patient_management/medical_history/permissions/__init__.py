@@ -1,15 +1,5 @@
-from .medical_history import (
-    CanCreatePatientMedicalHistory,
-    CanDeletePatientMedicalHistory,
-    CanUpdatePatientMedicalHistory,
-    CanViewPatientMedicalHistory,
-    PatientMedicalHistoryPermission,
-)
+"""DatavionOS Medical History package."""
 
-__all__ = [
-    "CanCreatePatientMedicalHistory",
-    "CanDeletePatientMedicalHistory",
-    "CanUpdatePatientMedicalHistory",
-    "CanViewPatientMedicalHistory",
-    "PatientMedicalHistoryPermission",
-]
+from __future__ import annotations
+
+__all__ = ()

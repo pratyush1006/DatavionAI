@@ -9,12 +9,12 @@ from datetime import date
 import factory
 from django.contrib.auth import get_user_model
 
-from apps.clinical.patients.tests.factories import PatientFactory
 from apps.notes.constants import NoteType, TemplateType
 from apps.notes.models import ClinicalNote, NoteTemplate
 from apps.organization.departments.models import Department
 from apps.organization.employees.models import Employee
 from apps.organization.teams.models import Team
+from apps.patient_management.patients.tests.factories import PatientFactory
 from apps.platform.organizations.tests.factories.organization import (
     OrganizationFactory,
 )

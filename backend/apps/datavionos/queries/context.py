@@ -9,9 +9,6 @@ from datetime import UTC, datetime
 from typing import Any
 from uuid import uuid4
 
-from apps.datavionos.container.container import (
-    Container,
-)
 from apps.datavionos.queries.query import (
     Query,
 )
@@ -28,8 +25,6 @@ class QueryContext:
     """
 
     query: Query
-
-    services: Container
 
     correlation_id: str = ""
 

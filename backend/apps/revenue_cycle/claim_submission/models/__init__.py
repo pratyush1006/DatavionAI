@@ -1,5 +1,7 @@
-from .claim_submission import ClaimSubmission
+"""Claim submission models."""
 
-__all__ = [
-    "ClaimSubmission",
-]
+from __future__ import annotations
+
+from apps.revenue_cycle.claim_submission.models.claim_submission import ClaimSubmission
+
+__all__ = ("ClaimSubmission",)

@@ -1,9 +1,9 @@
 """
-Address models.
+Patient Address models.
 """
 
-from .address import Address
+from apps.patient_management.addresses.models.address import (
+    Address,
+)
 
-__all__ = [
-    "Address",
-]
+__all__ = ("Address",)
