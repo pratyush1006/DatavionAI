@@ -128,7 +128,11 @@ class PlatformBootstrapAPIView(
         # Capabilities
         # ==============================================================
 
-        capabilities = result.capabilities if result.capabilities is not None else {}
+        capabilities = (
+            result.capabilities
+            if result.capabilities is not None
+            else {}
+        )
 
         # ==============================================================
         # Subscription
@@ -144,12 +148,30 @@ class PlatformBootstrapAPIView(
 
         bootstrap = platform_bootstrap_builder.build(
             context=context,
-            modules=(result.modules if result.modules is not None else []),
-            navigation=(result.navigation if result.navigation is not None else []),
-            dashboard=(result.dashboard if result.dashboard is not None else []),
-            branding=(result.branding if result.branding is not None else {}),
+            modules=(
+                result.modules
+                if result.modules is not None
+                else []
+            ),
+            navigation=(
+                result.navigation
+                if result.navigation is not None
+                else []
+            ),
+            dashboard=(
+                result.dashboard
+                if result.dashboard is not None
+                else []
+            ),
+            branding=(
+                result.branding
+                if result.branding is not None
+                else {}
+            ),
             feature_flags=(
-                result.feature_flags if result.feature_flags is not None else {}
+                result.feature_flags
+                if result.feature_flags is not None
+                else {}
             ),
             subscription=subscription,
             preferences=None,
@@ -214,4 +236,6 @@ class PlatformBootstrapAPIView(
         return subscription
 
 
-__all__ = ("PlatformBootstrapAPIView",)
+__all__ = (
+    "PlatformBootstrapAPIView",
+)

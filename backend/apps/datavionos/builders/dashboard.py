@@ -246,7 +246,10 @@ class DashboardBuilder:
         if not module.permissions:
             return True
 
-        return any(permission in permissions for permission in module.permissions)
+        return any(
+            permission in permissions
+            for permission in module.permissions
+        )
 
     # ==================================================================
     # Category

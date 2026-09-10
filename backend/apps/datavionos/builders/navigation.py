@@ -120,7 +120,11 @@ class NavigationBuilder:
             Deterministically ordered navigation items.
         """
 
-        resolved_feature_flags = feature_flags if feature_flags is not None else {}
+        resolved_feature_flags = (
+            feature_flags
+            if feature_flags is not None
+            else {}
+        )
 
         navigation: list[NavigationItem] = []
 
@@ -250,7 +254,10 @@ class NavigationBuilder:
         if not required_permissions:
             return True
 
-        return any(permission in permissions for permission in required_permissions)
+        return any(
+            permission in permissions
+            for permission in required_permissions
+        )
 
     # ==================================================================
     # Category
@@ -270,7 +277,11 @@ class NavigationBuilder:
         Enum-backed values are normalized to their string value.
         """
 
-        category = navigation_category if navigation_category else module.category
+        category = (
+            navigation_category
+            if navigation_category
+            else module.category
+        )
 
         return str(
             getattr(

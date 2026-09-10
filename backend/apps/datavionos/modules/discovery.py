@@ -22,9 +22,7 @@ def discover_module_factories() -> tuple[object, ...]:
     package = importlib.import_module(__package__)
     discovered: list[object] = []
 
-    for entry in sorted(
-        pkgutil.iter_modules(package.__path__), key=lambda item: item.name
-    ):
+    for entry in sorted(pkgutil.iter_modules(package.__path__), key=lambda item: item.name):
         if not entry.name.endswith("_module"):
             continue
         module = importlib.import_module(f"{__package__}.{entry.name}")
@@ -43,13 +41,11 @@ def _factories_from_module(module: ModuleType) -> Iterable[object]:
             continue
         signature = inspect.signature(candidate)
         if any(
-            parameter.kind
-            in (
+            parameter.kind in (
                 inspect.Parameter.POSITIONAL_ONLY,
                 inspect.Parameter.POSITIONAL_OR_KEYWORD,
                 inspect.Parameter.KEYWORD_ONLY,
-            )
-            and parameter.default is inspect.Parameter.empty
+            ) and parameter.default is inspect.Parameter.empty
             for parameter in signature.parameters.values()
         ):
             continue

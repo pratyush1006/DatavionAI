@@ -150,47 +150,59 @@ class EntitlementResolver:
         if organization is None:
             return EntitlementResolver._empty_capabilities()
 
-        subscription = EntitlementService.get_subscription(
-            organization=organization,
+        subscription = (
+            EntitlementService.get_subscription(
+                organization=organization,
+            )
         )
 
         if subscription is None:
             return EntitlementResolver._empty_capabilities()
 
-        feature_snapshot = EntitlementResolver._mapping_or_empty(
-            getattr(
-                subscription,
-                "feature_snapshot",
-                None,
+        feature_snapshot = (
+            EntitlementResolver._mapping_or_empty(
+                getattr(
+                    subscription,
+                    "feature_snapshot",
+                    None,
+                )
             )
         )
 
-        plan_snapshot = EntitlementResolver._mapping_or_empty(
-            getattr(
-                subscription,
-                "plan_snapshot",
-                None,
+        plan_snapshot = (
+            EntitlementResolver._mapping_or_empty(
+                getattr(
+                    subscription,
+                    "plan_snapshot",
+                    None,
+                )
             )
         )
 
-        modules = EntitlementResolver._mapping_or_empty(
-            feature_snapshot.get(
-                "modules",
-                {},
+        modules = (
+            EntitlementResolver._mapping_or_empty(
+                feature_snapshot.get(
+                    "modules",
+                    {},
+                )
             )
         )
 
-        features = EntitlementResolver._mapping_or_empty(
-            feature_snapshot.get(
-                "features",
-                {},
+        features = (
+            EntitlementResolver._mapping_or_empty(
+                feature_snapshot.get(
+                    "features",
+                    {},
+                )
             )
         )
 
-        limits = EntitlementResolver._mapping_or_empty(
-            plan_snapshot.get(
-                "limits",
-                {},
+        limits = (
+            EntitlementResolver._mapping_or_empty(
+                plan_snapshot.get(
+                    "limits",
+                    {},
+                )
             )
         )
 
@@ -262,8 +274,10 @@ class EntitlementResolver:
         if organization is None:
             return False
 
-        normalized_module = EntitlementResolver._normalize_key(
-            module,
+        normalized_module = (
+            EntitlementResolver._normalize_key(
+                module,
+            )
         )
 
         if not normalized_module:
@@ -293,8 +307,10 @@ class EntitlementResolver:
         if organization is None:
             return False
 
-        normalized_feature = EntitlementResolver._normalize_key(
-            feature,
+        normalized_feature = (
+            EntitlementResolver._normalize_key(
+                feature,
+            )
         )
 
         if not normalized_feature:
@@ -326,8 +342,10 @@ class EntitlementResolver:
         if organization is None:
             return None
 
-        normalized_key = EntitlementResolver._normalize_key(
-            key,
+        normalized_key = (
+            EntitlementResolver._normalize_key(
+                key,
+            )
         )
 
         if not normalized_key:
@@ -358,8 +376,10 @@ class EntitlementResolver:
         if requested_value < 0:
             return False
 
-        normalized_key = EntitlementResolver._normalize_key(
-            limit_key,
+        normalized_key = (
+            EntitlementResolver._normalize_key(
+                limit_key,
+            )
         )
 
         if not normalized_key:

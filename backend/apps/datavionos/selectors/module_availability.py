@@ -175,12 +175,9 @@ class ModuleAvailabilitySelector:
             ):
                 continue
 
-            if (
-                self._normalize_value(
-                    module.identifier,
-                )
-                not in entitled_modules
-            ):
+            if self._normalize_value(
+                module.identifier,
+            ) not in entitled_modules:
                 continue
 
             modules.append(
@@ -335,8 +332,10 @@ class ModuleAvailabilitySelector:
         if not allowed_types:
             return True
 
-        normalized_tenant_type = ModuleAvailabilitySelector._normalize_value(
-            tenant_type,
+        normalized_tenant_type = (
+            ModuleAvailabilitySelector._normalize_value(
+                tenant_type,
+            )
         )
 
         if not normalized_tenant_type:

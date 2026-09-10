@@ -75,6 +75,9 @@ from apps.datavionos.selectors.module_availability import (
     ModuleAvailabilitySelector,
     module_availability_selector,
 )
+from apps.datavionos.selectors.bootstrap import (
+    PlatformBootstrapContext,
+)
 
 
 @dataclass(
@@ -148,13 +151,25 @@ class PlatformBootstrapService:
         testable without changing runtime behavior.
         """
 
-        self._module_selector = module_selector or module_availability_selector
+        self._module_selector = (
+            module_selector
+            or module_availability_selector
+        )
 
-        self._navigation_builder = navigation_builder or NavigationBuilder()
+        self._navigation_builder = (
+            navigation_builder
+            or NavigationBuilder()
+        )
 
-        self._dashboard_builder = dashboard_builder or DashboardBuilder()
+        self._dashboard_builder = (
+            dashboard_builder
+            or DashboardBuilder()
+        )
 
-        self._branding_resolver = branding_resolver or BrandingResolver()
+        self._branding_resolver = (
+            branding_resolver
+            or BrandingResolver()
+        )
 
     # ==================================================================
     # Bootstrap
@@ -321,7 +336,7 @@ class PlatformBootstrapService:
         This hook intentionally performs no resolution itself.
         """
 
-        return
+        return None
 
     # ==================================================================
     # Branding
@@ -379,7 +394,10 @@ class PlatformBootstrapService:
         ):
             return {}
 
-        return {str(feature): bool(enabled) for feature, enabled in features.items()}
+        return {
+            str(feature): bool(enabled)
+            for feature, enabled in features.items()
+        }
 
     # ==================================================================
     # Modules

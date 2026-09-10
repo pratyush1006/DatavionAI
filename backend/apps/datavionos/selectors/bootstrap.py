@@ -134,9 +134,17 @@ class PlatformBootstrapSelector:
 
         tenant_context = get_tenant_context()
 
-        tenant = tenant_context.tenant if tenant_context else None
+        tenant = (
+            tenant_context.tenant
+            if tenant_context
+            else None
+        )
 
-        tenant_membership = tenant_context.membership if tenant_context else None
+        tenant_membership = (
+            tenant_context.membership
+            if tenant_context
+            else None
+        )
 
         employee = self._get_employee(
             user=user,

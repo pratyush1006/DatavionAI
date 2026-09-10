@@ -97,4 +97,6 @@ class ModuleContractSerializer(
     )
 
 
-__all__ = ("ModuleContractSerializer",)
+__all__ = (
+    "ModuleContractSerializer",
+)

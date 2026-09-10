@@ -26,7 +26,8 @@ class DatavionOSInstallationWorkflow(BaseWorkflow[dict[str, Any]]):
         ordered = module_registry.dependency_order(modules)
         registered = {module.identifier for module in module_registry.all()}
         pending = tuple(
-            module for module in ordered if module.identifier not in registered
+            module for module in ordered
+            if module.identifier not in registered
         )
         if pending:
             module_registry.register_modules(pending)
