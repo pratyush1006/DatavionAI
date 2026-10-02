@@ -1,0 +1,215 @@
+"""
+Canonical DatavionOS SaaS Billing API routes.
+
+API exposure layer only.
+Business logic remains in canonical view modules.
+"""
+
+from __future__ import annotations
+
+from django.urls import path
+
+from apps.platform.saas_billing.api.razorpay import (
+    RazorpayVerifyAPIView,
+    RazorpayWebhookAPIView,
+)
+
+from .views import (
+    BillingAccountDetailAPIView,
+    BillingAccountUpdateAPIView,
+    BillingAutoChargeAPIView,
+    BillingPaymentProviderAPIView,
+    InvoiceCancelAPIView,
+    InvoiceDetailAPIView,
+    InvoiceFinalizeAPIView,
+    InvoiceGenerateAPIView,
+    InvoiceIssueAPIView,
+    InvoiceListAPIView,
+    PaymentDetailAPIView,
+    PaymentListAPIView,
+    PaymentProcessAPIView,
+    PaymentReconcileAPIView,
+    PaymentRefundAPIView,
+    PlanActivateAPIView,
+    PlanArchiveAPIView,
+    PlanCreateAPIView,
+    PlanDeactivateAPIView,
+    PlanDetailAPIView,
+    PlanListAPIView,
+    PlanUpdateAPIView,
+    SubscriptionActivateAPIView,
+    SubscriptionCancelAPIView,
+    SubscriptionCreateAPIView,
+    SubscriptionDetailAPIView,
+    SubscriptionRenewAPIView,
+    SubscriptionRuntimeAPIView,
+    UsageChargeAPIView,
+    UsageCollectAPIView,
+    UsageEvaluateAPIView,
+    UsageListAPIView,
+)
+
+app_name = "saas-billing-api"
+
+urlpatterns = [
+    path(
+        "billing-account/",
+        BillingAccountDetailAPIView.as_view(),
+        name="billing-account-detail",
+    ),
+    path(
+        "billing-account/update/",
+        BillingAccountUpdateAPIView.as_view(),
+        name="billing-account-update",
+    ),
+    path(
+        "billing-account/auto-charge/",
+        BillingAutoChargeAPIView.as_view(),
+        name="billing-auto-charge",
+    ),
+    path(
+        "billing-account/payment-provider/",
+        BillingPaymentProviderAPIView.as_view(),
+        name="billing-payment-provider",
+    ),
+    path(
+        "plans/",
+        PlanListAPIView.as_view(),
+        name="plan-list",
+    ),
+    path(
+        "plans/create/",
+        PlanCreateAPIView.as_view(),
+        name="plan-create",
+    ),
+    path(
+        "plans/<uuid:plan_id>/",
+        PlanDetailAPIView.as_view(),
+        name="plan-detail",
+    ),
+    path(
+        "plans/<uuid:plan_id>/activate/",
+        PlanActivateAPIView.as_view(),
+        name="plan-activate",
+    ),
+    path(
+        "plans/<uuid:plan_id>/deactivate/",
+        PlanDeactivateAPIView.as_view(),
+        name="plan-deactivate",
+    ),
+    path(
+        "plans/<uuid:plan_id>/archive/",
+        PlanArchiveAPIView.as_view(),
+        name="plan-archive",
+    ),
+    path(
+        "subscriptions/<uuid:subscription_id>/",
+        SubscriptionDetailAPIView.as_view(),
+        name="subscription-detail",
+    ),
+    path(
+        "subscriptions/create/",
+        SubscriptionCreateAPIView.as_view(),
+        name="subscription-create",
+    ),
+    path(
+        "subscriptions/<uuid:subscription_id>/activate/",
+        SubscriptionActivateAPIView.as_view(),
+        name="subscription-activate",
+    ),
+    path(
+        "subscriptions/<uuid:subscription_id>/renew/",
+        SubscriptionRenewAPIView.as_view(),
+        name="subscription-renew",
+    ),
+    path(
+        "subscriptions/<uuid:subscription_id>/cancel/",
+        SubscriptionCancelAPIView.as_view(),
+        name="subscription-cancel",
+    ),
+    path(
+        "invoices/",
+        InvoiceListAPIView.as_view(),
+        name="invoice-list",
+    ),
+    path(
+        "invoices/<uuid:invoice_id>/",
+        InvoiceDetailAPIView.as_view(),
+        name="invoice-detail",
+    ),
+    path(
+        "invoices/generate/",
+        InvoiceGenerateAPIView.as_view(),
+        name="invoice-generate",
+    ),
+    path(
+        "invoices/<uuid:invoice_id>/issue/",
+        InvoiceIssueAPIView.as_view(),
+        name="invoice-issue",
+    ),
+    path(
+        "invoices/<uuid:invoice_id>/finalize/",
+        InvoiceFinalizeAPIView.as_view(),
+        name="invoice-finalize",
+    ),
+    path(
+        "invoices/<uuid:invoice_id>/cancel/",
+        InvoiceCancelAPIView.as_view(),
+        name="invoice-cancel",
+    ),
+    path(
+        "payments/",
+        PaymentListAPIView.as_view(),
+        name="payment-list",
+    ),
+    path(
+        "payments/<uuid:payment_id>/",
+        PaymentDetailAPIView.as_view(),
+        name="payment-detail",
+    ),
+    path(
+        "payments/<uuid:payment_id>/process/",
+        PaymentProcessAPIView.as_view(),
+        name="payment-process",
+    ),
+    path(
+        "payments/<uuid:payment_id>/reconcile/",
+        PaymentReconcileAPIView.as_view(),
+        name="payment-reconcile",
+    ),
+    path(
+        "payments/<uuid:payment_id>/refund/",
+        PaymentRefundAPIView.as_view(),
+        name="payment-refund",
+    ),
+    path(
+        "usage/",
+        UsageListAPIView.as_view(),
+        name="usage-list",
+    ),
+    path(
+        "usage/collect/",
+        UsageCollectAPIView.as_view(),
+        name="usage-collect",
+    ),
+    path(
+        "usage/evaluate/",
+        UsageEvaluateAPIView.as_view(),
+        name="usage-evaluate",
+    ),
+    path(
+        "usage/charge/",
+        UsageChargeAPIView.as_view(),
+        name="usage-charge",
+    ),
+    path("plans/<uuid:plan_id>/update/", PlanUpdateAPIView.as_view()),
+    path(
+        "subscription/runtime/",
+        SubscriptionRuntimeAPIView.as_view(),
+        name="subscription-runtime",
+    ),
+    path("razorpay/verify/", RazorpayVerifyAPIView.as_view(), name="razorpay-verify"),
+    path(
+        "razorpay/webhook/", RazorpayWebhookAPIView.as_view(), name="razorpay-webhook"
+    ),
+]

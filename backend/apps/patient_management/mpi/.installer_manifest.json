@@ -1,0 +1,19 @@
+{
+  "installer": "DatavionOS Master Patient Index Production Installer",
+  "version": "1.0.1",
+  "module": "apps.patient_management.mpi",
+  "canonical_patient": "apps.patient_management.patients.models.Patient",
+  "fresh_install": true,
+  "delete_existing_module_before_install": true,
+  "migrations_generated": false,
+  "backup_generated": false,
+  "pycache_generated": false,
+  "hardening": [
+    "absolute weighted MPI scoring with explicit classification thresholds",
+    "confirmed-candidate requirement for administrative merges",
+    "reviewed candidate decisions cannot be silently reopened",
+    "UUID validation for candidate generation API",
+    "controlled missing-record checks in matching and merge workflows",
+    "merge reversal requires an active survivor"
+  ]
+}

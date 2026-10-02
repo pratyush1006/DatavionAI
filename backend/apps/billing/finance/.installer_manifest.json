@@ -1,0 +1,9 @@
+{
+  "module": "apps.billing.finance",
+  "fresh": true,
+  "legacy_finance_patched": false,
+  "double_entry": true,
+  "idempotency": true,
+  "audit": true,
+  "outbox": true
+}

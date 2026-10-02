@@ -1,0 +1,2 @@
+# Required by the configured OpenAI chat and embedding adapters.
+openai>=1.0,<3.0

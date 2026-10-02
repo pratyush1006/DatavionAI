@@ -1,0 +1,1 @@
+"use client";import {VideoRoom} from "@/modules/telemedicine";export default function TelemedicinePage(){return <main><h1>Telemedicine</h1><p>Secure consultation with camera, microphone and connected audio devices.</p><VideoRoom/></main>}

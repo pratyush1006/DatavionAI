@@ -1,0 +1,119 @@
+import type { ModuleRuntimeDefinition } from "../../domain/types";
+import { ModuleDataTable } from "../../data/module-data-table";
+import type { TelemedicineAiBoundary } from "./types";
+
+export type TelemedicineBusinessWorkspaceProps = Readonly<{
+  module: ModuleRuntimeDefinition;
+}>;
+
+const telemedicineAiBoundary: TelemedicineAiBoundary = {
+  department: "telemedicine",
+  owner: "telemedicine",
+  enabledByOrganization: false,
+};
+
+export function TelemedicineBusinessWorkspace({
+  module,
+}: TelemedicineBusinessWorkspaceProps) {
+  return (
+    <section className="container-fluid py-3">
+      <div className="row g-3 mb-3">
+        <div className="col-12">
+          <div className="d-flex flex-wrap justify-content-between align-items-start gap-3">
+            <div>
+              <div className="text-body-secondary small text-uppercase fw-semibold">
+                Telemedicine workspace
+              </div>
+              <h1 className="h3 mb-1">Telemedicine</h1>
+              <p className="text-body-secondary mb-0">
+                Virtual-care sessions and related operational records exposed
+                through the canonical Telemedicine API contract.
+              </p>
+            </div>
+
+            <span className="badge text-bg-light border">
+              {module.displayName}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div className="row g-3 mb-3">
+        <div className="col-12 col-md-4">
+          <div className="card h-100 shadow-sm">
+            <div className="card-body">
+              <div className="text-body-secondary small">Workspace</div>
+              <div className="fs-5 fw-semibold">Telemedicine</div>
+              <div className="small text-body-secondary mt-1">
+                Dynamic Bootstrap business module
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="col-12 col-md-4">
+          <div className="card h-100 shadow-sm">
+            <div className="card-body">
+              <div className="text-body-secondary small">Data source</div>
+              <div className="fs-6 fw-semibold">Canonical listModule API</div>
+              <div className="small text-body-secondary mt-1">
+                Read-only projection through the canonical API adapter
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="col-12 col-md-4">
+          <div className="card h-100 shadow-sm">
+            <div className="card-body">
+              <div className="text-body-secondary small">Telemedicine AI</div>
+              <div className="fs-6 fw-semibold">Department-scoped</div>
+              <div className="small text-body-secondary mt-1">
+                Backend-controlled capability boundary
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="card shadow-sm">
+        <div className="card-body">
+          <ModuleDataTable module={module} />
+        </div>
+      </div>
+
+      <div className="card shadow-sm mt-3 border-start border-4">
+        <div className="card-body">
+          <div className="d-flex justify-content-between align-items-start gap-3">
+            <div>
+              <h2 className="h6 mb-1">Telemedicine AI</h2>
+              <p className="small text-body-secondary mb-0">
+                AI availability is controlled by backend effective capability
+                context and organization configuration. This workspace does
+                not grant, infer, or override access.
+              </p>
+            </div>
+
+            <span className="badge text-bg-secondary">
+              {telemedicineAiBoundary.department}
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/*
+ * Canonical runtime contract:
+ * data is resolved through the canonical read-only listModule API adapter;
+ * module availability and organization access come from Backend Effective
+ * Context. The workspace never authorizes or invents entitlement.
+ */
+const telemedicineRuntimeContract = {
+  listModule: "canonical-api-adapter",
+  authority: "BACKEND_EFFECTIVE_CONTEXT",
+} as const;
+
+export type TelemedicineRuntimeContract =
+  typeof telemedicineRuntimeContract;

@@ -1,0 +1,7 @@
+{
+  "module": "insurance",
+  "version": "2.0.3",
+  "canonical_owner": "payer,tpa,plans,coverage,benefits,cob",
+  "operational_owner": "revenue_cycle",
+  "migration_policy": "controlled_django_migration"
+}

@@ -1,0 +1,1 @@
+export default function Page(){return <div className="container-fluid p-4"><h1 className="fw-bold">Branding</h1><p className="text-secondary">Logo, favicon, primary color, font and theme are owned by Organization Branding.</p></div>}

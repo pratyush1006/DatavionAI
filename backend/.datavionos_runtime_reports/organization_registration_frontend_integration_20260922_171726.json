@@ -1,0 +1,140 @@
+{
+  "installer": "installer_organization_registration_runtime_integration.py",
+  "scope": "frontend-only integration with existing platform organizations/tenancy/saas_billing backend",
+  "timestamp": "2026-09-22T17:20:05.933530",
+  "success": false,
+  "backend_mutated": false,
+  "backend_before": {
+    "apps": "a9f916067a8a1768041e53f85d99064d36260fc00e3616cbc66b99354ad5643d",
+    "family_members": "88f41be73a15ae6c1d432fc68f47171db2065006344b43ededa7f7692b843052",
+    "migration_files": "972604b4cf3ef287fef6ef4eb23cd0f209fdaed927da6259bd20c503e24c7d2a"
+  },
+  "backend_after": {
+    "apps": "a9f916067a8a1768041e53f85d99064d36260fc00e3616cbc66b99354ad5643d",
+    "family_members": "88f41be73a15ae6c1d432fc68f47171db2065006344b43ededa7f7692b843052",
+    "migration_files": "972604b4cf3ef287fef6ef4eb23cd0f209fdaed927da6259bd20c503e24c7d2a"
+  },
+  "backend_contract": {
+    "organization_routes": [
+      "hierarchies/",
+      "branding/",
+      "<uuid:organization_id>/"
+    ],
+    "tenancy_routes": [
+      "tenants/",
+      "tenants/create/",
+      "tenants/<uuid:tenant_id>/",
+      "my-tenants/",
+      "select/"
+    ],
+    "billing_routes": [
+      "account/",
+      "account/update/",
+      "account/payment-provider/",
+      "account/auto-charge/",
+      "plans/",
+      "plans/<uuid:pk>/",
+      "plans/create/",
+      "plans/<uuid:pk>/update/",
+      "plans/<uuid:pk>/activate/",
+      "plans/<uuid:pk>/deactivate/",
+      "plans/<uuid:pk>/archive/",
+      "subscription/",
+      "subscription/create/",
+      "subscription/activate/",
+      "subscription/renew/",
+      "subscription/cancel/",
+      "invoices/",
+      "invoices/<uuid:pk>/",
+      "invoices/generate/",
+      "invoices/<uuid:pk>/issue/",
+      "invoices/<uuid:pk>/finalize/",
+      "invoices/<uuid:pk>/cancel/",
+      "payments/",
+      "payments/<uuid:pk>/",
+      "payments/process/",
+      "payments/<uuid:pk>/reconcile/",
+      "payments/<uuid:pk>/refund/",
+      "usage/",
+      "usage/collect/",
+      "usage/<uuid:pk>/evaluate/",
+      "usage/<uuid:pk>/charge/"
+    ],
+    "onboarding_routes": [
+      "organization-types/",
+      "plans/",
+      "register/",
+      "status/"
+    ],
+    "onboarding_facade": true
+  },
+  "installer_runs": [
+    {
+      "installer": "installer_organization_onboarding_frontend.py",
+      "returncode": 0,
+      "output_tail": "Generating route types...\nâœ“ Types generated successfully\n\nD:\\Datavion-Payment\\DatavionAI\\frontend\\src\\features\\workspace\\module-runtime\\api\\adapter.ts\n  6:3  warning  'ModuleApiResponse' is defined but never used  @typescript-eslint/no-unused-vars\n\nD:\\Datavion-Payment\\DatavionAI\\frontend\\src\\features\\workspace\\module-runtime\\business-domains\\telemedicine\\workspace.tsx\n  113:7  warning  'telemedicineRuntimeContract' is assigned a value but only used as a type  @typescript-eslint/no-unused-vars\n\nD:\\Datavion-Payment\\DatavionAI\\frontend\\src\\features\\workspace\\module-runtime\\composition\\sections.tsx\n  229:3  warning  'composition' is defined but never used  @typescript-eslint/no-unused-vars\n\nâœ– 3 problems (0 errors, 3 warnings)\n\n\n> frontend@0.1.0 build\n> next build\n\nâ–² Next.js 16.2.10 (Turbopack)\n- Environments: .env.local\n\n  Creating an optimized production build ...\nâœ“ Compiled successfully in 27.0s\n  Running TypeScript ...\n  Finished TypeScript in 23.6s ...\n  Collecting page data using 7 workers ...\n  Generating static pages using 7 workers (0/24) ...\n  Generating static pages using 7 workers (6/24) \n  Generating static pages using 7 workers (12/24) \n  Generating static pages using 7 workers (18/24) \nâœ“ Generating static pages using 7 workers (24/24) in 1888ms\n  Finalizing page optimization ...\n\nRoute (app)\nâ”Œ â—‹ /\nâ”œ â—‹ /_not-found\nâ”œ â—‹ /about\nâ”œ â—‹ /careers\nâ”œ â—‹ /case-studies\nâ”œ â—‹ /clinical/appointments\nâ”œ â—‹ /dashboard\nâ”œ â—‹ /documents\nâ”œ Æ’ /documents/[id]\nâ”œ â—‹ /documents/new\nâ”œ â—‹ /employees\nâ”œ â—‹ /forgot-password\nâ”œ â—‹ /login\nâ”œ â—‹ /notes\nâ”œ â—‹ /organization/register\nâ”œ â—‹ /organizations\nâ”œ â—‹ /patients\nâ”œ â—‹ /pricing\nâ”œ â—‹ /settings/access\nâ”œ â—‹ /settings/ai\nâ”œ â—‹ /settings/modules\nâ”œ â—‹ /support\nâ”œ â—‹ /transcription\nâ”” Æ’ /workspace/[module]\n\n\nâ—‹  (Static)   prerendered as static content\nÆ’  (Dynamic)  server-rendered on demand\n\nDatavionOS Next.js Organization Registration + SaaS Onboarding Installer\n===========================================================================\nFrontend: D:\\Datavion-Payment\\DatavionAI\\frontend\nSCOPE: organization type -> SaaS plan -> details -> backend provisioning -> dynamic dashboard\nMUTATION SET: frontend onboarding feature + organization registration route\nUNCHANGED: D:\\Datavion-Payment\\DatavionAI\\frontend\\src\\features\\platform\\onboarding\\domain\\contracts.ts\nUNCHANGED: D:\\Datavion-Payment\\DatavionAI\\frontend\\src\\features\\platform\\onboarding\\domain\\index.ts\nUNCHANGED: D:\\Datavion-Payment\\DatavionAI\\frontend\\src\\features\\platform\\onboarding\\api\\onboarding.ts\nUNCHANGED: D:\\Datavion-Payment\\DatavionAI\\frontend\\src\\features\\platform\\onboarding\\api\\index.ts\nUNCHANGED: D:\\Datavion-Payment\\DatavionAI\\frontend\\src\\features\\platform\\onboarding\\components\\organization-onboarding-wizard.tsx\nUNCHANGED: D:\\Datavion-Payment\\DatavionAI\\frontend\\src\\features\\platform\\onboarding\\pages\\organization-onboarding-page.tsx\nUNCHANGED: D:\\Datavion-Payment\\DatavionAI\\frontend\\src\\features\\platform\\onboarding\\index.ts\nUNCHANGED: D:\\Datavion-Payment\\DatavionAI\\frontend\\src\\app\\(onboarding)\\organization\\register\\page.tsx\nONBOARDING_FRONTEND_AUTHORITY_CONTRACT: PASS\nBACKEND_CATALOG_CONTRACT: PASS\nNO_FRONTEND_ENTITLEMENT_LOGIC: PASS\nDYNAMIC_DASHBOARD_BOUNDARY: PASS\nFAMILY_MEMBERS: PROTECTED\nBACKEND: UNTOUCHED\nMIGRATIONS: UNTOUCHED\n> npx.cmd next typegen\nTYPEGEN: PASS\n> npx.cmd tsc --noEmit\nTYPECHECK: PASS\n> npx.cmd eslint src\nLINT: PASS\n> npm.cmd run build\nBUILD: PASS\nORGANIZATION_ONBOARDING_FRONTEND: PASS\nBACKEND_BOOTSTRAP_AUTHORITY: PRESERVED\nFAMILY_MEMBERS: PROTECTED\nMIGRATIONS: UNTOUCHED\nINSTALLATION: PASS\n"
+    }
+  ],
+  "counts": {
+    "PASS": 11,
+    "WARN": 0,
+    "FAIL": 0
+  },
+  "gates": [
+    {
+      "name": "BACKEND_PRESENT",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "FRONTEND_PRESENT",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "CANONICAL_PLATFORM_DOMAINS",
+      "status": "PASS",
+      "detail": "organizations + tenancy + saas_billing are present."
+    },
+    {
+      "name": "BACKEND_ONBOARDING_FACADE",
+      "status": "PASS",
+      "detail": "Existing onboarding facade detected; it remains backend-owned."
+    },
+    {
+      "name": "PLATFORM_API_CONTRACT",
+      "status": "PASS",
+      "detail": "Canonical organizations, tenancy and SaaS billing API contracts detected."
+    },
+    {
+      "name": "ROOT_API_WIRING",
+      "status": "PASS",
+      "detail": "Root URL configuration exposes the canonical platform domains."
+    },
+    {
+      "name": "CANONICAL_FRONTEND_INSTALLER",
+      "status": "PASS",
+      "detail": "installer_organization_onboarding_frontend.py"
+    },
+    {
+      "name": "FRONTEND_INSTALLATION",
+      "status": "PASS",
+      "detail": "Existing canonical frontend onboarding installer completed."
+    },
+    {
+      "name": "BACKEND_READ_ONLY_CONTRACT",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "FAMILY_MEMBERS_PROTECTION",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "MIGRATION_PROTECTION",
+      "status": "PASS",
+      "detail": ""
+    }
+  ]
+}

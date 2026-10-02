@@ -1,0 +1,7 @@
+{
+  "module": "patient_documents",
+  "version": "1.0.4",
+  "canonical_path": "apps.patient_management.patient_documents",
+  "canonical_patient": "apps.patient_management.patients.models.Patient",
+  "migration_policy": "no_migrations"
+}

@@ -1,0 +1,459 @@
+"""
+Base generic API views used across the DatavionOS platform.
+
+Provides enterprise API foundations:
+
+- Authentication defaults
+- Permission handling
+- Object-level permissions
+- Tenant context
+- Organization context
+- Filtering
+- Searching
+- Ordering
+- Pagination
+- Dynamic serializers
+- Standardized responses
+- Service-layer integration
+- Workflow-layer integration
+"""
+
+from __future__ import annotations
+
+from collections.abc import Callable, Sequence
+from typing import Any, ClassVar, Final, cast
+
+from django.contrib.auth.base_user import AbstractBaseUser
+from django.contrib.auth.models import AnonymousUser
+from rest_framework.exceptions import PermissionDenied
+from rest_framework.filters import BaseFilterBackend
+from rest_framework.generics import (
+    GenericAPIView,
+    ListCreateAPIView,
+    RetrieveUpdateDestroyAPIView,
+)
+from rest_framework.pagination import BasePagination
+from rest_framework.permissions import BasePermission
+from rest_framework.request import Request
+from rest_framework.response import Response
+from rest_framework.serializers import Serializer
+from rest_framework.views import APIView
+
+from apps.common.api.filters import (
+    DatavionFilterBackend,
+    DatavionOrderingFilter,
+    DatavionSearchFilter,
+)
+from apps.common.api.mixins.services import (
+    CreateServiceMixin,
+    DestroyServiceMixin,
+    UpdateServiceMixin,
+)
+from apps.common.api.mixins.workflows import (
+    WorkflowCreateMixin,
+    WorkflowDestroyMixin,
+    WorkflowUpdateMixin,
+)
+from apps.common.api.pagination import (
+    DatavionPagination,
+)
+from apps.common.api.responses import (
+    created_response,
+    error_response,
+    no_content_response,
+    success_response,
+)
+from apps.common.permissions import (
+    IsAuthenticatedAndActive,
+)
+
+HTTP_GET: Final[str] = "GET"
+
+HTTP_POST: Final[str] = "POST"
+
+HTTP_PUT: Final[str] = "PUT"
+
+HTTP_PATCH: Final[str] = "PATCH"
+
+
+class BaseAPIViewMixin:
+    """
+    Common defaults shared by all DatavionOS API views.
+    """
+
+    kwargs: dict[str, Any]
+
+    pagination_class: ClassVar[type[BasePagination] | None] = DatavionPagination
+
+    permission_classes_map: ClassVar[
+        dict[
+            str,
+            tuple[type[BasePermission], ...],
+        ]
+    ] = {}
+
+    list_serializer_class: ClassVar[type[Serializer] | None] = None
+
+    detail_serializer_class: ClassVar[type[Serializer] | None] = None
+
+    create_serializer_class: ClassVar[type[Serializer] | None] = None
+
+    update_serializer_class: ClassVar[type[Serializer] | None] = None
+
+    serializer_classes: ClassVar[dict[str, type[Serializer]] | None] = None
+
+    selector: ClassVar[Callable[..., Any] | None] = None
+
+    def _get_request(self) -> Request:
+        """Return the request attached by Django REST Framework."""
+
+        return cast(Request, self.request)
+
+    @property
+    def current_user(
+        self,
+    ) -> AbstractBaseUser | AnonymousUser:
+        """
+        Return authenticated user.
+        """
+
+        return getattr(
+            self._get_request(),
+            "user",
+            AnonymousUser(),
+        )
+
+    @property
+    def current_tenant(
+        self,
+    ) -> Any:
+        """
+        Return current tenant context.
+        """
+
+        return getattr(
+            self._get_request(),
+            "tenant",
+            None,
+        )
+
+    @property
+    def current_organization(
+        self,
+    ) -> Any:
+        """
+        Return current organization context.
+        """
+
+        return getattr(
+            self._get_request(),
+            "organization",
+            None,
+        )
+
+    def get_permissions(
+        self,
+    ) -> list[BasePermission]:
+        """
+        Return permission instances.
+        """
+
+        method = self._get_request().method
+
+        permission_classes = self.permission_classes_map.get(
+            method or HTTP_GET,
+            getattr(self, "permission_classes", ()),
+        )
+
+        return [permission() for permission in permission_classes]
+
+    def _get_action_serializer(
+        self,
+    ) -> type[Serializer] | None:
+        """
+        Resolve serializer based on HTTP action.
+        """
+
+        method = self._get_request().method
+
+        if method == HTTP_GET:
+            lookup = getattr(
+                self,
+                "lookup_url_kwarg",
+                None,
+            )
+
+            if (
+                lookup is not None
+                and lookup in self.kwargs
+                and self.detail_serializer_class is not None
+            ):
+                return self.detail_serializer_class
+
+            return self.list_serializer_class
+
+        if method == HTTP_POST:
+            return self.create_serializer_class
+
+        if method in (
+            HTTP_PUT,
+            HTTP_PATCH,
+        ):
+            return self.update_serializer_class
+
+        return None
+
+    def _get_mapping_serializer(
+        self,
+    ) -> type[Serializer] | None:
+        """
+        Resolve serializer mapping.
+        """
+
+        if not self.serializer_classes:
+            return None
+
+        method = self._get_request().method or HTTP_GET
+
+        return (
+            self.serializer_classes.get(
+                method,
+            )
+            or self.serializer_classes.get(
+                HTTP_GET,
+            )
+            or next(
+                iter(
+                    self.serializer_classes.values(),
+                ),
+                None,
+            )
+        )
+
+    def _resolve_serializer_class(
+        self,
+    ) -> type[Serializer] | None:
+        """
+        Resolve the serializer class.
+        """
+
+        return (
+            self._get_action_serializer()
+            or self._get_mapping_serializer()
+            or getattr(
+                self,
+                "serializer_class",
+                None,
+            )
+        )
+
+    def get_serializer_class(
+        self,
+    ) -> type[Serializer]:
+
+        serializer = self._resolve_serializer_class()
+
+        if serializer is not None:
+            return serializer
+
+        return cast(
+            type[Serializer],
+            cast(Any, super()).get_serializer_class(),
+        )
+
+
+class BaseGenericAPIView(
+    BaseAPIViewMixin,
+    GenericAPIView,
+):
+    """
+    Base class shared by all generic views.
+    """
+
+    permission_classes: Sequence[type[BasePermission]] = (IsAuthenticatedAndActive,)
+
+    filter_backends: Sequence[type[BaseFilterBackend]] = (
+        DatavionFilterBackend,
+        DatavionSearchFilter,
+        DatavionOrderingFilter,
+    )
+
+    def check_object_permissions(
+        self,
+        request: Request | Any,
+        obj: Any | None = None,
+    ) -> None:
+        """Execute object-level permissions."""
+
+        if obj is None:
+            obj = request
+            request = self.request
+
+        for permission in self.get_permissions():
+            if hasattr(
+                permission,
+                "has_object_permission",
+            ):
+                allowed = permission.has_object_permission(
+                    request,
+                    cast(APIView, self),
+                    obj,
+                )
+
+                if not allowed:
+                    raise PermissionDenied(
+                        detail=("You do not have permission to access this resource."),
+                    )
+
+    def success_response(
+        self,
+        **kwargs: Any,
+    ) -> Response:
+        """
+        Return a standardized successful response.
+        """
+
+        return success_response(
+            request=self.request,
+            **kwargs,
+        )
+
+    def created_response(
+        self,
+        **kwargs: Any,
+    ) -> Response:
+        """
+        Return a standardized created response.
+        """
+
+        return created_response(
+            request=self.request,
+            **kwargs,
+        )
+
+    def error_response(
+        self,
+        **kwargs: Any,
+    ) -> Response:
+        """
+        Return a standardized error response.
+        """
+
+        return error_response(
+            request=self.request,
+            **kwargs,
+        )
+
+    def no_content_response(
+        self,
+    ) -> Response:
+        """
+        Return a standardized no-content response.
+        """
+
+        return no_content_response()
+
+
+class BaseListCreateAPIView(
+    WorkflowCreateMixin,
+    CreateServiceMixin,
+    BaseGenericAPIView,
+    ListCreateAPIView,
+):
+    """
+    Base class for list/create endpoints.
+
+    Supports:
+
+    1. Service driven create
+
+        API
+         |
+         Service
+
+
+    2. Workflow driven create
+
+        API
+         |
+         Workflow
+         |
+         Service
+         |
+         Event
+         |
+         Tasks
+    """
+
+
+class BaseRetrieveUpdateDestroyAPIView(
+    WorkflowUpdateMixin,
+    WorkflowDestroyMixin,
+    UpdateServiceMixin,
+    DestroyServiceMixin,
+    BaseGenericAPIView,
+    RetrieveUpdateDestroyAPIView,
+):
+    """
+    Base class for retrieve, update, and delete endpoints.
+
+    Retrieve responses are standardized through the
+    DatavionOS response envelope.
+
+    Update and delete orchestration remains delegated to
+    the service/workflow mixins.
+    """
+
+    def get_object(
+        self,
+    ) -> Any:
+        """
+        Return the requested object and enforce object-level
+        permissions.
+        """
+
+        obj = super().get_object()
+
+        self.check_object_permissions(
+            self.request,
+            obj,
+        )
+
+        return obj
+
+    def retrieve(
+        self,
+        request: Request,
+        *args: Any,
+        **kwargs: Any,
+    ) -> Response:
+        """
+        Retrieve a single resource using the platform-standard
+        response envelope.
+
+        Response:
+
+            {
+                "success": true,
+                "message": "Success.",
+                "data": {...},
+                "meta": {...},
+            }
+        """
+
+        instance = self.get_object()
+
+        serializer = self.get_serializer(
+            instance,
+        )
+
+        return self.success_response(
+            data=serializer.data,
+        )
+
+
+__all__: tuple[str, ...] = (
+    "BaseGenericAPIView",
+    "BaseListCreateAPIView",
+    "BaseRetrieveUpdateDestroyAPIView",
+)

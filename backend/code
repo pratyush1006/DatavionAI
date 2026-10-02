@@ -1,0 +1,1016 @@
+from __future__ import annotations
+
+import ast
+import re
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+
+
+VERSION = "1.0.0"
+
+BACKEND_ROOT = Path(__file__).resolve().parent
+PATIENT_ROOT = BACKEND_ROOT / "apps" / "patient_management"
+
+CONFIG_URLS = BACKEND_ROOT / "config" / "urls.py"
+PATIENT_URLS = PATIENT_ROOT / "urls.py"
+PATIENT_API_URLS = PATIENT_ROOT / "api" / "urls.py"
+
+BACKUP_ROOT = (
+    BACKEND_ROOT
+    / ".installer_backups"
+    / "patient_management_canonical_urlconf_repair_v1.0.0"
+)
+
+
+CANONICAL_MODULES = {
+    "patients/": "apps.patient_management.patients.api.urls",
+    "identifiers/": "apps.patient_management.identifiers.api.urls",
+    "profile/": "apps.patient_management.profile.urls",
+    "family_members/": "apps.patient_management.family_members.api.urls",
+    "contacts/": "apps.patient_management.contacts.api.urls",
+    "addresses/": "apps.patient_management.addresses.api.urls",
+}
+
+
+FORBIDDEN_CONFIG_PREFIXES = (
+    "api/patient-management/patients/",
+    "api/patient-management/identifiers/",
+    "api/patient-management/profile/",
+    "api/patient-management/family_members/",
+    "api/patient-management/contacts/",
+    "api/patient-management/addresses/",
+    "api/patient-management/registrations/",
+    "api/patient-management/preferences/",
+    "api/patient-management/mpi/",
+    "api/patient-management/emergency/",
+    "api/patient-management/communication/",
+    "api/patient-management/consents/",
+    "api/patient-management/medical_history/",
+    "api/patient-management/relationships/",
+    "api/patient-management/referrals/",
+    "api/patient-management/patient_documents/",
+    "api/patient-management/portal/",
+    "api/patient-management/timeline/",
+)
+
+
+def banner(title: str) -> None:
+    print()
+    print("=" * 96)
+    print(title)
+    print("=" * 96)
+
+
+def info(message: str) -> None:
+    print(f"[INFO] {message}")
+
+
+def passed(message: str) -> None:
+    print(f"[PASS] {message}")
+
+
+def gap(message: str) -> None:
+    print(f"[GAP] {message}")
+
+
+def fail(message: str) -> None:
+    print(f"[FAIL] {message}")
+
+
+def backup_file(path: Path) -> None:
+    relative = path.relative_to(BACKEND_ROOT)
+    destination = BACKUP_ROOT / relative
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(path, destination)
+    print(f"[BACKUP] {relative} -> {destination}")
+
+
+def compile_file(path: Path) -> bool:
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "py_compile",
+            str(path),
+        ],
+        cwd=BACKEND_ROOT,
+        capture_output=True,
+        text=True,
+    )
+
+    if result.returncode == 0:
+        passed(f"{path.relative_to(BACKEND_ROOT)} compiles successfully.")
+        return True
+
+    fail(
+        f"{path.relative_to(BACKEND_ROOT)} compilation failed:\n"
+        f"{result.stdout}\n{result.stderr}"
+    )
+    return False
+
+
+def validate_structure() -> bool:
+    banner("STRUCTURE VALIDATION")
+
+    required = [
+        PATIENT_ROOT,
+        PATIENT_URLS,
+        PATIENT_API_URLS,
+        CONFIG_URLS,
+    ]
+
+    ok = True
+
+    for path in required:
+        if path.exists():
+            passed(str(path.relative_to(BACKEND_ROOT)))
+        else:
+            fail(f"Missing: {path}")
+            ok = False
+
+    return ok
+
+
+def parse_python(path: Path) -> ast.AST | None:
+    try:
+        return ast.parse(
+            path.read_text(encoding="utf-8"),
+            filename=str(path),
+        )
+    except SyntaxError as exc:
+        fail(f"{path.relative_to(BACKEND_ROOT)} has invalid Python: {exc}")
+        return None
+
+
+def get_call_string(node: ast.AST, keyword: str) -> str | None:
+    if not isinstance(node, ast.Call):
+        return None
+
+    if not node.args:
+        return None
+
+    first = node.args[0]
+
+    if isinstance(first, ast.Constant) and isinstance(first.value, str):
+        if keyword == "path":
+            return first.value
+
+    return None
+
+
+def get_include_target(node: ast.AST) -> str | None:
+    if not isinstance(node, ast.Call):
+        return None
+
+    if not node.args:
+        return None
+
+    first = node.args[0]
+
+    if (
+        isinstance(first, ast.Call)
+        and isinstance(first.func, ast.Name)
+        and first.func.id == "include"
+        and first.args
+        and isinstance(first.args[0], ast.Constant)
+        and isinstance(first.args[0].value, str)
+    ):
+        return first.args[0].value
+
+    return None
+
+
+def find_urlpatterns_assignment(tree: ast.AST) -> ast.Assign | None:
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Assign):
+            for target in node.targets:
+                if isinstance(target, ast.Name) and target.id == "urlpatterns":
+                    return node
+    return None
+
+
+def validate_canonical_api_source() -> bool:
+    banner("CANONICAL PATIENT MANAGEMENT API URLCONF")
+
+    tree = parse_python(PATIENT_API_URLS)
+
+    if tree is None:
+        return False
+
+    assignment = find_urlpatterns_assignment(tree)
+
+    if assignment is None:
+        fail("urlpatterns assignment not found.")
+        return False
+
+    found: dict[str, str] = {}
+
+    value = assignment.value
+
+    if isinstance(value, (ast.List, ast.Tuple)):
+        elements = value.elts
+    else:
+        elements = []
+
+    for element in elements:
+        if isinstance(element, ast.Starred):
+            continue
+
+        if not isinstance(element, ast.Call):
+            continue
+
+        if not isinstance(element.func, ast.Name):
+            continue
+
+        if element.func.id != "path":
+            continue
+
+        route = get_call_string(element, "path")
+        target = get_include_target(element)
+
+        if route and target:
+            found[route] = target
+
+    ok = True
+
+    for route, target in CANONICAL_MODULES.items():
+        actual = found.get(route)
+
+        if actual == target:
+            passed(f"{route} -> {target}")
+        else:
+            fail(
+                f"Canonical route missing or incorrect: "
+                f"{route} -> {target}; actual={actual!r}"
+            )
+            ok = False
+
+    return ok
+
+
+def canonical_api_content() -> str:
+    return '''from __future__ import annotations
+
+from django.urls import include, path
+
+
+app_name = "patient-management"
+
+
+urlpatterns = [
+    path(
+        "patients/",
+        include(
+            "apps.patient_management.patients.api.urls",
+        ),
+    ),
+    path(
+        "identifiers/",
+        include(
+            "apps.patient_management.identifiers.api.urls",
+            namespace="patient-identifiers",
+        ),
+    ),
+    path(
+        "profile/",
+        include(
+            "apps.patient_management.profile.urls",
+        ),
+    ),
+    path(
+        "family_members/",
+        include(
+            "apps.patient_management.family_members.api.urls",
+            namespace="family-members-api",
+        ),
+    ),
+    path(
+        "contacts/",
+        include(
+            "apps.patient_management.contacts.api.urls",
+        ),
+    ),
+    path(
+        "addresses/",
+        include(
+            "apps.patient_management.addresses.api.urls",
+        ),
+    ),
+    path(
+        "registrations/",
+        include(
+            "apps.patient_management.registration.api.urls",
+        ),
+    ),
+    path(
+        "preferences/",
+        include(
+            "apps.patient_management.preferences.api.urls",
+        ),
+    ),
+    path(
+        "mpi/",
+        include(
+            "apps.patient_management.mpi.api.urls",
+        ),
+    ),
+    path(
+        "emergency/",
+        include(
+            "apps.patient_management.emergency.api.urls",
+        ),
+    ),
+    path(
+        "communication/",
+        include(
+            "apps.patient_management.communication.api.urls",
+        ),
+    ),
+    path(
+        "consents/",
+        include(
+            "apps.patient_management.consents.api.urls",
+        ),
+    ),
+    path(
+        "medical_history/",
+        include(
+            "apps.patient_management.medical_history.api.urls",
+        ),
+    ),
+    path(
+        "relationships/",
+        include(
+            "apps.patient_management.relationships.api.urls",
+        ),
+    ),
+    path(
+        "referrals/",
+        include(
+            "apps.patient_management.referrals.api.urls",
+        ),
+    ),
+    path(
+        "patient_documents/",
+        include(
+            "apps.patient_management.patient_documents.api.urls",
+        ),
+    ),
+    path(
+        "portal/",
+        include(
+            "apps.patient_management.portal.api.urls",
+        ),
+    ),
+    path(
+        "timeline/",
+        include(
+            "apps.patient_management.timeline.api.urls",
+        ),
+    ),
+]
+'''
+
+
+def apply_canonical_api_urlconf() -> None:
+    banner("APPLYING CANONICAL PATIENT MANAGEMENT API URLCONF")
+
+    backup_file(PATIENT_API_URLS)
+
+    PATIENT_API_URLS.write_text(
+        canonical_api_content(),
+        encoding="utf-8",
+    )
+
+    passed(
+        "Replaced apps/patient_management/api/urls.py "
+        "with canonical Patient Management URL ownership."
+    )
+
+
+def is_patient_direct_path_call(node: ast.Call) -> bool:
+    if not node.args:
+        return False
+
+    first = node.args[0]
+
+    if not isinstance(first, ast.Constant):
+        return False
+
+    if not isinstance(first.value, str):
+        return False
+
+    route = first.value.strip().strip("/")
+
+    if route == "api/patient-management":
+        return False
+
+    for forbidden in FORBIDDEN_CONFIG_PREFIXES:
+        if route.startswith(forbidden.strip("/")):
+            return True
+
+    return False
+
+
+def remove_direct_patient_routes_from_config(source: str) -> str:
+    tree = ast.parse(source, filename=str(CONFIG_URLS))
+
+    lines = source.splitlines(keepends=True)
+    removals: list[tuple[int, int]] = []
+
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Call):
+            if not isinstance(node.func, ast.Name):
+                continue
+
+            if node.func.id != "path":
+                continue
+
+            if not is_patient_direct_path_call(node):
+                continue
+
+            start = node.lineno - 1
+            end = node.end_lineno
+
+            removals.append((start, end))
+
+    if not removals:
+        return source
+
+    for start, end in sorted(removals, reverse=True):
+        del lines[start:end]
+
+    result = "".join(lines)
+
+    # Remove accidental excessive blank lines.
+    result = re.sub(r"\n{4,}", "\n\n\n", result)
+
+    return result
+
+
+def ensure_canonical_config_registration(source: str) -> str:
+    tree = ast.parse(source, filename=str(CONFIG_URLS))
+
+    canonical_count = 0
+
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call):
+            continue
+
+        if not isinstance(node.func, ast.Name):
+            continue
+
+        if node.func.id != "path":
+            continue
+
+        if not node.args:
+            continue
+
+        first = node.args[0]
+
+        if not (
+            isinstance(first, ast.Constant)
+            and first.value == "api/patient-management/"
+        ):
+            continue
+
+        canonical_count += 1
+
+    if canonical_count == 1:
+        return source
+
+    if canonical_count > 1:
+        raise RuntimeError(
+            "Multiple canonical api/patient-management/ registrations "
+            "were found in config/urls.py."
+        )
+
+    raise RuntimeError(
+        "Canonical api/patient-management/ registration is missing "
+        "from config/urls.py. The installer will not invent its location."
+    )
+
+
+def audit_config_urlconf() -> bool:
+    banner("CONFIG URLCONF AUDIT")
+
+    source = CONFIG_URLS.read_text(encoding="utf-8")
+
+    try:
+        source = ensure_canonical_config_registration(source)
+    except RuntimeError as exc:
+        fail(str(exc))
+        return False
+
+    tree = ast.parse(source, filename=str(CONFIG_URLS))
+
+    direct_routes: list[str] = []
+
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Call):
+            if isinstance(node.func, ast.Name) and node.func.id == "path":
+                if node.args and isinstance(node.args[0], ast.Constant):
+                    value = node.args[0].value
+
+                    if (
+                        isinstance(value, str)
+                        and value.startswith("api/patient-management/")
+                        and value != "api/patient-management/"
+                    ):
+                        direct_routes.append(value)
+
+    if direct_routes:
+        for route in direct_routes:
+            gap(f"Direct Patient Management registration: {route}")
+        return False
+
+    passed(
+        "config/urls.py contains exactly one canonical "
+        "api/patient-management/ registration."
+    )
+
+    return True
+
+
+def apply_config_repair() -> None:
+    banner("APPLYING CONFIG URLCONF CANONICALIZATION")
+
+    source = CONFIG_URLS.read_text(encoding="utf-8")
+
+    repaired = remove_direct_patient_routes_from_config(source)
+
+    if repaired == source:
+        passed("No direct duplicate Patient Management registration found.")
+        return
+
+    # Validate the resulting source before writing.
+    ast.parse(repaired, filename=str(CONFIG_URLS))
+
+    backup_file(CONFIG_URLS)
+
+    CONFIG_URLS.write_text(
+        repaired,
+        encoding="utf-8",
+    )
+
+    passed(
+        "Removed direct Patient Management child-route registrations "
+        "from config/urls.py."
+    )
+
+
+def run_python_compile() -> bool:
+    banner("PYTHON COMPILATION")
+
+    ok = True
+
+    for path in (
+        CONFIG_URLS,
+        PATIENT_URLS,
+        PATIENT_API_URLS,
+    ):
+        if not compile_file(path):
+            ok = False
+
+    return ok
+
+
+def run_django_check() -> bool:
+    banner("DJANGO SYSTEM CHECK")
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-B",
+            "manage.py",
+            "check",
+        ],
+        cwd=BACKEND_ROOT,
+        capture_output=True,
+        text=True,
+    )
+
+    if result.returncode != 0:
+        fail("Django system check failed.")
+        print(result.stdout)
+        print(result.stderr)
+        return False
+
+    passed("Django system check passed.")
+    return True
+
+
+def runtime_duplicate_audit() -> tuple[bool, int]:
+    banner("DJANGO RUNTIME DUPLICATE ROUTE AUDIT")
+
+    script = r'''
+from django.urls import get_resolver
+
+resolver = get_resolver()
+
+routes = {}
+
+def walk(patterns, prefix=""):
+    for pattern in patterns:
+        route = prefix + str(getattr(pattern, "pattern", ""))
+
+        children = getattr(pattern, "url_patterns", None)
+
+        if children:
+            walk(children, route)
+            continue
+
+        if "api/patient-management/" not in route:
+            continue
+
+        callback = getattr(pattern, "callback", None)
+
+        module = getattr(callback, "__module__", "")
+        name = getattr(callback, "__name__", "")
+
+        key = route
+
+        routes.setdefault(key, []).append(
+            (module, name)
+        )
+
+walk(resolver.url_patterns)
+
+duplicates = {
+    route: callbacks
+    for route, callbacks in routes.items()
+    if len(callbacks) > 1
+}
+
+for route in sorted(duplicates):
+    print(
+        "DUPLICATE|"
+        + route
+        + "|"
+        + str(len(duplicates[route]))
+    )
+
+    for module, name in duplicates[route]:
+        print(
+            "CALLBACK|"
+            + module
+            + "|"
+            + name
+        )
+
+print("TOTAL_DUPLICATES|" + str(len(duplicates)))
+'''
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-B",
+            "manage.py",
+            "shell",
+            "-c",
+            script,
+        ],
+        cwd=BACKEND_ROOT,
+        capture_output=True,
+        text=True,
+    )
+
+    output = result.stdout or ""
+    error = result.stderr or ""
+
+    if result.returncode != 0:
+        fail("Django runtime URL audit could not initialize.")
+        print(output)
+        print(error)
+        return False, -1
+
+    total = 0
+
+    for line in output.splitlines():
+        if line.startswith("DUPLICATE|"):
+            print(line)
+
+        elif line.startswith("CALLBACK|"):
+            print(line)
+
+        elif line.startswith("TOTAL_DUPLICATES|"):
+            try:
+                total = int(line.split("|", 1)[1])
+            except ValueError:
+                total = -1
+
+    if total == 0:
+        passed("No duplicate Patient Management runtime routes discovered.")
+        return True, 0
+
+    gap(f"Duplicate Patient Management runtime routes: {total}")
+    return False, total
+
+
+def runtime_canonical_surface_audit() -> bool:
+    banner("CANONICAL RUNTIME SURFACE AUDIT")
+
+    script = r'''
+from django.urls import resolve
+
+checks = [
+    (
+        "/api/patient-management/profile/",
+        "apps.patient_management.profile.api.views.profile",
+    ),
+    (
+        "/api/patient-management/patients/",
+        None,
+    ),
+    (
+        "/api/patient-management/identifiers/",
+        None,
+    ),
+    (
+        "/api/patient-management/family_members/",
+        None,
+    ),
+    (
+        "/api/patient-management/contacts/",
+        None,
+    ),
+    (
+        "/api/patient-management/addresses/",
+        None,
+    ),
+]
+
+for route, expected_module in checks:
+    try:
+        match = resolve(route)
+        callback = match.func
+        module = getattr(callback, "__module__", "")
+        name = getattr(callback, "__name__", "")
+
+        if expected_module and module != expected_module:
+            print(
+                "GAP|"
+                + route
+                + "|"
+                + module
+                + "|"
+                + name
+            )
+        else:
+            print(
+                "PASS|"
+                + route
+                + "|"
+                + module
+                + "|"
+                + name
+            )
+    except Exception as exc:
+        print(
+            "GAP|"
+            + route
+            + "|UNRESOLVED|"
+            + exc.__class__.__name__
+        )
+'''
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-B",
+            "manage.py",
+            "shell",
+            "-c",
+            script,
+        ],
+        cwd=BACKEND_ROOT,
+        capture_output=True,
+        text=True,
+    )
+
+    if result.returncode != 0:
+        fail("Canonical runtime surface audit failed to execute.")
+        print(result.stdout or "")
+        print(result.stderr or "")
+        return False
+
+    ok = True
+
+    for line in (result.stdout or "").splitlines():
+        if line.startswith("PASS|"):
+            parts = line.split("|")
+            route = parts[1]
+            module = parts[2]
+            name = parts[3]
+            passed(f"{route} -> {module}.{name}")
+
+        elif line.startswith("GAP|"):
+            print(line)
+            ok = False
+
+    return ok
+
+
+def audit_only() -> int:
+    banner(
+        "DATAVIONOS PATIENT MANAGEMENT CANONICAL URLCONF REPAIR"
+    )
+
+    print(f"VERSION      : {VERSION}")
+    print(f"BACKEND ROOT : {BACKEND_ROOT}")
+    print(f"PATIENT ROOT : {PATIENT_ROOT}")
+    print("MODE         : READ-ONLY / NO SOURCE CHANGES")
+
+    banner("SAFETY BOUNDARIES")
+
+    print("DATABASE CHANGES       : NONE")
+    print("MIGRATIONS             : NONE")
+    print("MODEL CHANGES          : NONE")
+    print("SERIALIZER CHANGES     : NONE")
+    print("VIEW CHANGES           : NONE")
+    print("SERVICE CHANGES        : NONE")
+    print("WORKFLOW CHANGES       : NONE")
+    print("PROFILE ROUTE          : UNTOUCHED")
+    print("PROFILE CODE           : UNTOUCHED")
+    print("FAMILY MEMBERS LOGIC   : UNTOUCHED")
+    print("FAMILY MEMBERS VIEWS   : UNTOUCHED")
+
+    if not validate_structure():
+        return 1
+
+    banner("PYTHON SOURCE VALIDATION")
+
+    for path in (
+        CONFIG_URLS,
+        PATIENT_URLS,
+        PATIENT_API_URLS,
+    ):
+        if not compile_file(path):
+            return 1
+
+    banner("CONFIG URLCONF AUDIT")
+
+    if not audit_config_urlconf():
+        return 1
+
+    if not validate_canonical_api_source():
+        return 1
+
+    if not run_django_check():
+        return 1
+
+    runtime_ok, duplicate_count = runtime_duplicate_audit()
+
+    if not runtime_ok:
+        return 1
+
+    if not runtime_canonical_surface_audit():
+        return 1
+
+    banner("AUDIT RESULT")
+
+    passed("Patient Management canonical URL surface is healthy.")
+    passed(f"Runtime duplicate routes: {duplicate_count}")
+    print("STATUS: PASS")
+
+    return 0
+
+
+def apply() -> int:
+    banner(
+        "DATAVIONOS PATIENT MANAGEMENT CANONICAL URLCONF REPAIR"
+    )
+
+    print(f"VERSION      : {VERSION}")
+    print(f"BACKEND ROOT : {BACKEND_ROOT}")
+    print(f"PATIENT ROOT : {PATIENT_ROOT}")
+    print(f"BACKUP       : {BACKUP_ROOT}")
+    print("MODE         : APPLY")
+
+    banner("SAFETY BOUNDARIES")
+
+    print("DATABASE CHANGES       : NONE")
+    print("MIGRATIONS             : NONE")
+    print("MODEL CHANGES          : NONE")
+    print("SERIALIZER CHANGES     : NONE")
+    print("VIEW CHANGES           : NONE")
+    print("SERVICE CHANGES        : NONE")
+    print("WORKFLOW CHANGES       : NONE")
+    print("PROFILE ROUTE          : UNTOUCHED")
+    print("PROFILE CODE           : UNTOUCHED")
+    print("FAMILY MEMBERS LOGIC   : UNTOUCHED")
+    print("FAMILY MEMBERS VIEWS   : UNTOUCHED")
+
+    if not validate_structure():
+        return 1
+
+    banner("PRE-REPAIR VALIDATION")
+
+    if not compile_file(CONFIG_URLS):
+        return 1
+
+    if not compile_file(PATIENT_URLS):
+        return 1
+
+    if not compile_file(PATIENT_API_URLS):
+        return 1
+
+    banner("REPAIR")
+
+    try:
+        apply_config_repair()
+        apply_canonical_api_urlconf()
+    except Exception as exc:
+        fail(f"Repair failed before completion: {exc}")
+        return 1
+
+    banner("POST-REPAIR PYTHON VALIDATION")
+
+    if not compile_file(CONFIG_URLS):
+        return 1
+
+    if not compile_file(PATIENT_URLS):
+        return 1
+
+    if not compile_file(PATIENT_API_URLS):
+        return 1
+
+    banner("POST-REPAIR CANONICAL URLCONF AUDIT")
+
+    if not audit_config_urlconf():
+        return 1
+
+    if not validate_canonical_api_source():
+        return 1
+
+    if not run_django_check():
+        return 1
+
+    runtime_ok, duplicate_count = runtime_duplicate_audit()
+
+    if not runtime_ok:
+        banner("REPAIR RESULT")
+        gap(
+            "Duplicate runtime routes remain. "
+            "No model, view, service, or workflow changes were made."
+        )
+        return 1
+
+    if not runtime_canonical_surface_audit():
+        banner("REPAIR RESULT")
+        gap("Canonical Patient Management runtime surface is incomplete.")
+        return 1
+
+    banner("FINAL RESULT")
+
+    passed("Canonical config/urls.py ownership: PASS")
+    passed("Canonical Patient Management API URLConf: PASS")
+    passed("Django system check: PASS")
+    passed("Runtime duplicate routes: 0")
+    passed("Canonical runtime surface: PASS")
+
+    print()
+    print("STATUS: PASS")
+    print()
+    print(
+        "Patient Management now has one upstream runtime registration:"
+    )
+    print(
+        "  /api/patient-management/"
+        " -> apps.patient_management.urls"
+    )
+    print()
+    print(
+        "All Patient Management child routes are owned by:"
+    )
+    print(
+        "  apps.patient_management.api.urls"
+    )
+
+    return 0
+
+
+def main() -> int:
+    if "--audit-only" in sys.argv:
+        return audit_only()
+
+    if "--apply" in sys.argv:
+        return apply()
+
+    print(
+        "Usage:\n"
+        "  python -B "
+        "installer_datavionos_patient_management_canonical_urlconf_repair.py "
+        "--audit-only\n\n"
+        "  python -B "
+        "installer_datavionos_patient_management_canonical_urlconf_repair.py "
+        "--apply"
+    )
+
+    return 2
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

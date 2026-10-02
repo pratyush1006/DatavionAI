@@ -1,0 +1,32 @@
+{% extends "email/base.html" %}
+
+{% block content %}
+
+<h2>Hello {{ name }},</h2>
+
+<p>
+Welcome to <strong>DatavionAI</strong>.
+</p>
+
+<p>
+Use the verification code below to verify your email address.
+</p>
+
+<div class="otp">
+    {{ otp }}
+</div>
+
+<p>
+This verification code will expire in <strong>10 minutes</strong>.
+</p>
+
+<p>
+If you did not create a DatavionAI account, you can safely ignore this email.
+</p>
+
+<p>
+Regards,<br>
+<strong>DatavionAI Team</strong>
+</p>
+
+{% endblock %}

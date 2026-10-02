@@ -1,0 +1,1 @@
+export { InventoryBusinessWorkspace } from "./workspace";

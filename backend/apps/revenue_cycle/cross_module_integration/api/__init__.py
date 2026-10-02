@@ -1,0 +1,5 @@
+"""Revenue Cycle cross-module integration API package."""
+
+from __future__ import annotations
+
+__all__ = ()

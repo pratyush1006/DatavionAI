@@ -1,0 +1,12 @@
+-r base.txt
+-r ai.txt
+
+# WSGI Server
+gunicorn==26.0.0
+
+# ASGI Server (optional)
+uvicorn
+
+# Monitoring
+sentry-sdk
+cryptography>=44.0.0,<47.0.0

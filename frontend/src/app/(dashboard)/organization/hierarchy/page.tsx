@@ -1,0 +1,1 @@
+export default function Page(){return <div className="container-fluid p-4"><h1 className="fw-bold">Organization Structure</h1><p className="text-secondary">Parent-child relationships use the canonical Organization Hierarchy domain.</p></div>}

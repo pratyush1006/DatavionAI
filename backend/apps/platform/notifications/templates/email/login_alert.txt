@@ -1,0 +1,59 @@
+DatavionAI Security
+
+Hello {{ name }},
+
+We detected a new sign-in to your DatavionAI account.
+
+NEW SIGN-IN DETECTED
+
+Date & Time
+{{ login_time }}
+
+IP Address
+{{ ip_address }}
+
+Device
+{{ device }}
+
+Browser
+{{ browser }}
+
+Location
+{{ location }}
+
+Location is provided by the DatavionOS Geography service and may be approximate.
+
+If this was you, no action is required.
+
+If you don't recognize this activity, change your password immediately and review your active sessions.
+
+{% if security_url %}
+Secure your account:
+{{ security_url }}
+{% endif %}
+
+Regards,
+
+DatavionAI Security Team
+DatavionOS — AI Operating System for Healthcare
+
+This is an automated security notification. Please do not reply to this email.
+
+Coordinates:
+
+Coordinates:
+
+Coordinates:
+
+Coordinates:
+
+Coordinates:
+
+Coordinates:
+Latitude: {{ latitude|default:"Unavailable" }}
+Longitude: {{ longitude|default:"Unavailable" }}
+
+Sign-in location
+Location: {{ location|default:"Unavailable" }}
+Latitude: {{ latitude|default:"Unavailable" }}
+Longitude: {{ longitude|default:"Unavailable" }}

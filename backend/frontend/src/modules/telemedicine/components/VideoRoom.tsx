@@ -1,0 +1,2 @@
+"use client";import {useEffect} from "react";import {useTelemedicineMedia} from "../hooks/useTelemedicineMedia";import {LocalVideo} from "./LocalVideo";
+export function VideoRoom(){const m=useTelemedicineMedia();useEffect(()=>{void m.start()},[m.start]);return <section><LocalVideo stream={m.stream}/><div><button onClick={m.toggleMicrophone}>{m.microphoneEnabled?"Mute":"Unmute"}</button><button onClick={m.toggleCamera}>{m.cameraEnabled?"Camera off":"Camera on"}</button><button onClick={m.stop}>Stop media</button></div>{m.error&&<p role="alert">{m.error}</p>}</section>}

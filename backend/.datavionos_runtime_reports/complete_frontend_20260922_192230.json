@@ -1,0 +1,6 @@
+{
+  "installer": "installer_organization_registration_runtime_integration.py",
+  "success": false,
+  "error": "Missing frontend artifacts:\nsrc/styles/datavion-platform.css\nsrc/app/(marketing)/page.tsx\nsrc/app/(marketing)/pricing/page.tsx\nsrc/app/(marketing)/about/page.tsx\nsrc/app/(marketing)/careers/page.tsx\nsrc/app/(marketing)/case-studies/page.tsx\nsrc/app/(marketing)/support/page.tsx\nsrc/app/(marketing)/contact/page.tsx\nsrc/app/(dashboard)/organization/page.tsx\nsrc/app/(dashboard)/organization/modules/page.tsx\nsrc/app/(dashboard)/organization/subscription/page.tsx",
+  "timestamp": "2026-09-22T19:22:35.846617"
+}

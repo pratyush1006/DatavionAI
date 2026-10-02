@@ -1,0 +1,150 @@
+"""
+Serializer field definitions for Organization serializers.
+"""
+
+from __future__ import annotations
+
+from typing import Final
+
+# ============================================================
+# Summary
+# ============================================================
+
+_SUMMARY_FIELDS: Final[tuple[str, ...]] = (
+    "id",
+    "display_name",
+    "code",
+    "slug",
+)
+
+
+# ============================================================
+# List
+# ============================================================
+
+_LIST_FIELDS: Final[tuple[str, ...]] = (
+    "id",
+    "name",
+    "display_name",
+    "code",
+    "category",
+    "organization_type",
+    "status",
+    "city",
+    "country",
+)
+
+
+# ============================================================
+# Detail
+# ============================================================
+
+_DETAIL_FIELDS: Final[tuple[str, ...]] = (
+    "id",
+    "name",
+    "display_name",
+    "code",
+    "slug",
+    "category",
+    "organization_type",
+    "status",
+    "size",
+    "email",
+    "support_email",
+    "phone",
+    "website",
+    "address",
+    "city",
+    "state",
+    "country",
+    "country_ref",
+    "region_ref",
+    "city_ref",
+    "postal_code",
+    "timezone",
+    "registration_number",
+    "tax_number",
+    "license_number",
+    "accreditation",
+    "verification_status",
+    "description",
+    "is_demo",
+    "created_at",
+    "updated_at",
+)
+
+
+# ============================================================
+# Create
+# ============================================================
+
+_WRITE_FIELDS: Final[tuple[str, ...]] = (
+    "name",
+    "display_name",
+    "code",
+    "slug",
+    "category",
+    "organization_type",
+    "size",
+    "email",
+    "support_email",
+    "phone",
+    "website",
+    "address",
+    "city",
+    "state",
+    "country",
+    "country_ref",
+    "region_ref",
+    "city_ref",
+    "postal_code",
+    "timezone",
+    "registration_number",
+    "tax_number",
+    "license_number",
+    "accreditation",
+    "description",
+    "is_demo",
+)
+
+
+# ============================================================
+# Update
+# ============================================================
+
+_UPDATE_FIELDS: Final[tuple[str, ...]] = (
+    "name",
+    "display_name",
+    "category",
+    "organization_type",
+    "status",
+    "size",
+    "email",
+    "support_email",
+    "phone",
+    "website",
+    "address",
+    "city",
+    "state",
+    "country",
+    "country_ref",
+    "region_ref",
+    "city_ref",
+    "postal_code",
+    "timezone",
+    "registration_number",
+    "tax_number",
+    "license_number",
+    "accreditation",
+    "description",
+    "is_demo",
+)
+
+
+__all__: tuple[str, ...] = (
+    "_DETAIL_FIELDS",
+    "_LIST_FIELDS",
+    "_SUMMARY_FIELDS",
+    "_UPDATE_FIELDS",
+    "_WRITE_FIELDS",
+)

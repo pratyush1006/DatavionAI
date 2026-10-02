@@ -1,0 +1,21 @@
+-r base.txt
+-r ai.txt
+
+# Interactive Shell
+ipython==9.14.1
+
+# Formatting & Linting
+ruff==0.15.19
+black==26.5.1
+isort==8.0.1
+
+# Git Hooks
+pre-commit==4.6.0
+
+# Static Type Checking
+mypy==2.3.1
+django-stubs==6.0.9
+django-stubs-ext==6.0.9
+djangorestframework-stubs==3.17.0
+types-PyYAML==6.0.12.20260518
+cryptography>=44.0.0,<47.0.0

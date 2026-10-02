@@ -1,0 +1,19 @@
+{
+  "module": "clinical_appointments",
+  "version": "1.0.0",
+  "architecture": [
+    "api",
+    "rbac",
+    "workflow",
+    "policy",
+    "service",
+    "model",
+    "domain_event",
+    "admin"
+  ],
+  "canonical_patient": "apps.patient_management.patients.models.Patient",
+  "canonical_provider": "apps.clinical.providers.models.Provider",
+  "canonical_organization": "apps.platform.organizations.models.Organization",
+  "migration_policy": "preserve_existing_migrations_and_generate_new_migrations",
+  "backup_policy": "no_backup_generated_by_installer"
+}

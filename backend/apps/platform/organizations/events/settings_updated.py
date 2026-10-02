@@ -1,0 +1,28 @@
+"""
+Organization settings updated domain event.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from uuid import UUID
+
+from apps.core.events import DomainEvent
+
+
+@dataclass(
+    frozen=True,
+    slots=True,
+    kw_only=True,
+)
+class SettingsUpdatedEvent(DomainEvent):
+    """
+    Raised when organization settings are updated.
+    """
+
+    organization_id: UUID
+
+    changed_fields: tuple[str, ...]
+
+
+__all__: tuple[str, ...] = ("SettingsUpdatedEvent",)

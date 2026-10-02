@@ -1,0 +1,1 @@
+"use client";import {useEffect,useRef} from "react";export function LocalVideo({stream}:{stream:MediaStream|null}){const r=useRef<HTMLVideoElement>(null);useEffect(()=>{if(r.current)r.current.srcObject=stream;return()=>{if(r.current)r.current.srcObject=null}},[stream]);return <video ref={r} autoPlay playsInline muted/>}

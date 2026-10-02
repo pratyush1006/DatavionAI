@@ -1,0 +1,1 @@
+# Canonical Hospital Operations domain.

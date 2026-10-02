@@ -1,0 +1,25 @@
+{
+  "installer": "DatavionAI Transcription Fresh Rebuild Installer",
+  "version": "1.0.0",
+  "module": "apps.transcription",
+  "purpose": "End-to-end clinical speech-to-text and clinical-note workflow",
+  "canonical_patient": "patient_core.Patient",
+  "architecture": "API -> RBAC -> Workflow -> Policy -> Service -> Model -> Domain Event",
+  "fresh_install": true,
+  "backup_before_replace": true,
+  "database_migration_execution": false,
+  "database_write_execution": false,
+  "provider_contracts": [
+    "TRANSCRIPTION_SPEECH_PROVIDER",
+    "TRANSCRIPTION_NOTE_PROVIDER"
+  ],
+  "workflow_names": [
+    "transcription.job.create",
+    "transcription.job.queue",
+    "transcription.job.run",
+    "transcription.job.cancel",
+    "transcription.note.generate",
+    "transcription.note.review",
+    "transcription.note.sign"
+  ]
+}

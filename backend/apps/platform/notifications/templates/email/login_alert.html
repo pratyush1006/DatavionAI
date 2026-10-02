@@ -1,0 +1,116 @@
+{% extends "email/base.html" %}
+
+{% block content %}
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            </table>
+
+            <div style="margin-top:16px;padding:12px 14px;background:#f5f9fd;
+                        border-radius:10px;color:#55708c;font-size:12px;line-height:18px;">
+              Location is provided by the DatavionOS Geography service and may be approximate.
+            </div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <tr>
+    <td style="padding:0 36px 24px;">
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
+             style="background:#ecfdf5;border-radius:14px;">
+        <tr>
+          <td style="padding:18px 20px;">
+            <div style="font-size:15px;line-height:22px;font-weight:700;color:#12633f;">
+
+                  <tr>
+                    <td style="padding:8px 0;color:#667085;font-size:13px;">
+                      Latitude
+                    </td>
+                    <td style="padding:8px 0;text-align:right;color:#101828;font-size:14px;font-weight:600;">
+                      {{ latitude|default:"Unavailable" }}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding:8px 0;color:#667085;font-size:13px;">
+                      Longitude
+                    </td>
+                    <td style="padding:8px 0;text-align:right;color:#101828;font-size:14px;font-weight:600;">
+                      {{ longitude|default:"Unavailable" }}
+                    </td>
+                  </tr>
+If this was you, no action is required.
+            </div>
+            <div style="margin-top:4px;font-size:13px;line-height:20px;color:#376451;">
+              You can safely ignore this email.
+            </div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <tr>
+    <td style="padding:0 36px 28px;">
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
+             style="background:#fff1f1;border-radius:14px;">
+        <tr>
+          <td style="padding:20px;">
+            <div style="font-size:15px;line-height:22px;font-weight:700;color:#9b1c1c;">
+              If you don't recognize this activity
+            </div>
+
+            <div style="margin-top:5px;font-size:13px;line-height:21px;color:#7f3030;">
+              Change your password immediately and review your active sessions.
+            </div>
+
+            {% if security_url %}
+            <div style="margin-top:16px;">
+              <a href="{{ security_url }}"
+                 style="display:inline-block;padding:12px 18px;background:#c92a2a;
+                        color:#ffffff;text-decoration:none;border-radius:8px;
+                        font-weight:700;font-size:14px;">
+                Secure My Account
+              </a>
+            </div>
+            {% endif %}
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <tr>
+    <td style="padding:0 36px 34px;">
+      <div style="font-size:13px;line-height:21px;color:#55708c;">
+        <strong style="color:#102a43;">DatavionAI Security Team</strong><br>
+        DatavionOS — AI Operating System for Healthcare<br><br>
+        This is an automated security notification. Please do not reply to this email.
+      </div>
+    </td>
+  </tr>
+</table>
+{% endblock %}
+
+<div style="margin-top:16px;">
+  <div style="font-weight:700;color:#111827;margin-bottom:8px;">Sign-in location</div>
+  <div style="color:#374151;font-size:14px;line-height:1.7;">
+    Location: {{ location|default:"Unavailable" }}<br>
+    Latitude: {{ latitude|default:"Unavailable" }}<br>
+    Longitude: {{ longitude|default:"Unavailable" }}
+  </div>
+</div>

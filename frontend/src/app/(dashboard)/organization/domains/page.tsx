@@ -1,0 +1,1 @@
+export default function Page(){return <div className="container-fluid p-4"><h1 className="fw-bold">Organization Domains</h1><p className="text-secondary">Organization domains are distinct from tenant routing domains.</p><button className="btn btn-primary mt-3">Add domain</button></div>}

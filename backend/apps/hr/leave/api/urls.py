@@ -1,0 +1,61 @@
+from django.urls import path
+
+from apps.hr.leave.api.views import (
+    LeaveBalanceListCreateAPIView,
+    LeaveBalanceRetrieveUpdateDestroyAPIView,
+    LeaveRequestApproveAPIView,
+    LeaveRequestCancelAPIView,
+    LeaveRequestListCreateAPIView,
+    LeaveRequestRejectAPIView,
+    LeaveRequestRetrieveUpdateDestroyAPIView,
+    LeaveTypeListCreateAPIView,
+    LeaveTypeRetrieveUpdateDestroyAPIView,
+)
+
+urlpatterns = [
+    path(
+        "types/",
+        LeaveTypeListCreateAPIView.as_view(),
+        name="leave-type-list-create",
+    ),
+    path(
+        "types/<int:leave_type_id>/",
+        LeaveTypeRetrieveUpdateDestroyAPIView.as_view(),
+        name="leave-type-detail",
+    ),
+    path(
+        "balances/",
+        LeaveBalanceListCreateAPIView.as_view(),
+        name="leave-balance-list-create",
+    ),
+    path(
+        "balances/<int:leave_balance_id>/",
+        LeaveBalanceRetrieveUpdateDestroyAPIView.as_view(),
+        name="leave-balance-detail",
+    ),
+    path(
+        "requests/",
+        LeaveRequestListCreateAPIView.as_view(),
+        name="leave-request-list-create",
+    ),
+    path(
+        "requests/<int:leave_request_id>/",
+        LeaveRequestRetrieveUpdateDestroyAPIView.as_view(),
+        name="leave-request-detail",
+    ),
+    path(
+        "requests/<int:leave_request_id>/approve/",
+        LeaveRequestApproveAPIView.as_view(),
+        name="leave-request-approve",
+    ),
+    path(
+        "requests/<int:leave_request_id>/reject/",
+        LeaveRequestRejectAPIView.as_view(),
+        name="leave-request-reject",
+    ),
+    path(
+        "requests/<int:leave_request_id>/cancel/",
+        LeaveRequestCancelAPIView.as_view(),
+        name="leave-request-cancel",
+    ),
+]

@@ -1,0 +1,194 @@
+{
+  "installer": "installer_organization_registration_runtime_integration.py",
+  "scope": "frontend-only integration with existing platform organizations/tenancy/saas_billing backend",
+  "timestamp": "2026-09-22T16:55:10.974941",
+  "success": false,
+  "backend_mutated": false,
+  "backend_before": {
+    "apps": "a9f916067a8a1768041e53f85d99064d36260fc00e3616cbc66b99354ad5643d",
+    "family_members": "88f41be73a15ae6c1d432fc68f47171db2065006344b43ededa7f7692b843052",
+    "migration_files": "972604b4cf3ef287fef6ef4eb23cd0f209fdaed927da6259bd20c503e24c7d2a"
+  },
+  "backend_after": {
+    "apps": "a9f916067a8a1768041e53f85d99064d36260fc00e3616cbc66b99354ad5643d",
+    "family_members": "88f41be73a15ae6c1d432fc68f47171db2065006344b43ededa7f7692b843052",
+    "migration_files": "972604b4cf3ef287fef6ef4eb23cd0f209fdaed927da6259bd20c503e24c7d2a"
+  },
+  "backend_contract": {
+    "organization_routes": [
+      "hierarchies/",
+      "branding/",
+      "<uuid:organization_id>/"
+    ],
+    "tenancy_routes": [
+      "tenants/",
+      "tenants/create/",
+      "tenants/<uuid:tenant_id>/",
+      "my-tenants/",
+      "select/"
+    ],
+    "billing_routes": [
+      "account/",
+      "account/update/",
+      "account/payment-provider/",
+      "account/auto-charge/",
+      "plans/",
+      "plans/<uuid:pk>/",
+      "plans/create/",
+      "plans/<uuid:pk>/update/",
+      "plans/<uuid:pk>/activate/",
+      "plans/<uuid:pk>/deactivate/",
+      "plans/<uuid:pk>/archive/",
+      "subscription/",
+      "subscription/create/",
+      "subscription/activate/",
+      "subscription/renew/",
+      "subscription/cancel/",
+      "invoices/",
+      "invoices/<uuid:pk>/",
+      "invoices/generate/",
+      "invoices/<uuid:pk>/issue/",
+      "invoices/<uuid:pk>/finalize/",
+      "invoices/<uuid:pk>/cancel/",
+      "payments/",
+      "payments/<uuid:pk>/",
+      "payments/process/",
+      "payments/<uuid:pk>/reconcile/",
+      "payments/<uuid:pk>/refund/",
+      "usage/",
+      "usage/collect/",
+      "usage/<uuid:pk>/evaluate/",
+      "usage/<uuid:pk>/charge/"
+    ],
+    "onboarding_routes": [
+      "organization-types/",
+      "plans/",
+      "register/",
+      "status/"
+    ],
+    "onboarding_facade": true
+  },
+  "installer_runs": [],
+  "counts": {
+    "PASS": 20,
+    "WARN": 3,
+    "FAIL": 0
+  },
+  "gates": [
+    {
+      "name": "BACKEND_PRESENT",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "FRONTEND_PRESENT",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "CANONICAL_PLATFORM_DOMAINS",
+      "status": "PASS",
+      "detail": "organizations + tenancy + saas_billing are present."
+    },
+    {
+      "name": "BACKEND_ONBOARDING_FACADE",
+      "status": "PASS",
+      "detail": "Existing onboarding facade detected; it remains backend-owned."
+    },
+    {
+      "name": "PLATFORM_API_CONTRACT",
+      "status": "PASS",
+      "detail": "Canonical organizations, tenancy and SaaS billing API contracts detected."
+    },
+    {
+      "name": "ROOT_API_WIRING",
+      "status": "PASS",
+      "detail": "Root URL configuration exposes the canonical platform domains."
+    },
+    {
+      "name": "CANONICAL_FRONTEND_INSTALLER",
+      "status": "PASS",
+      "detail": "installer_organization_onboarding_frontend.py"
+    },
+    {
+      "name": "FRONTEND_INSTALLATION",
+      "status": "WARN",
+      "detail": "Report-only mode: canonical frontend installer not executed."
+    },
+    {
+      "name": "ORGANIZATION_REGISTRATION_FRONTEND",
+      "status": "PASS",
+      "detail": "Organization registration frontend files are present."
+    },
+    {
+      "name": "ORGANIZATION_REGISTER_ROUTE",
+      "status": "PASS",
+      "detail": "Existing organization registration page is wired to the canonical onboarding UI."
+    },
+    {
+      "name": "FRONTEND_BACKEND_ALIGNMENT",
+      "status": "PASS",
+      "detail": "Frontend consumes the existing backend onboarding facade."
+    },
+    {
+      "name": "FRONTEND_AUTHORITY_BOUNDARY",
+      "status": "PASS",
+      "detail": "No frontend entitlement/RBAC/module provisioning authority detected."
+    },
+    {
+      "name": "DASHBOARD_HANDOFF",
+      "status": "PASS",
+      "detail": "Registration hands off to existing dashboard: src\\app\\(dashboard)\\dashboard\\page.tsx"
+    },
+    {
+      "name": "DYNAMIC_DASHBOARD_BOUNDARY",
+      "status": "PASS",
+      "detail": "Dashboard remains backend-state driven; no hard-coded organization module map detected."
+    },
+    {
+      "name": "BACKEND_READ_ONLY_CONTRACT",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "FAMILY_MEMBERS_PROTECTION",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "MIGRATION_PROTECTION",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "FRONTEND_RELEASE_GATE",
+      "status": "WARN",
+      "detail": "Report-only mode: typecheck/lint/build were not executed."
+    },
+    {
+      "name": "BACKEND_READ_ONLY_CONTRACT",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "FAMILY_MEMBERS_PROTECTION",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "MIGRATION_PROTECTION",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "DASHBOARD_PROTECTION",
+      "status": "PASS",
+      "detail": "Existing dashboard source remained unchanged."
+    },
+    {
+      "name": "ORGANIZATION_REGISTRATION_FRONTEND_INTEGRATION",
+      "status": "WARN",
+      "detail": "Static architecture/contract audit passed; execution gates were skipped by --report."
+    }
+  ]
+}

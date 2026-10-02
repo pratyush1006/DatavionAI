@@ -1,0 +1,12 @@
+{
+  "installer": "DatavionOS Patient Portal Production Installer",
+  "version": "1.0.1",
+  "module": "apps.patient_management.portal",
+  "canonical_patient": "apps.patient_management.patients.models.Patient",
+  "fresh_install": true,
+  "delete_existing_module_before_install": true,
+  "migrations_generated": false,
+  "backup_generated": false,
+  "pycache_generated": false,
+  "invitation_workflow": "patient_portal.invite"
+}

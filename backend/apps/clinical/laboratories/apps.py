@@ -1,0 +1,8 @@
+from django.apps import AppConfig
+
+
+class LaboratoriesConfig(AppConfig):
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "apps.clinical.laboratories"
+    label = "laboratories"
+    verbose_name = "Clinical Laboratories"

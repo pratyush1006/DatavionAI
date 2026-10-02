@@ -1,0 +1,28 @@
+{
+  "module": "patient_management.timeline",
+  "version": "1.2.0",
+  "purpose": "Production Patient Timeline implementation aligned with DatavionOS BaseModel lifecycle architecture",
+  "canonical_patient": "apps.patient_management.patients.models.Patient",
+  "canonical_organization": "apps.platform.organizations.models.Organization",
+  "persistence_base": "apps.core.models.BaseModel",
+  "architecture": [
+    "API",
+    "RBAC",
+    "Workflow",
+    "Policy",
+    "Selector",
+    "Service",
+    "Model",
+    "Domain Event"
+  ],
+  "tenant_isolation": true,
+  "soft_delete": true,
+  "active_lifecycle": true,
+  "domain_status": [
+    "draft",
+    "active",
+    "archived"
+  ],
+  "restore_workflow": "timeline.restore",
+  "migrations_generated": false
+}

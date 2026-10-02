@@ -1,0 +1,2 @@
+class PACSIntegrationContract:
+    pass

@@ -1,0 +1,12 @@
+{
+  "architecture": "API -> RBAC -> Workflow -> Policy -> Service -> Model -> Domain Event",
+  "backup_generated": false,
+  "canonical_patient": "apps.patient_management.patients.models.Patient",
+  "delete_existing_module_before_install": true,
+  "fresh_install": true,
+  "installer": "DatavionOS Patient Consents Production Installer",
+  "migrations_generated": false,
+  "module": "apps.patient_management.consents",
+  "pycache_generated": false,
+  "version": "2.0.1"
+}
