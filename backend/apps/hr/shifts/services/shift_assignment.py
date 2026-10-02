@@ -5,13 +5,14 @@ Business services for shift assignments.
 from __future__ import annotations
 
 from collections.abc import Mapping
+from typing import Any, cast
 
 from django.core.exceptions import ValidationError
 from django.db import transaction
 
 from apps.hr.shifts.models import ShiftAssignment
 
-type ShiftAssignmentData = Mapping[str, object]
+type ShiftAssignmentData = Mapping[str, Any]
 
 
 def _validate_shift_assignment_data(
@@ -78,7 +79,7 @@ def create_shift_assignment(
 
     _validate_shift_assignment_data(validated_data=validated_data)
 
-    return ShiftAssignment.objects.create(**validated_data)
+    return cast(ShiftAssignment, ShiftAssignment.objects.create(**validated_data))
 
 
 @transaction.atomic

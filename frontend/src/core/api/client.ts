@@ -63,6 +63,7 @@ import type {
 
 import {
   DEFAULT_REQUEST_ID_PROVIDER,
+  EMPTY_ORGANIZATION_PROVIDER,
   EMPTY_TENANT_PROVIDER,
   EMPTY_TOKEN_PROVIDER,
 } from "./contracts";
@@ -211,6 +212,10 @@ export class ApiClient {
         runtime.tenantProvider ??
         EMPTY_TENANT_PROVIDER,
 
+      organizationProvider:
+        runtime.organizationProvider ??
+        EMPTY_ORGANIZATION_PROVIDER,
+
       requestIdProvider:
         runtime.requestIdProvider ??
         DEFAULT_REQUEST_ID_PROVIDER,
@@ -286,6 +291,24 @@ export class ApiClient {
     this.runtime = {
       ...this.runtime,
       tenantProvider:
+        provider,
+    };
+
+    this.reinstallInterceptors();
+  }
+
+  /**
+   * Replace the organization provider.
+   */
+  public setOrganizationProvider(
+    provider:
+      ApiRuntimeDependencies[
+        "organizationProvider"
+      ],
+  ): void {
+    this.runtime = {
+      ...this.runtime,
+      organizationProvider:
         provider,
     };
 
@@ -554,21 +577,21 @@ export class ApiClient {
    *
    * Example:
    *
-   *     baseURL = http://127.0.0.1:8000/api
+   *     baseURL = ${API_BASE_URL}
    *     version = ""
    *
    * Result:
    *
-   *     http://127.0.0.1:8000/api
+   *     ${API_BASE_URL}
    *
    * If version is configured:
    *
-   *     baseURL = http://127.0.0.1:8000/api
+   *     baseURL = ${API_BASE_URL}
    *     version = v1
    *
    * Result:
    *
-   *     http://127.0.0.1:8000/api/v1
+   *     ${API_BASE_URL}/v1
    */
   private buildBaseURL(
     config: ApiClientConfig,

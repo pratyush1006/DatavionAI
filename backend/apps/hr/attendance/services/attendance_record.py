@@ -6,13 +6,14 @@ from __future__ import annotations
 
 import datetime
 from collections.abc import Mapping
+from typing import Any, cast
 
 from django.core.exceptions import ValidationError
 from django.db import transaction
 
 from apps.hr.attendance.models import AttendanceRecord
 
-type AttendanceData = Mapping[str, object]
+type AttendanceData = Mapping[str, Any]
 
 
 def _compute_hours_worked(
@@ -113,8 +114,11 @@ def create_attendance_record(
         check_out=data.get("check_out"),
     )
 
-    return AttendanceRecord.objects.create(
-        **data,
+    return cast(
+        AttendanceRecord,
+        AttendanceRecord.objects.create(
+            **data,
+        ),
     )
 
 

@@ -1,15 +1,11 @@
-"""
-Encounter API view exports.
-"""
-
-from .list_create import (
+from .encounter import (
+    EncounterDetailAPIView,
+    EncounterLifecycleAPIView,
     EncounterListCreateAPIView,
 )
-from .retrieve_update_destroy import (
-    EncounterRetrieveUpdateDestroyAPIView,
-)
 
-__all__ = [
+__all__ = (
     "EncounterListCreateAPIView",
-    "EncounterRetrieveUpdateDestroyAPIView",
-]
+    "EncounterDetailAPIView",
+    "EncounterLifecycleAPIView",
+)

@@ -25,7 +25,7 @@ class PatientRegistrationListSerializer(
     """
 
     patient_uuid = serializers.UUIDField(
-        source="patient.uuid",
+        source="patient.id",
         read_only=True,
     )
 
@@ -40,7 +40,7 @@ class PatientRegistrationListSerializer(
     )
 
     organization_uuid = serializers.UUIDField(
-        source="organization.uuid",
+        source="organization.id",
         read_only=True,
     )
 
@@ -53,7 +53,7 @@ class PatientRegistrationListSerializer(
         model = PatientRegistration
 
         fields = (
-            "uuid",
+            "id",
             "registration_number",
             "patient_uuid",
             "patient_name",

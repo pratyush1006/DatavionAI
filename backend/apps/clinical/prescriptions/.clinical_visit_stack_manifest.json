@@ -1,0 +1,11 @@
+{
+  "installer": "installer_clinical_visit_stack_fresh_rebuild_v1_0_2.py",
+  "version": "1.0.3",
+  "module": "apps/clinical/prescriptions",
+  "fresh_application_layer": true,
+  "models_preserved": true,
+  "migration_history_preserved": true,
+  "database_migrations_executed": false,
+  "database_rows_written": false,
+  "workflow_prefix": "prescription"
+}

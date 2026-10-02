@@ -29,4 +29,19 @@ __all__ = (
     "PatientConsentError",
     "PatientConsentValidationError",
     "PatientConsentNotFoundError",
+    "ConsentDomainError",
+    "InvalidConsentStateError",
+    "ConsentAlreadyGrantedError",
 )
+
+
+class ConsentDomainError(Exception):
+    """Base exception for Patient Consent domain failures."""
+
+
+class InvalidConsentStateError(ConsentDomainError):
+    """Raised when a consent lifecycle transition is invalid."""
+
+
+class ConsentAlreadyGrantedError(ConsentDomainError):
+    """Raised when an already granted consent is granted again."""

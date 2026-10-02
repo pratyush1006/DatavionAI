@@ -1,10 +1,8 @@
-"""
-Appointment URL configuration.
-"""
+"""Clinical Appointment URL entry point."""
+
+from __future__ import annotations
 
 from django.urls import include, path
-
-app_name = "appointments"
 
 urlpatterns = [
     path(
@@ -12,3 +10,6 @@ urlpatterns = [
         include("apps.clinical.appointments.api.urls"),
     ),
 ]
+
+
+__all__ = ("urlpatterns",)

@@ -1,31 +1,8 @@
-"""
-URL configuration for the Laboratories application.
-"""
+from django.urls import path
 
-from __future__ import annotations
-
-from django.urls import (
-    include,
-    path,
-)
+from .health import LaboratoryHealthAPIView
+from .laboratory_urls import urlpatterns as laboratory_urlpatterns
 
 urlpatterns = [
-    path(
-        "orders/",
-        include(
-            "apps.clinical.laboratories.api.urls.laboratory_order",
-        ),
-    ),
-    path(
-        "tests/",
-        include(
-            "apps.clinical.laboratories.api.urls.laboratory_test",
-        ),
-    ),
-    path(
-        "results/",
-        include(
-            "apps.clinical.laboratories.api.urls.laboratory_result",
-        ),
-    ),
-]
+    path("health/", LaboratoryHealthAPIView.as_view(), name="laboratories-health")
+] + laboratory_urlpatterns

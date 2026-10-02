@@ -1,0 +1,8 @@
+{
+  "version": "1.0.3",
+  "frontend": "D:\Datavion-Payment\DatavionAI\frontend",
+  "public_self_service": true,
+  "backend_contract_preserved": true,
+  "six_step_ux": true,
+  "production_build": true
+}

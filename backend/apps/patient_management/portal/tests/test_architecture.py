@@ -9,6 +9,7 @@ from apps.patient_management.portal.constants import (
     ALLOWED_STATUS_TRANSITIONS,
 )
 from apps.patient_management.portal.models import PatientPortalAccount
+from apps.patient_management.portal.services import PatientPortalInvitationWorkflow
 
 
 def test_portal_uses_canonical_patient() -> None:

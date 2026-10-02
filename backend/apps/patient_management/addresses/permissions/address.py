@@ -1,67 +1,12 @@
-"""
-DRF permissions for Patient Addresses.
-"""
+"""DRF Address permission."""
 
-from apps.platform.rbac.permissions.base import (
-    RBACPermissionBase,
-)
+from __future__ import annotations
 
+from rest_framework.permissions import BasePermission
 
-class CanViewAddress(
-    RBACPermissionBase,
-):
-    permission_code = "addresses.view"
+from apps.patient_management.addresses.policies import AddressPolicy
 
 
-class CanCreateAddress(
-    RBACPermissionBase,
-):
-    permission_code = "addresses.create"
-
-
-class CanUpdateAddress(
-    RBACPermissionBase,
-):
-    permission_code = "addresses.update"
-
-
-class CanDeleteAddress(
-    RBACPermissionBase,
-):
-    permission_code = "addresses.delete"
-
-
-class CanVerifyAddress(
-    RBACPermissionBase,
-):
-    permission_code = "addresses.verify"
-
-
-class CanActivateAddress(
-    RBACPermissionBase,
-):
-    permission_code = "addresses.activate"
-
-
-class CanDeactivateAddress(
-    RBACPermissionBase,
-):
-    permission_code = "addresses.deactivate"
-
-
-class CanSetPrimaryAddress(
-    RBACPermissionBase,
-):
-    permission_code = "addresses.set_primary"
-
-
-__all__ = (
-    "CanActivateAddress",
-    "CanCreateAddress",
-    "CanDeactivateAddress",
-    "CanDeleteAddress",
-    "CanSetPrimaryAddress",
-    "CanUpdateAddress",
-    "CanVerifyAddress",
-    "CanViewAddress",
-)
+class AddressPermission(BasePermission):
+    def has_object_permission(self, request, view, obj):
+        return AddressPolicy.can_access(user=request.user, address=obj)

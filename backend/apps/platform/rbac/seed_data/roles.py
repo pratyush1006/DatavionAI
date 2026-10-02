@@ -10,6 +10,7 @@ from apps.platform.rbac.constants import (
     DEFAULT_ROLE_PRIORITY,
     DEFAULT_ROLE_SCOPE,
     DEFAULT_ROLE_TYPE,
+    RoleScope,
     SystemRole,
 )
 
@@ -150,6 +151,36 @@ SYSTEM_ROLES = (
         "is_deletable": False,
     },
     {
+        "code": SystemRole.BILLING_OFFICER.value,
+        "name": SystemRole.BILLING_OFFICER.label,
+        "description": "Revenue cycle, claims, payer and billing operations.",
+        "role_type": DEFAULT_ROLE_TYPE,
+        "scope": DEFAULT_ROLE_SCOPE,
+        "category": DEFAULT_ROLE_CATEGORY,
+        "priority": DEFAULT_ROLE_PRIORITY + 35,
+        "display_order": DEFAULT_DISPLAY_ORDER + 95,
+        "is_system": True,
+        "is_default": False,
+        "is_assignable": True,
+        "is_editable": True,
+        "is_deletable": False,
+    },
+    {
+        "code": SystemRole.HR_MANAGER.value,
+        "name": SystemRole.HR_MANAGER.label,
+        "description": "Human resources, workforce structure, and employee lifecycle management.",
+        "role_type": DEFAULT_ROLE_TYPE,
+        "scope": DEFAULT_ROLE_SCOPE,
+        "category": DEFAULT_ROLE_CATEGORY,
+        "priority": DEFAULT_ROLE_PRIORITY + 34,
+        "display_order": DEFAULT_DISPLAY_ORDER + 96,
+        "is_system": True,
+        "is_default": False,
+        "is_assignable": True,
+        "is_editable": True,
+        "is_deletable": False,
+    },
+    {
         "code": SystemRole.RECEPTIONIST.value,
         "name": SystemRole.RECEPTIONIST.label,
         "description": "Reception staff.",
@@ -194,6 +225,120 @@ SYSTEM_ROLES = (
         "is_editable": False,
         "is_deletable": False,
     },
+)
+
+# Canonical healthcare-OS role catalogue.  These records are seed data, not
+# frontend labels: backend RBAC remains the sole authority for availability.
+_CANONICAL_ROLE_EXTENSIONS = (
+    (SystemRole.PLATFORM_OWNER, "Full control-plane ownership.", RoleScope.PLATFORM),
+    (
+        SystemRole.PLATFORM_OPERATIONS,
+        "Platform operational reliability and tenant operations.",
+        RoleScope.PLATFORM,
+    ),
+    (
+        SystemRole.PLATFORM_SECURITY,
+        "Platform security operations and audit review.",
+        RoleScope.PLATFORM,
+    ),
+    (
+        SystemRole.PLATFORM_SUPPORT,
+        "Tenant support with no clinical data administration.",
+        RoleScope.PLATFORM,
+    ),
+    (
+        SystemRole.PLATFORM_FINANCE,
+        "Platform subscription and finance operations.",
+        RoleScope.PLATFORM,
+    ),
+    (
+        SystemRole.ORGANIZATION_MANAGER,
+        "Organization operational management.",
+        DEFAULT_ROLE_SCOPE,
+    ),
+    (
+        SystemRole.THERAPIST,
+        "Therapy and rehabilitation care delivery.",
+        DEFAULT_ROLE_SCOPE,
+    ),
+    (
+        SystemRole.CLINICAL_MANAGER,
+        "Clinical operations and care-team management.",
+        DEFAULT_ROLE_SCOPE,
+    ),
+    (
+        SystemRole.FRONT_DESK_MANAGER,
+        "Front-office scheduling and reception management.",
+        DEFAULT_ROLE_SCOPE,
+    ),
+    (
+        SystemRole.HR_EXECUTIVE,
+        "Human-resources employee lifecycle operations.",
+        DEFAULT_ROLE_SCOPE,
+    ),
+    (
+        SystemRole.ACCOUNTANT,
+        "Accounts, invoices and financial reporting.",
+        DEFAULT_ROLE_SCOPE,
+    ),
+    (
+        SystemRole.FINANCE_MANAGER,
+        "Organization financial management.",
+        DEFAULT_ROLE_SCOPE,
+    ),
+    (
+        SystemRole.PHARMACY_MANAGER,
+        "Pharmacy operations management.",
+        DEFAULT_ROLE_SCOPE,
+    ),
+    (
+        SystemRole.INVENTORY_MANAGER,
+        "Central inventory and supply-chain management.",
+        DEFAULT_ROLE_SCOPE,
+    ),
+    (
+        SystemRole.IMAGING_TECHNICIAN,
+        "Imaging acquisition and worklist operations.",
+        DEFAULT_ROLE_SCOPE,
+    ),
+    (SystemRole.RADIOLOGIST, "Diagnostic imaging interpretation.", DEFAULT_ROLE_SCOPE),
+    (SystemRole.IMAGING_MANAGER, "Imaging operations management.", DEFAULT_ROLE_SCOPE),
+    (
+        SystemRole.DEPARTMENT_MANAGER,
+        "Department staffing and operations.",
+        DEFAULT_ROLE_SCOPE,
+    ),
+    (SystemRole.TEAM_LEAD, "Operational team coordination.", DEFAULT_ROLE_SCOPE),
+    (
+        SystemRole.TELEMEDICINE_DOCTOR,
+        "Virtual-care clinical delivery.",
+        DEFAULT_ROLE_SCOPE,
+    ),
+    (
+        SystemRole.FAMILY_CAREGIVER,
+        "Patient portal caregiver access.",
+        DEFAULT_ROLE_SCOPE,
+    ),
+    (SystemRole.SUPPORT_AGENT, "Organization support operations.", DEFAULT_ROLE_SCOPE),
+)
+
+SYSTEM_ROLES += tuple(
+    {
+        "code": role.value,
+        "name": role.label,
+        "description": description,
+        "role_type": DEFAULT_ROLE_TYPE,
+        "scope": scope,
+        "category": DEFAULT_ROLE_CATEGORY,
+        "priority": DEFAULT_ROLE_PRIORITY,
+        "display_order": DEFAULT_DISPLAY_ORDER + 200 + index,
+        "is_system": True,
+        "is_default": False,
+        "is_assignable": scope != RoleScope.PLATFORM,
+        "is_editable": False,
+        "is_deletable": False,
+    }
+    for index, (role, description, scope) in enumerate(_CANONICAL_ROLE_EXTENSIONS)
 )
 
 __all__ = [

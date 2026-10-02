@@ -25,3 +25,4 @@ __all__ = (
     "CanUpdateTimeline",
     "CanViewTimeline",
 )
+from .timeline import CanRestoreTimeline

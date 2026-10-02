@@ -4,22 +4,22 @@ Lifecycle task permission classes.
 
 from __future__ import annotations
 
-from apps.common.permissions.base import DatavionPermission
+from apps.hr.permissions import HrPermission
 
 
-class CanViewLifecycleTask(DatavionPermission):
+class CanViewLifecycleTask(HrPermission):
     permission_code = "onboarding.view"
 
 
-class CanCreateLifecycleTask(DatavionPermission):
+class CanCreateLifecycleTask(HrPermission):
     permission_code = "onboarding.create"
 
 
-class CanUpdateLifecycleTask(DatavionPermission):
+class CanUpdateLifecycleTask(HrPermission):
     permission_code = "onboarding.update"
 
 
-class CanDeleteLifecycleTask(DatavionPermission):
+class CanDeleteLifecycleTask(HrPermission):
     permission_code = "onboarding.delete"
 
 

@@ -4,10 +4,7 @@ from __future__ import annotations
 
 from django.db import models
 
-from apps.core.models import (
-    BaseModel,
-    SoftDeleteManager,
-)
+from apps.core.models import BaseModel
 from apps.patient_management.patients.models import Patient
 from apps.patient_management.preferences.constants import (
     DEFAULT_DATE_FORMAT,
@@ -15,7 +12,7 @@ from apps.patient_management.preferences.constants import (
     DEFAULT_TIME_FORMAT,
     DEFAULT_TIMEZONE,
 )
-from apps.patient_management.preferences.querysets import PatientPreferenceQuerySet
+from apps.patient_management.preferences.managers import PatientPreferenceManager
 from apps.platform.organizations.models import Organization
 
 
@@ -57,7 +54,7 @@ class PatientPreference(BaseModel):
         blank=True,
     )
 
-    objects = SoftDeleteManager.from_queryset(PatientPreferenceQuerySet)()
+    objects = PatientPreferenceManager()
 
     class Meta:
         """Define database constraints and indexes."""

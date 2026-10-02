@@ -7,7 +7,7 @@ from django.urls import include, path
 urlpatterns = (
     path(
         "analytics/",
-        include("apps.revenue_cycle.analytics.urls"),
+        include("apps.revenue_cycle.revenue_analytics.urls"),
     ),
     path(
         "appeals/",
@@ -15,11 +15,11 @@ urlpatterns = (
     ),
     path(
         "ar/",
-        include("apps.revenue_cycle.ar.urls"),
+        include("apps.revenue_cycle.accounts_receivable.urls"),
     ),
     path(
         "billing/",
-        include("apps.revenue_cycle.billing.urls"),
+        include("apps.revenue_cycle.billing.api_urls"),
     ),
     path(
         "charge_capture/",

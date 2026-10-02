@@ -6,11 +6,12 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, cast
 from uuid import UUID
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
+from django.db.models import Manager
 
 from apps.core.workflows import (
     BaseWorkflow,
@@ -80,7 +81,10 @@ class EmergencyContactCreationWorkflow(
                 tenant_id=context.tenant_id,
             )
 
-            patient = Patient.objects.get(
+            patient = cast(
+                Manager[Patient],
+                Patient._default_manager,
+            ).get(
                 pk=self._request.patient_id,
                 organization_id=organization.pk,
             )

@@ -11,15 +11,10 @@ from __future__ import annotations
 
 from apps.common.notifications.constants import (
     CHANNEL_EMAIL,
-    CHANNEL_PUSH,
-    CHANNEL_SMS,
-    CHANNEL_WEBHOOK,
 )
+from apps.common.notifications.exceptions import NotificationConfigurationError
 from apps.common.notifications.providers import (
     EmailProvider,
-    PushProvider,
-    SMSProvider,
-    WhatsAppProvider,
 )
 
 
@@ -30,9 +25,6 @@ class NotificationProviderRegistry:
 
     _providers = {
         CHANNEL_EMAIL: EmailProvider(),
-        CHANNEL_SMS: SMSProvider(),
-        CHANNEL_PUSH: PushProvider(),
-        CHANNEL_WEBHOOK: WhatsAppProvider(),
     }
 
     @classmethod
@@ -50,8 +42,9 @@ class NotificationProviderRegistry:
         )
 
         if provider is None:
-            raise ValueError(
-                f"Unsupported notification channel: {channel}",
+            raise NotificationConfigurationError(
+                f"Notification channel '{channel}' is disabled because no concrete "
+                "delivery adapter is configured."
             )
 
         return provider

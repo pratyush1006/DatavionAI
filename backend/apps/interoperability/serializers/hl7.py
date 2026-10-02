@@ -8,7 +8,7 @@ Field separators follow the HL7 standard (| component ^ repetition ~).
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import UTC, datetime
 
 FIELD_SEP = "|"
 COMPONENT_SEP = "^"
@@ -20,7 +20,7 @@ MESSAGE_CONTROL_ID = "DATV{ts}"
 
 
 def _now() -> str:
-    return datetime.now().strftime("%Y%m%d%H%M%S")
+    return datetime.now(UTC).strftime("%Y%m%d%H%M%S")
 
 
 def _escape(value: str) -> str:
@@ -40,9 +40,7 @@ def build_msh(
     """Build an HL7 MSH header segment."""
 
     control_id = MESSAGE_CONTROL_ID.format(ts=_now())
-    encoding = (
-        f"{FIELD_SEP}{COMPONENT_SEP}{REPETITION_SEP}{ESCAPE_CHAR}{SUBCOMPONENT_SEP}"
-    )
+    encoding = f"{COMPONENT_SEP}{REPETITION_SEP}{ESCAPE_CHAR}{SUBCOMPONENT_SEP}"
 
     return FIELD_SEP.join(
         [

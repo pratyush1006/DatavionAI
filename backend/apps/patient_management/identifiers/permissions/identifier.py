@@ -64,6 +64,18 @@ class CanDeleteIdentifier(RBACPermissionBase):
     permission_code = "identifiers.delete"
 
 
+# Public compatibility names retained for existing API clients and tests.
+CanViewPatientIdentifier = CanViewIdentifier
+CanCreatePatientIdentifier = CanCreateIdentifier
+CanUpdatePatientIdentifier = CanUpdateIdentifier
+CanVerifyPatientIdentifier = CanVerifyIdentifier
+CanActivatePatientIdentifier = CanActivateIdentifier
+CanDeactivatePatientIdentifier = CanDeactivateIdentifier
+CanRevokePatientIdentifier = CanRevokeIdentifier
+CanSetPrimaryPatientIdentifier = CanSetPrimaryIdentifier
+CanDeletePatientIdentifier = CanDeleteIdentifier
+
+
 __all__ = (
     "CanActivateIdentifier",
     "CanCreateIdentifier",
@@ -74,4 +86,13 @@ __all__ = (
     "CanUpdateIdentifier",
     "CanVerifyIdentifier",
     "CanViewIdentifier",
+    "CanViewPatientIdentifier",
+    "CanCreatePatientIdentifier",
+    "CanUpdatePatientIdentifier",
+    "CanVerifyPatientIdentifier",
+    "CanActivatePatientIdentifier",
+    "CanDeactivatePatientIdentifier",
+    "CanRevokePatientIdentifier",
+    "CanSetPrimaryPatientIdentifier",
+    "CanDeletePatientIdentifier",
 )

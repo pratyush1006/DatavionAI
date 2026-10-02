@@ -16,6 +16,9 @@ class AllergiesConfig(AppConfig):
 
     verbose_name = "Allergies"
 
+    def ready(self):
+        from . import workflow_registry as _workflow_registry  # noqa: F401
+
 
 __all__ = [
     "AllergiesConfig",

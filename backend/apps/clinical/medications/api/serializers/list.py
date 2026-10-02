@@ -1,22 +1,18 @@
-"""
-Medication list serializer.
-"""
-
-from __future__ import annotations
-
-from apps.clinical.medications.api.serializers.base import (
-    MedicationBaseSerializer,
-)
+from apps.clinical.medications.api.serializers.base import MedicationBaseSerializer
 
 
-class MedicationListSerializer(
-    MedicationBaseSerializer,
-):
-    """
-    Serializer for listing medications.
-    """
-
-
-__all__ = [
-    "MedicationListSerializer",
-]
+class MedicationListSerializer(MedicationBaseSerializer):
+    class Meta(MedicationBaseSerializer.Meta):
+        fields = (
+            "id",
+            "medication_code",
+            "generic_name",
+            "brand_name",
+            "strength",
+            "strength_unit",
+            "dosage_form",
+            "route",
+            "is_controlled",
+            "is_active",
+            "display_name",
+        )

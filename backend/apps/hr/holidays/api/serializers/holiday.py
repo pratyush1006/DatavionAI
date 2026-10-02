@@ -12,7 +12,7 @@ from .fields import (
 class HolidayBaseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Holiday
-        fields = ()
+        fields: tuple[str, ...] = ()
 
 
 class HolidayListSerializer(HolidayBaseSerializer):
@@ -27,7 +27,7 @@ class HolidayDetailSerializer(HolidayBaseSerializer):
         read_only=True,
     )
 
-    organization_id = serializers.IntegerField(
+    organization_id = serializers.UUIDField(
         source="organization.id",
         read_only=True,
     )

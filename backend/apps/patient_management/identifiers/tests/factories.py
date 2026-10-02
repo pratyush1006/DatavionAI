@@ -23,10 +23,10 @@ class PatientIdentifierFactory(factory.django.DjangoModelFactory):
         model = PatientIdentifier
 
     organization = factory.SubFactory(
-        "apps.organizations.tests.factories.OrganizationFactory",
+        "apps.platform.organizations.tests.factories.OrganizationFactory",
     )
     patient = factory.SubFactory(
-        "apps.patient_management.tests.factories.PatientFactory",
+        "apps.patient_management.patients.tests.factories.PatientFactory",
     )
 
     identifier_type = IdentifierType.MRN

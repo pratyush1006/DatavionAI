@@ -10,9 +10,9 @@ from django.db.models import QuerySet
 from drf_spectacular.utils import extend_schema
 from rest_framework.permissions import IsAuthenticated
 
-from apps.common.api.base_generics import (
-    BaseListCreateAPIView,
-    BaseRetrieveUpdateDestroyAPIView,
+from apps.hr.api import (
+    HrListCreateAPIView,
+    HrRetrieveUpdateDestroyAPIView,
 )
 from apps.hr.performance.api.serializers import (
     PerformanceReviewCycleCreateSerializer,
@@ -41,7 +41,7 @@ PERFORMANCE_TAG: Final[tuple[str, ...]] = ("Performance",)
 
 
 @extend_schema(tags=PERFORMANCE_TAG)
-class PerformanceReviewCycleListCreateAPIView(BaseListCreateAPIView):
+class PerformanceReviewCycleListCreateAPIView(HrListCreateAPIView):
     """
     List existing performance review cycles or create a new one.
     """
@@ -76,7 +76,7 @@ class PerformanceReviewCycleListCreateAPIView(BaseListCreateAPIView):
 
 @extend_schema(tags=PERFORMANCE_TAG)
 class PerformanceReviewCycleRetrieveUpdateDestroyAPIView(
-    BaseRetrieveUpdateDestroyAPIView,
+    HrRetrieveUpdateDestroyAPIView,
 ):
     """
     Retrieve, update or delete a performance review cycle.

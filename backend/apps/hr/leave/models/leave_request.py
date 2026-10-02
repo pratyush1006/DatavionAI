@@ -76,7 +76,7 @@ class LeaveRequest(TimeStampedModel):
 
         constraints = [
             models.CheckConstraint(
-                check=models.Q(
+                condition=models.Q(
                     end_date__gte=models.F("start_date"),
                 ),
                 name="leave_request_end_date_after_start_date",
@@ -91,7 +91,7 @@ class LeaveRequest(TimeStampedModel):
         Return whether the leave request is still pending.
         """
 
-        return self.status == LeaveRequestStatus.PENDING
+        return bool(self.status == LeaveRequestStatus.PENDING)
 
     def __str__(
         self,

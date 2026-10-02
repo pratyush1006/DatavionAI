@@ -1,116 +1,129 @@
-"""
-Provider domain policies.
-
-Encapsulates provider authorization
-rules used by workflows.
-
-Uses DatavionOS RBAC engine.
-"""
+"""Authorization policy for Clinical Providers."""
 
 from __future__ import annotations
 
-from apps.platform.rbac.engines import (
-    user_has_permission,
-)
+from typing import Any
+
+from apps.platform.rbac.resolvers import resolve_permissions
 
 
 class ProviderPolicy:
-    """
-    Provider workflow authorization policy.
+    """Organization-scoped Provider authorization policy."""
 
-    Used by:
+    @staticmethod
+    def _organization(*, organization: Any = None, provider: Any = None) -> Any:
+        if organization is not None:
+            return organization
+        if provider is not None:
+            return getattr(provider, "organization", None)
+        return None
 
-    - Provider creation workflow
-    - Provider verification workflow
-    - Provider activation workflow
-    - Provider assignment workflow
-    """
-
-    def can_create(
-        self,
+    @classmethod
+    def _check(
+        cls,
         *,
-        actor,
-        organization,
+        actor: Any,
+        permission: str,
+        organization: Any = None,
+        provider: Any = None,
     ) -> bool:
-        return user_has_permission(
+        organization = cls._organization(
+            organization=organization,
+            provider=provider,
+        )
+        return permission in resolve_permissions(
             user=actor,
-            permission="providers.create",
             organization=organization,
         )
 
-    def can_update(
-        self,
-        *,
-        actor,
-        organization,
+    @classmethod
+    def can_view(
+        cls, *, actor: Any, organization: Any = None, provider: Any = None
     ) -> bool:
-        return user_has_permission(
-            user=actor,
+        return cls._check(
+            actor=actor,
+            permission="providers.view",
+            organization=organization,
+            provider=provider,
+        )
+
+    @classmethod
+    def can_create(cls, *, actor: Any, organization: Any) -> bool:
+        return cls._check(
+            actor=actor, permission="providers.create", organization=organization
+        )
+
+    @classmethod
+    def can_update(
+        cls, *, actor: Any, provider: Any = None, organization: Any = None
+    ) -> bool:
+        return cls._check(
+            actor=actor,
             permission="providers.update",
             organization=organization,
+            provider=provider,
         )
 
-    def can_delete(
-        self,
-        *,
-        actor,
-        organization,
+    @classmethod
+    def can_manage(
+        cls, *, actor: Any, provider: Any = None, organization: Any = None
     ) -> bool:
-        return user_has_permission(
-            user=actor,
+        return cls.can_update(actor=actor, provider=provider, organization=organization)
+
+    @classmethod
+    def can_delete(
+        cls, *, actor: Any, provider: Any = None, organization: Any = None
+    ) -> bool:
+        return cls._check(
+            actor=actor,
             permission="providers.delete",
             organization=organization,
+            provider=provider,
         )
 
-    def can_verify(
-        self,
-        *,
-        actor,
-        organization,
-    ) -> bool:
-        return user_has_permission(
-            user=actor,
-            permission="providers.verify",
-            organization=organization,
-        )
-
+    @classmethod
     def can_activate(
-        self,
-        *,
-        actor,
-        organization,
+        cls, *, actor: Any, provider: Any = None, organization: Any = None
     ) -> bool:
-        return user_has_permission(
-            user=actor,
+        return cls._check(
+            actor=actor,
             permission="providers.activate",
             organization=organization,
+            provider=provider,
         )
 
+    @classmethod
     def can_deactivate(
-        self,
-        *,
-        actor,
-        organization,
+        cls, *, actor: Any, provider: Any = None, organization: Any = None
     ) -> bool:
-        return user_has_permission(
-            user=actor,
+        return cls._check(
+            actor=actor,
             permission="providers.deactivate",
             organization=organization,
+            provider=provider,
         )
 
-    def can_assign(
-        self,
-        *,
-        actor,
-        organization,
+    @classmethod
+    def can_verify(
+        cls, *, actor: Any, provider: Any = None, organization: Any = None
     ) -> bool:
-        return user_has_permission(
-            user=actor,
+        return cls._check(
+            actor=actor,
+            permission="providers.verify",
+            organization=organization,
+            provider=provider,
+        )
+
+    @classmethod
+    def can_assign(
+        cls, *, actor: Any, provider: Any = None, organization: Any = None
+    ) -> bool:
+        return cls._check(
+            actor=actor,
             permission="providers.assign",
             organization=organization,
+            provider=provider,
         )
 
 
-__all__ = [
-    "ProviderPolicy",
-]
+__all__ = ("ProviderPolicy",)

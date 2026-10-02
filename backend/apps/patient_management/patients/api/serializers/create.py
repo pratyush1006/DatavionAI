@@ -17,14 +17,13 @@ class PatientCreateSerializer(PatientBaseSerializer):
     """
     Validate Patient creation input.
 
-    The organization is explicitly supplied so the workflow can enforce
-    tenant and organization boundaries.
+    Organization ownership and the MRN are assigned by the authenticated
+    workspace and patient-creation workflow. They must never be supplied by
+    a browser client.
     """
 
     class Meta(PatientBaseSerializer.Meta):
         fields = (
-            "organization",
-            "mrn",
             "first_name",
             "middle_name",
             "last_name",

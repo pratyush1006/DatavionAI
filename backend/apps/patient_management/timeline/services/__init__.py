@@ -21,3 +21,4 @@ __all__ = (
     "delete_timeline",
     "update_timeline",
 )
+from .timeline import restore_timeline

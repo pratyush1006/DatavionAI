@@ -4,22 +4,22 @@ Performance review permission classes.
 
 from __future__ import annotations
 
-from apps.common.permissions.base import DatavionPermission
+from apps.hr.permissions import HrPermission
 
 
-class CanViewPerformanceReview(DatavionPermission):
+class CanViewPerformanceReview(HrPermission):
     permission_code = "performance.view"
 
 
-class CanCreatePerformanceReview(DatavionPermission):
+class CanCreatePerformanceReview(HrPermission):
     permission_code = "performance.create"
 
 
-class CanUpdatePerformanceReview(DatavionPermission):
+class CanUpdatePerformanceReview(HrPermission):
     permission_code = "performance.update"
 
 
-class CanDeletePerformanceReview(DatavionPermission):
+class CanDeletePerformanceReview(HrPermission):
     permission_code = "performance.delete"
 
 

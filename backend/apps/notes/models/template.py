@@ -1,94 +1,36 @@
-"""
-NoteTemplate model.
-"""
-
 from __future__ import annotations
 
 from django.db import models
 
 from apps.core.models import BaseManager, BaseModel
-from apps.notes.constants import TemplateType
+from apps.notes.constants import NoteType
 from apps.platform.organizations.models import Organization
 
 
-class NoteTemplate(BaseModel):
-    """
-    Represents a reusable clinical note template.
-    """
-
+class ClinicalNoteTemplate(BaseModel):
     objects = BaseManager()
-
     organization = models.ForeignKey(
-        Organization,
-        on_delete=models.CASCADE,
-        related_name="note_templates",
-        help_text="Organization that owns the template.",
+        Organization, on_delete=models.CASCADE, related_name="clinical_note_templates"
     )
-
-    name = models.CharField(
-        max_length=255,
-        help_text="Template name.",
+    name = models.CharField(max_length=150)
+    note_type = models.CharField(
+        max_length=32, choices=NoteType.choices, default=NoteType.SOAP
     )
-
-    template_type = models.CharField(
-        max_length=50,
-        choices=TemplateType.choices,
-        help_text="Type of note template.",
-    )
-
-    content = models.JSONField(
-        blank=True,
-        default=dict,
-        help_text="Template structure with placeholders.",
-    )
-
-    is_active = models.BooleanField(
-        default=True,
-        db_index=True,
-        help_text="Whether the template is currently active.",
-    )
-
-    is_system_template = models.BooleanField(
-        default=False,
-        help_text="Whether this is a system-provided template.",
-    )
+    schema = models.JSONField(default=dict, blank=True)
+    default_content = models.JSONField(default=dict, blank=True)
+    is_system = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
 
     class Meta:
-        db_table = "note_templates"
-
-        verbose_name = "Note Template"
-
-        verbose_name_plural = "Note Templates"
-
-        ordering = ("name",)
-
+        db_table = "clinical_note_templates"
+        constraints = [
+            models.UniqueConstraint(
+                fields=("organization", "name"), name="clin_note_tpl_org_name_uniq"
+            )
+        ]
         indexes = [
             models.Index(
-                fields=[
-                    "organization",
-                    "template_type",
-                ],
-                name="template_org_type_idx",
-            ),
-            models.Index(
-                fields=[
-                    "organization",
-                    "is_active",
-                ],
-                name="template_org_active_idx",
-            ),
+                fields=("organization", "note_type", "is_active"),
+                name="clin_note_tpl_lookup_idx",
+            )
         ]
-
-    def __str__(
-        self,
-    ) -> str:
-        """
-        Return the template display name.
-        """
-
-        return f"{self.name} ({self.get_template_type_display()})"
-
-
-__all__ = [
-    "NoteTemplate",
-]

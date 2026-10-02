@@ -18,10 +18,10 @@ class PerformanceReviewBaseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PerformanceReview
-        fields = ()
+        fields: tuple[str, ...] = ()
 
     def get_employee_name(self, obj: PerformanceReview) -> str:
-        return obj.employee.full_name
+        return str(obj.employee.full_name)
 
 
 class PerformanceReviewListSerializer(PerformanceReviewBaseSerializer):
@@ -61,14 +61,14 @@ class PerformanceReviewDetailSerializer(PerformanceReviewBaseSerializer):
         read_only=True,
     )
 
-    employee_id = serializers.IntegerField(
+    employee_id = serializers.UUIDField(
         source="employee.id",
         read_only=True,
     )
 
     reviewer = serializers.SerializerMethodField()
 
-    reviewer_id = serializers.IntegerField(
+    reviewer_id = serializers.UUIDField(
         source="reviewer.id",
         read_only=True,
     )

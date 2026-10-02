@@ -5,12 +5,13 @@ Business services for lifecycle task templates.
 from __future__ import annotations
 
 from collections.abc import Mapping
+from typing import Any, cast
 
 from django.db import transaction
 
 from apps.hr.onboarding.models import LifecycleTaskTemplate
 
-type TaskTemplateData = Mapping[str, object]
+type TaskTemplateData = Mapping[str, Any]
 
 
 @transaction.atomic
@@ -22,7 +23,9 @@ def create_task_template(
     Create a new lifecycle task template.
     """
 
-    return LifecycleTaskTemplate.objects.create(**validated_data)
+    return cast(
+        LifecycleTaskTemplate, LifecycleTaskTemplate.objects.create(**validated_data)
+    )
 
 
 @transaction.atomic

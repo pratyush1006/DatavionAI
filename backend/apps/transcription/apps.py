@@ -1,5 +1,5 @@
 """
-Application configuration for the Transcription app.
+Django application configuration for clinical transcription.
 """
 
 from __future__ import annotations
@@ -8,17 +8,13 @@ from django.apps import AppConfig
 
 
 class TranscriptionConfig(AppConfig):
-    """
-    Configuration for the Transcription application.
-    """
-
     default_auto_field = "django.db.models.BigAutoField"
-
     name = "apps.transcription"
+    verbose_name = "Clinical Transcription"
 
-    verbose_name = "Transcription"
+    def ready(self) -> None:
+        from apps.transcription.workflow_registry import (
+            register_transcription_workflows,
+        )
 
-
-__all__ = [
-    "TranscriptionConfig",
-]
+        register_transcription_workflows()

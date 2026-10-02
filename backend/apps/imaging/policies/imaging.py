@@ -1,0 +1,2 @@
+class ImagingPolicy:
+    pass

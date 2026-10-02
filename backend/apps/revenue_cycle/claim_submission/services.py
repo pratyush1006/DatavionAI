@@ -46,7 +46,7 @@ ALLOWED_TRANSITIONS = {
 def _publish(event):
     """Publish a domain event after the surrounding transaction commits."""
 
-    from apps.core.events.dispatcher import publish_after_commit
+    from apps.core.events import publish_after_commit
 
     publish_after_commit(event)
 

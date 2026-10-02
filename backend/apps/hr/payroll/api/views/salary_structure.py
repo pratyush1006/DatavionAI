@@ -10,9 +10,9 @@ from django.db.models import QuerySet
 from drf_spectacular.utils import extend_schema
 from rest_framework.permissions import IsAuthenticated
 
-from apps.common.api.base_generics import (
-    BaseListCreateAPIView,
-    BaseRetrieveUpdateDestroyAPIView,
+from apps.hr.api import (
+    HrListCreateAPIView,
+    HrRetrieveUpdateDestroyAPIView,
 )
 from apps.hr.payroll.api.serializers import (
     SalaryStructureCreateSerializer,
@@ -41,7 +41,7 @@ PAYROLL_TAG: Final[tuple[str, ...]] = ("Payroll",)
 
 
 @extend_schema(tags=PAYROLL_TAG)
-class SalaryStructureListCreateAPIView(BaseListCreateAPIView):
+class SalaryStructureListCreateAPIView(HrListCreateAPIView):
     """
     List existing salary structures or create a new one.
     """
@@ -76,7 +76,7 @@ class SalaryStructureListCreateAPIView(BaseListCreateAPIView):
 
 @extend_schema(tags=PAYROLL_TAG)
 class SalaryStructureRetrieveUpdateDestroyAPIView(
-    BaseRetrieveUpdateDestroyAPIView,
+    HrRetrieveUpdateDestroyAPIView,
 ):
     """
     Retrieve, update or delete a salary structure.

@@ -1,0 +1,621 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Invoice {{ invoice.number|default:"" }}</title>
+
+    <style>
+        @page {
+            size: A4;
+            margin: 16mm;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            color: #1f2937;
+            background: #ffffff;
+            font-family:
+                Arial,
+                Helvetica,
+                sans-serif;
+            font-size: 12px;
+            line-height: 1.45;
+        }
+
+        .invoice {
+            width: 100%;
+        }
+
+        .header {
+            display: table;
+            width: 100%;
+            margin-bottom: 28px;
+        }
+
+        .seller,
+        .invoice-meta {
+            display: table-cell;
+            vertical-align: top;
+        }
+
+        .seller {
+            width: 62%;
+        }
+
+        .invoice-meta {
+            width: 38%;
+            text-align: right;
+        }
+
+        .logo {
+            max-width: 180px;
+            max-height: 70px;
+            margin-bottom: 10px;
+        }
+
+        .seller-name {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .muted {
+            color: #6b7280;
+        }
+
+        .invoice-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .meta-row {
+            margin-bottom: 3px;
+        }
+
+        .section-grid {
+            display: table;
+            width: 100%;
+            margin-bottom: 25px;
+        }
+
+        .section {
+            display: table-cell;
+            width: 50%;
+            vertical-align: top;
+            padding-right: 20px;
+        }
+
+        .section:last-child {
+            padding-right: 0;
+            padding-left: 20px;
+        }
+
+        .section-title {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 7px;
+            color: #6b7280;
+        }
+
+        .section-content {
+            padding: 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            min-height: 85px;
+        }
+
+        table.items {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+        }
+
+        table.items th {
+            text-align: left;
+            padding: 9px 7px;
+            border-bottom: 2px solid #111827;
+            font-size: 11px;
+        }
+
+        table.items td {
+            padding: 9px 7px;
+            border-bottom: 1px solid #e5e7eb;
+            vertical-align: top;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .totals {
+            width: 42%;
+            margin-left: auto;
+            margin-top: 18px;
+            border-collapse: collapse;
+        }
+
+        .totals td {
+            padding: 5px 7px;
+        }
+
+        .grand-total td {
+            border-top: 2px solid #111827;
+            font-size: 15px;
+            font-weight: 700;
+            padding-top: 9px;
+        }
+
+        .payment {
+            margin-top: 28px;
+            padding: 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+        }
+
+        .footer {
+            margin-top: 40px;
+            padding-top: 12px;
+            border-top: 1px solid #e5e7eb;
+            color: #6b7280;
+            font-size: 10px;
+        }
+
+        .footer p {
+            margin: 3px 0;
+        }
+    </style>
+</head>
+
+<body>
+<div class="invoice">
+
+    <div class="header">
+
+        <div class="seller">
+
+            {% if branding.logo_url %}
+                <img
+                    class="logo"
+                    src="{{ branding.logo_url }}"
+                    alt="{{ seller.display_name|default:seller.legal_name }}"
+                >
+            {% elif seller.logo_url %}
+                <img
+                    class="logo"
+                    src="{{ seller.logo_url }}"
+                    alt="{{ seller.display_name|default:seller.legal_name }}"
+                >
+            {% endif %}
+
+            <div class="seller-name">
+                {{ seller.display_name|default:seller.legal_name }}
+            </div>
+
+            {% if seller.legal_name %}
+                <div>{{ seller.legal_name }}</div>
+            {% endif %}
+
+            {% if seller.address_line1 %}
+                <div>{{ seller.address_line1 }}</div>
+            {% endif %}
+
+            {% if seller.address_line2 %}
+                <div>{{ seller.address_line2 }}</div>
+            {% endif %}
+
+            {% if seller.city or seller.state or seller.postal_code %}
+                <div>
+                    {{ seller.city }}
+                    {% if seller.city and seller.state %}, {% endif %}
+                    {{ seller.state }}
+                    {% if seller.postal_code %} {{ seller.postal_code }}{% endif %}
+                </div>
+            {% endif %}
+
+            {% if seller.country %}
+                <div>{{ seller.country }}</div>
+            {% endif %}
+
+            {% if seller.phone %}
+                <div>Phone: {{ seller.phone }}</div>
+            {% endif %}
+
+            {% if seller.email %}
+                <div>Email: {{ seller.email }}</div>
+            {% endif %}
+
+            {% if seller.website %}
+                <div>Website: {{ seller.website }}</div>
+            {% endif %}
+
+            {% if seller.gstin %}
+                <div>GSTIN: {{ seller.gstin }}</div>
+            {% endif %}
+
+            {% if seller.pan %}
+                <div>PAN: {{ seller.pan }}</div>
+            {% endif %}
+
+            {% if seller.cin %}
+                <div>CIN: {{ seller.cin }}</div>
+            {% endif %}
+
+            {% if seller.llpin %}
+                <div>LLPIN: {{ seller.llpin }}</div>
+            {% endif %}
+
+        </div>
+
+        <div class="invoice-meta">
+
+            <div class="invoice-title">
+                INVOICE
+            </div>
+
+            {% if invoice.number %}
+                <div class="meta-row">
+                    <strong>Invoice No:</strong>
+                    {{ invoice.number }}
+                </div>
+            {% endif %}
+
+            {% if invoice.issue_date %}
+                <div class="meta-row">
+                    <strong>Issue Date:</strong>
+                    {{ invoice.issue_date }}
+                </div>
+            {% endif %}
+
+            {% if invoice.due_date %}
+                <div class="meta-row">
+                    <strong>Due Date:</strong>
+                    {{ invoice.due_date }}
+                </div>
+            {% endif %}
+
+            {% if invoice.status %}
+                <div class="meta-row">
+                    <strong>Status:</strong>
+                    {{ invoice.status }}
+                </div>
+            {% endif %}
+
+            {% if invoice.currency %}
+                <div class="meta-row">
+                    <strong>Currency:</strong>
+                    {{ invoice.currency }}
+                </div>
+            {% endif %}
+
+        </div>
+
+    </div>
+
+    <div class="section-grid">
+
+        <div class="section">
+            <div class="section-title">
+                Bill To
+            </div>
+
+            <div class="section-content">
+
+                <strong>
+                    {{ customer.legal_name|default:customer.name }}
+                </strong>
+
+                {% if customer.address_line1 %}
+                    <div>{{ customer.address_line1 }}</div>
+                {% endif %}
+
+                {% if customer.address_line2 %}
+                    <div>{{ customer.address_line2 }}</div>
+                {% endif %}
+
+                {% if customer.city or customer.state or customer.postal_code %}
+                    <div>
+                        {{ customer.city }}
+                        {% if customer.city and customer.state %}, {% endif %}
+                        {{ customer.state }}
+                        {% if customer.postal_code %} {{ customer.postal_code }}{% endif %}
+                    </div>
+                {% endif %}
+
+                {% if customer.country %}
+                    <div>{{ customer.country }}</div>
+                {% endif %}
+
+                {% if customer.contact_name %}
+                    <div>Contact: {{ customer.contact_name }}</div>
+                {% endif %}
+
+                {% if customer.phone %}
+                    <div>Phone: {{ customer.phone }}</div>
+                {% endif %}
+
+                {% if customer.email %}
+                    <div>Email: {{ customer.email }}</div>
+                {% endif %}
+
+                {% if customer.gstin %}
+                    <div>GSTIN: {{ customer.gstin }}</div>
+                {% endif %}
+
+                {% if customer.pan %}
+                    <div>PAN: {{ customer.pan }}</div>
+                {% endif %}
+
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">
+                Subscription
+            </div>
+
+            <div class="section-content">
+
+                {% if subscription.plan_name %}
+                    <div>
+                        <strong>Plan:</strong>
+                        {{ subscription.plan_name }}
+                    </div>
+                {% endif %}
+
+                {% if subscription.id %}
+                    <div>
+                        <strong>Subscription:</strong>
+                        {{ subscription.id }}
+                    </div>
+                {% endif %}
+
+                {% if subscription.status %}
+                    <div>
+                        <strong>Status:</strong>
+                        {{ subscription.status }}
+                    </div>
+                {% endif %}
+
+                {% if invoice.billing_period_start %}
+                    <div>
+                        <strong>Period:</strong>
+                        {{ invoice.billing_period_start }}
+                        -
+                        {{ invoice.billing_period_end }}
+                    </div>
+                {% endif %}
+
+            </div>
+        </div>
+
+    </div>
+
+    <table class="items">
+
+        <thead>
+            <tr>
+                <th>Description</th>
+                <th class="text-center">Qty</th>
+                <th class="text-right">Unit Price</th>
+                <th class="text-right">Amount</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            {% for item in line_items %}
+
+                <tr>
+                    <td>
+                        {{ item.description|default:item.name }}
+                    </td>
+
+                    <td class="text-center">
+                        {{ item.quantity|default:"1" }}
+                    </td>
+
+                    <td class="text-right">
+                        {{ item.unit_price|default:item.price|default:"0.00" }}
+                    </td>
+
+                    <td class="text-right">
+                        {{ item.amount|default:"0.00" }}
+                    </td>
+                </tr>
+
+            {% empty %}
+
+                <tr>
+                    <td colspan="4" class="text-center muted">
+                        No invoice line items.
+                    </td>
+                </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+    <table class="totals">
+
+        {% if totals.subtotal %}
+            <tr>
+                <td>Subtotal</td>
+                <td class="text-right">
+                    {{ totals.subtotal }}
+                </td>
+            </tr>
+        {% endif %}
+
+        {% if totals.discount %}
+            <tr>
+                <td>Discount</td>
+                <td class="text-right">
+                    -{{ totals.discount }}
+                </td>
+            </tr>
+        {% endif %}
+
+        {% if totals.taxable_amount %}
+            <tr>
+                <td>Taxable Amount</td>
+                <td class="text-right">
+                    {{ totals.taxable_amount }}
+                </td>
+            </tr>
+        {% endif %}
+
+        {% for tax in taxes %}
+
+            <tr>
+                <td>
+                    {{ tax.name|default:tax.type }}
+                    {% if tax.rate %}
+                        ({{ tax.rate }}%)
+                    {% endif %}
+                </td>
+
+                <td class="text-right">
+                    {{ tax.amount }}
+                </td>
+            </tr>
+
+        {% endfor %}
+
+        {% if totals.cgst %}
+            <tr>
+                <td>CGST</td>
+                <td class="text-right">
+                    {{ totals.cgst }}
+                </td>
+            </tr>
+        {% endif %}
+
+        {% if totals.sgst %}
+            <tr>
+                <td>SGST</td>
+                <td class="text-right">
+                    {{ totals.sgst }}
+                </td>
+            </tr>
+        {% endif %}
+
+        {% if totals.igst %}
+            <tr>
+                <td>IGST</td>
+                <td class="text-right">
+                    {{ totals.igst }}
+                </td>
+            </tr>
+        {% endif %}
+
+        {% if totals.round_off %}
+            <tr>
+                <td>Round Off</td>
+                <td class="text-right">
+                    {{ totals.round_off }}
+                </td>
+            </tr>
+        {% endif %}
+
+        <tr class="grand-total">
+            <td>Total</td>
+            <td class="text-right">
+                {{ totals.total|default:totals.grand_total|default:"0.00" }}
+            </td>
+        </tr>
+
+        {% if totals.amount_paid %}
+            <tr>
+                <td>Amount Paid</td>
+                <td class="text-right">
+                    {{ totals.amount_paid }}
+                </td>
+            </tr>
+        {% endif %}
+
+        {% if totals.balance_due %}
+            <tr>
+                <td>Balance Due</td>
+                <td class="text-right">
+                    {{ totals.balance_due }}
+                </td>
+            </tr>
+        {% endif %}
+
+    </table>
+
+    <div class="payment">
+
+        <strong>Payment Information</strong>
+
+        {% if payment.status %}
+            <div>
+                Status: {{ payment.status }}
+            </div>
+        {% endif %}
+
+        {% if payment.gateway %}
+            <div>
+                Gateway: {{ payment.gateway }}
+            </div>
+        {% endif %}
+
+        {% if payment.order_id %}
+            <div>
+                Razorpay Order ID: {{ payment.order_id }}
+            </div>
+        {% endif %}
+
+        {% if payment.payment_id %}
+            <div>
+                Razorpay Payment ID: {{ payment.payment_id }}
+            </div>
+        {% endif %}
+
+        {% if payment.paid_at %}
+            <div>
+                Payment Date: {{ payment.paid_at }}
+            </div>
+        {% endif %}
+
+    </div>
+
+    <div class="footer">
+
+        {% if branding.terms %}
+            <p>{{ branding.terms }}</p>
+        {% endif %}
+
+        {% if branding.refund_policy %}
+            <p>{{ branding.refund_policy }}</p>
+        {% endif %}
+
+        {% if branding.support_email %}
+            <p>
+                Billing support:
+                {{ branding.support_email }}
+            </p>
+        {% endif %}
+
+        <p>
+            This is a computer-generated invoice.
+        </p>
+
+    </div>
+
+</div>
+</body>
+</html>

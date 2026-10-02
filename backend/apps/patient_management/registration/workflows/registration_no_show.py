@@ -100,7 +100,7 @@ class RegistrationNoShowWorkflow(
                 "patient",
                 "verified_by",
             ).get(
-                uuid=self._request.registration_id,
+                id=self._request.registration_id,
                 organization_id=organization.pk,
             )
 
@@ -111,7 +111,6 @@ class RegistrationNoShowWorkflow(
 
         if not self._policy.can_no_show(
             actor=actor,
-            organization=organization,
             registration=registration,
         ):
             raise PermissionError(
@@ -126,7 +125,7 @@ class RegistrationNoShowWorkflow(
         event = RegistrationNoShowEvent(
             tenant_id=context.tenant_id,
             actor_id=actor.pk,
-            registration_id=no_show_registration.uuid,
+            registration_id=no_show_registration.id,
             patient_id=no_show_registration.patient_id,
             organization_id=no_show_registration.organization_id,
             registration_number=no_show_registration.registration_number,
@@ -138,7 +137,7 @@ class RegistrationNoShowWorkflow(
         return WorkflowResult.ok(
             context=context,
             data=RegistrationNoShowData(
-                registration_id=no_show_registration.uuid,
+                registration_id=no_show_registration.id,
                 no_show=(
                     no_show_registration.registration_status
                     == RegistrationStatus.NO_SHOW

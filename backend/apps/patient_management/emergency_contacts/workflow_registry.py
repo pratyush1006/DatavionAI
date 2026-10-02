@@ -4,7 +4,9 @@ Emergency Contacts workflow registration.
 
 from __future__ import annotations
 
-from apps.core.workflows import workflow_registry
+from typing import Any, cast
+
+from apps.core.workflows import BaseWorkflow, workflow_registry
 from apps.patient_management.emergency_contacts.workflows import (
     EmergencyContactActivationWorkflow,
     EmergencyContactBlockWorkflow,
@@ -39,7 +41,7 @@ def register_emergency_contact_workflows() -> None:
         ):
             workflow_registry.register(
                 name=name,
-                workflow=workflow,
+                workflow=cast(type[BaseWorkflow[Any]], workflow),
             )
 
 

@@ -50,6 +50,15 @@ class OrganizationRoleDetailAPIView(
 
     update_serializer_class = OrganizationRoleUpdateSerializer
 
+    serializer_class = OrganizationRoleDetailSerializer
+
+    def get_serializer_class(self):
+        """Return a safe schema serializer when no request is attached."""
+        request = getattr(self, "request", None)
+        if request is not None and request.method in {"PUT", "PATCH"}:
+            return self.update_serializer_class
+        return self.detail_serializer_class
+
     update_service = update_organization_role
 
     delete_service = delete_organization_role

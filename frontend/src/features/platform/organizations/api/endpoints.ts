@@ -15,4 +15,10 @@ export const organizationEndpoints = {
     id: string,
   ) =>
     `${BASE_ENDPOINT}${encodeURIComponent(id)}/`,
+
+  catalogs: {
+    categories: `${BASE_ENDPOINT}catalogs/categories/`,
+    types: `${BASE_ENDPOINT}catalogs/types/`,
+    sizes: `${BASE_ENDPOINT}catalogs/sizes/`,
+  },
 } as const;

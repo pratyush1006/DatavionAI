@@ -131,3 +131,4 @@ __all__ = [
     "delete_role_hierarchy",
     "update_role_hierarchy",
 ]
+from apps.platform.rbac.engines.permission import user_has_permission

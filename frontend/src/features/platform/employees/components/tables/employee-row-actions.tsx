@@ -16,6 +16,7 @@
 import {
   useState,
 } from "react";
+import { useRouter } from "next/navigation";
 
 import {
   MoreHorizontal,
@@ -55,6 +56,7 @@ export function EmployeeRowActions({
   employee,
   onView,
 }: EmployeeRowActionsProps) {
+  const router = useRouter();
   const [editOpen, setEditOpen] =
     useState(false);
 
@@ -62,7 +64,11 @@ export function EmployeeRowActions({
     useState(false);
 
   function handleView(): void {
-    onView?.(employee);
+    if (onView) {
+      onView(employee);
+      return;
+    }
+    router.push(`/employees/${employee.id}`);
   }
 
   function handleEdit(): void {
@@ -95,13 +101,7 @@ export function EmployeeRowActions({
           align="end"
           className="w-48"
         >
-          {onView && (
-            <DropdownMenuItem
-              onSelect={handleView}
-            >
-              View Employee
-            </DropdownMenuItem>
-          )}
+          <DropdownMenuItem onSelect={handleView}>View employee lifecycle</DropdownMenuItem>
 
           <DropdownMenuItem
             onSelect={handleEdit}

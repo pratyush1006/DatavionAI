@@ -10,9 +10,9 @@ from django.db.models import QuerySet
 from drf_spectacular.utils import extend_schema
 from rest_framework.permissions import IsAuthenticated
 
-from apps.common.api.base_generics import (
-    BaseListCreateAPIView,
-    BaseRetrieveUpdateDestroyAPIView,
+from apps.hr.api import (
+    HrListCreateAPIView,
+    HrRetrieveUpdateDestroyAPIView,
 )
 from apps.hr.holidays.api.serializers import (
     HolidayCreateSerializer,
@@ -38,7 +38,7 @@ HOLIDAYS_TAG: Final[tuple[str, ...]] = ("Holidays",)
 
 
 @extend_schema(tags=HOLIDAYS_TAG)
-class HolidayListCreateAPIView(BaseListCreateAPIView):
+class HolidayListCreateAPIView(HrListCreateAPIView):
     """
     List existing holidays or create a new one.
     """
@@ -73,7 +73,7 @@ class HolidayListCreateAPIView(BaseListCreateAPIView):
 
 @extend_schema(tags=HOLIDAYS_TAG)
 class HolidayRetrieveUpdateDestroyAPIView(
-    BaseRetrieveUpdateDestroyAPIView,
+    HrRetrieveUpdateDestroyAPIView,
 ):
     """
     Retrieve, update or delete a holiday.

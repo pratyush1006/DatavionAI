@@ -1,17 +1,13 @@
-"""
-Appointment permission exports.
-"""
+"""Clinical Appointment permission package."""
 
-from .appointment import (
-    CanCreateAppointment,
-    CanDeleteAppointment,
-    CanUpdateAppointment,
-    CanViewAppointment,
+from apps.clinical.appointments.permissions.api import AppointmentAPIPermission
+from apps.clinical.appointments.permissions.appointment import (
+    PERMISSION_CODES,
+    AppointmentPermission,
 )
 
-__all__ = [
-    "CanCreateAppointment",
-    "CanDeleteAppointment",
-    "CanUpdateAppointment",
-    "CanViewAppointment",
-]
+__all__ = (
+    "AppointmentPermission",
+    "AppointmentAPIPermission",
+    "PERMISSION_CODES",
+)

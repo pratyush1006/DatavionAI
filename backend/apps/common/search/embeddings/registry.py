@@ -20,8 +20,9 @@ Design Principles:
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from types import MappingProxyType
-from typing import Final
+from typing import Final, TypeVar
 
 from .base import BaseEmbeddingProvider
 
@@ -33,6 +34,8 @@ _EMBEDDING_PROVIDERS: dict[
     str,
     type[BaseEmbeddingProvider],
 ] = {}
+
+EmbeddingProviderType = TypeVar("EmbeddingProviderType", bound=BaseEmbeddingProvider)
 
 
 EMBEDDING_PROVIDERS: Final[
@@ -127,14 +130,14 @@ def list_embedding_providers() -> tuple[str, ...]:
 
 def embedding_provider(
     name: str,
-):
+) -> Callable[[type[EmbeddingProviderType]], type[EmbeddingProviderType]]:
     """
     Decorator for embedding provider registration.
     """
 
     def decorator(
-        cls: type[BaseEmbeddingProvider],
-    ) -> type[BaseEmbeddingProvider]:
+        cls: type[EmbeddingProviderType],
+    ) -> type[EmbeddingProviderType]:
 
         register_embedding_provider(
             name,

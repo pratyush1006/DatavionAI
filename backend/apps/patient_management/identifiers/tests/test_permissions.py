@@ -6,10 +6,10 @@ from __future__ import annotations
 
 from django.test import RequestFactory, TestCase
 
-from apps.accounts.tests.factories import UserFactory
 from apps.patient_management.identifiers.permissions import (
     CanViewPatientIdentifier,
 )
+from apps.platform.accounts.tests.factories import UserFactory
 
 
 class PatientIdentifierPermissionTestCase(TestCase):

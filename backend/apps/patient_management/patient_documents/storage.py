@@ -1,54 +1,41 @@
-"""Patient Document storage boundary.
+"""
+Patient document storage boundary.
 
-Physical storage remains owned by the common document-storage infrastructure.
-This bounded context stores only references and metadata.
+The patient document domain owns document metadata, references,
+permissions, and document relationships.
+
+Physical file storage is delegated to canonical common storage.
 """
 
 from __future__ import annotations
 
-from django.conf import settings
-
-from apps.common.storage.service import (
-    document_storage,
-)
-
-DEFAULT_BACKEND = "local"
-
-
-def _backend_name() -> str:
-    """Return the configured document-storage provider name."""
-    return str(
-        getattr(
-            settings,
-            "DOCUMENT_STORAGE_BACKEND",
-            DEFAULT_BACKEND,
-        ),
-    )
+from apps.common.storage.client import StorageClient
+from apps.common.storage.config import get_storage_client
 
 
 class PatientDocumentStorage:
-    """Application-facing storage gateway for patient documents."""
+    """Application-facing patient document storage gateway."""
+
+    @staticmethod
+    def _storage() -> StorageClient:
+        return get_storage_client()
 
     def download(
         self,
         *,
         storage_key: str,
-    ) -> object:
-        """Download a stored document through common storage."""
-        return document_storage.download(
+    ) -> bytes:
+        return self._storage().download(
             storage_key,
-            backend=_backend_name(),
         )
 
     def delete(
         self,
         *,
         storage_key: str,
-    ) -> None:
-        """Delete a stored object through common storage."""
-        document_storage.delete(
+    ) -> bool:
+        return self._storage().delete(
             storage_key,
-            backend=_backend_name(),
         )
 
 

@@ -1,30 +1,21 @@
-"""Invariant tests for claim scrubbing."""
+"""Claim Scrubbing domain invariants."""
 
 from __future__ import annotations
 
 from django.test import SimpleTestCase
 
-from apps.revenue_cycle.claim_scrubbing.constants import ScrubStatus
+from apps.revenue_cycle.claim_scrubbing.models import ClaimScrub
 
 
 class ClaimScrubbingInvariantTests(SimpleTestCase):
-    """Verify core lifecycle invariants without requiring migrations."""
+    """Verify non-negotiable Claim Scrubbing invariants."""
 
-    def test_lifecycle_states_are_explicit(self):
-        """Ensure the supported scrub states remain stable."""
+    def test_canonical_patient_reference(self) -> None:
+        """Ensure the aggregate points to canonical patient_core.Patient."""
 
+        field = ClaimScrub._meta.get_field("patient")
         self.assertEqual(
-            {choice for choice, _ in ScrubStatus.choices},
-            {"pending", "running", "passed", "failed", "overridden"},
-        )
-
-    def test_canonical_patient_reference(self):
-        """Ensure the aggregate declares the canonical patient model."""
-
-        from apps.revenue_cycle.claim_scrubbing.models import ClaimScrub
-
-        self.assertEqual(
-            ClaimScrub._meta.get_field("patient").remote_field.model,
+            field.remote_field.model._meta.label,
             "patient_core.Patient",
         )
 

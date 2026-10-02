@@ -1,40 +1,26 @@
-"""
-Encounter constants.
-"""
-
 from django.db import models
 
 
 class EncounterStatus(models.TextChoices):
-    """
-    Encounter lifecycle status.
-    """
-
-    SCHEDULED = (
-        "scheduled",
-        "Scheduled",
-    )
-
-    IN_PROGRESS = (
-        "in_progress",
-        "In Progress",
-    )
-
-    COMPLETED = (
-        "completed",
-        "Completed",
-    )
-
-    CANCELLED = (
-        "cancelled",
-        "Cancelled",
-    )
+    SCHEDULED = "scheduled", "Scheduled"
+    IN_PROGRESS = "in_progress", "In Progress"
+    COMPLETED = "completed", "Completed"
+    CANCELLED = "cancelled", "Cancelled"
 
 
-DEFAULT_ENCOUNTER_STATUS = EncounterStatus.SCHEDULED
+ENCOUNTER_TRANSITIONS = {
+    EncounterStatus.SCHEDULED: frozenset(
+        {EncounterStatus.IN_PROGRESS, EncounterStatus.CANCELLED}
+    ),
+    EncounterStatus.IN_PROGRESS: frozenset(
+        {EncounterStatus.COMPLETED, EncounterStatus.CANCELLED}
+    ),
+    EncounterStatus.COMPLETED: frozenset(),
+    EncounterStatus.CANCELLED: frozenset(),
+}
 
 
-__all__ = [
-    "EncounterStatus",
-    "DEFAULT_ENCOUNTER_STATUS",
-]
+def is_valid_encounter_transition(current_status: str, target_status: str) -> bool:
+    if current_status == target_status:
+        return True
+    return target_status in ENCOUNTER_TRANSITIONS.get(current_status, frozenset())

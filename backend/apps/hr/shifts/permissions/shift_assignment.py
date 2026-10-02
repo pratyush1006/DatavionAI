@@ -4,26 +4,26 @@ Shift assignment permission classes.
 
 from __future__ import annotations
 
-from apps.common.permissions.base import DatavionPermission
+from apps.hr.permissions import HrPermission
 
 
-class CanViewShiftAssignment(DatavionPermission):
+class CanViewShiftAssignment(HrPermission):
     permission_code = "shifts.view"
 
 
-class CanCreateShiftAssignment(DatavionPermission):
+class CanCreateShiftAssignment(HrPermission):
     permission_code = "shifts.create"
 
 
-class CanUpdateShiftAssignment(DatavionPermission):
+class CanUpdateShiftAssignment(HrPermission):
     permission_code = "shifts.update"
 
 
-class CanDeleteShiftAssignment(DatavionPermission):
+class CanDeleteShiftAssignment(HrPermission):
     permission_code = "shifts.delete"
 
 
-class CanAssignShift(DatavionPermission):
+class CanAssignShift(HrPermission):
     permission_code = "shifts.assign"
 
 

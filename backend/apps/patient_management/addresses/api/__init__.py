@@ -1,3 +1,3 @@
-"""
-API package for the Addresses module.
-"""
+"""Patient Address API."""
+
+from __future__ import annotations

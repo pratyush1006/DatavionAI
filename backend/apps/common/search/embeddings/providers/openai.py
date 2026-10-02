@@ -18,16 +18,7 @@ from apps.common.search.embeddings.types import (
 class OpenAIEmbeddingProvider(
     BaseEmbeddingProvider,
 ):
-    """
-    OpenAI embedding provider.
-
-    Future integration:
-
-    - OpenAI Embeddings API
-    - Azure OpenAI compatible mode
-    - Batch embedding jobs
-    - Usage tracking
-    """
+    """Production OpenAI embedding adapter backed by the shared AI client."""
 
     name = "openai"
 
@@ -43,14 +34,10 @@ class OpenAIEmbeddingProvider(
         text: str,
         **kwargs: Any,
     ) -> EmbeddingVector:
-        """
-        Generate single text embedding.
-
-        Implementation will be added when
-        AI provider integration is enabled.
-        """
-
-        raise NotImplementedError("OpenAI embedding integration pending.")
+        """Generate one embedding with the configured OpenAI deployment."""
+        model = kwargs.pop("model", None) or self.model
+        provider = self._provider(kwargs.pop("api_key", None))
+        return provider.embed([text], model)[0]
 
     def embed_batch(
         self,
@@ -58,17 +45,19 @@ class OpenAIEmbeddingProvider(
         texts: list[str],
         **kwargs: Any,
     ) -> EmbeddingBatch:
-        """
-        Generate multiple embeddings.
+        """Generate embeddings for a batch of texts."""
+        model = kwargs.pop("model", None) or self.model
+        provider = self._provider(kwargs.pop("api_key", None))
+        return provider.embed(texts, model)
 
-        Supports future:
+    @staticmethod
+    def _provider(api_key: str | None = None):
+        """Reuse the shared provider implementation and its timeout controls."""
+        from apps.ai.providers.implementation.embeddings import (
+            OpenAIEmbeddingProvider as AIEmbeddingProvider,
+        )
 
-        - bulk indexing
-        - document ingestion
-        - clinical knowledge ingestion
-        """
-
-        raise NotImplementedError("OpenAI batch embedding integration pending.")
+        return AIEmbeddingProvider(api_key=api_key)
 
 
 __all__: tuple[str, ...] = ("OpenAIEmbeddingProvider",)

@@ -1,117 +1,82 @@
-"""
-Document RBAC permissions.
-
-Document bounded context permission adapters.
-
-Uses the DatavionOS centralized RBAC engine.
-"""
+"""Organization-scoped Document RBAC adapters."""
 
 from __future__ import annotations
 
-from apps.platform.rbac.permissions.base import (
-    RBACPermissionBase,
-)
+from typing import Any
+
+from apps.platform.rbac.engines import user_has_permission
+from apps.platform.rbac.permissions.base import RBACPermissionBase
 
 
-class CanViewDocument(
-    RBACPermissionBase,
-):
-    """
-    Allows viewing documents.
-    """
+class _DocumentOrganizationPermission(RBACPermissionBase):
+    """Require a Document permission within the active organization and tenant."""
 
+    def has_permission(self, request: Any, view: Any) -> bool:
+        user = getattr(request, "user", None)
+        if user is None or not getattr(user, "is_authenticated", False):
+            return False
+        organization = getattr(view, "current_organization", None)
+        tenant = getattr(view, "current_tenant", None)
+        if organization is None or tenant is None:
+            return False
+        if getattr(organization, "tenant_id", None) != getattr(tenant, "id", None):
+            return False
+        return user_has_permission(
+            user=user,
+            permission=self.permission_code,
+            organization=organization,
+        )
+
+
+class CanViewDocument(_DocumentOrganizationPermission):
     message = "You do not have permission to view documents."
-
     permission_code = "documents.view"
 
 
-class CanCreateDocument(
-    RBACPermissionBase,
-):
-    """
-    Allows creating documents.
-    """
-
+class CanCreateDocument(_DocumentOrganizationPermission):
     message = "You do not have permission to create documents."
-
     permission_code = "documents.create"
 
 
-class CanUpdateDocument(
-    RBACPermissionBase,
-):
-    """
-    Allows updating documents.
-    """
+class CanUploadDocument(_DocumentOrganizationPermission):
+    message = "You do not have permission to upload documents."
+    permission_code = "documents.upload"
 
+
+class CanUpdateDocument(_DocumentOrganizationPermission):
     message = "You do not have permission to update documents."
-
     permission_code = "documents.update"
 
 
-class CanDeleteDocument(
-    RBACPermissionBase,
-):
-    """
-    Allows deleting documents.
-    """
-
+class CanDeleteDocument(_DocumentOrganizationPermission):
     message = "You do not have permission to delete documents."
-
     permission_code = "documents.delete"
 
 
-class CanManageDocumentVersions(
-    RBACPermissionBase,
-):
-    """
-    Allows managing document versions.
-    """
-
+class CanManageDocumentVersions(_DocumentOrganizationPermission):
     message = "You do not have permission to manage document versions."
-
     permission_code = "documents.version.manage"
 
 
-class CanDownloadDocument(
-    RBACPermissionBase,
-):
-    """
-    Allows downloading documents.
-    """
-
+class CanDownloadDocument(_DocumentOrganizationPermission):
     message = "You do not have permission to download documents."
-
     permission_code = "documents.download"
 
 
-class CanShareDocument(
-    RBACPermissionBase,
-):
-    """
-    Allows sharing documents.
-    """
-
+class CanShareDocument(_DocumentOrganizationPermission):
     message = "You do not have permission to share documents."
-
     permission_code = "documents.share"
 
 
-class CanArchiveDocument(
-    RBACPermissionBase,
-):
-    """
-    Allows archiving documents.
-    """
-
+class CanArchiveDocument(_DocumentOrganizationPermission):
     message = "You do not have permission to archive documents."
-
     permission_code = "documents.archive"
 
 
 __all__ = (
     "CanViewDocument",
     "CanCreateDocument",
+    "CanUploadDocument",
     "CanUpdateDocument",
     "CanDeleteDocument",
     "CanManageDocumentVersions",

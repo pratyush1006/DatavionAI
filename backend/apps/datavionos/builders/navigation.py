@@ -54,6 +54,7 @@ from dataclasses import dataclass
 from apps.datavionos.contracts.module import (
     ModuleContract,
 )
+from apps.datavionos.services.effective_capability import EffectiveCapabilityContext
 
 
 @dataclass(
@@ -102,6 +103,7 @@ class NavigationBuilder:
         modules: list[ModuleContract],
         permissions: set[str],
         feature_flags: dict[str, bool] | None = None,
+        effective_context: EffectiveCapabilityContext | None = None,
     ) -> list[NavigationItem]:
         """
         Build navigation from available modules.
@@ -120,17 +122,21 @@ class NavigationBuilder:
             Deterministically ordered navigation items.
         """
 
-        resolved_feature_flags = (
-            feature_flags
-            if feature_flags is not None
-            else {}
-        )
+        if effective_context is None:
+            raise ValueError(
+                "NavigationBuilder requires EffectiveCapabilityContext.",
+            )
 
         navigation: list[NavigationItem] = []
 
         for module in modules:
             if not self._module_available(
                 module,
+            ):
+                continue
+
+            if not effective_context.module_enabled(
+                module.identifier,
             ):
                 continue
 
@@ -144,9 +150,9 @@ class NavigationBuilder:
             if navigation_config is None:
                 continue
 
-            if not self._features_enabled(
+            if not self._context_features_enabled(
                 module=module,
-                feature_flags=resolved_feature_flags,
+                effective_context=effective_context,
             ):
                 continue
 
@@ -154,9 +160,9 @@ class NavigationBuilder:
                 module.permissions,
             )
 
-            if not self._has_permission(
-                permissions=permissions,
+            if not self._context_has_permission(
                 required_permissions=module_permissions,
+                effective_context=effective_context,
             ):
                 continue
 
@@ -180,6 +186,39 @@ class NavigationBuilder:
                 item.order,
                 item.route,
             ),
+        )
+
+    # ==================================================================
+    # Effective Capability Context
+    # ==================================================================
+
+    @staticmethod
+    def _context_features_enabled(
+        *,
+        module: ModuleContract,
+        effective_context: EffectiveCapabilityContext,
+    ) -> bool:
+        # Evaluate required features from the shared effective context.
+        if not module.feature_flags:
+            return True
+
+        return all(
+            effective_context.feature_enabled(feature)
+            for feature in module.feature_flags
+        )
+
+    @staticmethod
+    def _context_has_permission(
+        *,
+        required_permissions: tuple[str, ...],
+        effective_context: EffectiveCapabilityContext,
+    ) -> bool:
+        # Evaluate navigation RBAC from the shared effective context.
+        if not required_permissions:
+            return True
+
+        return effective_context.has_any_permission(
+            frozenset(required_permissions),
         )
 
     # ==================================================================
@@ -254,10 +293,7 @@ class NavigationBuilder:
         if not required_permissions:
             return True
 
-        return any(
-            permission in permissions
-            for permission in required_permissions
-        )
+        return any(permission in permissions for permission in required_permissions)
 
     # ==================================================================
     # Category
@@ -277,11 +313,7 @@ class NavigationBuilder:
         Enum-backed values are normalized to their string value.
         """
 
-        category = (
-            navigation_category
-            if navigation_category
-            else module.category
-        )
+        category = navigation_category if navigation_category else module.category
 
         return str(
             getattr(

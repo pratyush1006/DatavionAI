@@ -1,15 +1,7 @@
-"""
-Prescription API views.
-"""
+"""Workflow-driven API view exports."""
 
-from .list_create import (
+from .views import (
+    PrescriptionDetailAPIView,
+    PrescriptionLifecycleAPIView,
     PrescriptionListCreateAPIView,
 )
-from .retrieve_update_destroy import (
-    PrescriptionRetrieveUpdateDestroyAPIView,
-)
-
-__all__ = [
-    "PrescriptionListCreateAPIView",
-    "PrescriptionRetrieveUpdateDestroyAPIView",
-]

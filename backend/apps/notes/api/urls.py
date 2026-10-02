@@ -1,55 +1,19 @@
-"""
-Note API URL patterns.
-"""
-
-from __future__ import annotations
-
 from django.urls import path
 
-from apps.notes.api.views import (
-    NoteBulkCreateAPIView,
+from .views import (
+    NoteActionAPIView,
+    NoteAmendmentAPIView,
+    NoteDetailAPIView,
     NoteListCreateAPIView,
-    NoteRetrieveUpdateDestroyAPIView,
     NoteTemplateListCreateAPIView,
-    NoteTemplateRetrieveUpdateDestroyAPIView,
 )
 
-app_name = "notes"
-
 urlpatterns = [
+    path("", NoteListCreateAPIView.as_view(), name="note-list-create"),
+    path("<uuid:note_id>/", NoteDetailAPIView.as_view(), name="note-detail"),
     path(
-        "templates/",
-        NoteTemplateListCreateAPIView.as_view(),
-        name="template-list-create",
+        "<uuid:note_id>/<str:action>/", NoteActionAPIView.as_view(), name="note-action"
     ),
-    path(
-        "templates/<uuid:template_id>/",
-        NoteTemplateRetrieveUpdateDestroyAPIView.as_view(),
-        name="template-detail",
-    ),
-    path(
-        "",
-        NoteListCreateAPIView.as_view(),
-        name="list-create",
-    ),
-    path(
-        "<uuid:note_id>/",
-        NoteRetrieveUpdateDestroyAPIView.as_view(),
-        name="detail",
-    ),
-    path(
-        "patient/<uuid:patient_id>/",
-        NoteListCreateAPIView.as_view(),
-        name="list-by-patient",
-    ),
-    path(
-        "encounter/<uuid:encounter_id>/",
-        NoteListCreateAPIView.as_view(),
-        name="list-by-encounter",
-    ),
-    path(
-        "bulk/",
-        NoteBulkCreateAPIView.as_view(),
-        name="bulk-create",
-    ),
+    path("<uuid:note_id>/amend/", NoteAmendmentAPIView.as_view(), name="note-amend"),
+    path("templates/", NoteTemplateListCreateAPIView.as_view(), name="note-templates"),
 ]

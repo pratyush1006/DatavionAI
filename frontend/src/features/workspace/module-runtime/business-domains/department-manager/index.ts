@@ -1,0 +1,1 @@
+export { DepartmentManagerWorkspace } from "./workspace";

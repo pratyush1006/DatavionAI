@@ -5,7 +5,7 @@ Custom pagination classes used across the DatavionOS platform.
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import ClassVar, Final
+from typing import Final
 
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
@@ -35,23 +35,37 @@ class DatavionPagination(PageNumberPagination):
     - Request-aware responses
     """
 
-    page_size: ClassVar[int] = DEFAULT_PAGE_SIZE
-    page_size_query_param: ClassVar[str] = "page_size"
-    max_page_size: ClassVar[int] = MAX_PAGE_SIZE
-    page_query_param: ClassVar[str] = "page"
+    page_size = DEFAULT_PAGE_SIZE
+    page_size_query_param = "page_size"
+    max_page_size = MAX_PAGE_SIZE
+    page_query_param = "page"
 
     def get_pagination_meta(self) -> dict[str, JSONValue]:
         """
         Return pagination metadata.
         """
 
-        page_size = self.get_page_size(self.request)
+        page = self.page
+        request = self.request
+        page_size = (
+            self.get_page_size(request) if request is not None else self.page_size
+        )
+
+        if page is None:
+            return {
+                "count": 0,
+                "page": 1,
+                "page_size": page_size,
+                "total_pages": 0,
+                "next": None,
+                "previous": None,
+            }
 
         return {
-            "count": self.page.paginator.count,
-            "page": self.page.number,
+            "count": page.paginator.count,
+            "page": page.number,
             "page_size": page_size or self.page_size,
-            "total_pages": self.page.paginator.num_pages,
+            "total_pages": page.paginator.num_pages,
             "next": self.get_next_link(),
             "previous": self.get_previous_link(),
         }
@@ -79,7 +93,7 @@ class DatavionPagination(PageNumberPagination):
 
         return {
             "pagination": self.get_pagination_meta(),
-            "query": self.get_query_meta(),
+            "query": dict(self.get_query_meta()),
         }
 
     def get_paginated_response(

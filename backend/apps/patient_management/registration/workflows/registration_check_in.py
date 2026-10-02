@@ -96,7 +96,7 @@ class RegistrationCheckInWorkflow(
                 "patient",
                 "verified_by",
             ).get(
-                uuid=self._request.registration_id,
+                id=self._request.registration_id,
                 organization_id=organization.pk,
             )
 
@@ -107,7 +107,6 @@ class RegistrationCheckInWorkflow(
 
         if not self._policy.can_check_in(
             actor=actor,
-            organization=organization,
             registration=registration,
         ):
             raise PermissionError(
@@ -122,7 +121,7 @@ class RegistrationCheckInWorkflow(
         event = RegistrationCheckedInEvent(
             tenant_id=context.tenant_id,
             actor_id=actor.pk,
-            registration_id=checked_in_registration.uuid,
+            registration_id=checked_in_registration.id,
             patient_id=checked_in_registration.patient_id,
             organization_id=checked_in_registration.organization_id,
             registration_number=checked_in_registration.registration_number,
@@ -139,7 +138,7 @@ class RegistrationCheckInWorkflow(
         return WorkflowResult.ok(
             context=context,
             data=RegistrationCheckInData(
-                registration_id=checked_in_registration.uuid,
+                registration_id=checked_in_registration.id,
                 checked_in=True,
                 checked_in_at=checked_in_registration.checked_in_at,
                 event_id=event.event_id,

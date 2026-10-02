@@ -18,10 +18,13 @@ if TYPE_CHECKING:
     )
 
 
+PermissionGroupManagerBase = models.Manager.from_queryset(
+    PermissionGroupQuerySet,
+)
+
+
 class PermissionGroupManager(
-    models.Manager.from_queryset(
-        PermissionGroupQuerySet,
-    ),
+    PermissionGroupManagerBase["PermissionGroup"],
 ):
     """
     Custom manager for PermissionGroup.

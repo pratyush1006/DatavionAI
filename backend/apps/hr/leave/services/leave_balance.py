@@ -5,13 +5,14 @@ Business services for leave balances.
 from __future__ import annotations
 
 from collections.abc import Mapping
+from typing import Any, cast
 
 from django.core.exceptions import ValidationError
 from django.db import transaction
 
 from apps.hr.leave.models import LeaveBalance
 
-type LeaveBalanceData = Mapping[str, object]
+type LeaveBalanceData = Mapping[str, Any]
 
 
 def _validate_leave_balance_data(
@@ -77,8 +78,11 @@ def create_leave_balance(
         validated_data=validated_data,
     )
 
-    return LeaveBalance.objects.create(
-        **validated_data,
+    return cast(
+        LeaveBalance,
+        LeaveBalance.objects.create(
+            **validated_data,
+        ),
     )
 
 

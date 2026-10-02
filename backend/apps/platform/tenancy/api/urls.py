@@ -8,6 +8,7 @@ from django.urls import path
 
 from apps.platform.tenancy.api.views import (
     MyTenantListAPIView,
+    PlatformOverviewAPIView,
     TenantCreateAPIView,
     TenantDetailAPIView,
     TenantListAPIView,
@@ -18,6 +19,11 @@ app_name = "tenancy"
 
 
 urlpatterns = [
+    path(
+        "platform-overview/",
+        PlatformOverviewAPIView.as_view(),
+        name="platform-overview",
+    ),
     path(
         "tenants/",
         TenantListAPIView.as_view(),

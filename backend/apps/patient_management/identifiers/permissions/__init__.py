@@ -12,6 +12,7 @@ from apps.patient_management.identifiers.permissions.identifier import (
     CanUpdateIdentifier,
     CanVerifyIdentifier,
     CanViewIdentifier,
+    CanViewPatientIdentifier,
 )
 
 __all__ = (
@@ -24,4 +25,5 @@ __all__ = (
     "CanUpdateIdentifier",
     "CanVerifyIdentifier",
     "CanViewIdentifier",
+    "CanViewPatientIdentifier",
 )

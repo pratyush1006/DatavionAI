@@ -1,25 +1,21 @@
+"""Legacy compatibility URLConf for Patient Management family_members.
+
+Canonical ownership:
+    config.urls
+        -> apps.patient_management.urls
+        -> apps.patient_management.api.urls
+        -> apps.patient_management.family_members.api.urls
+
+This module intentionally contains no URL registrations.
+
+It is retained only so legacy imports continue to resolve without
+registering the canonical API routes a second time.
+
+# DATAVIONOS_LEGACY_URLCONF_COMPATIBILITY_STUB
 """
-URL configuration for the Patient Family Members module.
-"""
 
-from __future__ import annotations
+from django.urls import URLPattern, URLResolver
 
-from django.urls import include, path
+app_name = "family_members-legacy"
 
-app_name = "family-members"
-
-
-urlpatterns = (
-    path(
-        "",
-        include(
-            "apps.patient_management.family_members.api.urls.family_member",
-        ),
-    ),
-)
-
-
-__all__ = (
-    "app_name",
-    "urlpatterns",
-)
+urlpatterns: list[URLPattern | URLResolver] = []

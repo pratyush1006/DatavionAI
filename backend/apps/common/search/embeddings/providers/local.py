@@ -14,6 +14,7 @@ Used for:
 from __future__ import annotations
 
 import hashlib
+from typing import Any
 
 from ..base import (
     BaseEmbeddingProvider,
@@ -41,7 +42,7 @@ class LocalEmbeddingProvider(
         self,
         *,
         text: str,
-        **kwargs,
+        **kwargs: Any,
     ) -> EmbeddingVector:
         """
         Generate deterministic vector.
@@ -57,7 +58,7 @@ class LocalEmbeddingProvider(
         self,
         *,
         texts: list[str],
-        **kwargs,
+        **kwargs: Any,
     ) -> EmbeddingBatch:
         """
         Generate batch embeddings.

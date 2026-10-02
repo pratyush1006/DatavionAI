@@ -1,29 +1,26 @@
-"""
-AI service exports.
-"""
+"""AI application services."""
 
 from __future__ import annotations
 
-from apps.ai.services.prediction import (
-    PredictionService,
-    create_prediction,
-    delete_prediction,
-    update_prediction,
-)
-from apps.ai.services.recommendation import (
-    RecommendationService,
-    create_recommendation,
-    delete_recommendation,
-    update_recommendation,
+from .chat import generate
+from .prompts import render
+from .rag import add_text_document, chunk_text, index_document, retrieve
+from .registry import ensure_department_applications
+
+__all__ = (
+    "generate",
+    "render",
+    "add_text_document",
+    "chunk_text",
+    "index_document",
+    "retrieve",
+    "ensure_department_applications",
 )
 
-__all__ = [
-    "PredictionService",
-    "RecommendationService",
-    "create_prediction",
-    "create_recommendation",
-    "delete_prediction",
-    "delete_recommendation",
-    "update_prediction",
-    "update_recommendation",
-]
+from .reliability import (
+    CircuitOpenError,
+    acquire_idempotency_lock,
+    complete_with_reliability,
+    release_idempotency_lock,
+    request_fingerprint,
+)

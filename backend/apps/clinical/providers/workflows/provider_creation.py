@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from decimal import Decimal
 from uuid import UUID
 
 from apps.clinical.providers.events import (
@@ -61,6 +62,8 @@ class ProviderCreationRequest:
     provider_type: str
 
     years_of_experience: int = 0
+
+    consultation_fee: Decimal = Decimal("0.00")
 
     bio: str = ""
 
@@ -161,6 +164,7 @@ class ProviderCreationWorkflow(
                 "provider_number": (self._request.provider_number),
                 "provider_type": (self._request.provider_type),
                 "years_of_experience": (self._request.years_of_experience),
+                "consultation_fee": self._request.consultation_fee,
                 "bio": (self._request.bio),
                 "is_accepting_patients": (self._request.is_accepting_patients),
             },

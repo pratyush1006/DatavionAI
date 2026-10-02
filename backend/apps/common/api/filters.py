@@ -13,7 +13,7 @@ feature applications.
 
 from __future__ import annotations
 
-from typing import Any, Final
+from typing import Any, Final, cast
 
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import (
@@ -71,7 +71,7 @@ class DatavionOrderingFilter(
         ]
     """
 
-    ordering_param: Final[str] = "ordering"
+    ordering_param = "ordering"
 
     def get_default_ordering(
         self,
@@ -99,14 +99,17 @@ class DatavionOrderingFilter(
         ):
             return (ordering,)
 
-        return ordering
+        if isinstance(ordering, tuple):
+            return cast(tuple[str, ...], tuple(str(item) for item in ordering))
+
+        return cast(tuple[str, ...], tuple(str(item) for item in ordering))
 
     def get_ordering(
         self,
-        request,
-        queryset,
-        view,
-    ):
+        request: Any,
+        queryset: Any,
+        view: Any,
+    ) -> str | tuple[str, ...] | list[str]:
         """
         Resolve requested ordering safely.
 

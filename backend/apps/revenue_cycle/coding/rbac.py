@@ -14,7 +14,7 @@ def has_permission(*, user: Any, permission: str, organization: Any) -> bool:
         user=user,
         organization=organization,
     )
-    return permission in permissions
+    return "*" in permissions or permission in permissions
 
 
 __all__ = ("has_permission",)

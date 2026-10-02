@@ -1,5 +1,11 @@
-"""
-Platform Core services.
-"""
+"""DatavionOS backend service layer."""
 
-__all__ = []
+from .effective_capability import (
+    EffectiveCapabilityContext,
+    build_effective_capability_context,
+)
+
+__all__ = [
+    "EffectiveCapabilityContext",
+    "build_effective_capability_context",
+]

@@ -16,7 +16,9 @@ class ContactServiceTestCase(TestCase):
     """Tests for contact services."""
 
     def test_create_contact(self) -> None:
-        contact = ContactFactory.build()
+        organization = OrganizationFactory()
+        patient = PatientFactory(organization=organization)
+        contact = ContactFactory.build(organization=organization, patient=patient)
 
         created = create_contact(
             organization=contact.organization,
@@ -31,3 +33,15 @@ class ContactServiceTestCase(TestCase):
         )
 
         self.assertIsNotNone(created.pk)
+
+
+# DatavionOS canonical test-factory binding.
+from apps.patient_management.patients.tests.factories import (
+    PatientFactory as __DATAVION_CANONICAL_PATIENT_FACTORY,
+)
+from apps.platform.organizations.tests.factories import (
+    OrganizationFactory as __DATAVION_CANONICAL_ORGANIZATION_FACTORY,
+)
+
+PatientFactory = __DATAVION_CANONICAL_PATIENT_FACTORY
+OrganizationFactory = __DATAVION_CANONICAL_ORGANIZATION_FACTORY

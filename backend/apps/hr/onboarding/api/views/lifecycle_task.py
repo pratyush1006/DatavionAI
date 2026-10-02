@@ -10,9 +10,9 @@ from django.db.models import QuerySet
 from drf_spectacular.utils import extend_schema
 from rest_framework.permissions import IsAuthenticated
 
-from apps.common.api.base_generics import (
-    BaseListCreateAPIView,
-    BaseRetrieveUpdateDestroyAPIView,
+from apps.hr.api import (
+    HrListCreateAPIView,
+    HrRetrieveUpdateDestroyAPIView,
 )
 from apps.hr.onboarding.api.serializers import (
     LifecycleTaskSerializer,
@@ -39,7 +39,7 @@ ONBOARDING_TAG: Final[tuple[str, ...]] = ("Onboarding",)
 
 
 @extend_schema(tags=ONBOARDING_TAG)
-class LifecycleTaskListCreateAPIView(BaseListCreateAPIView):
+class LifecycleTaskListCreateAPIView(HrListCreateAPIView):
     """
     List existing lifecycle tasks or add an ad-hoc one.
     """
@@ -74,7 +74,7 @@ class LifecycleTaskListCreateAPIView(BaseListCreateAPIView):
 
 @extend_schema(tags=ONBOARDING_TAG)
 class LifecycleTaskRetrieveUpdateDestroyAPIView(
-    BaseRetrieveUpdateDestroyAPIView,
+    HrRetrieveUpdateDestroyAPIView,
 ):
     """
     Retrieve, update or delete a lifecycle task.

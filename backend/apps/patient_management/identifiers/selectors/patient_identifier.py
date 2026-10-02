@@ -27,7 +27,7 @@ def get_identifier_by_id(
     """
     Return an identifier scoped to an organization.
     """
-    return PatientIdentifier.objects.with_relations().get(
+    return PatientIdentifier.objects.get(
         pk=identifier_id,
         organization_id=organization.pk,
     )
@@ -45,7 +45,7 @@ def get_identifier_by_value(
     Identifier values are intentionally never queried outside the
     organization boundary.
     """
-    return PatientIdentifier.objects.with_relations().get(
+    return PatientIdentifier.objects.get(
         organization_id=organization.pk,
         identifier_type=identifier_type,
         identifier_value=identifier_value,
@@ -60,14 +60,10 @@ def get_patient_identifiers(
     """
     Return identifiers belonging to a patient within an organization.
     """
-    return (
-        PatientIdentifier.objects.for_patient(
-            organization_id=organization.pk,
-            patient_id=patient_id,
-        )
-        .with_relations()
-        .ordered()
-    )
+    return PatientIdentifier.objects.for_patient(
+        organization_id=organization.pk,
+        patient_id=patient_id,
+    ).ordered()
 
 
 def get_primary_identifier(
@@ -89,7 +85,6 @@ def get_primary_identifier(
             identifier_type=identifier_type,
             is_primary=True,
         )
-        .with_relations()
         .first()
     )
 

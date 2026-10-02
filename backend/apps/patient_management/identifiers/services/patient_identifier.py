@@ -53,6 +53,7 @@ class PatientIdentifierService:
         *,
         validated_data: Mapping[str, Any],
         performed_by: User | None = None,
+        organization=None,
     ) -> PatientIdentifier:
         """
         Create a patient identifier.

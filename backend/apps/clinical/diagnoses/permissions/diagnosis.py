@@ -1,47 +1,12 @@
-"""
-Diagnosis permission classes.
-"""
-
-from __future__ import annotations
-
-from apps.common.permissions.base import BasePermission
+from apps.platform.rbac.resolvers import resolve_permissions
 
 
-class CanViewDiagnosis(BasePermission):
-    """
-    Permission required to view diagnoses.
-    """
+class DiagnosisPermission:
+    CREATE = "diagnosis.create"
+    VIEW = "diagnosis.view"
+    UPDATE = "diagnosis.update"
+    DELETE = "diagnosis.delete"
 
-    permission_code = "diagnosis.view"
-
-
-class CanCreateDiagnosis(BasePermission):
-    """
-    Permission required to create diagnoses.
-    """
-
-    permission_code = "diagnosis.create"
-
-
-class CanUpdateDiagnosis(BasePermission):
-    """
-    Permission required to update diagnoses.
-    """
-
-    permission_code = "diagnosis.update"
-
-
-class CanDeleteDiagnosis(BasePermission):
-    """
-    Permission required to delete diagnoses.
-    """
-
-    permission_code = "diagnosis.delete"
-
-
-__all__ = [
-    "CanCreateDiagnosis",
-    "CanDeleteDiagnosis",
-    "CanUpdateDiagnosis",
-    "CanViewDiagnosis",
-]
+    @staticmethod
+    def has(*, user, permission, organization):
+        return permission in resolve_permissions(user=user, organization=organization)

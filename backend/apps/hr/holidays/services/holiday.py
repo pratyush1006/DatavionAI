@@ -5,13 +5,14 @@ Business services for holidays.
 from __future__ import annotations
 
 from collections.abc import Mapping
+from typing import Any, cast
 
 from django.core.exceptions import ValidationError
 from django.db import transaction
 
 from apps.hr.holidays.models import Holiday
 
-type HolidayData = Mapping[str, object]
+type HolidayData = Mapping[str, Any]
 
 
 def _validate_holiday_data(
@@ -61,7 +62,7 @@ def create_holiday(*, validated_data: HolidayData) -> Holiday:
 
     _validate_holiday_data(validated_data=validated_data)
 
-    return Holiday.objects.create(**validated_data)
+    return cast(Holiday, Holiday.objects.create(**validated_data))
 
 
 @transaction.atomic

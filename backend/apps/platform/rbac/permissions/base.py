@@ -71,6 +71,7 @@ class RBACPermissionBase(
         1. Tenant middleware context
         2. Request organization context
         3. X-Organization-ID header
+        4. The user's configured default organization
 
         Header fallback supports:
         - API clients
@@ -91,15 +92,16 @@ class RBACPermissionBase(
         )
 
         if not organization_id:
-            return None
+            return getattr(request.user, "organization", None)
 
         from apps.platform.organizations.models import (
             Organization,
         )
 
-        return Organization.objects.filter(
+        organization = Organization.objects.filter(
             id=organization_id,
         ).first()
+        return organization
 
     def has_permission(
         self,

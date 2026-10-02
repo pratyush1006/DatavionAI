@@ -1,0 +1,6 @@
+{
+  "installer": "installer_organization_registration_runtime_integration.py",
+  "success": false,
+  "error": "ONBOARDING_BACKEND_COMPILE failed (1)\n*** Error compiling 'apps/datavionos/onboarding\\\\api\\\\catalog.py'...\n  File \"apps/datavionos/onboarding\\api\\catalog.py\", line 52\n    \"\"\"\n    ^\nSyntaxError: unterminated triple-quoted string literal (detected at line 52)\n\n",
+  "timestamp": "2026-09-22T19:42:04.752337"
+}

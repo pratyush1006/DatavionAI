@@ -1,10 +1,17 @@
-"""Domain events emitted by claim scrubbing."""
+"""
+Domain events emitted by Claim Scrubbing.
+
+Claim Scrubbing follows the canonical DatavionOS event contract:
+- DomainEvent defines the event type.
+- publish_after_commit() dispatches only after the surrounding
+  database transaction has committed successfully.
+"""
 
 from __future__ import annotations
 
 from dataclasses import dataclass
 
-from apps.core.events import DomainEvent
+from apps.core.events import DomainEvent, publish_after_commit
 
 
 @dataclass(frozen=True)
@@ -24,20 +31,40 @@ class ClaimScrubCompleted(DomainEvent):
     status: str
 
 
-def claim_scrub_created(*, scrub_id: str, organization_id: str) -> None:
-    """Publish a scrub-created event through the project event bus."""
+def claim_scrub_created(
+    *,
+    scrub_id: str,
+    organization_id: str,
+) -> None:
+    """
+    Publish a claim-scrub-created event after the current
+    database transaction commits successfully.
+    """
 
-    DomainEvent.publish(
-        ClaimScrubCreated(scrub_id=scrub_id, organization_id=organization_id)
+    publish_after_commit(
+        ClaimScrubCreated(
+            scrub_id=scrub_id,
+            organization_id=organization_id,
+        )
     )
 
 
-def claim_scrub_completed(*, scrub_id: str, organization_id: str, status: str) -> None:
-    """Publish a scrub-completed event through the project event bus."""
+def claim_scrub_completed(
+    *,
+    scrub_id: str,
+    organization_id: str,
+    status: str,
+) -> None:
+    """
+    Publish a claim-scrub-completed event after the current
+    database transaction commits successfully.
+    """
 
-    DomainEvent.publish(
+    publish_after_commit(
         ClaimScrubCompleted(
-            scrub_id=scrub_id, organization_id=organization_id, status=status
+            scrub_id=scrub_id,
+            organization_id=organization_id,
+            status=status,
         )
     )
 

@@ -45,10 +45,11 @@ def user_has_permission(
     Determine whether the user has the requested permission.
     """
 
-    return permission in get_effective_permissions(
+    permissions = get_effective_permissions(
         user=user,
         organization=organization,
     )
+    return "*" in permissions or permission in permissions
 
 
 __all__ = [

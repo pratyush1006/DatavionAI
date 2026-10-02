@@ -5,6 +5,7 @@ Business services for performance reviews.
 from __future__ import annotations
 
 from collections.abc import Mapping
+from typing import Any, cast
 
 from django.core.exceptions import ValidationError
 from django.db import transaction
@@ -13,7 +14,7 @@ from django.utils import timezone
 from apps.hr.performance.constants import PerformanceReviewStatus
 from apps.hr.performance.models import PerformanceGoal, PerformanceReview
 
-type PerformanceReviewData = Mapping[str, object]
+type PerformanceReviewData = Mapping[str, Any]
 
 
 @transaction.atomic
@@ -41,7 +42,7 @@ def create_performance_review(
         ],
     )
 
-    return review
+    return cast(PerformanceReview, review)
 
 
 @transaction.atomic

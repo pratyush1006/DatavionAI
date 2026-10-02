@@ -11,6 +11,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from .base import BaseEmbeddingProvider
 from .registry import (
     get_embedding_provider,
 )
@@ -28,7 +29,7 @@ class EmbeddingEngine:
     def get_provider(
         self,
         name: str,
-    ):
+    ) -> BaseEmbeddingProvider:
         """
         Return embedding provider instance.
         """

@@ -10,9 +10,9 @@ from django.db.models import QuerySet
 from drf_spectacular.utils import extend_schema
 from rest_framework.permissions import IsAuthenticated
 
-from apps.common.api.base_generics import (
-    BaseListCreateAPIView,
-    BaseRetrieveUpdateDestroyAPIView,
+from apps.hr.api import (
+    HrListCreateAPIView,
+    HrRetrieveUpdateDestroyAPIView,
 )
 from apps.hr.performance.api.serializers import (
     PerformanceReviewCreateSerializer,
@@ -41,7 +41,7 @@ PERFORMANCE_TAG: Final[tuple[str, ...]] = ("Performance",)
 
 
 @extend_schema(tags=PERFORMANCE_TAG)
-class PerformanceReviewListCreateAPIView(BaseListCreateAPIView):
+class PerformanceReviewListCreateAPIView(HrListCreateAPIView):
     """
     List existing performance reviews or create a new one.
     """
@@ -79,7 +79,7 @@ class PerformanceReviewListCreateAPIView(BaseListCreateAPIView):
 
 @extend_schema(tags=PERFORMANCE_TAG)
 class PerformanceReviewRetrieveUpdateDestroyAPIView(
-    BaseRetrieveUpdateDestroyAPIView,
+    HrRetrieveUpdateDestroyAPIView,
 ):
     """
     Retrieve, update or delete a performance review.

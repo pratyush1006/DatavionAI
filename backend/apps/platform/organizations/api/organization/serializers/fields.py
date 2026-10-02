@@ -24,6 +24,7 @@ _SUMMARY_FIELDS: Final[tuple[str, ...]] = (
 
 _LIST_FIELDS: Final[tuple[str, ...]] = (
     "id",
+    "name",
     "display_name",
     "code",
     "category",

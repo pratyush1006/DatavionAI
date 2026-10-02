@@ -4,6 +4,7 @@ SMS provider.
 
 from __future__ import annotations
 
+from apps.common.notifications.exceptions import NotificationConfigurationError
 from apps.platform.notifications.models import Notification
 
 from .base import BaseNotificationProvider
@@ -25,6 +26,6 @@ class SMSProvider(
         Send SMS notification.
         """
 
-        raise NotImplementedError(
-            "SMS provider not implemented.",
+        raise NotificationConfigurationError(
+            "SMS delivery is disabled until a concrete gateway adapter is configured."
         )

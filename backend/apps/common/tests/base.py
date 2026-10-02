@@ -27,20 +27,6 @@ from apps.clinical.encounters.constants import (
     EncounterStatus,
 )
 from apps.clinical.encounters.models import Encounter
-from apps.clinical.laboratories.constants import (
-    LaboratoryCategory,
-    LaboratoryOrderStatus,
-    LaboratoryPriority,
-    LaboratoryResultFlag,
-    LaboratoryResultStatus,
-    LaboratorySpecimenType,
-    LaboratoryTestStatus,
-)
-from apps.clinical.laboratories.models import (
-    LaboratoryOrder,
-    LaboratoryResult,
-    LaboratoryTest,
-)
 from apps.clinical.medications.constants import (
     MedicationDosageForm,
     MedicationRoute,
@@ -54,6 +40,7 @@ from apps.organization.teams.models import Team
 from apps.patient_management.patients.constants import PatientGender
 from apps.patient_management.patients.models import Patient
 from apps.platform.organizations.models import Organization
+from apps.platform.tenancy.models import Tenant
 
 User = get_user_model()
 
@@ -88,6 +75,10 @@ class BaseTestCase(TestCase):
         """
 
         defaults = {
+            "tenant": Tenant.objects.create(
+                name="Datavion Test Tenant",
+                slug=f"datavion-test-{Tenant.objects.count() + 1}",
+            ),
             "name": "Datavion Analytics",
             "code": "DAT",
         }
@@ -175,9 +166,10 @@ class BaseTestCase(TestCase):
         Create or reuse a test team.
         """
 
-        department = kwargs.pop(
-            "department",
-            self.create_department(),
+        department = kwargs.pop("department", None)
+        organization = kwargs.pop(
+            "organization",
+            getattr(department, "organization", self.organization),
         )
 
         code = kwargs.pop(
@@ -186,14 +178,14 @@ class BaseTestCase(TestCase):
         )
 
         defaults = {
-            "department": department,
+            "organization": organization,
             "name": "Backend Team",
         }
 
         defaults.update(kwargs)
 
         team, _ = Team.objects.get_or_create(
-            department=department,
+            organization=organization,
             code=code,
             defaults=defaults,
         )
@@ -213,25 +205,10 @@ class BaseTestCase(TestCase):
             self.organization,
         )
 
-        department = kwargs.pop(
-            "department",
-            None,
-        )
-
-        if department is None:
-            department = self.create_department(
-                organization=organization,
-            )
-
-        team = kwargs.pop(
-            "team",
-            None,
-        )
-
-        if team is None:
-            team = self.create_team(
-                department=department,
-            )
+        # Department and team ownership moved to EmployeeAssignment.  Accept
+        # these historical factory arguments without writing removed columns.
+        kwargs.pop("department", None)
+        kwargs.pop("team", None)
 
         user = kwargs.pop(
             "user",
@@ -253,16 +230,13 @@ class BaseTestCase(TestCase):
         )
 
         defaults = {
-            "department": department,
-            "team": team,
             "user": user,
             "designation": "Software Engineer",
-            "hire_date": date(
+            "joining_date": date(
                 2025,
                 1,
                 1,
             ),
-            "is_active": True,
         }
 
         defaults.update(kwargs)
@@ -342,10 +316,8 @@ class BaseTestCase(TestCase):
             f"PRV{Provider.objects.count() + 1:06d}",
         )
 
-        license_number = kwargs.pop(
-            "license_number",
-            f"LIC{Provider.objects.count() + 1:06d}",
-        )
+        # Credentials are managed by the provider-credentials bounded context.
+        kwargs.pop("license_number", None)
 
         defaults = {
             "employee": employee,
@@ -357,10 +329,7 @@ class BaseTestCase(TestCase):
         provider, _ = Provider.objects.get_or_create(
             organization=organization,
             provider_number=provider_number,
-            defaults={
-                **defaults,
-                "license_number": license_number,
-            },
+            defaults=defaults,
         )
 
         return provider
@@ -505,126 +474,6 @@ class BaseTestCase(TestCase):
             **defaults,
         )
 
-    def create_laboratory_order(
-        self,
-        **kwargs,
-    ) -> LaboratoryOrder:
-        """
-        Create a laboratory order for tests.
-        """
-
-        organization = kwargs.pop(
-            "organization",
-            self.organization,
-        )
-
-        patient = kwargs.pop(
-            "patient",
-            self.create_patient(
-                organization=organization,
-            ),
-        )
-
-        provider = kwargs.pop(
-            "provider",
-            self.create_provider(
-                organization=organization,
-            ),
-        )
-
-        encounter = kwargs.pop(
-            "encounter",
-            self.create_encounter(
-                organization=organization,
-                patient=patient,
-                provider=provider,
-            ),
-        )
-
-        defaults = {
-            "organization": organization,
-            "patient": patient,
-            "provider": provider,
-            "encounter": encounter,
-            "order_number": (f"LAB{LaboratoryOrder.objects.count() + 1:06d}"),
-            "priority": LaboratoryPriority.ROUTINE,
-            "status": LaboratoryOrderStatus.ORDERED,
-            "ordered_at": timezone.now(),
-            "clinical_notes": "",
-            "instructions": "",
-        }
-
-        defaults.update(kwargs)
-
-        return LaboratoryOrder.objects.create(
-            **defaults,
-        )
-
-    def create_laboratory_test(
-        self,
-        **kwargs,
-    ) -> LaboratoryTest:
-        """
-        Create a laboratory test.
-        """
-
-        laboratory_order = kwargs.pop(
-            "laboratory_order",
-            self.create_laboratory_order(),
-        )
-
-        defaults = {
-            "laboratory_order": laboratory_order,
-            "code": (f"TEST{LaboratoryTest.objects.count() + 1:04d}"),
-            "name": "Complete Blood Count",
-            "category": LaboratoryCategory.HEMATOLOGY,
-            "specimen_type": LaboratorySpecimenType.BLOOD,
-            "priority": LaboratoryPriority.ROUTINE,
-            "status": LaboratoryTestStatus.PENDING,
-            "display_order": 1,
-            "notes": "",
-            "is_active": True,
-        }
-
-        defaults.update(kwargs)
-
-        return LaboratoryTest.objects.create(
-            **defaults,
-        )
-
-    def create_laboratory_result(
-        self,
-        **kwargs,
-    ) -> LaboratoryResult:
-        """
-        Create a laboratory result.
-        """
-
-        laboratory_test = kwargs.pop(
-            "laboratory_test",
-            self.create_laboratory_test(),
-        )
-
-        defaults = {
-            "laboratory_test": laboratory_test,
-            "result_value_numeric": 12.5,
-            "result_value_text": "",
-            "unit": "g/dL",
-            "reference_range": "11.5-15.5",
-            "abnormal_flag": LaboratoryResultFlag.NORMAL,
-            "status": LaboratoryResultStatus.RECORDED,
-            "resulted_at": timezone.now(),
-            "verified_by": None,
-            "verified_at": None,
-            "notes": "",
-        }
-
-        defaults.update(kwargs)
-
-        return LaboratoryResult.objects.create(
-            **defaults,
-        )
-
 
 class BaseAPITestCase(BaseTestCase):
     """
@@ -637,7 +486,18 @@ class BaseAPITestCase(BaseTestCase):
         super().setUp()
 
         self.client: APIClient = APIClient()
+        self.client.defaults["wsgi.url_scheme"] = "https"
+        self.client.defaults["SERVER_PORT"] = "443"
 
         self.client.force_authenticate(
             user=self.admin,
         )
+
+
+AuthenticatedAPITestCase = BaseAPITestCase
+
+__all__ = (
+    "AuthenticatedAPITestCase",
+    "BaseAPITestCase",
+    "BaseTestCase",
+)

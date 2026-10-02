@@ -1,91 +1,49 @@
-"""
-API views for retrieving, updating, and deleting medications.
-"""
-
-from __future__ import annotations
-
-from typing import Final
-
-from drf_spectacular.utils import extend_schema
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import ValidationError
+from rest_framework.generics import RetrieveUpdateDestroyAPIView
 
 from apps.clinical.medications.api.serializers import (
     MedicationDetailSerializer,
     MedicationUpdateSerializer,
 )
-from apps.clinical.medications.models import Medication
-from apps.clinical.medications.permissions import (
-    CanDeleteMedication,
-    CanUpdateMedication,
-    CanViewMedication,
-)
-from apps.clinical.medications.selectors import (
-    get_medication_by_id,
-)
-from apps.clinical.medications.services import (
-    delete_medication,
-    update_medication,
-)
-from apps.common.api.base_generics import (
-    BaseRetrieveUpdateDestroyAPIView,
-)
-
-MEDICATION_TAG: Final[tuple[str, ...]] = ("Medications",)
+from apps.clinical.medications.permissions import MedicationPermission
+from apps.clinical.medications.selectors import get_medication
+from apps.clinical.medications.workflows.medication import MedicationWorkflow
 
 
-@extend_schema(tags=MEDICATION_TAG)
-class MedicationRetrieveUpdateDestroyAPIView(
-    BaseRetrieveUpdateDestroyAPIView,
-):
-    """
-    Retrieve, update, or delete a medication.
-    """
-
+class MedicationRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
+    permission_classes = (MedicationPermission,)
     lookup_url_kwarg = "medication_id"
 
-    permission_classes_map = {
-        "GET": (
-            IsAuthenticated,
-            CanViewMedication,
-        ),
-        "PUT": (
-            IsAuthenticated,
-            CanUpdateMedication,
-        ),
-        "PATCH": (
-            IsAuthenticated,
-            CanUpdateMedication,
-        ),
-        "DELETE": (
-            IsAuthenticated,
-            CanDeleteMedication,
-        ),
-    }
+    def get_organization(self):
+        organization = getattr(self.request, "organization", None)
+        if organization is None:
+            organization = getattr(self.request.user, "organization", None)
+        if organization is None:
+            raise ValidationError("Organization context is required.")
+        return organization
 
-    serializer_classes = {
-        "GET": MedicationDetailSerializer,
-        "PUT": MedicationUpdateSerializer,
-        "PATCH": MedicationUpdateSerializer,
-    }
-
-    detail_serializer_class = MedicationDetailSerializer
-
-    update_service = update_medication
-
-    delete_service = delete_medication
-
-    def get_object(
-        self,
-    ) -> Medication:
-        """
-        Return the requested medication.
-        """
-
-        return get_medication_by_id(
+    def get_object(self):
+        return get_medication(
+            organization=self.get_organization(),
             medication_id=self.kwargs[self.lookup_url_kwarg],
         )
 
+    def get_serializer_class(self):
+        if self.request.method in {"PUT", "PATCH"}:
+            return MedicationUpdateSerializer
+        return MedicationDetailSerializer
 
-__all__ = [
-    "MedicationRetrieveUpdateDestroyAPIView",
-]
+    def perform_update(self, serializer):
+        serializer.instance = MedicationWorkflow.update(
+            organization=self.get_organization(),
+            instance=self.get_object(),
+            validated_data=serializer.validated_data,
+            actor=self.request.user,
+        )
+
+    def perform_destroy(self, instance):
+        MedicationWorkflow.delete(
+            organization=self.get_organization(),
+            instance=instance,
+            actor=self.request.user,
+        )

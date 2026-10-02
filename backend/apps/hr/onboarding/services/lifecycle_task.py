@@ -5,6 +5,7 @@ Business services for lifecycle tasks.
 from __future__ import annotations
 
 from collections.abc import Mapping
+from typing import Any, cast
 
 from django.db import transaction
 from django.utils import timezone
@@ -12,7 +13,7 @@ from django.utils import timezone
 from apps.hr.onboarding.constants import LifecycleTaskStatus
 from apps.hr.onboarding.models import LifecycleTask
 
-type LifecycleTaskData = Mapping[str, object]
+type LifecycleTaskData = Mapping[str, Any]
 
 
 @transaction.atomic
@@ -24,7 +25,7 @@ def create_lifecycle_task(
     Add an ad-hoc task to an in-progress lifecycle process.
     """
 
-    return LifecycleTask.objects.create(**validated_data)
+    return cast(LifecycleTask, LifecycleTask.objects.create(**validated_data))
 
 
 @transaction.atomic

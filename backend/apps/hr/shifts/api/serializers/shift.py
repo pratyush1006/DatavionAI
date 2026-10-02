@@ -12,7 +12,7 @@ from .fields import (
 class ShiftBaseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Shift
-        fields = ()
+        fields: tuple[str, ...] = ()
 
 
 class ShiftListSerializer(ShiftBaseSerializer):
@@ -27,7 +27,7 @@ class ShiftDetailSerializer(ShiftBaseSerializer):
         read_only=True,
     )
 
-    organization_id = serializers.IntegerField(
+    organization_id = serializers.UUIDField(
         source="organization.id",
         read_only=True,
     )

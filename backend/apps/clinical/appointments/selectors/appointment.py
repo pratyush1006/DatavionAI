@@ -1,44 +1,47 @@
-"""
-Appointment selectors.
-"""
+"""Organization-scoped Clinical Appointment selectors."""
 
 from __future__ import annotations
 
-from django.db.models import QuerySet
-from django.shortcuts import get_object_or_404
+from uuid import UUID
 
 from apps.clinical.appointments.models import Appointment
 
 
-def get_appointments() -> QuerySet[Appointment]:
-    """
-    Return the appointments queryset.
-    """
+class AppointmentSelector:
+    """Provide read-only organization-scoped appointment queries."""
 
-    return Appointment.objects.select_related(
-        "organization",
-        "patient",
-        "provider",
-        "provider__employee",
-        "provider__employee__user",
-    )
+    @staticmethod
+    def queryset(*, organization):
+        """Return active appointments for an organization."""
+
+        return Appointment.objects.select_related(
+            "organization",
+            "patient",
+            "provider",
+        ).filter(
+            organization=organization,
+            is_deleted=False,
+        )
+
+    @classmethod
+    def get(cls, *, organization, appointment_id: UUID) -> Appointment:
+        """Return one appointment in organization scope."""
+
+        return cls.queryset(
+            organization=organization,
+        ).get(
+            id=appointment_id,
+        )
+
+    @classmethod
+    def for_patient(cls, *, organization, patient_id: UUID):
+        """Return appointments for one organization-scoped patient."""
+
+        return cls.queryset(
+            organization=organization,
+        ).filter(
+            patient_id=patient_id,
+        )
 
 
-def get_appointment_by_id(
-    *,
-    appointment_id,
-) -> Appointment:
-    """
-    Return an appointment by ID.
-    """
-
-    return get_object_or_404(
-        get_appointments(),
-        id=appointment_id,
-    )
-
-
-__all__ = [
-    "get_appointment_by_id",
-    "get_appointments",
-]
+__all__ = ("AppointmentSelector",)

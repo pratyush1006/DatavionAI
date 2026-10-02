@@ -4,15 +4,19 @@ DatavionOS Search Provider Registry.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from types import MappingProxyType
-from typing import Final
+from typing import Final, TypeVar
 
+from .exceptions import SearchProviderNotFoundError
 from .providers.base import BaseSearchProvider
 
 _SEARCH_PROVIDERS: dict[
     str,
     type[BaseSearchProvider],
 ] = {}
+
+SearchProviderType = TypeVar("SearchProviderType", bound=BaseSearchProvider)
 
 
 SEARCH_PROVIDERS: Final = MappingProxyType(
@@ -25,7 +29,7 @@ def register_search_provider(
     provider: type[BaseSearchProvider],
     *,
     overwrite: bool = False,
-):
+) -> None:
     """
     Register search provider.
     """
@@ -38,24 +42,29 @@ def register_search_provider(
 
 def get_search_provider(
     name: str,
-):
+) -> type[BaseSearchProvider]:
     """
     Retrieve provider.
     """
 
-    return _SEARCH_PROVIDERS[name]
+    try:
+        return _SEARCH_PROVIDERS[name]
+    except KeyError as exc:
+        raise SearchProviderNotFoundError(
+            f"Search provider '{name}' is not configured for this deployment."
+        ) from exc
 
 
 def search_provider(
     name: str,
-):
+) -> Callable[[type[SearchProviderType]], type[SearchProviderType]]:
     """
     Provider decorator.
     """
 
     def decorator(
-        cls,
-    ):
+        cls: type[SearchProviderType],
+    ) -> type[SearchProviderType]:
 
         register_search_provider(
             name,

@@ -88,7 +88,7 @@ class LifecycleComponent(ABC):
         Whether the component has failed.
         """
 
-        return self._state is LifecycleState.FAILED
+        return self.state is LifecycleState.FAILED
 
     @property
     def is_running(self) -> bool:

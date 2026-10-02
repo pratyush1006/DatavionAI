@@ -1,47 +1,33 @@
-"""
-Allergy permission classes.
-"""
+"""Canonical Clinical Allergies RBAC adapters."""
 
 from __future__ import annotations
 
-from apps.common.permissions.base import BasePermission
+from apps.platform.rbac.permissions.base import RBACPermissionBase
 
 
-class CanViewAllergy(BasePermission):
-    """
-    Permission required to view allergies.
-    """
-
-    permission_code = "allergy.view"
+class CanViewAllergy(RBACPermissionBase):
+    permission_code = "allergies.view"
+    message = "You do not have permission to view allergies."
 
 
-class CanCreateAllergy(BasePermission):
-    """
-    Permission required to create allergies.
-    """
-
-    permission_code = "allergy.create"
+class CanCreateAllergy(RBACPermissionBase):
+    permission_code = "allergies.create"
+    message = "You do not have permission to create allergies."
 
 
-class CanUpdateAllergy(BasePermission):
-    """
-    Permission required to update allergies.
-    """
-
-    permission_code = "allergy.update"
+class CanUpdateAllergy(RBACPermissionBase):
+    permission_code = "allergies.update"
+    message = "You do not have permission to update allergies."
 
 
-class CanDeleteAllergy(BasePermission):
-    """
-    Permission required to delete allergies.
-    """
-
-    permission_code = "allergy.delete"
+class CanDeleteAllergy(RBACPermissionBase):
+    permission_code = "allergies.delete"
+    message = "You do not have permission to delete allergies."
 
 
-__all__ = [
-    "CanCreateAllergy",
-    "CanDeleteAllergy",
-    "CanUpdateAllergy",
+__all__ = (
     "CanViewAllergy",
-]
+    "CanCreateAllergy",
+    "CanUpdateAllergy",
+    "CanDeleteAllergy",
+)

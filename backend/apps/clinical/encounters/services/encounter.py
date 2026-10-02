@@ -1,64 +1,115 @@
-"""
-Encounter services.
-"""
+from django.db import transaction
+from django.utils import timezone
 
-from __future__ import annotations
-
-from collections.abc import Mapping
-from typing import Any
-
+from apps.clinical.encounters.constants import (
+    EncounterStatus,
+    is_valid_encounter_transition,
+)
+from apps.clinical.encounters.exceptions import (
+    EncounterTransitionError,
+    EncounterValidationError,
+)
 from apps.clinical.encounters.models import Encounter
 
 
-def create_encounter(
-    *,
-    validated_data: Mapping[str, Any],
-) -> Encounter:
-    """
-    Create a new encounter.
-    """
-
-    return Encounter.objects.create(
-        **validated_data,
-    )
-
-
-def update_encounter(
-    *,
-    instance: Encounter,
-    validated_data: Mapping[str, Any],
-) -> Encounter:
-    """
-    Update an existing encounter.
-    """
-
-    for field, value in validated_data.items():
-        setattr(
-            instance,
-            field,
-            value,
+class EncounterService:
+    @staticmethod
+    @transaction.atomic
+    def create(
+        *, organization, appointment, patient, provider, encounter_number, data=None
+    ):
+        if appointment.organization_id != organization.id:
+            raise EncounterValidationError(
+                "Appointment belongs to another organization."
+            )
+        if patient.organization_id != organization.id:
+            raise EncounterValidationError("Patient belongs to another organization.")
+        if provider.organization_id != organization.id:
+            raise EncounterValidationError("Provider belongs to another organization.")
+        if (
+            appointment.patient_id != patient.id
+            or appointment.provider_id != provider.id
+        ):
+            raise EncounterValidationError(
+                "Encounter patient/provider must match appointment."
+            )
+        payload = dict(data or {})
+        for key in (
+            "organization",
+            "appointment",
+            "patient",
+            "provider",
+            "status",
+            "encounter_number",
+        ):
+            payload.pop(key, None)
+        return Encounter.objects.create(
+            organization=organization,
+            appointment=appointment,
+            patient=patient,
+            provider=provider,
+            encounter_number=encounter_number,
+            status=EncounterStatus.SCHEDULED,
+            **payload,
         )
 
-    instance.save(
-        update_fields=list(validated_data.keys()),
-    )
+    @staticmethod
+    @transaction.atomic
+    def update(*, encounter, data):
+        protected = {
+            "id",
+            "organization",
+            "appointment",
+            "patient",
+            "provider",
+            "encounter_number",
+            "status",
+            "started_at",
+            "ended_at",
+            "duration_minutes",
+            "is_deleted",
+            "deleted_at",
+            "deleted_by_id",
+        }
+        for key, value in data.items():
+            if key not in protected:
+                setattr(encounter, key, value)
+        encounter.save()
+        return encounter
 
-    return instance
+    @staticmethod
+    @transaction.atomic
+    def transition(*, encounter, target_status, actor_id=None):
+        if not is_valid_encounter_transition(encounter.status, target_status):
+            raise EncounterTransitionError(
+                f"Invalid encounter transition: {encounter.status} -> {target_status}."
+            )
+        now = timezone.now()
+        update_fields = ["status", "updated_at"]
+        encounter.status = target_status
+        if target_status == EncounterStatus.IN_PROGRESS:
+            encounter.started_at = encounter.started_at or now
+            update_fields.append("started_at")
+        elif target_status in {EncounterStatus.COMPLETED, EncounterStatus.CANCELLED}:
+            encounter.ended_at = encounter.ended_at or now
+            update_fields.append("ended_at")
+            if target_status == EncounterStatus.COMPLETED and encounter.started_at:
+                encounter.duration_minutes = max(
+                    0,
+                    int(
+                        (encounter.ended_at - encounter.started_at).total_seconds()
+                        // 60
+                    ),
+                )
+                update_fields.append("duration_minutes")
+        encounter.save(update_fields=sorted(set(update_fields)))
+        return encounter
 
-
-def delete_encounter(
-    *,
-    instance: Encounter,
-) -> None:
-    """
-    Delete an encounter.
-    """
-
-    instance.delete()
-
-
-__all__ = [
-    "create_encounter",
-    "delete_encounter",
-    "update_encounter",
-]
+    @staticmethod
+    @transaction.atomic
+    def delete(*, encounter, actor_id=None):
+        encounter.soft_delete(user_id=actor_id)
+        if getattr(encounter, "is_active", True):
+            encounter.is_active = False
+            encounter.save(update_fields=["is_active", "updated_at"])
+        return encounter

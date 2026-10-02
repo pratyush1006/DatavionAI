@@ -1,25 +1,19 @@
 import Link from "next/link";
 
-import { Button } from "@/components/ui/button";
-
-export default function NotFoundPage() {
+export default function NotFound() {
   return (
-    <main className="flex min-h-screen items-center justify-center p-6">
-      <section className="max-w-md space-y-4 text-center">
-        <h1 className="text-2xl font-semibold">
-          Page not found
-        </h1>
-
-        <p className="text-sm text-muted-foreground">
-          The requested workspace page does not exist or is not available to
-          your account.
-        </p>
-
-        <Button asChild>
-          <Link href="/dashboard">
-            Return to dashboard
+    <main className="min-vh-100 d-flex align-items-center justify-content-center bg-body-tertiary p-4">
+      <section className="card border-0 shadow-sm" style={{ maxWidth: 520 }}>
+        <div className="card-body p-4 p-md-5 text-center">
+          <p className="text-primary fw-semibold text-uppercase small">404</p>
+          <h1 className="h3">Page not found</h1>
+          <p className="text-body-secondary mb-4">
+            The page may have moved, or you may not have access to it.
+          </p>
+          <Link className="btn btn-primary" href="/dashboard">
+            Go to dashboard
           </Link>
-        </Button>
+        </div>
       </section>
     </main>
   );

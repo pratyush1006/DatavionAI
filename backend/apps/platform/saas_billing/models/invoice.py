@@ -12,6 +12,13 @@ Supports:
 - Medical stores
 - Laboratories
 - Healthcare networks
+
+Currency ownership:
+    Currency is a shared financial primitive owned by
+    apps.common.finance.currency.
+
+SaaS Billing consumes that primitive but does not define
+its own currency implementation.
 """
 
 from __future__ import annotations
@@ -19,6 +26,7 @@ from __future__ import annotations
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from apps.common.finance.currency import DEFAULT_CURRENCY
 from apps.core.models import BaseModel
 from apps.platform.saas_billing.managers.invoice import (
     InvoiceManager,
@@ -210,7 +218,7 @@ class Invoice(BaseModel):
 
     currency = models.CharField(
         max_length=10,
-        default="INR",
+        default=DEFAULT_CURRENCY,
     )
 
     # ------------------------------------------------------------------
@@ -332,7 +340,6 @@ class Invoice(BaseModel):
     def __str__(
         self,
     ) -> str:
-
         return f"{self.invoice_number} - {self.organization}"
 
 

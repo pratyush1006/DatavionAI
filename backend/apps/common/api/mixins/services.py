@@ -17,7 +17,7 @@ Responsibilities:
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from django.core.exceptions import ImproperlyConfigured
 from rest_framework.serializers import BaseSerializer
@@ -35,6 +35,16 @@ class BaseServiceMixin:
     update_service: Service | None = None
 
     delete_service: Service | None = None
+
+    if TYPE_CHECKING:
+
+        def get_object(self) -> Any: ...
+
+        def perform_workflow_create(self, serializer: BaseSerializer) -> None: ...
+
+        def perform_workflow_update(self, serializer: BaseSerializer) -> None: ...
+
+        def perform_workflow_destroy(self, instance: Any) -> Any: ...
 
     @staticmethod
     def _require_service(

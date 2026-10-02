@@ -10,9 +10,9 @@ from django.db.models import QuerySet
 from drf_spectacular.utils import extend_schema
 from rest_framework.permissions import IsAuthenticated
 
-from apps.common.api.base_generics import (
-    BaseListCreateAPIView,
-    BaseRetrieveUpdateDestroyAPIView,
+from apps.hr.api import (
+    HrListCreateAPIView,
+    HrRetrieveUpdateDestroyAPIView,
 )
 from apps.hr.payroll.api.serializers import (
     PayslipCreateSerializer,
@@ -38,7 +38,7 @@ PAYROLL_TAG: Final[tuple[str, ...]] = ("Payroll",)
 
 
 @extend_schema(tags=PAYROLL_TAG)
-class PayslipListCreateAPIView(BaseListCreateAPIView):
+class PayslipListCreateAPIView(HrListCreateAPIView):
     """
     List existing payslips or create a new one.
     """
@@ -73,7 +73,7 @@ class PayslipListCreateAPIView(BaseListCreateAPIView):
 
 @extend_schema(tags=PAYROLL_TAG)
 class PayslipRetrieveUpdateDestroyAPIView(
-    BaseRetrieveUpdateDestroyAPIView,
+    HrRetrieveUpdateDestroyAPIView,
 ):
     """
     Retrieve, update or delete a payslip.

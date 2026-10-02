@@ -28,4 +28,9 @@ export const organizationKeys = {
     ...organizationKeys.details(),
     id,
   ] as const,
+
+  catalogs: () => [
+    ...organizationKeys.all,
+    "catalogs",
+  ] as const,
 } as const;

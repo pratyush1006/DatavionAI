@@ -7,7 +7,7 @@ throughout DatavionOS.
 
 from __future__ import annotations
 
-from collections.abc import Collection
+from collections.abc import Callable, Collection
 
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import UploadedFile
@@ -28,7 +28,7 @@ def validate_file_size(
     Validate uploaded file size.
     """
 
-    if file.size > max_size:
+    if file.size is None or file.size > max_size:
         raise ValidationError(
             DEFAULT_FILE_SIZE_MESSAGE,
         )
@@ -37,7 +37,7 @@ def validate_file_size(
 def file_size_validator(
     *,
     max_size: int,
-):
+) -> Callable[[UploadedFile], None]:
     """
     Create reusable file size validator.
     """
@@ -62,7 +62,7 @@ def validate_file_extension(
     Validate uploaded file extension.
     """
 
-    extension = file.name.rsplit(
+    extension = (file.name or "").rsplit(
         ".",
         1,
     )
@@ -84,7 +84,7 @@ def validate_file_extension(
 
 def file_extension_validator(
     allowed_extensions: Collection[str],
-):
+) -> Callable[[UploadedFile], None]:
     """
     Create reusable file extension validator.
     """
@@ -117,7 +117,7 @@ def validate_content_type(
 
 def content_type_validator(
     allowed_content_types: Collection[str],
-):
+) -> Callable[[UploadedFile], None]:
     """
     Create reusable content type validator.
     """

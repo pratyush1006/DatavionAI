@@ -104,7 +104,7 @@ class RegistrationUpdateWorkflow(
                 "patient",
                 "verified_by",
             ).get(
-                uuid=self._request.registration_id,
+                id=self._request.registration_id,
                 organization_id=organization.pk,
             )
 
@@ -115,7 +115,6 @@ class RegistrationUpdateWorkflow(
 
         if not self._policy.can_update(
             actor=actor,
-            organization=organization,
             registration=registration,
         ):
             raise PermissionError(
@@ -160,7 +159,7 @@ class RegistrationUpdateWorkflow(
         event = RegistrationUpdatedEvent(
             tenant_id=context.tenant_id,
             actor_id=actor.pk,
-            registration_id=updated_registration.uuid,
+            registration_id=updated_registration.id,
             patient_id=updated_registration.patient_id,
             organization_id=updated_registration.organization_id,
             registration_number=updated_registration.registration_number,
@@ -172,7 +171,7 @@ class RegistrationUpdateWorkflow(
         return WorkflowResult.ok(
             context=context,
             data=RegistrationUpdateData(
-                registration_id=updated_registration.uuid,
+                registration_id=updated_registration.id,
                 updated=True,
                 event_id=event.event_id,
             ),

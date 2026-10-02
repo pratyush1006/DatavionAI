@@ -19,7 +19,7 @@ class PatientRelationshipListSerializer(
     """
 
     patient_uuid = serializers.UUIDField(
-        source="patient.uuid",
+        source="patient.id",
         read_only=True,
     )
 
@@ -29,7 +29,7 @@ class PatientRelationshipListSerializer(
     )
 
     related_patient_uuid = serializers.UUIDField(
-        source="related_patient.uuid",
+        source="related_patient.id",
         read_only=True,
         allow_null=True,
     )
@@ -41,14 +41,15 @@ class PatientRelationshipListSerializer(
     )
 
     organization_uuid = serializers.UUIDField(
-        source="organization.uuid",
+        source="organization.id",
         read_only=True,
     )
 
     class Meta:
         model = PatientRelationship
+
         fields = (
-            "uuid",
+            "id",
             "patient_uuid",
             "patient_name",
             "related_patient_uuid",
@@ -64,6 +65,7 @@ class PatientRelationshipListSerializer(
             "created_at",
             "updated_at",
         )
+
         read_only_fields = fields
 
 

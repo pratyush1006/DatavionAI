@@ -1,0 +1,6 @@
+{
+  "installer": "installer_organization_registration_runtime_integration.py",
+  "success": false,
+  "error": "FRONTEND_PRODUCTION_BUILD failed (1)\n\n> frontend@0.1.0 build\n> next build\n\n\u00e2\u2013\u00b2 Next.js 16.2.10 (Turbopack)\n- Environments: .env.local\n\n  Creating an optimized production build ...\n\n> Build error occurred\nError: Turbopack build failed with 6 errors:\n./src/app/(public)\nYou cannot have two parallel pages that resolve to the same path. Please check /(marketing) and /(public).\n\n./src/app/(public)\nYou cannot have two parallel pages that resolve to the same path. Please check /(marketing)/about and /(public).\n\n./src/app/(public)\nYou cannot have two parallel pages that resolve to the same path. Please check /(marketing)/careers and /(public).\n\n./src/app/(public)\nYou cannot have two parallel pages that resolve to the same path. Please check /(marketing)/case-studies and /(public).\n\n./src/app/(public)\nYou cannot have two parallel pages that resolve to the same path. Please check /(marketing)/pricing and /(public).\n\n./src/app/(public)\nYou cannot have two parallel pages that resolve to the same path. Please check /(marketing)/support and /(public).\n\n    at ignore-listed frames\n",
+  "timestamp": "2026-09-22T19:49:21.122600"
+}

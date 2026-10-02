@@ -29,4 +29,10 @@ export type Patient = {
   isActive: boolean;
 };
 
-export type PatientFormValues = Omit<Patient, "id" | "displayName" | "age">;
+// Organization ownership and MRN allocation are backend-controlled.  Keeping
+// them out of editable form state prevents an operator from changing either
+// identifier and keeps the Zod form contract aligned with the API payload.
+export type PatientFormValues = Omit<
+  Patient,
+  "id" | "organization" | "mrn" | "displayName" | "age"
+>;

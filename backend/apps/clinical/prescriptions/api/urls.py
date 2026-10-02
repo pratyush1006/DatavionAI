@@ -1,27 +1,19 @@
-"""
-Prescription API URLs.
-"""
+"""Workflow-driven API routes for Prescription."""
 
 from django.urls import path
 
-from apps.clinical.prescriptions.api.views import (
+from .views import (
+    PrescriptionDetailAPIView,
+    PrescriptionLifecycleAPIView,
     PrescriptionListCreateAPIView,
-    PrescriptionRetrieveUpdateDestroyAPIView,
 )
 
 urlpatterns = [
+    path("", PrescriptionListCreateAPIView.as_view(), name="list-create"),
+    path("<uuid:prescription_id>/", PrescriptionDetailAPIView.as_view(), name="detail"),
     path(
-        "",
-        PrescriptionListCreateAPIView.as_view(),
-        name="list-create",
+        "<uuid:prescription_id>/lifecycle/",
+        PrescriptionLifecycleAPIView.as_view(),
+        name="lifecycle",
     ),
-    path(
-        "<uuid:prescription_id>/",
-        PrescriptionRetrieveUpdateDestroyAPIView.as_view(),
-        name="detail",
-    ),
-]
-
-__all__ = [
-    "urlpatterns",
 ]

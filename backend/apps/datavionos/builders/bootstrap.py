@@ -130,16 +130,8 @@ class PlatformBootstrapBuilder:
             feature_flags=dict(
                 feature_flags or {},
             ),
-            subscription=(
-                dict(subscription)
-                if subscription is not None
-                else None
-            ),
-            preferences=(
-                dict(preferences)
-                if preferences is not None
-                else None
-            ),
+            subscription=(dict(subscription) if subscription is not None else None),
+            preferences=(dict(preferences) if preferences is not None else None),
         )
 
 

@@ -1,0 +1,30 @@
+{
+  "installer": "installer_ai_end_to_end_rebuild.py",
+  "canonical_owner": "apps.ai",
+  "datavionos_ai": "retired",
+  "datavionos_role": "bootstrap/kernel/platform runtime only",
+  "department_ai": [
+    "Clinical AI",
+    "Laboratory AI",
+    "Pharmacy AI",
+    "Imaging AI",
+    "Revenue Cycle AI"
+  ],
+  "multi_tenancy": true,
+  "rag": true,
+  "provider_abstraction": true,
+  "rbac_only_access": true,
+  "required_module_reference": true,
+  "ai_requests_carry_module_reference": true,
+  "doctor_verification_before_signature": true,
+  "immutable_clinical_artifact_versions": true,
+  "canonical_domain_tools": [
+    "apps.clinical.laboratories",
+    "apps.clinical.prescriptions",
+    "apps.notes",
+    "apps.imaging",
+    "apps.revenue_cycle"
+  ],
+  "migration_policy": "forward-only; historical migrations never edited or deleted",
+  "family_members": "protected"
+}

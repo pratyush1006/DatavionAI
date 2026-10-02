@@ -41,7 +41,7 @@ class CreateERAWorkflow(BaseWorkflow):
 
     def _run(self, context: WorkflowContext) -> WorkflowResult:
         """Create the ERA inside an atomic transaction."""
-        request = context.payload
+        request = self.payload
         with transaction.atomic():
             era = ERA.objects.create(
                 organization_id=request.organization_id,
@@ -69,7 +69,7 @@ class ValidateERAWorkflow(BaseWorkflow):
 
     def _run(self, context: WorkflowContext) -> WorkflowResult:
         """Validate the ERA using a row lock."""
-        request = context.payload
+        request = self.payload
         with transaction.atomic():
             era = ERA.objects.select_for_update().get(pk=request.era_id)
             era = validate_era(era=era)
@@ -82,7 +82,7 @@ class PostERAWorkflow(BaseWorkflow):
 
     def _run(self, context: WorkflowContext) -> WorkflowResult:
         """Post the ERA through the domain service."""
-        request = context.payload
+        request = self.payload
         with transaction.atomic():
             era = post_era(
                 organization_id=request.organization_id,
@@ -99,7 +99,7 @@ class ReverseERAWorkflow(BaseWorkflow):
 
     def _run(self, context: WorkflowContext) -> WorkflowResult:
         """Reverse the ERA through the domain service."""
-        request = context.payload
+        request = self.payload
         with transaction.atomic():
             era = reverse_era(
                 organization_id=request.organization_id,
@@ -116,7 +116,7 @@ class DeleteERAWorkflow(BaseWorkflow):
 
     def _run(self, context: WorkflowContext) -> WorkflowResult:
         """Soft-delete the ERA through the domain service."""
-        request = context.payload
+        request = self.payload
         with transaction.atomic():
             era = delete_era(
                 organization_id=request.organization_id,
@@ -133,7 +133,7 @@ class RestoreERAWorkflow(BaseWorkflow):
 
     def _run(self, context: WorkflowContext) -> WorkflowResult:
         """Restore the ERA through the domain service."""
-        request = context.payload
+        request = self.payload
         with transaction.atomic():
             era = restore_era(
                 organization_id=request.organization_id,

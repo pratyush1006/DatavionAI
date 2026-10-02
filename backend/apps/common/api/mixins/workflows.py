@@ -16,8 +16,9 @@ Supports:
 
 from __future__ import annotations
 
-from typing import Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar, cast
 
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.serializers import BaseSerializer
 
@@ -30,6 +31,19 @@ class WorkflowMixin:
     """
     Shared workflow helpers.
     """
+
+    if TYPE_CHECKING:
+        current_tenant: Any
+
+        def get_serializer(self, *args: Any, **kwargs: Any) -> BaseSerializer: ...
+
+        def get_queryset(self) -> Any: ...
+
+        def get_object(self) -> Any: ...
+
+        def created_response(self, **kwargs: Any) -> Response: ...
+
+        def success_response(self, **kwargs: Any) -> Response: ...
 
     def get_workflow_context(
         self,
@@ -44,10 +58,9 @@ class WorkflowMixin:
         """
 
         tenant = self.current_tenant
+        user = cast(Request, self.request).user
 
-        if tenant is None:
-            user = self.request.user
-
+        if tenant is None and hasattr(user, "organization_roles"):
             organization_role = user.organization_roles.select_related(
                 "organization__tenant",
             ).first()
@@ -60,8 +73,15 @@ class WorkflowMixin:
                 "Tenant context is required.",
             )
 
+        actor_id = getattr(user, "id", None)
+
+        if actor_id is None:
+            raise RuntimeError(
+                "Authenticated actor context is required.",
+            )
+
         return WorkflowContext(
-            actor_id=self.request.user.id,
+            actor_id=actor_id,
             tenant_id=tenant.id,
         )
 
@@ -86,9 +106,9 @@ class WorkflowCreateMixin(
 
     def create(
         self,
-        request,
-        *args,
-        **kwargs,
+        request: Request,
+        *args: Any,
+        **kwargs: Any,
     ) -> Response:
         """
         Workflow based create handler.
@@ -133,10 +153,15 @@ class WorkflowCreateMixin(
         self,
         *,
         validated_data: dict[str, Any],
-    ):
+    ) -> Any:
         """
         Construct and execute the configured creation workflow.
         """
+
+        if self.create_workflow is None:
+            raise NotImplementedError(
+                "Create workflow is not configured for this endpoint.",
+            )
 
         workflow = self.create_workflow(
             request=self.build_workflow_request(
@@ -171,8 +196,8 @@ class WorkflowCreateMixin(
 
     def resolve_workflow_created_instance(
         self,
-        result,
-    ):
+        result: Any,
+    ) -> Any:
         """
         Resolve the created domain object.
 
@@ -227,8 +252,8 @@ class WorkflowCreateMixin(
 
     def build_workflow_request(
         self,
-        validated_data,
-    ):
+        validated_data: dict[str, Any],
+    ) -> Any:
         """
         Build the workflow request DTO.
 
@@ -271,9 +296,9 @@ class WorkflowUpdateMixin(
 
     def update(
         self,
-        request,
-        *args,
-        **kwargs,
+        request: Request,
+        *args: Any,
+        **kwargs: Any,
     ) -> Response:
         """
         Execute a workflow-driven PUT/PATCH update.
@@ -352,6 +377,11 @@ class WorkflowUpdateMixin(
         if instance is None:
             instance = self.get_object()
 
+        if self.update_workflow is None:
+            raise NotImplementedError(
+                "Update workflow is not configured for this endpoint.",
+            )
+
         workflow = self.update_workflow(
             request=self.build_update_workflow_request(
                 instance,
@@ -372,9 +402,9 @@ class WorkflowUpdateMixin(
 
     def build_update_workflow_request(
         self,
-        instance,
-        validated_data,
-    ):
+        instance: Any,
+        validated_data: dict[str, Any],
+    ) -> Any:
         """
         Build the update workflow request DTO.
 
@@ -405,11 +435,16 @@ class WorkflowDestroyMixin(
 
     def perform_workflow_destroy(
         self,
-        instance,
-    ):
+        instance: Any,
+    ) -> Any:
         """
         Execute the deletion workflow.
         """
+
+        if self.delete_workflow is None:
+            raise NotImplementedError(
+                "Delete workflow is not configured for this endpoint.",
+            )
 
         workflow = self.delete_workflow(
             request=self.build_delete_workflow_request(
@@ -430,8 +465,8 @@ class WorkflowDestroyMixin(
 
     def build_delete_workflow_request(
         self,
-        instance,
-    ):
+        instance: Any,
+    ) -> Any:
         """
         Build the deletion workflow request DTO.
 

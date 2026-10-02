@@ -1,15 +1,5 @@
-"""
-Appointment service exports.
-"""
+"""Clinical Appointment service package."""
 
-from .appointment import (
-    create_appointment,
-    delete_appointment,
-    update_appointment,
-)
+from apps.clinical.appointments.services.appointment import AppointmentService
 
-__all__ = [
-    "create_appointment",
-    "delete_appointment",
-    "update_appointment",
-]
+__all__ = ("AppointmentService",)

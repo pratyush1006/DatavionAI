@@ -88,6 +88,7 @@ export type {
 
 export {
   DEFAULT_REQUEST_ID_PROVIDER,
+  EMPTY_ORGANIZATION_PROVIDER,
   EMPTY_TENANT_PROVIDER,
   EMPTY_TOKEN_PROVIDER,
 } from "./contracts";
@@ -95,6 +96,7 @@ export {
 export type {
   ApiAuthenticationFailureHandler,
   ApiAuthenticationDependencies,
+  ApiOrganizationProvider,
   ApiClientOptions,
   ApiRequestContext,
   ApiRequestIdProvider,

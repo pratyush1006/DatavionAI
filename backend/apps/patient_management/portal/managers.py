@@ -36,9 +36,10 @@ class PatientPortalAccountQuerySet(SoftDeleteQuerySet):
         return self.filter(status="DEACTIVATED")
 
 
-PatientPortalAccountManager = SoftDeleteManager.from_queryset(
-    PatientPortalAccountQuerySet,
-)
+class PatientPortalAccountManager(
+    SoftDeleteManager.from_queryset(PatientPortalAccountQuerySet)
+):
+    """Concrete migration-serializable manager class."""
 
 
 __all__ = (

@@ -21,6 +21,7 @@ from .organization_branding import (
     get_branding_by_domain,
     get_brandings,
     get_organization_branding,
+    get_organization_branding_by_custom_domain,
     get_organization_branding_by_id,
     get_organization_branding_by_organization,
     get_organization_brandings,
@@ -81,6 +82,7 @@ __all__: tuple[str, ...] = (
     "get_brandings",
     "get_organization_branding",
     "get_organization_branding_by_id",
+    "get_organization_branding_by_custom_domain",
     "get_organization_branding_by_organization",
     "get_organization_brandings",
     # Domain

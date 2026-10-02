@@ -149,6 +149,11 @@ class PlatformBootstrapSerializer(
 
     permissions = serializers.SerializerMethodField()
 
+    # Resolved server-side scope used by clients for presentation only. API
+    # endpoints independently enforce the same organization/department/team
+    # boundaries and never trust this browser payload.
+    access_context = serializers.SerializerMethodField()
+
     # ==================================================================
     # Runtime Platform
     # ==================================================================
@@ -206,6 +211,18 @@ class PlatformBootstrapSerializer(
             obj.context.permissions,
         )
 
+    def get_access_context(self, obj) -> dict[str, object]:
+        return {
+            "organization_id": (
+                str(obj.context.organization.id)
+                if obj.context.organization is not None
+                else None
+            ),
+            "department_ids": list(obj.context.access_scope["department_ids"]),
+            "team_ids": list(obj.context.access_scope["team_ids"]),
+            "subscription_active": bool(obj.subscription),
+        }
+
     def get_organization(
         self,
         obj,
@@ -224,6 +241,9 @@ class PlatformBootstrapSerializer(
                 organization.id,
             ),
             "name": organization.name,
+            "category": organization.category,
+            "organization_type": organization.organization_type,
+            "size": organization.size,
         }
 
     def get_employee(

@@ -94,13 +94,12 @@ class NotificationService:
         Deliver a notification using the configured provider.
         """
 
-        provider = NotificationProviderRegistry.get_provider(
-            channel=notification.channel,
-        )
-
         notification.mark_queued()
 
         try:
+            provider = NotificationProviderRegistry.get_provider(
+                channel=notification.channel,
+            )
             provider.send(
                 notification=notification,
             )

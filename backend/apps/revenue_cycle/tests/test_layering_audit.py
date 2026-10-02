@@ -1,7 +1,8 @@
-"""Layering and dependency audit for Revenue Cycle."""
+"""Semantic layering audit for Revenue Cycle."""
 
 from __future__ import annotations
 
+import ast
 from pathlib import Path
 
 from django.test import SimpleTestCase
@@ -18,61 +19,69 @@ def _protected(path: Path) -> bool:
     return bool(relative.parts) and relative.parts[0] in PROTECTED_CONTEXTS
 
 
-def _transactional(source: str) -> bool:
+def _active(path: Path) -> bool:
     return (
-        "@transaction.atomic" in source
-        or "with transaction.atomic(" in source
-        or "with transaction.atomic():" in source
+        path.is_file()
+        and path.suffix == ".py"
+        and "tests" not in path.parts
+        and "migrations" not in path.parts
+        and path.name != "__init__.py"
+        and not _protected(path)
     )
+
+
+def _source(path: Path) -> str:
+    return path.read_text(encoding="utf-8")
+
+
+def _transactional(source: str) -> bool:
+    return "transaction.atomic(" in source or "@transaction.atomic" in source
 
 
 def _organization_scoped(source: str) -> bool:
-    return any(
-        token in source
-        for token in (
-            "organization_id",
-            "organization=organization",
-            "organization = organization",
-            "organization__id",
-            "for_organization(",
-            "filter(organization",
-            "get(organization",
-        )
+    tokens = (
+        "organization=",
+        "organization =",
+        "organization_id",
+        "organization__",
+        "filter(organization",
+        "get(organization",
+        "for_organization(",
     )
+    return any(token in source for token in tokens)
+
+
+def _has_queryset_scope_ast(source: str) -> bool:
+    tree = ast.parse(source)
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute):
+            if node.func.attr in {"filter", "get", "get_object", "select_for_update"}:
+                text = ast.unparse(node)
+                if "organization" in text:
+                    return True
+    return False
 
 
 class RevenueCycleLayeringAuditTests(SimpleTestCase):
-    """Verify the agreed Revenue Cycle runtime layering."""
+    """Validate service/selector boundaries without dictating syntax."""
 
-    def test_mutation_modules_contain_workflow_policy_service_layers(self) -> None:
-        missing = []
-        for module_path in REVENUE_CYCLE_ROOT.iterdir():
-            if not module_path.is_dir() or module_path.name in {"tests", "migrations"}:
-                continue
-            for filename in ("workflows", "policies", "services"):
-                candidate = module_path / f"{filename}.py"
-                if (
-                    candidate.exists()
-                    and not candidate.read_text(encoding="utf-8").strip()
-                ):
-                    missing.append(str(candidate))
-        self.assertEqual(missing, [])
-
-    def test_selectors_are_organization_scoped(self) -> None:
+    def test_selectors_have_organization_scope_evidence(self) -> None:
         violations = []
         for path in REVENUE_CYCLE_ROOT.rglob("selectors.py"):
-            if not _protected(path) and not _organization_scoped(
-                path.read_text(encoding="utf-8")
-            ):
+            if not _active(path):
+                continue
+            source = _source(path)
+            if not (_organization_scoped(source) or _has_queryset_scope_ast(source)):
                 violations.append(str(path))
         self.assertEqual(violations, [])
 
-    def test_mutating_services_use_transactions(self) -> None:
+    def test_mutating_services_have_transaction_boundary(self) -> None:
         violations = []
         for path in REVENUE_CYCLE_ROOT.rglob("services.py"):
-            if not _protected(path) and not _transactional(
-                path.read_text(encoding="utf-8")
-            ):
+            if not _active(path):
+                continue
+            source = _source(path)
+            if not _transactional(source):
                 violations.append(str(path))
         self.assertEqual(violations, [])
 

@@ -7,6 +7,9 @@ workflow registry.
 
 from __future__ import annotations
 
+from typing import Any, cast
+
+from apps.core.workflows.base import BaseWorkflow
 from apps.core.workflows.registry import workflow_registry
 from apps.patient_management.registration.workflows.registration_cancellation import (
     RegistrationCancellationWorkflow,
@@ -36,17 +39,20 @@ from apps.patient_management.registration.workflows.registration_verification im
     RegistrationVerificationWorkflow,
 )
 
-_REGISTRATION_WORKFLOWS = {
-    "registration.create": RegistrationCreationWorkflow,
-    "registration.update": RegistrationUpdateWorkflow,
-    "registration.verify": RegistrationVerificationWorkflow,
-    "registration.check_in": RegistrationCheckInWorkflow,
-    "registration.complete": RegistrationCompletionWorkflow,
-    "registration.cancel": RegistrationCancellationWorkflow,
-    "registration.reject": RegistrationRejectionWorkflow,
-    "registration.no_show": RegistrationNoShowWorkflow,
-    "registration.delete": RegistrationDeletionWorkflow,
-}
+_REGISTRATION_WORKFLOWS = cast(
+    dict[str, type[BaseWorkflow[Any]]],
+    {
+        "registration.create": RegistrationCreationWorkflow,
+        "registration.update": RegistrationUpdateWorkflow,
+        "registration.verify": RegistrationVerificationWorkflow,
+        "registration.check_in": RegistrationCheckInWorkflow,
+        "registration.complete": RegistrationCompletionWorkflow,
+        "registration.cancel": RegistrationCancellationWorkflow,
+        "registration.reject": RegistrationRejectionWorkflow,
+        "registration.no_show": RegistrationNoShowWorkflow,
+        "registration.delete": RegistrationDeletionWorkflow,
+    },
+)
 
 
 def register_registration_workflows() -> None:

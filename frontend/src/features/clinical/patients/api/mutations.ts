@@ -190,23 +190,14 @@ function mapPatient(
 /**
  * Convert frontend patient form values into the backend API representation.
  *
- * This payload contains both mutable and immutable patient fields.
- *
- * - Create operations use the complete payload.
- * - Update operations explicitly omit `organization` and `mrn` because those
- *   fields represent patient identity/registration data and should not be
- *   modified through the standard patient update operation.
+ * Organization ownership and MRN allocation are backend-owned. The active
+ * organization comes from the authenticated request context and the backend
+ * creates the MRN atomically during patient registration.
  */
 function toPayload(
   values: PatientFormValues,
 ) {
   return {
-    organization:
-      values.organization,
-
-    mrn:
-      values.mrn,
-
     first_name:
       values.firstName,
 
@@ -263,8 +254,7 @@ function toPayload(
 /**
  * Payload accepted by the patient PATCH endpoint.
  *
- * Organization and MRN are intentionally excluded from normal patient
- * updates because they represent registration/identity fields.
+ * Organization and MRN are never client mutation fields.
  */
 type PatientUpdatePayload =
   Omit<

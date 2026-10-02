@@ -14,10 +14,6 @@ from __future__ import annotations
 
 from typing import Final
 
-from django.db.models import QuerySet
-from drf_spectacular.utils import extend_schema
-from rest_framework.permissions import IsAuthenticated
-
 from apps.common.api.base_generics import (
     BaseListCreateAPIView,
 )
@@ -40,6 +36,9 @@ from apps.organization.employees.workflows import (
     EmployeeCreationRequest,
     EmployeeCreationWorkflow,
 )
+from django.db.models import QuerySet
+from drf_spectacular.utils import extend_schema
+from rest_framework.permissions import IsAuthenticated
 
 EMPLOYEE_TAG: Final[tuple[str, ...]] = ("Employees",)
 
@@ -142,38 +141,19 @@ class EmployeeListCreateAPIView(
         self,
     ) -> QuerySet[Employee]:
         """
-        Return organization scoped employees.
+        Return employees for the server-resolved active organization.
+
+        Organization identity must never be taken from a list query parameter:
+        doing so allowed a caller to try another organization UUID after the
+        permission check had already been evaluated for their active context.
         """
+        organization = self.current_organization
 
-        organization_id = self.request.query_params.get(
-            "organization",
-        )
-
-        if organization_id is None:
-            organization = getattr(
-                self.request,
-                "organization",
-                None,
-            )
-
-            if organization is not None:
-                organization_id = organization.id
-
-        if organization_id is None:
-            user = self.request.user
-
-            organization_role = user.organization_roles.select_related(
-                "organization",
-            ).first()
-
-            if organization_role is not None:
-                organization_id = organization_role.organization.id
-
-        if organization_id is None:
+        if organization is None:
             return Employee.objects.none()
 
         return get_employees(
-            organization_id=organization_id,
+            organization_id=organization.id,
         )
 
 

@@ -58,7 +58,7 @@ class ConfigurationContract(BaseContract):
         Qualified configuration name.
         """
 
-        return f"{self.scope.value}:{self.name}:{self.version}"
+        return f"{self.scope}:{self.name}:{self.version}"
 
     @property
     def has_feature_flags(self) -> bool:

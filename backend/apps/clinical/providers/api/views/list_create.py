@@ -41,6 +41,12 @@ from apps.clinical.providers.workflows import (
 from apps.common.api.base_generics import (
     BaseListCreateAPIView,
 )
+from apps.core.workflows import (
+    WorkflowContext,
+)
+from apps.platform.organizations.models import (
+    Organization,
+)
 
 PROVIDER_TAG: Final[tuple[str, ...]] = ("Providers",)
 
@@ -104,6 +110,63 @@ class ProviderListCreateAPIView(
         "is_accepting_patients",
     )
 
+    def resolve_workflow_created_instance(self, result):
+        "Resolve ProviderCreationData.provider_id to the canonical Provider model."
+        data = result.data
+        if data is None:
+            return None
+
+        provider_id = getattr(data, "provider_id", None)
+        if provider_id is not None:
+            return self.get_queryset().get(id=provider_id)
+
+        return super().resolve_workflow_created_instance(result)
+
+    def get_workflow_context(self) -> WorkflowContext:
+        "Build tenant-aware workflow context for Provider creation."
+        tenant = self.current_tenant
+
+        if tenant is None:
+            organization = self.current_organization
+
+            if organization is None:
+                organization_id = getattr(
+                    self,
+                    "_workflow_organization_id",
+                    None,
+                )
+                if organization_id is not None:
+                    organization = Organization.objects.select_related(
+                        "tenant",
+                    ).get(
+                        pk=organization_id,
+                    )
+
+            if organization is None:
+                role = (
+                    self.request.user.organization_roles.select_related(
+                        "organization__tenant",
+                    )
+                    .filter(
+                        is_active=True,
+                    )
+                    .first()
+                )
+                organization = role.organization if role is not None else None
+
+            if organization is not None:
+                tenant = organization.tenant
+
+        if tenant is None:
+            raise RuntimeError(
+                "Tenant context is required.",
+            )
+
+        return WorkflowContext(
+            actor_id=self.request.user.id,
+            tenant_id=tenant.id,
+        )
+
     def build_workflow_request(
         self,
         validated_data,
@@ -147,6 +210,8 @@ class ProviderListCreateAPIView(
                 {"organization": ("Organization context is required.")}
             )
 
+        self._workflow_organization_id = organization.id
+
         return ProviderCreationRequest(
             organization_id=organization.id,
             employee_id=employee.id,
@@ -157,6 +222,10 @@ class ProviderListCreateAPIView(
                     "years_of_experience",
                     0,
                 )
+            ),
+            consultation_fee=validated_data.get(
+                "consultation_fee",
+                0,
             ),
             is_accepting_patients=(
                 validated_data.get(

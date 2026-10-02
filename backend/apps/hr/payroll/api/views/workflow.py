@@ -7,7 +7,7 @@ from __future__ import annotations
 from typing import Final
 
 from drf_spectacular.utils import extend_schema
-from rest_framework import status
+from rest_framework import serializers, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -45,6 +45,8 @@ class PayslipProcessAPIView(BasePayslipWorkflowAPIView):
     Mark a draft payslip as processed.
     """
 
+    serializer_class = serializers.Serializer
+
     permission_classes = (IsAuthenticated, CanProcessPayslip)
 
     def post(self, request: Request, payslip_id) -> Response:
@@ -63,6 +65,8 @@ class PayslipMarkPaidAPIView(BasePayslipWorkflowAPIView):
     """
     Mark a processed payslip as paid.
     """
+
+    serializer_class = serializers.Serializer
 
     permission_classes = (IsAuthenticated, CanReleasePayslip)
 

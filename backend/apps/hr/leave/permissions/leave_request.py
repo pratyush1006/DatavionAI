@@ -4,26 +4,26 @@ Leave request permission classes.
 
 from __future__ import annotations
 
-from apps.common.permissions.base import DatavionPermission
+from apps.hr.permissions import HrPermission
 
 
-class CanViewLeaveRequest(DatavionPermission):
+class CanViewLeaveRequest(HrPermission):
     permission_code = "leave.view"
 
 
-class CanCreateLeaveRequest(DatavionPermission):
+class CanCreateLeaveRequest(HrPermission):
     permission_code = "leave.create"
 
 
-class CanUpdateLeaveRequest(DatavionPermission):
+class CanUpdateLeaveRequest(HrPermission):
     permission_code = "leave.update"
 
 
-class CanDeleteLeaveRequest(DatavionPermission):
+class CanDeleteLeaveRequest(HrPermission):
     permission_code = "leave.delete"
 
 
-class CanApproveLeaveRequest(DatavionPermission):
+class CanApproveLeaveRequest(HrPermission):
     permission_code = "leave.approve"
 
 

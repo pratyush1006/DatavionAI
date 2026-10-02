@@ -3,8 +3,8 @@ Root URL configuration for DatavionAI.
 
 DatavionOS API Gateway routing layer.
 
-Responsibilities:
-
+Responsibilities
+----------------
 - Admin
 - API Documentation
 - Platform modules
@@ -15,6 +15,8 @@ Responsibilities:
 - Clinical modules
 - AI Platform
 - Device Platform
+- Revenue Cycle
+- Enterprise Finance
 - Infrastructure
 """
 
@@ -25,6 +27,23 @@ from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 urlpatterns = [
+    path("api/ai-control/", include("apps.datavionos.ai_control.api.urls")),
+    path(
+        "api/organization-access/", include("apps.datavionos.access_control.api.urls")
+    ),
+    path(
+        "api/organization-control/", include("apps.datavionos.control_plane.api.urls")
+    ),
+    path("api/hospital-operations/", include("apps.hospital_operations.api.urls")),
+    path("api/ai/", include("apps.ai.api.urls")),
+    path("api/transcription/", include("apps.transcription.api.urls")),
+    # ==========================================================================
+    # Notes
+    # ==========================================================================
+    path(
+        "api/notes/",
+        include("apps.notes.urls"),
+    ),
     # ==========================================================================
     # Django Administration
     # ==========================================================================
@@ -84,6 +103,12 @@ urlpatterns = [
         "api/platform/",
         include(
             "apps.datavionos.api.urls",
+        ),
+    ),
+    path(
+        "api/onboarding/",
+        include(
+            "apps.datavionos.onboarding.api.urls",
         ),
     ),
     # ==========================================================================
@@ -218,6 +243,10 @@ urlpatterns = [
             "apps.clinical.laboratories.urls",
         ),
     ),
+    path(
+        "api/nursing/",
+        include("apps.clinical.nursing.urls"),
+    ),
     # ==========================================================================
     # Device Platform
     # ==========================================================================
@@ -231,19 +260,13 @@ urlpatterns = [
     # AI Platform APIs
     # ==========================================================================
     path(
-        "api/ai/",
-        include(
-            "apps.ai.urls",
-        ),
-    ),
-    path(
         "api/search/",
         include(
             "apps.common.search.api.urls",
         ),
     ),
     # ==========================================================================
-    # Telemedicine / Imaging / Billing / Revenue Cycle
+    # Telemedicine
     # ==========================================================================
     path(
         "api/telemedicine/",
@@ -251,18 +274,48 @@ urlpatterns = [
             "apps.telemedicine.api.urls",
         ),
     ),
+    # ==========================================================================
+    # Imaging
+    # ==========================================================================
     path(
         "api/imaging/",
         include(
             "apps.imaging.api.urls",
         ),
     ),
+    # ==========================================================================
+    # Enterprise Finance
+    #
+    # Canonical owner:
+    #     apps.billing.finance
+    #
+    # Both routes intentionally point to the same canonical Finance API.
+    # /api/billing/ is the primary bounded-context route.
+    # /api/finance/ is retained as a stable public API route and is required
+    # by the Finance production-hardening contract.
+    # ==========================================================================
     path(
         "api/billing/",
+        include("apps.billing.finance.api.urls"),
+    ),
+    path(
+        "api/finance/",
+        include("apps.billing.finance.api.urls"),
+    ),
+    # ==========================================================================
+    # Insurance
+    # ==========================================================================
+    path(
+        "api/insurance/",
         include(
-            "apps.billing.urls",
+            "apps.insurance.urls",
         ),
     ),
+    # ==========================================================================
+    # Revenue Cycle
+    #
+    # Healthcare billing is owned exclusively by Revenue Cycle.
+    # ==========================================================================
     path(
         "api/revenue-cycle/",
         include(
@@ -277,5 +330,57 @@ urlpatterns = [
         include(
             "apps.core.urls",
         ),
+    ),
+    # ==========================================================================
+    # Pharmacy
+    # ==========================================================================
+    path(
+        "api/pharmacy/",
+        include(
+            "apps.pharmacy.api.urls",
+        ),
+    ),
+    # ==========================================================================
+    # Human Resources
+    # ==========================================================================
+    path("api/hr/recruitment/", include("apps.hr.recruitment.urls")),
+    path(
+        "api/hr/attendance/",
+        include("apps.hr.attendance.urls"),
+    ),
+    path(
+        "api/hr/holidays/",
+        include("apps.hr.holidays.urls"),
+    ),
+    path(
+        "api/hr/leave/",
+        include("apps.hr.leave.urls"),
+    ),
+    path(
+        "api/hr/onboarding/",
+        include("apps.hr.onboarding.urls"),
+    ),
+    path(
+        "api/hr/payroll/",
+        include("apps.hr.payroll.urls"),
+    ),
+    path(
+        "api/hr/performance/",
+        include("apps.hr.performance.urls"),
+    ),
+    path(
+        "api/hr/shifts/",
+        include("apps.hr.shifts.urls"),
+    ),
+    # ==========================================================================
+    # Compliance and Interoperability
+    # ==========================================================================
+    path(
+        "api/compliance/",
+        include("apps.compliance.api.urls"),
+    ),
+    path(
+        "api/interoperability/",
+        include("apps.interoperability.api.urls"),
     ),
 ]

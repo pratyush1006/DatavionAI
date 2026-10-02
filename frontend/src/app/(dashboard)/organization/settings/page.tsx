@@ -1,0 +1,1 @@
+export default function Page(){return <div className="container-fluid p-4"><h1 className="fw-bold">Organization Settings</h1><p className="text-secondary">Canonical Organization Settings owns localization, notifications, security and dashboard preferences.</p></div>}

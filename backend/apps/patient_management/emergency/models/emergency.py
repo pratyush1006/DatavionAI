@@ -30,7 +30,7 @@ class EmergencyContact(models.Model):
         editable=False,
     )
     organization = models.ForeignKey(
-        "organization.Organization",
+        "organizations.Organization",
         on_delete=models.PROTECT,
         related_name="patient_emergency_contacts",
     )

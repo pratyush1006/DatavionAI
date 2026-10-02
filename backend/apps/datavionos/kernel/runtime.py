@@ -185,11 +185,7 @@ class KernelRuntime:
     def __repr__(
         self,
     ) -> str:
-        return (
-            f"KernelRuntime("
-            f"state={self.state.value}, "
-            f"services={len(self.services)})"
-        )
+        return f"KernelRuntime(state={self.state.value}, services={len(self.services)})"
 
 
 __all__ = [

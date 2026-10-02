@@ -19,6 +19,47 @@ from config.logging import LOGGING as DJANGO_LOGGING
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # ------------------------------------------------------------------------------
+# DatavionAI Central Runtime Configuration
+# ------------------------------------------------------------------------------
+# python-decouple is the canonical environment/.env reader for this project.
+
+REDIS_URL = config("REDIS_URL", default="")
+
+AI_PROVIDER = config("AI_PROVIDER", default="").strip().lower()
+AI_DEFAULT_MODEL = config(
+    "AI_DEFAULT_MODEL",
+    default="gpt-4o-mini",
+).strip()
+AI_MODEL = config(
+    "AI_MODEL",
+    default=AI_DEFAULT_MODEL,
+).strip()
+AI_EMBEDDING_PROVIDER = (
+    config("AI_EMBEDDING_PROVIDER", default=AI_PROVIDER).strip().lower()
+)
+AI_EMBEDDING_MODEL = config(
+    "AI_EMBEDDING_MODEL",
+    default="text-embedding-3-small",
+).strip()
+AI_ALLOW_MOCK_PROVIDER = config("AI_ALLOW_MOCK_PROVIDER", default=False, cast=bool)
+AI_PROVIDER_TIMEOUT_SECONDS = config(
+    "AI_PROVIDER_TIMEOUT_SECONDS", default=30, cast=int
+)
+AI_PROVIDER_RETRY_COUNT = config("AI_PROVIDER_RETRY_COUNT", default=2, cast=int)
+AI_MAX_TOKENS = config("AI_MAX_TOKENS", default=2048, cast=int)
+AI_MAX_PROMPT_LENGTH = config("AI_MAX_PROMPT_LENGTH", default=100000, cast=int)
+AI_RATE_LIMIT_REQUESTS = config("AI_RATE_LIMIT_REQUESTS", default=60, cast=int)
+AI_RATE_LIMIT_WINDOW_SECONDS = config(
+    "AI_RATE_LIMIT_WINDOW_SECONDS", default=60, cast=int
+)
+
+OPENAI_API_KEY = config("OPENAI_API_KEY", default="")
+AZURE_OPENAI_API_KEY = config("AZURE_OPENAI_API_KEY", default="")
+GEMINI_API_KEY = config("GEMINI_API_KEY", default="")
+GOOGLE_API_KEY = config("GOOGLE_API_KEY", default="")
+ANTHROPIC_API_KEY = config("ANTHROPIC_API_KEY", default="")
+
+# ------------------------------------------------------------------------------
 # Security
 # ------------------------------------------------------------------------------
 SECRET_KEY = config(
@@ -61,6 +102,11 @@ ALLOWED_HOSTS = config(
 # ------------------------------------------------------------------------------
 
 INSTALLED_APPS = [
+    "apps.hospital_operations",
+    "channels",
+    "apps.revenue_cycle.billing.apps.RCMBillingConfig",
+    "apps.documents",
+    # DATAVION_CLINICAL_PATIENT_JOURNEY_V1
     "apps.device_platform",
     # Django Apps
     "django.contrib.admin",
@@ -83,7 +129,6 @@ INSTALLED_APPS = [
     "apps.platform.tenancy",
     "apps.core.apps.CoreConfig",
     "apps.common.apps.CommonConfig",
-    "apps.documents",
     "apps.platform.accounts.apps.AccountsConfig",
     "apps.platform.organizations.apps.OrganizationsConfig",
     "apps.platform.geography.apps.GeographyConfig",
@@ -91,16 +136,18 @@ INSTALLED_APPS = [
     "apps.organization.departments.apps.DepartmentsConfig",
     "apps.organization.teams.apps.TeamsConfig",
     "apps.organization.employees.apps.EmployeesConfig",
+    "apps.hr.attendance.apps.AttendanceConfig",
+    "apps.hr.holidays.apps.HolidaysConfig",
+    "apps.hr.leave.apps.LeaveConfig",
+    "apps.hr.onboarding.apps.OnboardingConfig",
+    "apps.hr.payroll.apps.PayrollConfig",
+    "apps.hr.performance.apps.PerformanceConfig",
+    "apps.hr.shifts.apps.ShiftsConfig",
+    "apps.hr.recruitment.apps.RecruitmentConfig",
     "apps.platform.audit.apps.AuditConfig",
     "apps.platform.saas_billing.apps.SaaSBillingConfig",
     "apps.configuration.apps.ConfigurationConfig",
-    "apps.billing.apps.BillingConfig",
-    "apps.billing.general_ledger.apps.GeneralLedgerConfig",
-    "apps.billing.accounts_payable.apps.AccountsPayableConfig",
-    "apps.billing.accounts_receivable.apps.AccountsReceivableConfig",
-    "apps.billing.cash_management.apps.CashManagementConfig",
-    "apps.billing.tax_gst.apps.TaxGstConfig",
-    "apps.billing.financial_management.apps.FinancialManagementConfig",
+    "apps.revenue_cycle.billing.accounts_receivable.apps.AccountsReceivableConfig",
     "apps.patient_management.patients.apps.PatientCoreConfig",
     "apps.patient_management.profile.apps.PatientProfileConfig",
     "apps.patient_management.emergency_contacts.apps.EmergencyContactsConfig",
@@ -114,6 +161,7 @@ INSTALLED_APPS = [
     "apps.clinical.allergies.apps.AllergiesConfig",
     "apps.clinical.vitals.apps.VitalsConfig",
     "apps.clinical.laboratories.apps.LaboratoriesConfig",
+    "apps.clinical.nursing.apps.NursingConfig",
     "apps.notes.apps.NotesConfig",
     "apps.telemedicine.apps.TelemedicineConfig",
     "apps.ai.apps.AIConfig",
@@ -125,10 +173,9 @@ INSTALLED_APPS = [
     "apps.patient_management.apps.PatientManagementConfig",
     "apps.compliance.apps.ComplianceConfig",
     "apps.datavionos.apps.DatavionOSConfig",
-    "apps.platform.feature_flags.apps.FeatureFlagsConfig",
-    "apps.platform.module_registry.apps.ModuleRegistryConfig",
-    "apps.platform.dashboard.apps.DashboardConfig",
     "apps.platform.notifications.apps.NotificationsConfig",
+    "apps.pharmacy.apps.PharmacyConfig",
+    "apps.billing.finance",
 ]
 
 # ------------------------------------------------------------------------------
@@ -147,6 +194,8 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     # DatavionOS SaaS tenant context
     "apps.platform.tenancy.middleware.TenantMiddleware",
+    # Active organization context for organization-scoped APIs
+    "apps.platform.organizations.middleware.OrganizationContextMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -178,18 +227,27 @@ WSGI_APPLICATION = "config.wsgi.application"
 # Database
 # ------------------------------------------------------------------------------
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": config("DATABASE_NAME", default="datavion"),
-        "USER": config("DATABASE_USER", default="postgres"),
-        "PASSWORD": config("DATABASE_PASSWORD", default="postgres"),
-        "HOST": config("DATABASE_HOST", default="localhost"),
-        "PORT": config("DATABASE_PORT", default="5432"),
-        "CONN_MAX_AGE": 60,
-        "CONN_HEALTH_CHECKS": True,
+if config("DATABASE_ENGINE", default="postgresql").strip().lower() == "sqlite":
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": config("DATABASE_NAME", default=str(BASE_DIR / "db.sqlite3")),
+            "TEST": {"NAME": config("TEST_DATABASE_NAME", default=None)},
+        }
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": config("DATABASE_NAME", default="datavion"),
+            "USER": config("DATABASE_USER", default="postgres"),
+            "PASSWORD": config("DATABASE_PASSWORD", default="postgres"),
+            "HOST": config("DATABASE_HOST", default="localhost"),
+            "PORT": config("DATABASE_PORT", default="5432"),
+            "CONN_MAX_AGE": 60,
+            "CONN_HEALTH_CHECKS": True,
+        }
+    }
 # ------------------------------------------------------------------------------
 # Password Validation
 # ------------------------------------------------------------------------------
@@ -269,12 +327,21 @@ EMAIL_TIMEOUT = 30
 # Cache
 # ------------------------------------------------------------------------------
 
-CACHES = {
-    "default": {
-        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
-        "LOCATION": "datavion-cache",
-    },
-}
+if REDIS_URL:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.redis.RedisCache",
+            "LOCATION": REDIS_URL,
+        },
+    }
+else:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "datavion-cache",
+        },
+    }
+
 # ------------------------------------------------------------------------------
 # Internationalization
 # ------------------------------------------------------------------------------
@@ -341,8 +408,14 @@ DEFAULT_TIMEZONE = "Asia/Kolkata"
 # Django REST Framework
 # ------------------------------------------------------------------------------
 
+ENABLE_API_THROTTLING = config(
+    "ENABLE_API_THROTTLING",
+    default=not DEBUG,
+    cast=bool,
+)
+
 REST_FRAMEWORK = {
-    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "DEFAULT_SCHEMA_CLASS": "apps.common.api.schema.DatavionAutoSchema",
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "apps.platform.tenancy.authentication.TenantJWTAuthentication",
     ],
@@ -364,14 +437,22 @@ REST_FRAMEWORK = {
         "rest_framework.parsers.MultiPartParser",
         "rest_framework.parsers.FormParser",
     ],
-    "DEFAULT_THROTTLE_CLASSES": [
-        "rest_framework.throttling.AnonRateThrottle",
-        "rest_framework.throttling.UserRateThrottle",
-    ],
-    "DEFAULT_THROTTLE_RATES": {
-        "anon": "100/hour",
-        "user": "1000/hour",
-    },
+    "DEFAULT_THROTTLE_CLASSES": (
+        [
+            "rest_framework.throttling.AnonRateThrottle",
+            "rest_framework.throttling.UserRateThrottle",
+        ]
+        if ENABLE_API_THROTTLING
+        else []
+    ),
+    "DEFAULT_THROTTLE_RATES": (
+        {
+            "anon": "100/hour",
+            "user": "1000/hour",
+        }
+        if ENABLE_API_THROTTLING
+        else {}
+    ),
 }
 # ------------------------------------------------------------------------------
 # CORS
@@ -380,6 +461,10 @@ REST_FRAMEWORK = {
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+    "http://localhost:3001",
+    "http://127.0.0.1:3001",
+    "http://localhost:3005",
+    "http://127.0.0.1:3005",
 ]
 CORS_ALLOW_CREDENTIALS = True
 
@@ -387,11 +472,17 @@ CORS_ALLOW_HEADERS = [
     *default_headers,
     "x-request-id",
     "x-tenant-id",
+    "x-organization-id",
+    "idempotency-key",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+    "http://localhost:3001",
+    "http://127.0.0.1:3001",
+    "http://localhost:3005",
+    "http://127.0.0.1:3005",
 ]
 # ------------------------------------------------------------------------------
 # JWT
@@ -441,33 +532,36 @@ SPECTACULAR_SETTINGS = {
 
 CELERY_BROKER_URL = config(
     "CELERY_BROKER_URL",
-    default="redis://127.0.0.1:6379/0",
+    default=REDIS_URL or ("redis://127.0.0.1:6379/0" if DEBUG else ""),
 )
 
 CELERY_RESULT_BACKEND = config(
     "CELERY_RESULT_BACKEND",
-    default="redis://127.0.0.1:6379/1",
+    default=REDIS_URL or ("redis://127.0.0.1:6379/1" if DEBUG else ""),
 )
 
-CELERY_ACCEPT_CONTENT = [
-    "json",
-]
-
+CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
-
 CELERY_RESULT_SERIALIZER = "json"
-
 CELERY_TIMEZONE = TIME_ZONE
-
 CELERY_ENABLE_UTC = USE_TZ
-
 CELERY_TASK_TRACK_STARTED = True
-
-CELERY_TASK_TIME_LIMIT = 300
-
+CELERY_TASK_SOFT_TIME_LIMIT = config(
+    "CELERY_TASK_SOFT_TIME_LIMIT", default=90, cast=int
+)
+CELERY_TASK_TIME_LIMIT = config("CELERY_TASK_TIME_LIMIT", default=120, cast=int)
 CELERY_TASK_ALWAYS_EAGER = False
-
 CELERY_TASK_IGNORE_RESULT = False
+CELERY_TASK_ACKS_LATE = config("CELERY_TASK_ACKS_LATE", default=True, cast=bool)
+CELERY_TASK_REJECT_ON_WORKER_LOST = config(
+    "CELERY_TASK_REJECT_ON_WORKER_LOST", default=True, cast=bool
+)
+CELERY_WORKER_MAX_TASKS_PER_CHILD = config(
+    "CELERY_WORKER_MAX_TASKS_PER_CHILD", default=1000, cast=int
+)
+CELERY_WORKER_PREFETCH_MULTIPLIER = config(
+    "CELERY_WORKER_PREFETCH_MULTIPLIER", default=1, cast=int
+)
 
 
 # -----------------------------------------------------------------------------
@@ -510,3 +604,38 @@ if not DEBUG:
 # ------------------------------------------------------------------------------
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# DATAVIONOS FINANCE PRODUCTION HARDENING v1
+# Explicitly enabled by --production-certify; review reverse-proxy/TLS policy separately.
+DEBUG = False
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+
+
+TRANSCRIPTION_STREAMING_PROVIDER = config(
+    "TRANSCRIPTION_STREAMING_PROVIDER",
+    default="",
+).strip()
+TRANSCRIPTION_SPEECH_PROVIDER = config(
+    "TRANSCRIPTION_SPEECH_PROVIDER",
+    default="",
+).strip()
+TRANSCRIPTION_NOTE_PROVIDER = config(
+    "TRANSCRIPTION_NOTE_PROVIDER",
+    default="",
+).strip()
+
+ASGI_APPLICATION = "config.asgi.application"
+
+CHANNEL_LAYERS = {"default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}}
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/0",
+        "OPTIONS": {
+            "socket_connect_timeout": 5,
+            "socket_timeout": 5,
+        },
+    },
+}

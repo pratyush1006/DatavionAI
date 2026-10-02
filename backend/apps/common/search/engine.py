@@ -15,6 +15,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from .providers.base import BaseSearchProvider
 from .registry import (
     get_search_provider,
 )
@@ -39,7 +40,7 @@ class SearchEngine:
     def get_provider(
         self,
         name: str,
-    ):
+    ) -> BaseSearchProvider:
         """
         Resolve search provider instance.
         """

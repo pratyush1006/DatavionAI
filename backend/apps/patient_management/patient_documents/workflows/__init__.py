@@ -52,3 +52,4 @@ __all__ = (
     "PatientDocumentVersionCreationRequest",
     "PatientDocumentVersionCreationWorkflow",
 )
+from .access import PatientDocumentAccessRequest, PatientDocumentAccessWorkflow

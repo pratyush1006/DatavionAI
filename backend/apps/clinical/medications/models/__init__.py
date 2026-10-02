@@ -1,9 +1,3 @@
-"""
-Medication models.
-"""
+from .medication import Medication, MedicationAuditLog, MedicationOutboxEvent
 
-from .medication import Medication
-
-__all__ = [
-    "Medication",
-]
+__all__ = ("Medication", "MedicationAuditLog", "MedicationOutboxEvent")

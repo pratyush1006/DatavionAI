@@ -9,6 +9,12 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
+type DocumentID = str
+type IndexName = str
+type SearchContext = dict[str, Any]
+type SearchQuery = str
+type SearchScore = float
+
 type SearchMetadata = dict[str, Any]
 
 
@@ -87,9 +93,14 @@ class SearchResult:
 
 
 __all__: tuple[str, ...] = (
+    "DocumentID",
+    "IndexName",
+    "SearchContext",
     "SearchFilters",
     "SearchItem",
     "SearchMetadata",
+    "SearchQuery",
     "SearchRequest",
     "SearchResult",
+    "SearchScore",
 )

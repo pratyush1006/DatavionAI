@@ -5,7 +5,7 @@ Managers and querysets for the Patient Registration module.
 from __future__ import annotations
 
 from datetime import timedelta
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 from django.db import models
 from django.db.models import Q
@@ -301,7 +301,7 @@ class PatientRegistrationQuerySet(
             ),
         )
 
-    def ordered(
+    def by_registration_datetime(
         self,
     ) -> PatientRegistrationQuerySet:
         """
@@ -330,7 +330,7 @@ class PatientRegistrationManager(
     models.Manager.from_queryset(
         PatientRegistrationQuerySet,
     ),
-):
+):  # type: ignore[misc]
     """
     Manager for PatientRegistration.
 
@@ -345,14 +345,15 @@ class PatientRegistrationManager(
         Return the base optimized registration queryset.
         """
 
-        return (
+        return cast(
+            PatientRegistrationQuerySet,
             super()
             .get_queryset()
             .select_related(
                 "organization",
                 "patient",
                 "verified_by",
-            )
+            ),
         )
 
     def active(
@@ -471,10 +472,10 @@ class PatientRegistrationManager(
             query,
         )
 
-    def ordered(
+    def by_registration_datetime(
         self,
     ) -> PatientRegistrationQuerySet:
-        return self.get_queryset().ordered()
+        return self.get_queryset().by_registration_datetime()
 
     def with_relations(
         self,

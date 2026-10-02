@@ -13,6 +13,8 @@ Future integrations:
 
 from __future__ import annotations
 
+from typing import Any
+
 from apps.common.search.types import (
     SearchRequest,
     SearchResult,
@@ -33,7 +35,7 @@ class PostgreSQLSearchProvider(
     def search(
         self,
         request: SearchRequest,
-        **kwargs,
+        **kwargs: Any,
     ) -> SearchResult:
         """
         Execute PostgreSQL search.

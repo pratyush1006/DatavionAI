@@ -133,9 +133,8 @@ class PatientIdentifierQuerySet(
         )
 
 
-PatientIdentifierManager = models.Manager.from_queryset(
-    PatientIdentifierQuerySet,
-)
+class PatientIdentifierManager(models.Manager.from_queryset(PatientIdentifierQuerySet)):
+    """Concrete migration-serializable manager class."""
 
 
 __all__ = (

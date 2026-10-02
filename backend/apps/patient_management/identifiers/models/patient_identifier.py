@@ -30,8 +30,6 @@ from apps.patient_management.identifiers.validators import (
     validate_national_id,
     validate_passport,
 )
-from apps.patient_management.patients.models import Patient
-from apps.platform.organizations.models import Organization
 
 if TYPE_CHECKING:
     from apps.platform.accounts.models import User
@@ -60,13 +58,13 @@ class PatientIdentifier(AuditableModel):
     }
 
     organization = models.ForeignKey(
-        Organization,
+        "organizations.Organization",
         on_delete=models.CASCADE,
         related_name="patient_identifiers",
     )
 
     patient = models.ForeignKey(
-        Patient,
+        "patient_core.Patient",
         on_delete=models.CASCADE,
         related_name="identifiers",
     )
@@ -276,7 +274,7 @@ class PatientIdentifier(AuditableModel):
         *args: object,
         **kwargs: object,
     ) -> None:
-        self.full_clean()
+        self.full_clean(exclude=["organization", "patient"])
         super().save(
             *args,
             **kwargs,

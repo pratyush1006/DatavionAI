@@ -4,10 +4,13 @@ Database selectors for lifecycle task templates.
 
 from __future__ import annotations
 
+from typing import cast
+
 from django.db.models import QuerySet
 from django.shortcuts import get_object_or_404
 
 from apps.hr.onboarding.models import LifecycleTaskTemplate
+from apps.hr.scope import scope_queryset
 
 
 def get_task_templates() -> QuerySet[LifecycleTaskTemplate]:
@@ -15,8 +18,10 @@ def get_task_templates() -> QuerySet[LifecycleTaskTemplate]:
     Return all lifecycle task templates with related objects.
     """
 
-    return LifecycleTaskTemplate.objects.select_related(
-        "organization",
+    return scope_queryset(
+        LifecycleTaskTemplate.objects.select_related(
+            "organization",
+        )
     )
 
 
@@ -28,9 +33,12 @@ def get_task_template_by_id(
     Return a lifecycle task template by ID.
     """
 
-    return get_object_or_404(
-        get_task_templates(),
-        pk=task_template_id,
+    return cast(
+        LifecycleTaskTemplate,
+        get_object_or_404(
+            get_task_templates(),
+            pk=task_template_id,
+        ),
     )
 
 

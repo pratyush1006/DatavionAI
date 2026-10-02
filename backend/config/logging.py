@@ -46,7 +46,7 @@ LOGGING = {
             ],
         },
         "application_file": {
-            "class": "logging.handlers.RotatingFileHandler",
+            "class": "apps.common.logging.WindowsSafeRotatingFileHandler",
             "filename": str(
                 LOG_DIR / "application.log",
             ),
@@ -59,7 +59,7 @@ LOGGING = {
             ],
         },
         "error_file": {
-            "class": "logging.handlers.RotatingFileHandler",
+            "class": "apps.common.logging.WindowsSafeRotatingFileHandler",
             "filename": str(
                 LOG_DIR / "error.log",
             ),
@@ -73,7 +73,7 @@ LOGGING = {
             ],
         },
         "audit_file": {
-            "class": "logging.handlers.RotatingFileHandler",
+            "class": "apps.common.logging.WindowsSafeRotatingFileHandler",
             "filename": str(
                 LOG_DIR / "audit.log",
             ),

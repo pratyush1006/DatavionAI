@@ -116,7 +116,7 @@ class PatientConsent(BaseModel):
                     "patient",
                     "status",
                 ],
-                name="pm_consent_org_patient_status_idx",
+                name="pm_consent_org_pat_status_idx",
             ),
         ]
 

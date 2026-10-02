@@ -4,22 +4,22 @@ Performance goal permission classes.
 
 from __future__ import annotations
 
-from apps.common.permissions.base import DatavionPermission
+from apps.hr.permissions import HrPermission
 
 
-class CanViewPerformanceGoal(DatavionPermission):
+class CanViewPerformanceGoal(HrPermission):
     permission_code = "performance.view"
 
 
-class CanCreatePerformanceGoal(DatavionPermission):
+class CanCreatePerformanceGoal(HrPermission):
     permission_code = "performance.create"
 
 
-class CanUpdatePerformanceGoal(DatavionPermission):
+class CanUpdatePerformanceGoal(HrPermission):
     permission_code = "performance.update"
 
 
-class CanDeletePerformanceGoal(DatavionPermission):
+class CanDeletePerformanceGoal(HrPermission):
     permission_code = "performance.delete"
 
 

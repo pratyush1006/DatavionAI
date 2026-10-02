@@ -16,6 +16,7 @@ from typing import Final
 
 from django.db.models import QuerySet
 from drf_spectacular.utils import extend_schema
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 
 from apps.common.api.base_generics import (
@@ -121,9 +122,14 @@ class PatientListCreateAPIView(
         Build the Patient creation workflow request.
         """
 
+        organization = self.current_organization
+        if organization is None:
+            raise ValidationError(
+                {"organization": "An active organization context is required."}
+            )
+
         return PatientCreationRequest(
-            organization_id=validated_data["organization"].id,
-            mrn=validated_data["mrn"],
+            organization_id=organization.id,
             first_name=validated_data["first_name"],
             last_name=validated_data["last_name"],
             middle_name=validated_data.get(
@@ -166,10 +172,7 @@ class PatientListCreateAPIView(
                 "state",
                 "",
             ),
-            country=validated_data.get(
-                "country",
-                "",
-            ),
+            country=validated_data.get("country", "India"),
             postal_code=validated_data.get(
                 "postal_code",
                 "",

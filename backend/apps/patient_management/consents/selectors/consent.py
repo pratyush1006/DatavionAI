@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from apps.common.exceptions import ObjectNotFoundException
+from apps.common.exceptions import ResourceNotFoundException
 from apps.patient_management.consents.models import (
     PatientConsent,
 )
@@ -32,7 +32,7 @@ def get_consent(
             organization__tenant_id=tenant_id,
         )
     except PatientConsent.DoesNotExist as exc:
-        raise ObjectNotFoundException(
+        raise ResourceNotFoundException(
             "Patient consent was not found.",
         ) from exc
 

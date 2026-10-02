@@ -4,22 +4,22 @@ Lifecycle process permission classes.
 
 from __future__ import annotations
 
-from apps.common.permissions.base import DatavionPermission
+from apps.hr.permissions import HrPermission
 
 
-class CanViewLifecycleProcess(DatavionPermission):
+class CanViewLifecycleProcess(HrPermission):
     permission_code = "onboarding.view"
 
 
-class CanCreateLifecycleProcess(DatavionPermission):
+class CanCreateLifecycleProcess(HrPermission):
     permission_code = "onboarding.create"
 
 
-class CanUpdateLifecycleProcess(DatavionPermission):
+class CanUpdateLifecycleProcess(HrPermission):
     permission_code = "onboarding.update"
 
 
-class CanDeleteLifecycleProcess(DatavionPermission):
+class CanDeleteLifecycleProcess(HrPermission):
     permission_code = "onboarding.delete"
 
 

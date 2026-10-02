@@ -1,17 +1,4 @@
-"""
-Diagnosis permission exports.
-"""
+from .api import DiagnosisAPIPermission
+from .diagnosis import DiagnosisPermission
 
-from .diagnosis import (
-    CanCreateDiagnosis,
-    CanDeleteDiagnosis,
-    CanUpdateDiagnosis,
-    CanViewDiagnosis,
-)
-
-__all__ = [
-    "CanCreateDiagnosis",
-    "CanDeleteDiagnosis",
-    "CanUpdateDiagnosis",
-    "CanViewDiagnosis",
-]
+__all__ = ("DiagnosisAPIPermission", "DiagnosisPermission")

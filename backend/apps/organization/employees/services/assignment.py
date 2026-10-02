@@ -157,7 +157,7 @@ def change_employee_assignment(
     #
     # Create the new current assignment.
     #
-    assignment = EmployeeAssignment.objects.create(
+    return EmployeeAssignment.objects.create(
         employee=employee,
         department=department,
         team=team,
@@ -166,8 +166,6 @@ def change_employee_assignment(
         effective_to=None,
         is_current=True,
     )
-
-    return assignment
 
 
 __all__ = ("change_employee_assignment",)

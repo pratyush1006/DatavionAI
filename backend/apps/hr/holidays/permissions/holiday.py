@@ -4,22 +4,22 @@ Holiday permission classes.
 
 from __future__ import annotations
 
-from apps.common.permissions.base import DatavionPermission
+from apps.hr.permissions import HrPermission
 
 
-class CanViewHoliday(DatavionPermission):
+class CanViewHoliday(HrPermission):
     permission_code = "holidays.view"
 
 
-class CanCreateHoliday(DatavionPermission):
+class CanCreateHoliday(HrPermission):
     permission_code = "holidays.create"
 
 
-class CanUpdateHoliday(DatavionPermission):
+class CanUpdateHoliday(HrPermission):
     permission_code = "holidays.update"
 
 
-class CanDeleteHoliday(DatavionPermission):
+class CanDeleteHoliday(HrPermission):
     permission_code = "holidays.delete"
 
 

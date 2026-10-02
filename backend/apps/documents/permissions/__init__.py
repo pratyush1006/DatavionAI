@@ -12,12 +12,14 @@ from .document import (
     CanManageDocumentVersions,
     CanShareDocument,
     CanUpdateDocument,
+    CanUploadDocument,
     CanViewDocument,
 )
 
 __all__ = (
     "CanViewDocument",
     "CanCreateDocument",
+    "CanUploadDocument",
     "CanUpdateDocument",
     "CanDeleteDocument",
     "CanManageDocumentVersions",

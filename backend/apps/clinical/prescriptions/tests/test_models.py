@@ -43,7 +43,6 @@ class PrescriptionModelTestCase(BaseTestCase):
             organization=self.organization,
             employee=self.employee,
             provider_number="PRV000001",
-            license_number="LIC000001",
             provider_type=ProviderType.PHYSICIAN,
         )
 
@@ -122,7 +121,7 @@ class PrescriptionModelTestCase(BaseTestCase):
 
         self.assertEqual(
             self.prescription.title,
-            (f"{self.medication.title} | {self.patient.full_name}"),
+            (f"{self.medication.display_name} | {self.patient.full_name}"),
         )
 
     def test_defaults(

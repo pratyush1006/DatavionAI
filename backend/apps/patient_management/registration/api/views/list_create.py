@@ -14,7 +14,7 @@ the RBAC permission layer, reads to selectors, and mutations to workflows.
 
 from __future__ import annotations
 
-from typing import Any, Final
+from typing import Any, Final, cast
 
 from apps.common.api.base_generics import BaseListCreateAPIView
 from apps.patient_management.registration.api.filters import (
@@ -84,7 +84,7 @@ class PatientRegistrationListCreateAPIView(
 
     create_success_message = "Patient registration created successfully."
 
-    filter_backends = (
+    filter_backends = (  # type: ignore[misc]
         DjangoFilterBackend,
         SearchFilter,
         OrderingFilter,
@@ -161,7 +161,10 @@ class PatientRegistrationListCreateAPIView(
         organization = self._resolve_organization()
 
         if organization is None:
-            return PatientRegistration.objects.none()
+            return cast(
+                QuerySet[PatientRegistration],
+                PatientRegistration.objects.none(),
+            )
 
         patient_id = self.request.query_params.get("patient")
 

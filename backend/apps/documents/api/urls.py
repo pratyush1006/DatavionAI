@@ -10,11 +10,16 @@ from apps.documents.api.views import (
     DocumentListCreateAPIView,
     DocumentRetrieveUpdateDestroyAPIView,
 )
+from apps.documents.api.views.media import (
+    DocumentDownloadAPIView,
+    DocumentUploadAPIView,
+)
 
 app_name = "documents-api"
 
 
 urlpatterns = [
+    path("upload/", DocumentUploadAPIView.as_view(), name="document-upload"),
     path(
         "",
         DocumentListCreateAPIView.as_view(),
@@ -24,6 +29,11 @@ urlpatterns = [
         "<uuid:uuid>/",
         DocumentRetrieveUpdateDestroyAPIView.as_view(),
         name="document-detail",
+    ),
+    path(
+        "<uuid:uuid>/download/",
+        DocumentDownloadAPIView.as_view(),
+        name="document-download",
     ),
 ]
 

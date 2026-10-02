@@ -13,7 +13,7 @@ from typing import Final
 _LIST_FIELDS: Final[tuple[str, ...]] = (
     "id",
     "organization",
-    "logo_path",
+    "logo",
     "primary_color",
     "theme_mode",
 )
@@ -25,14 +25,11 @@ _LIST_FIELDS: Final[tuple[str, ...]] = (
 _DETAIL_FIELDS: Final[tuple[str, ...]] = (
     "id",
     "organization",
-    "logo_path",
-    "favicon_path",
+    "logo",
+    "favicon",
     "primary_color",
-    "secondary_color",
-    "accent_color",
     "font_family",
     "theme_mode",
-    "login_message",
     "created_at",
     "updated_at",
 )
@@ -43,14 +40,11 @@ _DETAIL_FIELDS: Final[tuple[str, ...]] = (
 
 _WRITE_FIELDS: Final[tuple[str, ...]] = (
     "organization",
-    "logo_path",
-    "favicon_path",
+    "logo",
+    "favicon",
     "primary_color",
-    "secondary_color",
-    "accent_color",
     "font_family",
     "theme_mode",
-    "login_message",
 )
 
 # ---------------------------------------------------------------------
@@ -58,14 +52,11 @@ _WRITE_FIELDS: Final[tuple[str, ...]] = (
 # ---------------------------------------------------------------------
 
 _UPDATE_FIELDS: Final[tuple[str, ...]] = (
-    "logo_path",
-    "favicon_path",
+    "logo",
+    "favicon",
     "primary_color",
-    "secondary_color",
-    "accent_color",
     "font_family",
     "theme_mode",
-    "login_message",
 )
 
 __all__: tuple[str, ...] = (

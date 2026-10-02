@@ -1,0 +1,3 @@
+"""
+External Geography provider adapters.
+"""

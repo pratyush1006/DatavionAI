@@ -108,7 +108,7 @@ def serialize_workflow_data(
     if callable(to_dict):
         return to_dict()
 
-    if is_dataclass(data):
+    if is_dataclass(data) and not isinstance(data, type):
         return asdict(data)
 
     if hasattr(data, "__dict__"):
@@ -324,10 +324,12 @@ class PatientRegistrationVerifyAPIView(
     Verify a patient registration.
     """
 
-    permission_classes = (
-        IsAuthenticated,
-        CanVerifyRegistration,
-    )
+    permission_classes_map = {
+        "POST": (
+            IsAuthenticated,
+            CanVerifyRegistration,
+        ),
+    }
 
     def post(
         self,
@@ -357,10 +359,12 @@ class PatientRegistrationCheckInAPIView(
     Check in a patient registration.
     """
 
-    permission_classes = (
-        IsAuthenticated,
-        CanCheckInRegistration,
-    )
+    permission_classes_map = {
+        "POST": (
+            IsAuthenticated,
+            CanCheckInRegistration,
+        ),
+    }
 
     def post(
         self,
@@ -390,10 +394,12 @@ class PatientRegistrationCompleteAPIView(
     Complete a patient registration.
     """
 
-    permission_classes = (
-        IsAuthenticated,
-        CanCompleteRegistration,
-    )
+    permission_classes_map = {
+        "POST": (
+            IsAuthenticated,
+            CanCompleteRegistration,
+        ),
+    }
 
     def post(
         self,
@@ -423,10 +429,12 @@ class PatientRegistrationCancelAPIView(
     Cancel a patient registration.
     """
 
-    permission_classes = (
-        IsAuthenticated,
-        CanCancelRegistration,
-    )
+    permission_classes_map = {
+        "POST": (
+            IsAuthenticated,
+            CanCancelRegistration,
+        ),
+    }
 
     serializer_class = RegistrationCancellationSerializer
 
@@ -471,10 +479,12 @@ class PatientRegistrationRejectAPIView(
     Reject a patient registration.
     """
 
-    permission_classes = (
-        IsAuthenticated,
-        CanRejectRegistration,
-    )
+    permission_classes_map = {
+        "POST": (
+            IsAuthenticated,
+            CanRejectRegistration,
+        ),
+    }
 
     def post(
         self,
@@ -504,10 +514,12 @@ class PatientRegistrationNoShowAPIView(
     Mark a patient registration as a no-show.
     """
 
-    permission_classes = (
-        IsAuthenticated,
-        CanNoShowRegistration,
-    )
+    permission_classes_map = {
+        "POST": (
+            IsAuthenticated,
+            CanNoShowRegistration,
+        ),
+    }
 
     def post(
         self,

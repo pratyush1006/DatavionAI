@@ -21,9 +21,9 @@ class PhiAccessLogger:
     def log(
         *,
         action: str,
-        actor=None,
-        patient=None,
-        organization=None,
+        actor: object | None = None,
+        patient: object | None = None,
+        organization: object | None = None,
         resource_type: str = "",
         resource_id: str = "",
         ip_address: str | None = None,

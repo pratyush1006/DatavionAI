@@ -74,4 +74,23 @@ class ARTransactionSerializer(serializers.ModelSerializer):
         return value
 
 
-__all__ = ("ARAccountSerializer", "ARTransactionSerializer")
+class ARAccountHoldSerializer(serializers.Serializer):
+    """Validate a request to place an AR account on hold."""
+
+    reason = serializers.CharField(required=False, allow_blank=True)
+    note = serializers.CharField(required=False, allow_blank=True)
+
+
+class ARAccountWriteOffSerializer(serializers.Serializer):
+    """Validate a request to write off an AR account balance."""
+
+    transaction_number = serializers.CharField(max_length=100)
+    note = serializers.CharField(required=False, allow_blank=True)
+
+
+__all__ = (
+    "ARAccountHoldSerializer",
+    "ARAccountSerializer",
+    "ARAccountWriteOffSerializer",
+    "ARTransactionSerializer",
+)

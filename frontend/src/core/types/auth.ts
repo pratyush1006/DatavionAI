@@ -259,6 +259,8 @@ export interface ResetPasswordRequest {
   readonly otp: string;
 
   readonly new_password: string;
+
+  readonly confirm_password: string;
 }
 
 export interface ChangePasswordRequest {

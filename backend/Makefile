@@ -25,6 +25,8 @@ help:
 	@echo "make migrate         Apply migrations"
 	@echo "make makemigrations  Create migrations"
 	@echo "make run             Run development server"
+	@echo "make worker          Run the Celery worker"
+	@echo "make beat            Run Celery Beat scheduler"
 	@echo "make shell           Django shell"
 	@echo "make test            Run tests"
 	@echo "make lint            Ruff lint"
@@ -43,7 +45,7 @@ help:
 .PHONY: install
 
 install:
-	pip install -r requirements/dev.txt
+	pip install -r requirements/development.txt
 	pre-commit install
 
 ###############################################################################
@@ -54,6 +56,16 @@ install:
 
 run:
 	$(MANAGE) runserver
+
+.PHONY: worker
+
+worker:
+	celery -A config.celery:app worker --loglevel=INFO
+
+.PHONY: beat
+
+beat:
+	celery -A config.celery:app beat --loglevel=INFO
 
 .PHONY: shell
 

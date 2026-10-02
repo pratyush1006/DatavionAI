@@ -1,163 +1,65 @@
-"""
-Diagnosis model.
-"""
-
-from __future__ import annotations
-
 from django.db import models
 
-from apps.clinical.diagnoses.constants import (
-    DiagnosisStatus,
-    DiagnosisType,
-)
+from apps.clinical.diagnoses.constants import DiagnosisStatus, DiagnosisType
 from apps.clinical.encounters.models import Encounter
-from apps.core.models import (
-    BaseManager,
-    BaseModel,
-)
+from apps.core.models import BaseManager, BaseModel
 from apps.platform.organizations.models import Organization
 
 
 class Diagnosis(BaseModel):
-    """
-    Represents an ICD-10 diagnosis recorded during an encounter.
-    """
-
     objects = BaseManager()
 
     organization = models.ForeignKey(
         Organization,
         on_delete=models.CASCADE,
         related_name="diagnoses",
-        help_text="Organization that owns this diagnosis.",
     )
-
     encounter = models.ForeignKey(
         Encounter,
         on_delete=models.CASCADE,
         related_name="diagnoses",
-        help_text="Encounter associated with this diagnosis.",
     )
-
-    diagnosis_code = models.CharField(
-        max_length=20,
-        db_index=True,
-        help_text="ICD-10 diagnosis code.",
-    )
-
-    diagnosis_description = models.TextField(
-        help_text="Diagnosis description.",
-    )
-
+    diagnosis_code = models.CharField(max_length=50, db_index=True)
+    diagnosis_description = models.TextField(blank=True)
     diagnosis_type = models.CharField(
         max_length=20,
         choices=DiagnosisType.choices,
-        default=DiagnosisType.PRIMARY,
+        default=DiagnosisType.SECONDARY,
         db_index=True,
-        help_text="Diagnosis type.",
     )
-
     status = models.CharField(
         max_length=20,
         choices=DiagnosisStatus.choices,
         default=DiagnosisStatus.ACTIVE,
         db_index=True,
-        help_text="Diagnosis status.",
     )
-
-    is_primary = models.BooleanField(
-        default=False,
-        help_text="Whether this is the primary diagnosis.",
-    )
-
-    present_on_admission = models.BooleanField(
-        default=False,
-        help_text="Whether the diagnosis was present on admission.",
-    )
-
-    notes = models.TextField(
-        blank=True,
-        help_text="Additional clinical notes.",
-    )
+    is_primary = models.BooleanField(default=False)
+    present_on_admission = models.BooleanField(null=True, blank=True)
+    notes = models.TextField(blank=True)
 
     class Meta:
-        """
-        Model metadata.
-        """
-
         db_table = "diagnoses"
-
-        verbose_name = "Diagnosis"
-
-        verbose_name_plural = "Diagnoses"
-
         ordering = ("-created_at",)
-
         indexes = [
             models.Index(
-                fields=[
-                    "diagnosis_code",
-                ],
+                fields=("diagnosis_code",), name="diagnoses_diagnos_3ecb67_idx"
             ),
+            models.Index(fields=("status",), name="diagnoses_status_b3ae1b_idx"),
             models.Index(
-                fields=[
-                    "status",
-                ],
+                fields=("diagnosis_type",), name="diagnoses_diagnos_049279_idx"
             ),
+            models.Index(fields=("encounter",), name="diagnoses_encount_1b4290_idx"),
+            models.Index(fields=("organization",), name="diagnoses_organiz_c0ea99_idx"),
             models.Index(
-                fields=[
-                    "diagnosis_type",
-                ],
-            ),
-            models.Index(
-                fields=[
-                    "encounter",
-                ],
-            ),
-            models.Index(
-                fields=[
-                    "organization",
-                ],
-            ),
-            models.Index(
-                fields=[
-                    "encounter",
-                    "is_primary",
-                ],
+                fields=("encounter", "is_primary"), name="diagnoses_encount_218ad8_idx"
             ),
         ]
-
         constraints = [
             models.UniqueConstraint(
-                fields=[
-                    "organization",
-                    "encounter",
-                    "diagnosis_code",
-                ],
+                fields=("encounter", "diagnosis_code", "diagnosis_type"),
                 name="unique_diagnosis_per_encounter",
             ),
         ]
 
-    @property
-    def title(
-        self,
-    ) -> str:
-        """
-        Return diagnosis title.
-        """
-
-        return f"{self.diagnosis_code} | {self.diagnosis_description}"
-
-    def __str__(
-        self,
-    ) -> str:
-        """
-        Return diagnosis display string.
-        """
-
-        return f"{self.diagnosis_code} | {self.diagnosis_description}"
-
-
-__all__ = [
-    "Diagnosis",
-]
+    def __str__(self):
+        return f"{self.diagnosis_code} | {self.diagnosis_description} | {self.status}"

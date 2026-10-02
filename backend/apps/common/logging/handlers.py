@@ -138,8 +138,29 @@ def create_rotating_file_handler(
     )
 
 
+class WindowsSafeRotatingFileHandler(
+    RotatingFileHandler,
+):
+    """
+    Windows-safe rotating file handler.
+
+    Windows may temporarily prevent rename operations when
+    another process has the active log file open.
+
+    In that situation the rollover is deferred instead of
+    allowing logging to fail.
+    """
+
+    def doRollover(self) -> None:
+        try:
+            super().doRollover()
+        except PermissionError:
+            return
+
+
 __all__: tuple[str, ...] = (
     "create_console_handler",
     "create_json_console_handler",
     "create_rotating_file_handler",
+    "WindowsSafeRotatingFileHandler",
 )

@@ -162,7 +162,7 @@ class PatientRegistrationRetrieveUpdateDestroyAPIView(
 
         return RegistrationUpdateRequest(
             organization_id=organization.pk,
-            registration_id=instance.uuid,
+            registration_id=instance.id,
             data=validated_data,
         )
 
@@ -181,7 +181,7 @@ class PatientRegistrationRetrieveUpdateDestroyAPIView(
 
         return RegistrationDeletionRequest(
             organization_id=organization.pk,
-            registration_id=instance.uuid,
+            registration_id=instance.id,
         )
 
 

@@ -4,15 +4,12 @@ from __future__ import annotations
 
 from django.db import models
 
-from apps.core.models import (
-    BaseModel,
-    SoftDeleteManager,
-)
+from apps.core.models import BaseModel
 from apps.patient_management.preferences.constants import PreferenceChannel
-from apps.patient_management.preferences.models.preference import PatientPreference
-from apps.patient_management.preferences.querysets import (
-    PatientCommunicationPreferenceQuerySet,
+from apps.patient_management.preferences.managers import (
+    PatientCommunicationPreferenceManager,
 )
+from apps.patient_management.preferences.models.preference import PatientPreference
 
 
 class PatientCommunicationPreference(BaseModel):
@@ -46,7 +43,7 @@ class PatientCommunicationPreference(BaseModel):
         default=False,
     )
 
-    objects = SoftDeleteManager.from_queryset(PatientCommunicationPreferenceQuerySet)()
+    objects = PatientCommunicationPreferenceManager()
 
     class Meta:
         """Define database constraints."""

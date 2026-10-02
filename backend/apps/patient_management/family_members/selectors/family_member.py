@@ -315,3 +315,35 @@ class FamilyMemberSelector:
 
 
 __all__ = ("FamilyMemberSelector",)
+
+
+def get_family_member_by_id(family_member_id):
+    """Return an active family member by primary key."""
+    return get_object_or_404(FamilyMember.objects.all(), pk=family_member_id)
+
+
+def list_patient_family_members(patient_id):
+    """Return active family members for a patient."""
+    return FamilyMember.objects.filter(patient_id=patient_id)
+
+
+def count_patient_family_members(patient_id) -> int:
+    """Count active family members for a patient."""
+    return list_patient_family_members(patient_id).count()
+
+
+def get_next_of_kin(patient_id):
+    """Return the canonical next-of-kin family member for a patient."""
+    from apps.patient_management.family_members.models import FamilyMember
+
+    queryset = FamilyMember.objects.for_patient(patient_id)
+    return queryset.next_of_kin()
+
+
+__all__ = (
+    "FamilyMemberSelector",
+    "count_patient_family_members",
+    "get_family_member_by_id",
+    "get_next_of_kin",
+    "list_patient_family_members",
+)

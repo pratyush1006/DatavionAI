@@ -11,10 +11,10 @@ Provides:
 
 from __future__ import annotations
 
-from apps.accounts.models import User
 from apps.common.tests.tenant import (
     create_test_tenant_context,
 )
+from apps.platform.accounts.models import User
 
 
 class TenantTestMixin:

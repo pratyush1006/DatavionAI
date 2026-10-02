@@ -12,7 +12,7 @@ class AttendanceRecordDetailSerializer(
         read_only=True,
     )
 
-    organization_id = serializers.IntegerField(
+    organization_id = serializers.UUIDField(
         source="organization.id",
         read_only=True,
     )
@@ -22,7 +22,7 @@ class AttendanceRecordDetailSerializer(
         read_only=True,
     )
 
-    employee_id = serializers.IntegerField(
+    employee_id = serializers.UUIDField(
         source="employee.id",
         read_only=True,
     )

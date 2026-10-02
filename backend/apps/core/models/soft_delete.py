@@ -7,6 +7,8 @@ business entities.
 
 from __future__ import annotations
 
+from typing import Any
+
 from django.db import models, transaction
 from django.utils import timezone
 
@@ -55,11 +57,11 @@ class SoftDeleteModel(
         verbose_name="Deleted By",
     )
 
-    objects = SoftDeleteManager()
+    objects: models.Manager[Any] = SoftDeleteManager()
 
-    all_objects = AllObjectsManager()
+    all_objects: models.Manager[Any] = AllObjectsManager()
 
-    deleted_objects = DeletedObjectsManager()
+    deleted_objects: models.Manager[Any] = DeletedObjectsManager()
 
     class Meta:
         abstract = True
@@ -67,10 +69,13 @@ class SoftDeleteModel(
     @transaction.atomic
     def delete(
         self,
+        using: str | None = None,
+        keep_parents: bool = False,
         *,
-        user_id=None,
-        **kwargs,
+        user_id: Any | None = None,
     ) -> DeleteResult:
+        del using, keep_parents
+
         return self.soft_delete(
             user_id=user_id,
         )
@@ -79,7 +84,7 @@ class SoftDeleteModel(
     def soft_delete(
         self,
         *,
-        user_id=None,
+        user_id: Any | None = None,
     ) -> DeleteResult:
 
         if self.is_deleted:

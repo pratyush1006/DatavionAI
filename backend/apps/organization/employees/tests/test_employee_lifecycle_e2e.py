@@ -19,9 +19,6 @@ from __future__ import annotations
 import uuid
 from datetime import date
 
-from django.urls import reverse
-from rest_framework.test import APITestCase
-
 from apps.common.middleware.context import (
     set_current_organization,
     set_current_tenant,
@@ -46,6 +43,8 @@ from apps.platform.rbac.seed_data.roles import (
     SYSTEM_ROLES,
 )
 from apps.platform.tenancy.models import Tenant
+from django.urls import reverse
+from rest_framework.test import APITestCase
 
 
 class EmployeeLifecycleE2ETestCase(
@@ -86,7 +85,7 @@ class EmployeeLifecycleE2ETestCase(
                 if permission_code == "*":
                     continue
 
-                module, action = permission_code.split(".")
+                module, action = permission_code.split(".", 1)
 
                 permission, _ = Permission.objects.get_or_create(
                     code=permission_code,
@@ -290,7 +289,7 @@ class EmployeeLifecycleE2ETestCase(
             {
                 "contract_data": {
                     "contract_number": f"CON-{uuid.uuid4().hex[:8]}",
-                    "contract_type": "FULL_TIME",
+                    "contract_type": "PERMANENT",
                     "status": "ACTIVE",
                     "start_date": str(date.today()),
                     "is_current": True,

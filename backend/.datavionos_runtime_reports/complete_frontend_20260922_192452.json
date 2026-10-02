@@ -1,0 +1,6 @@
+{
+  "installer": "installer_organization_registration_runtime_integration.py",
+  "success": false,
+  "error": "FRONTEND_TYPECHECK failed (2)\n.next/dev/types/routes.d.ts(88,5): error TS1161: Unterminated regular expression literal.\n.next/dev/types/routes.d.ts(95,1): error TS1128: Declaration or statement expected.\n.next/dev/types/validator.ts(368,20): error TS1005: ';' expected.\n.next/dev/types/validator.ts(368,22): error TS1002: Unterminated string literal.\n.next/dev/types/validator.ts(372,1): error TS1128: Declaration or statement expected.\n",
+  "timestamp": "2026-09-22T19:28:38.348593"
+}

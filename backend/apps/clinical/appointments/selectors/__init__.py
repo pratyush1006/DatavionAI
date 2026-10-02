@@ -1,13 +1,5 @@
-"""
-Appointment selector exports.
-"""
+"""Clinical Appointment selector package."""
 
-from .appointment import (
-    get_appointment_by_id,
-    get_appointments,
-)
+from apps.clinical.appointments.selectors.appointment import AppointmentSelector
 
-__all__ = [
-    "get_appointment_by_id",
-    "get_appointments",
-]
+__all__ = ("AppointmentSelector",)

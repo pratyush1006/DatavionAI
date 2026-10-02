@@ -1,13 +1,5 @@
-export default function DashboardPage() {
-  return (
-    <div>
-      <h1 className="text-3xl font-bold">
-        Dashboard
-      </h1>
+import { DynamicDashboard } from "@/components/datavionos/dynamic-dashboard";
 
-      <p className="mt-2 text-muted-foreground">
-        Welcome to Datavion AI.
-      </p>
-    </div>
-  );
+export default function DashboardPage() {
+  return <DynamicDashboard />;
 }

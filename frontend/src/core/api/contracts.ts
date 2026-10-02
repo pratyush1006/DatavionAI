@@ -50,6 +50,13 @@ export interface ApiTenantProvider {
     getTenantId(): string | null;
 }
 
+/**
+ * Provides the currently active organization identifier.
+ */
+export interface ApiOrganizationProvider {
+    getOrganizationId(): string | null;
+}
+
 /* =============================================================================
  * Request ID Provider
  * =============================================================================
@@ -114,6 +121,8 @@ export interface ApiRuntimeDependencies {
 
     readonly tenantProvider: ApiTenantProvider;
 
+    readonly organizationProvider: ApiOrganizationProvider;
+
     readonly requestIdProvider: ApiRequestIdProvider;
 }
 
@@ -151,6 +160,11 @@ export interface ApiRequestContext {
      * Skip the tenant header.
      */
     readonly skipTenant?: boolean;
+
+    /**
+     * Skip the current organization header.
+     */
+    readonly skipOrganization?: boolean;
 
     /**
      * Skip X-Request-ID generation.
@@ -192,6 +206,16 @@ export const EMPTY_TOKEN_PROVIDER: ApiTokenProvider =
 export const EMPTY_TENANT_PROVIDER: ApiTenantProvider =
     Object.freeze({
         getTenantId(): string | null {
+            return null;
+        },
+    });
+
+/**
+ * Provider used before organization context has been resolved.
+ */
+export const EMPTY_ORGANIZATION_PROVIDER: ApiOrganizationProvider =
+    Object.freeze({
+        getOrganizationId(): string | null {
             return null;
         },
     });

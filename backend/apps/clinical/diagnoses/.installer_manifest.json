@@ -1,0 +1,9 @@
+{
+  "module": "apps.clinical.diagnoses",
+  "version": "1.0.0",
+  "canonical_patient": "apps.patient_management.patients.models.Patient",
+  "canonical_provider": "apps.clinical.providers.models.Provider",
+  "canonical_organization": "apps.platform.organizations.models.Organization",
+  "migrations_generated": false,
+  "backup_generated": false
+}

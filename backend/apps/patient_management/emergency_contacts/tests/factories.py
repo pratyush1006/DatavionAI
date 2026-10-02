@@ -1,51 +1,38 @@
-"""
-Factories for Emergency Contact tests.
-"""
+"""Factories for Patient Emergency compatibility tests."""
 
 from __future__ import annotations
 
 import factory
 
-from apps.patient_management.emergency_contacts.constants import (
-    EmergencyContactRelationship,
-    EmergencyContactStatus,
-    PreferredContactMethod,
+from apps.patient_management.emergency.constants import (
+    EmergencyContactPriority,
+    EmergencyContactType,
+    EmergencyRecordStatus,
 )
-from apps.patient_management.emergency_contacts.models import (
-    EmergencyContact,
-)
+from apps.patient_management.emergency.models import EmergencyContact
 
 
-class EmergencyContactFactory(
-    factory.django.DjangoModelFactory,
-):
-    """
-    Emergency Contact factory.
-    """
+class EmergencyContactFactory(factory.django.DjangoModelFactory):
+    """Create a canonical EmergencyContact with a persisted Patient aggregate."""
 
     class Meta:
         model = EmergencyContact
 
     organization = factory.SubFactory(
-        "apps.platform.organizations.tests.factories.OrganizationFactory",
+        "apps.platform.organizations.tests.factories.OrganizationFactory"
     )
-
     patient = factory.SubFactory(
-        "apps.patient_management.profile.tests.factories.PatientFactory",
+        "apps.patient_management.patients.tests.factories.PatientFactory",
+        organization=factory.SelfAttribute("..organization"),
     )
+    name = factory.Sequence(lambda n: f"Emergency Contact {n}")
+    relationship = EmergencyContactType.FAMILY
+    phone = "9876543210"
+    alternate_phone = ""
+    email = ""
+    priority = EmergencyContactPriority.SECONDARY
+    status = EmergencyRecordStatus.ACTIVE
+    notes = ""
 
-    first_name = "John"
 
-    last_name = "Doe"
-
-    relationship = EmergencyContactRelationship.FATHER
-
-    mobile_number = "9876543210"
-
-    preferred_contact_method = PreferredContactMethod.MOBILE
-
-    status = EmergencyContactStatus.ACTIVE
-
-    priority_order = 1
-
-    is_primary = True
+__all__ = ("EmergencyContactFactory",)

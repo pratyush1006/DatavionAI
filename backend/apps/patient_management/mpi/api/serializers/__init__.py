@@ -25,3 +25,4 @@ __all__ = (
     "MPIReviewSerializer",
     "MPIUpdateSerializer",
 )
+from .mpi import MPIMatchCreateSerializer

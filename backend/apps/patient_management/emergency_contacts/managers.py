@@ -4,7 +4,7 @@ Managers and querysets for Emergency Contacts.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 from uuid import UUID
 
 from django.db import models
@@ -127,7 +127,11 @@ class EmergencyContactQuerySet(
         )
 
 
-EmergencyContactManager = models.Manager.from_queryset(EmergencyContactQuerySet)
+class EmergencyContactManager(models.Manager):
+    """Concrete migration-serializable manager class."""
+
+    def get_queryset(self) -> EmergencyContactQuerySet:
+        return cast(EmergencyContactQuerySet, super().get_queryset())
 
 
 __all__ = [

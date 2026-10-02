@@ -21,6 +21,8 @@ Supports:
 
 from __future__ import annotations
 
+from decimal import Decimal
+
 from django.db import models
 
 from apps.clinical.providers.constants import (
@@ -76,6 +78,13 @@ class Provider(
     years_of_experience = models.PositiveSmallIntegerField(
         default=0,
         help_text=("Professional experience in years."),
+    )
+
+    consultation_fee = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=Decimal("0.00"),
+        help_text="Consultation fee in INR; zero disables paid appointment booking.",
     )
 
     is_accepting_patients = models.BooleanField(

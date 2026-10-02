@@ -19,19 +19,18 @@ export const APPOINTMENT_STATUSES = [
 ] as const;
 
 export const APPOINTMENT_TYPES = [
+  "in_person",
+  "virtual",
   "consultation",
   "follow_up",
   "emergency",
-  "surgery",
   "procedure",
-  "teleconsultation",
 ] as const;
 
 export const APPOINTMENT_PRIORITIES = [
-  "low",
-  "normal",
-  "high",
+  "routine",
   "urgent",
+  "emergency",
 ] as const;
 
 export type AppointmentStatus =
@@ -66,6 +65,22 @@ export type Appointment = {
 
   durationMinutes: number;
 
+  rescheduleCount: number;
+
+  canReschedule: boolean;
+
+  consultationFee: number;
+
+  depositAmount: number;
+
+  depositInvoiceId: string;
+
+  finalInvoiceId: string;
+
+  depositPaid: boolean;
+
+  trackingToken: string;
+
   reason: string;
 
   notes: string;
@@ -77,5 +92,18 @@ export type Appointment = {
   isActive: boolean;
 };
 
-export type AppointmentFormValues =
-  Omit<Appointment, "id">;
+export type AppointmentFormValues = Pick<
+  Appointment,
+  | "patient"
+  | "provider"
+  | "appointmentNumber"
+  | "appointmentType"
+  | "priority"
+  | "scheduledStart"
+  | "scheduledEnd"
+  | "durationMinutes"
+  | "reason"
+  | "notes"
+  | "isVirtual"
+  | "meetingUrl"
+>;

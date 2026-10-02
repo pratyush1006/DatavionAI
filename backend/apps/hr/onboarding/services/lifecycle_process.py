@@ -5,6 +5,7 @@ Business services for lifecycle processes.
 from __future__ import annotations
 
 from collections.abc import Mapping
+from typing import Any, cast
 
 from django.core.exceptions import ValidationError
 from django.db import transaction
@@ -20,7 +21,7 @@ from apps.hr.onboarding.models import (
     LifecycleTaskTemplate,
 )
 
-type LifecycleProcessData = Mapping[str, object]
+type LifecycleProcessData = Mapping[str, Any]
 
 
 @transaction.atomic
@@ -74,7 +75,7 @@ def start_lifecycle_process(
         ],
     )
 
-    return process
+    return cast(LifecycleProcess, process)
 
 
 @transaction.atomic

@@ -226,4 +226,5 @@ def run_documents_complete_e2e():
     print("=" * 90)
 
 
-run_documents_complete_e2e()
+if __name__ == "__main__":
+    run_documents_complete_e2e()

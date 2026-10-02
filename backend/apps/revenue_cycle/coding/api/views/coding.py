@@ -7,14 +7,15 @@ from uuid import UUID
 from django.http import Http404
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.core.workflows import WorkflowContext, workflow_registry
+from apps.core.workflows import WorkflowContext, WorkflowResult, workflow_registry
 from apps.patient_management.patients.models import Patient
 
 from ...constants import CodingStatus
-from ...models import CodingRecord
+from ...models import CodeAssignment, CodingRecord
 from ...permissions import CodingPermissions
 from ...policies import CodingPolicy
 from ...selectors import (
@@ -34,10 +35,10 @@ from ..serializers import (
 
 def _run_workflow(
     *,
-    request: object,
+    request: Request,
     organization: object,
     payload: dict,
-) -> object:
+) -> WorkflowResult[CodingRecord | CodeAssignment]:
     """Execute the registered Coding workflow."""
 
     workflow_class = workflow_registry.get(
@@ -74,7 +75,7 @@ def _get_record(
         raise Http404 from exc
 
 
-def _transition_permission(status_value: str) -> str:
+def _transition_permission(status_value: CodingStatus) -> str:
     """Map a target lifecycle state to its RBAC permission."""
 
     mapping = {

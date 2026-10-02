@@ -1,47 +1,33 @@
-"""
-Vital permission classes.
-"""
+"""Canonical Vitals RBAC adapters."""
 
 from __future__ import annotations
 
-from apps.common.permissions.base import BasePermission
+from apps.platform.rbac.permissions.base import RBACPermissionBase
 
 
-class CanViewVital(BasePermission):
-    """
-    Permission required to view vitals.
-    """
-
-    permission_code = "vital.view"
+class CanViewVital(RBACPermissionBase):
+    permission_code = "vitals.view"
+    message = "You do not have permission to view vitals."
 
 
-class CanCreateVital(BasePermission):
-    """
-    Permission required to create vitals.
-    """
-
-    permission_code = "vital.create"
+class CanCreateVital(RBACPermissionBase):
+    permission_code = "vitals.create"
+    message = "You do not have permission to create vitals."
 
 
-class CanUpdateVital(BasePermission):
-    """
-    Permission required to update vitals.
-    """
-
-    permission_code = "vital.update"
+class CanUpdateVital(RBACPermissionBase):
+    permission_code = "vitals.update"
+    message = "You do not have permission to update vitals."
 
 
-class CanDeleteVital(BasePermission):
-    """
-    Permission required to delete vitals.
-    """
-
-    permission_code = "vital.delete"
+class CanDeleteVital(RBACPermissionBase):
+    permission_code = "vitals.delete"
+    message = "You do not have permission to delete vitals."
 
 
-__all__ = [
-    "CanCreateVital",
-    "CanDeleteVital",
-    "CanUpdateVital",
+__all__ = (
     "CanViewVital",
-]
+    "CanCreateVital",
+    "CanUpdateVital",
+    "CanDeleteVital",
+)

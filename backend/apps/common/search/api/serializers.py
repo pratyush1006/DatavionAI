@@ -33,7 +33,7 @@ class SearchRequestSerializer(
     )
 
     embedding_provider = serializers.CharField(
-        default="local",
+        default="openai",
         required=False,
     )
 

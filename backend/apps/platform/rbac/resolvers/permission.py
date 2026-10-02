@@ -60,6 +60,19 @@ def resolve_permissions(
            Permission Codes
     """
 
+    # ``is_staff`` is the canonical platform-administrator boundary used by
+    # the tenancy APIs. Keep RBAC resolution aligned with that boundary: a
+    # platform operator receives every currently active permission without
+    # needing a tenant-scoped role assignment. This also means new seeded
+    # permissions become available to platform administrators automatically.
+    if getattr(user, "is_staff", False):
+        return {"*"} | set(
+            Permission.objects.active().values_list(
+                "code",
+                flat=True,
+            )
+        )
+
     #
     # Collect role IDs.
     #

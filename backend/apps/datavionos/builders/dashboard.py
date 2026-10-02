@@ -53,6 +53,7 @@ from dataclasses import dataclass
 from apps.datavionos.contracts.module import (
     ModuleContract,
 )
+from apps.datavionos.services.effective_capability import EffectiveCapabilityContext
 
 
 @dataclass(
@@ -103,6 +104,7 @@ class DashboardBuilder:
         modules: list[ModuleContract],
         permissions: set[str],
         feature_flags: dict[str, bool],
+        effective_context: EffectiveCapabilityContext | None = None,
     ) -> list[DashboardCard]:
         """
         Build dashboard cards from available modules.
@@ -121,11 +123,31 @@ class DashboardBuilder:
             Deterministically ordered dashboard cards.
         """
 
+        if effective_context is None:
+            raise ValueError(
+                "DashboardBuilder requires EffectiveCapabilityContext.",
+            )
+
+        if effective_context is None:
+            raise ValueError(
+                "DashboardBuilder requires EffectiveCapabilityContext.",
+            )
+
         cards: list[DashboardCard] = []
 
         for module in modules:
             if not self._module_available(
                 module,
+            ):
+                continue
+
+            if not effective_context.module_enabled(
+                module.identifier,
+            ):
+                continue
+
+            if not effective_context.module_enabled(
+                module.identifier,
             ):
                 continue
 
@@ -137,15 +159,15 @@ class DashboardBuilder:
             if not dashboard.enabled:
                 continue
 
-            if not self._features_enabled(
+            if not self._context_features_enabled(
                 module=module,
-                feature_flags=feature_flags,
+                effective_context=effective_context,
             ):
                 continue
 
-            if not self._has_permission(
+            if not self._context_has_permission(
                 module=module,
-                permissions=permissions,
+                effective_context=effective_context,
             ):
                 continue
 
@@ -169,6 +191,39 @@ class DashboardBuilder:
                 card.order,
                 card.key,
             ),
+        )
+
+    # ==================================================================
+    # Effective Capability Context
+    # ==================================================================
+
+    @staticmethod
+    def _context_features_enabled(
+        *,
+        module: ModuleContract,
+        effective_context: EffectiveCapabilityContext,
+    ) -> bool:
+        # Evaluate required features from the shared effective context.
+        if not module.feature_flags:
+            return True
+
+        return all(
+            effective_context.feature_enabled(feature)
+            for feature in module.feature_flags
+        )
+
+    @staticmethod
+    def _context_has_permission(
+        *,
+        module: ModuleContract,
+        effective_context: EffectiveCapabilityContext,
+    ) -> bool:
+        # Evaluate module RBAC from the shared effective context.
+        if not module.permissions:
+            return True
+
+        return effective_context.has_any_permission(
+            frozenset(module.permissions),
         )
 
     # ==================================================================
@@ -246,10 +301,7 @@ class DashboardBuilder:
         if not module.permissions:
             return True
 
-        return any(
-            permission in permissions
-            for permission in module.permissions
-        )
+        return any(permission in permissions for permission in module.permissions)
 
     # ==================================================================
     # Category

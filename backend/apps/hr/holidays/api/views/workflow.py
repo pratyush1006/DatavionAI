@@ -7,7 +7,7 @@ from __future__ import annotations
 from typing import Final
 
 from drf_spectacular.utils import extend_schema
-from rest_framework import status
+from rest_framework import serializers, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -26,6 +26,8 @@ class HolidayApplyToAttendanceAPIView(APIView):
     Mark every active employee in the holiday's organization as
     on holiday in their attendance records for that date.
     """
+
+    serializer_class = serializers.Serializer
 
     permission_classes = (IsAuthenticated, CanUpdateHoliday)
 

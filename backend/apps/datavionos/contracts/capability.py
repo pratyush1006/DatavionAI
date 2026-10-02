@@ -310,7 +310,6 @@ class CapabilityContract(BaseContract):
             ),
             feature_flags=tuple(
                 data.get(
-                    "feature_flags",
                     [],
                 ),
             ),

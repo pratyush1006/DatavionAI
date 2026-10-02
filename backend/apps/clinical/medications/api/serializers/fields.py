@@ -1,13 +1,9 @@
-"""
-Medication serializer fields.
-"""
+from rest_framework import serializers
 
-from __future__ import annotations
 
-from apps.clinical.medications.api.serializers.base import (
-    MedicationBaseSerializer,
-)
-
-__all__ = [
-    "MedicationBaseSerializer",
-]
+class NonBlankTrimmedCharField(serializers.CharField):
+    def to_internal_value(self, data):
+        value = super().to_internal_value(data).strip()
+        if not value:
+            raise serializers.ValidationError("This field cannot be blank.")
+        return value

@@ -9,7 +9,7 @@
  */
 
 export const patientEndpoints = {
-  collection: "/patients/",
+  collection: "/patient-management/patients/",
 
   byId: (
     id: string | number,

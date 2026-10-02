@@ -31,6 +31,9 @@ class RevenueCycleConfig(AppConfig):
         importing Django models.
         """
 
+        from apps.revenue_cycle.cross_module_integration.encounter_handlers import (
+            register_encounter_handlers,
+        )
         from apps.revenue_cycle.insurance_verification.workflow_registry import (
             register_workflows as register_insurance_verification_workflows,
         )
@@ -40,6 +43,7 @@ class RevenueCycleConfig(AppConfig):
 
         register_prior_authorization_workflows()
         register_insurance_verification_workflows()
+        register_encounter_handlers()
 
 
 __all__: tuple[str, ...] = ("RevenueCycleConfig",)

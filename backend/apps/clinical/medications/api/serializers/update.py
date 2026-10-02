@@ -1,22 +1,9 @@
-"""
-Medication update serializer.
-"""
-
-from __future__ import annotations
-
-from apps.clinical.medications.api.serializers.base import (
-    MedicationBaseSerializer,
-)
+from apps.clinical.medications.api.serializers.base import MedicationBaseSerializer
 
 
-class MedicationUpdateSerializer(
-    MedicationBaseSerializer,
-):
-    """
-    Serializer for updating medications.
-    """
-
-
-__all__ = [
-    "MedicationUpdateSerializer",
-]
+class MedicationUpdateSerializer(MedicationBaseSerializer):
+    class Meta(MedicationBaseSerializer.Meta):
+        read_only_fields = tuple(
+            set(MedicationBaseSerializer.Meta.read_only_fields)
+            | {"organization", "medication_code", "is_active"}
+        )

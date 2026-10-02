@@ -19,7 +19,6 @@ from apps.datavionos.queries import (
     QueryBus,
 )
 
-
 TService = TypeVar(
     "TService",
 )

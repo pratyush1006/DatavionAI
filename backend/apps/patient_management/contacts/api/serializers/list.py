@@ -15,7 +15,6 @@ class ContactListSerializer(serializers.ModelSerializer):
     """
 
     patient_id = serializers.UUIDField(
-        source="patient_id",
         read_only=True,
     )
 

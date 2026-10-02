@@ -14,6 +14,7 @@ def list_verifications(
     tenant_id: UUID,
     organization_id: UUID,
     patient_id: UUID | None = None,
+    request_reference: str | None = None,
 ) -> QuerySet[InsuranceVerification]:
     """List active records inside the exact tenant and organization scope."""
 
@@ -31,6 +32,8 @@ def list_verifications(
     )
     if patient_id is not None:
         queryset = queryset.filter(patient_id=patient_id)
+    if request_reference:
+        queryset = queryset.filter(request_reference=request_reference)
     return queryset
 
 

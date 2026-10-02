@@ -14,10 +14,10 @@ class ShiftAssignmentBaseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ShiftAssignment
-        fields = ()
+        fields: tuple[str, ...] = ()
 
     def get_employee_name(self, obj: ShiftAssignment) -> str:
-        return obj.employee.full_name
+        return str(obj.employee.full_name)
 
 
 class ShiftAssignmentListSerializer(ShiftAssignmentBaseSerializer):
@@ -42,7 +42,7 @@ class ShiftAssignmentDetailSerializer(ShiftAssignmentBaseSerializer):
         read_only=True,
     )
 
-    organization_id = serializers.IntegerField(
+    organization_id = serializers.UUIDField(
         source="organization.id",
         read_only=True,
     )
@@ -52,7 +52,7 @@ class ShiftAssignmentDetailSerializer(ShiftAssignmentBaseSerializer):
         read_only=True,
     )
 
-    employee_id = serializers.IntegerField(
+    employee_id = serializers.UUIDField(
         source="employee.id",
         read_only=True,
     )

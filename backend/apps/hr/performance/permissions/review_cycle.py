@@ -4,22 +4,22 @@ Performance review cycle permission classes.
 
 from __future__ import annotations
 
-from apps.common.permissions.base import DatavionPermission
+from apps.hr.permissions import HrPermission
 
 
-class CanViewReviewCycle(DatavionPermission):
+class CanViewReviewCycle(HrPermission):
     permission_code = "performance.view"
 
 
-class CanCreateReviewCycle(DatavionPermission):
+class CanCreateReviewCycle(HrPermission):
     permission_code = "performance.create"
 
 
-class CanUpdateReviewCycle(DatavionPermission):
+class CanUpdateReviewCycle(HrPermission):
     permission_code = "performance.update"
 
 
-class CanDeleteReviewCycle(DatavionPermission):
+class CanDeleteReviewCycle(HrPermission):
     permission_code = "performance.delete"
 
 

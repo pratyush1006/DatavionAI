@@ -77,6 +77,10 @@ exclude = [
     "staticfiles",
     "generated",
     "node_modules",
+    ".datavionos*",
+    ".installer*",
+    "installer_*.py",
+    "installer*.py",
     "**/migrations",
 ]
 
@@ -158,6 +162,7 @@ exclude = '''(?x)(
   | ^dist/
   | ^\.pytest_cache/
   | (^|.*/)migrations/
+    | (^|.*/)config\.pre_.*\.py$
 )'''
 
 ################################################################################
@@ -175,7 +180,12 @@ module = [
     "decouple",
     "redis",
     "celery",
-    "kombu",
+    "django_celery_beat",
+    "django_celery_beat.*",
+    "django_celery_results",
+    "django_celery_results.*",
+    "geopy",
+    "geopy.*",
 ]
 ignore_missing_imports = true
 
@@ -229,6 +239,11 @@ strict_settings = false
 ################################################################################
 # PYTEST
 ################################################################################
+
+[tool.datavionos.quality]
+source = ["apps", "config", "manage.py"]
+ruff_target = ["apps", "config", "manage.py"]
+mypy_target = ["apps", "config"]
 
 [tool.pytest.ini_options]
 

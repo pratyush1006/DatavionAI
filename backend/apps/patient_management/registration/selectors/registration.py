@@ -4,12 +4,12 @@ Selectors for the Patient Registration module.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 from uuid import UUID
 
 from django.db.models import QuerySet
 
-from apps.common.exceptions import ObjectNotFoundException
+from apps.common.exceptions import ResourceNotFoundException
 from apps.patient_management.registration.models import (
     PatientRegistration,
 )
@@ -30,13 +30,16 @@ def get_registration_by_uuid(
     """
 
     try:
-        return PatientRegistration.objects.get(
-            uuid=uuid,
-            organization=organization,
+        return cast(
+            PatientRegistration,
+            PatientRegistration.objects.get(
+                id=uuid,
+                organization=organization,
+            ),
         )
     except PatientRegistration.DoesNotExist as exc:
-        raise ObjectNotFoundException(
-            "Patient registration not found.",
+        raise ResourceNotFoundException(
+            message="Patient registration not found.",
         ) from exc
 
 
@@ -50,13 +53,16 @@ def get_registration_by_number(
     """
 
     try:
-        return PatientRegistration.objects.get(
-            organization=organization,
-            registration_number=registration_number,
+        return cast(
+            PatientRegistration,
+            PatientRegistration.objects.get(
+                organization=organization,
+                registration_number=registration_number,
+            ),
         )
     except PatientRegistration.DoesNotExist as exc:
-        raise ObjectNotFoundException(
-            "Patient registration not found.",
+        raise ResourceNotFoundException(
+            message="Patient registration not found.",
         ) from exc
 
 
@@ -70,7 +76,7 @@ def list_organization_registrations(
 
     return PatientRegistration.objects.for_organization(
         organization,
-    ).ordered()
+    ).by_registration_datetime()
 
 
 def list_patient_registrations(
@@ -93,7 +99,7 @@ def list_patient_registrations(
         .filter(
             patient_id=patient_id,
         )
-        .ordered()
+        .by_registration_datetime()
     )
 
 
@@ -110,7 +116,7 @@ def get_today_registrations(
             organization,
         )
         .today()
-        .ordered()
+        .by_registration_datetime()
     )
 
 
@@ -127,7 +133,7 @@ def get_completed_registrations(
             organization,
         )
         .completed()
-        .ordered()
+        .by_registration_datetime()
     )
 
 
@@ -144,7 +150,7 @@ def get_pending_verification_registrations(
             organization,
         )
         .pending_verification()
-        .ordered()
+        .by_registration_datetime()
     )
 
 
@@ -161,7 +167,7 @@ def get_ready_for_checkin_registrations(
             organization,
         )
         .ready_for_checkin()
-        .ordered()
+        .by_registration_datetime()
     )
 
 
@@ -178,7 +184,7 @@ def get_ready_for_completion_registrations(
             organization,
         )
         .ready_for_completion()
-        .ordered()
+        .by_registration_datetime()
     )
 
 
@@ -198,7 +204,7 @@ def search_registrations(
         .search(
             query,
         )
-        .ordered()
+        .by_registration_datetime()
     )
 
 

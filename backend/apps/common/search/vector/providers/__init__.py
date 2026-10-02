@@ -14,9 +14,6 @@ Supported:
 
 from __future__ import annotations
 
-from ..registry import (
-    register_vector_provider,
-)
 from .azure_ai_search import (
     AzureAISearchBackend,
 )
@@ -35,39 +32,13 @@ from .pinecone import (
 
 
 def register_default_vector_providers() -> None:
+    """Keep no-op vector backends disabled until storage works.
+
+    Each built-in adapter currently drops writes and returns empty results.
+    Deployments can explicitly register an implemented backend.
     """
-    Register built-in vector backends.
-    """
 
-    register_vector_provider(
-        "pgvector",
-        PGVectorBackend,
-        overwrite=True,
-    )
-
-    register_vector_provider(
-        "pinecone",
-        PineconeBackend,
-        overwrite=True,
-    )
-
-    register_vector_provider(
-        "chromadb",
-        ChromaDBBackend,
-        overwrite=True,
-    )
-
-    register_vector_provider(
-        "faiss",
-        FAISSBackend,
-        overwrite=True,
-    )
-
-    register_vector_provider(
-        "azure_ai_search",
-        AzureAISearchBackend,
-        overwrite=True,
-    )
+    return
 
 
 register_default_vector_providers()

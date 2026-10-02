@@ -14,7 +14,10 @@ Future integrations:
 
 from __future__ import annotations
 
+from typing import Any
+
 from apps.common.search.types import (
+    SearchRequest,
     SearchResult,
 )
 
@@ -32,8 +35,8 @@ class VectorSearchProvider(
 
     def search(
         self,
-        request,
-        **kwargs,
+        request: SearchRequest,
+        **kwargs: Any,
     ) -> SearchResult:
         """
         Execute semantic search.

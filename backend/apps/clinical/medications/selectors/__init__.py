@@ -1,13 +1,3 @@
-"""
-Medication selectors.
-"""
+from .medication import get_medication, medication_queryset, search_medications
 
-from .medication import (
-    get_medication_by_id,
-    get_medications,
-)
-
-__all__ = [
-    "get_medication_by_id",
-    "get_medications",
-]
+__all__ = ("get_medication", "medication_queryset", "search_medications")

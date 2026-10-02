@@ -150,6 +150,17 @@ class EmployeeContractActionSerializer(
         trim_whitespace=True,
     )
 
+    def to_internal_value(
+        self,
+        data,
+    ):
+        # Accept both direct contract fields and contract_data envelopes.
+        if isinstance(data, dict):
+            nested = data.get("contract_data")
+            if isinstance(nested, dict):
+                data = nested
+        return super().to_internal_value(data)
+
     def validate_contract_number(
         self,
         value: str,

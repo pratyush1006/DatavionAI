@@ -65,18 +65,24 @@ from apps.datavionos.builders.navigation import (
     NavigationBuilder,
     NavigationItem,
 )
+from apps.datavionos.registries.module import (
+    module_registry,
+)
 from apps.datavionos.resolvers.branding import (
     BrandingResolver,
 )
-from apps.datavionos.resolvers.entitlement import (
-    EntitlementResolver,
-)
 from apps.datavionos.selectors.module_availability import (
+    CORE_ORGANIZATION_MODULES,
     ModuleAvailabilitySelector,
     module_availability_selector,
 )
-from apps.datavionos.selectors.bootstrap import (
-    PlatformBootstrapContext,
+from apps.datavionos.services.effective_capability import (
+    EffectiveCapabilityContext,
+    build_effective_capability_context,
+)
+from apps.datavionos.services.saas_capability_control_plane import (
+    SaaSCapabilityProvider,
+    get_provider,
 )
 
 
@@ -151,25 +157,13 @@ class PlatformBootstrapService:
         testable without changing runtime behavior.
         """
 
-        self._module_selector = (
-            module_selector
-            or module_availability_selector
-        )
+        self._module_selector = module_selector or module_availability_selector
 
-        self._navigation_builder = (
-            navigation_builder
-            or NavigationBuilder()
-        )
+        self._navigation_builder = navigation_builder or NavigationBuilder()
 
-        self._dashboard_builder = (
-            dashboard_builder
-            or DashboardBuilder()
-        )
+        self._dashboard_builder = dashboard_builder or DashboardBuilder()
 
-        self._branding_resolver = (
-            branding_resolver
-            or BrandingResolver()
-        )
+        self._branding_resolver = branding_resolver or BrandingResolver()
 
     # ==================================================================
     # Bootstrap
@@ -179,8 +173,12 @@ class PlatformBootstrapService:
         self,
         *,
         tenant: Any,
+        user: Any | None = None,
         organization: Any | None = None,
         permissions: set[str] | frozenset[str] | None = None,
+        roles: set[str] | frozenset[str] | None = None,
+        access_scope: dict[str, tuple[str, ...]] | None = None,
+        is_platform_administrator: bool = False,
     ) -> PlatformBootstrapResult:
         """
         Bootstrap the DatavionOS runtime.
@@ -213,28 +211,110 @@ class PlatformBootstrapService:
         )
 
         capabilities = self._resolve_capabilities(
+            user=user,
             organization=organization,
         )
+
+        departments: set[str] = set()
+        ai_capabilities: dict[str, bool] = {}
+        if organization is not None:
+            capabilities = dict(capabilities)
+            capabilities["modules"] = (
+                SaaSCapabilityProvider.resolve_organization_modules(
+                    organization=organization,
+                    entitled_modules=capabilities.get("modules", {}),
+                )
+            )
+            # Core organization administration is available for every
+            # organization and must also be present in the effective context;
+            # navigation and dashboard builders fail closed against it.
+            capabilities["modules"] = {
+                **capabilities["modules"],
+                **dict.fromkeys(CORE_ORGANIZATION_MODULES, True),
+            }
+            capabilities["features"] = (
+                SaaSCapabilityProvider.resolve_organization_features(
+                    organization=organization,
+                    entitled_features=capabilities.get("features", {}),
+                )
+            )
+            departments, ai_capabilities = (
+                SaaSCapabilityProvider.resolve_organization_scopes(
+                    organization=organization,
+                    entitled_modules=capabilities.get("modules", {}),
+                    entitled_features=capabilities.get("features", {}),
+                )
+            )
+
+        # A platform administrator is a control-plane role.  It can inspect
+        # every active product module regardless of the selected
+        # organization's plan or tenant type. Endpoint authorization remains
+        # enforced by the normal RBAC permission checks.
+        if is_platform_administrator:
+            available_modules = module_registry.available_modules()
+            capabilities = dict(capabilities)
+            capabilities["modules"] = {
+                module.identifier: True for module in available_modules
+            }
+            capabilities["features"] = {
+                feature: True
+                for module in available_modules
+                for feature in module.feature_flags
+            }
 
         feature_flags = self._bootstrap_feature_flags(
             capabilities,
         )
 
-        modules = self._bootstrap_modules(
-            tenant=tenant,
-            capabilities=capabilities,
+        effective_context = build_effective_capability_context(
+            user_id=str(getattr(user, "id", "")) or None,
+            organization_id=getattr(
+                organization,
+                "id",
+                None,
+            ),
+            tenant_id=getattr(
+                tenant,
+                "id",
+                None,
+            ),
+            modules=capabilities.get(
+                "modules",
+                {},
+            ),
+            features=feature_flags,
+            permissions=resolved_permissions,
+            roles=set(roles or set()),
+            departments=departments,
+            data_scopes=dict(access_scope or {}),
+            ai_capabilities=ai_capabilities,
+            limits=capabilities.get(
+                "limits",
+                {},
+            ),
+        )
+
+        modules = (
+            list(module_registry.available_modules())
+            if is_platform_administrator
+            else self._bootstrap_modules(
+                tenant=tenant,
+                capabilities=capabilities,
+            )
         )
 
         navigation = self._bootstrap_navigation(
             modules=modules,
             permissions=resolved_permissions,
             feature_flags=feature_flags,
+            effective_context=effective_context,
         )
 
         dashboard = self._bootstrap_dashboard(
             modules=modules,
             permissions=resolved_permissions,
             feature_flags=feature_flags,
+            effective_context=effective_context,
         )
 
         branding = self._bootstrap_branding(
@@ -281,43 +361,34 @@ class PlatformBootstrapService:
     # ==================================================================
 
     @staticmethod
+    @staticmethod
     def _resolve_capabilities(
         *,
+        user: Any | None,
         organization: Any | None,
     ) -> dict[str, Any]:
-        """
-        Resolve SaaS runtime capabilities.
-
-        EntitlementResolver is the sole DatavionOS boundary into
-        SaaS billing entitlement resolution.
-
-        Missing organization intentionally fails closed.
-        """
-
+        """Resolve the canonical effective SaaS capability snapshot."""
         if organization is None:
             return {
                 "modules": {},
                 "features": {},
+                "permissions": set(),
                 "limits": {},
                 "capabilities": {},
             }
 
-        capabilities = EntitlementResolver.resolve(
+        snapshot = get_provider().resolve(
+            user=user,
             organization=organization,
         )
 
-        if not isinstance(
-            capabilities,
-            dict,
-        ):
-            return {
-                "modules": {},
-                "features": {},
-                "limits": {},
-                "capabilities": {},
-            }
-
-        return capabilities
+        return {
+            "modules": dict(snapshot.modules),
+            "features": dict(snapshot.features),
+            "permissions": set(snapshot.permissions),
+            "limits": {},
+            "capabilities": {},
+        }
 
     # ==================================================================
     # RBAC
@@ -336,7 +407,7 @@ class PlatformBootstrapService:
         This hook intentionally performs no resolution itself.
         """
 
-        return None
+        return
 
     # ==================================================================
     # Branding
@@ -394,10 +465,7 @@ class PlatformBootstrapService:
         ):
             return {}
 
-        return {
-            str(feature): bool(enabled)
-            for feature, enabled in features.items()
-        }
+        return {str(feature): bool(enabled) for feature, enabled in features.items()}
 
     # ==================================================================
     # Modules
@@ -450,6 +518,7 @@ class PlatformBootstrapService:
         modules: list[Any],
         permissions: set[str],
         feature_flags: dict[str, bool],
+        effective_context: EffectiveCapabilityContext,
     ) -> list[NavigationItem]:
         """
         Build runtime navigation.
@@ -464,6 +533,7 @@ class PlatformBootstrapService:
             modules=modules,
             permissions=permissions,
             feature_flags=feature_flags,
+            effective_context=effective_context,
         )
 
     # ==================================================================
@@ -476,6 +546,7 @@ class PlatformBootstrapService:
         modules: list[Any],
         permissions: set[str],
         feature_flags: dict[str, bool],
+        effective_context: EffectiveCapabilityContext,
     ) -> list[DashboardCard]:
         """
         Build runtime dashboard.
@@ -490,6 +561,7 @@ class PlatformBootstrapService:
             modules=modules,
             permissions=permissions,
             feature_flags=feature_flags,
+            effective_context=effective_context,
         )
 
 

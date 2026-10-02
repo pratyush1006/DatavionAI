@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import date
 from decimal import Decimal
-from typing import Any
+from typing import Any, cast
 from uuid import UUID
 
 from django.db import transaction
@@ -104,7 +104,8 @@ class PriorAuthorizationService:
     def validate_patient(*, organization_id: UUID, patient_id: UUID) -> None:
         """Ensure the patient belongs to the target organization."""
 
-        patient = Patient.objects.filter(
+        patient_manager = cast(Any, Patient).objects
+        patient = patient_manager.filter(
             pk=patient_id,
             organization_id=organization_id,
         ).first()
@@ -158,17 +159,20 @@ class PriorAuthorizationService:
             idempotency_key=idempotency_key.strip(),
         ).first()
         if existing is not None:
-            return existing
+            return cast(PriorAuthorization, existing)
 
-        return PriorAuthorization.objects.create(
-            organization_id=organization_id,
-            patient_id=patient_id,
-            payer_id=payer_id.strip(),
-            member_id=member_id.strip(),
-            procedure_code=procedure_code.strip(),
-            request_reference=request_reference.strip(),
-            idempotency_key=idempotency_key.strip(),
-            **data,
+        return cast(
+            PriorAuthorization,
+            PriorAuthorization.objects.create(
+                organization_id=organization_id,
+                patient_id=patient_id,
+                payer_id=payer_id.strip(),
+                member_id=member_id.strip(),
+                procedure_code=procedure_code.strip(),
+                request_reference=request_reference.strip(),
+                idempotency_key=idempotency_key.strip(),
+                **data,
+            ),
         )
 
     @classmethod
@@ -186,7 +190,7 @@ class PriorAuthorizationService:
         authorization = get_authorization_for_update(
             tenant_id=tenant_id,
             organization_id=organization_id,
-            authorization_id=authorization_id,
+            verification_id=authorization_id,
         )
         if authorization.status in {
             AuthorizationStatus.APPROVED.value,
@@ -247,7 +251,7 @@ class PriorAuthorizationService:
         authorization = get_authorization_for_update(
             tenant_id=tenant_id,
             organization_id=organization_id,
-            authorization_id=authorization_id,
+            verification_id=authorization_id,
         )
         if authorization.status in {
             AuthorizationStatus.IN_REVIEW.value,
@@ -273,7 +277,7 @@ class PriorAuthorizationService:
         authorization = get_deleted_authorization_for_update(
             tenant_id=tenant_id,
             organization_id=organization_id,
-            authorization_id=authorization_id,
+            verification_id=authorization_id,
         )
         authorization.restore()
         return authorization
@@ -304,7 +308,7 @@ class PriorAuthorizationService:
         authorization = get_authorization_for_update(
             tenant_id=tenant_id,
             organization_id=organization_id,
-            authorization_id=authorization_id,
+            verification_id=authorization_id,
         )
         allowed = _ALLOWED_TRANSITIONS.get(authorization.status, set())
         if target_status not in allowed:

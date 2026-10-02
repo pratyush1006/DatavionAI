@@ -9,6 +9,8 @@ interoperability without external dependencies.
 
 from __future__ import annotations
 
+from typing import Any
+
 from apps.clinical.encounters.models import Encounter
 from apps.clinical.providers.models import Provider
 from apps.patient_management.patients.models import Patient
@@ -17,7 +19,7 @@ from apps.platform.organizations.models import Organization
 
 def patient_to_fhir(
     patient: Patient,
-) -> dict:
+) -> dict[str, Any]:
     """Serialize a patient to a FHIR Patient resource."""
 
     return {
@@ -46,7 +48,7 @@ def patient_to_fhir(
 
 def encounter_to_fhir(
     encounter: Encounter,
-) -> dict:
+) -> dict[str, Any]:
     """Serialize an encounter to a FHIR Encounter resource."""
 
     return {
@@ -71,7 +73,7 @@ def encounter_to_fhir(
 
 def provider_to_fhir(
     provider: Provider,
-) -> dict:
+) -> dict[str, Any]:
     """Serialize a provider to a FHIR Practitioner resource."""
 
     return {
@@ -95,7 +97,7 @@ def provider_to_fhir(
 
 def organization_to_fhir(
     organization: Organization,
-) -> dict:
+) -> dict[str, Any]:
     """Serialize an organization to a FHIR Organization resource."""
 
     return {

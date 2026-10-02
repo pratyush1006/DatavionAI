@@ -13,6 +13,15 @@ app_name = "organizations-api"
 
 urlpatterns = [
     path(
+        "catalogs/",
+        include(
+            (
+                "apps.platform.organizations.api.catalogs.urls",
+                "organization-catalogs",
+            ),
+        ),
+    ),
+    path(
         "",
         include(
             (

@@ -28,6 +28,7 @@ import {
 import {
   EmployeeStatusBadge,
 } from "../components/employee-status-badge";
+import { EmployeeLifecycleStatusAction } from "../components/employee-lifecycle-status-action";
 
 import {
   useEmployeeQuery,
@@ -122,6 +123,8 @@ export function EmployeeDetailPage() {
               employee.status
             }
           />
+
+          <EmployeeLifecycleStatusAction employee={employee} />
 
           <EmployeeAssignmentDialog
             employee={employee}

@@ -100,7 +100,7 @@ class RegistrationRejectionWorkflow(
                 "patient",
                 "verified_by",
             ).get(
-                uuid=self._request.registration_id,
+                id=self._request.registration_id,
                 organization_id=organization.pk,
             )
 
@@ -111,7 +111,6 @@ class RegistrationRejectionWorkflow(
 
         if not self._policy.can_reject(
             actor=actor,
-            organization=organization,
             registration=registration,
         ):
             raise PermissionError(
@@ -126,7 +125,7 @@ class RegistrationRejectionWorkflow(
         event = RegistrationRejectedEvent(
             tenant_id=context.tenant_id,
             actor_id=actor.pk,
-            registration_id=rejected_registration.uuid,
+            registration_id=rejected_registration.id,
             patient_id=rejected_registration.patient_id,
             organization_id=rejected_registration.organization_id,
             registration_number=rejected_registration.registration_number,
@@ -138,7 +137,7 @@ class RegistrationRejectionWorkflow(
         return WorkflowResult.ok(
             context=context,
             data=RegistrationRejectionData(
-                registration_id=rejected_registration.uuid,
+                registration_id=rejected_registration.id,
                 rejected=(
                     rejected_registration.registration_status
                     == RegistrationStatus.REJECTED

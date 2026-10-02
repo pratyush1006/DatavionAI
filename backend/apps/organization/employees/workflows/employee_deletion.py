@@ -174,17 +174,13 @@ class EmployeeDeletionWorkflow(
         #
         # Lifecycle validation
         #
-        if hasattr(
-            employee,
-            "status",
-        ):
-            if employee.status in {
-                "ACTIVE",
-                "PROBATION",
-            }:
-                raise ValueError(
-                    "Employee must be offboarded before deletion.",
-                )
+        if hasattr(employee, "status") and employee.status in {
+            "ACTIVE",
+            "PROBATION",
+        }:
+            raise ValueError(
+                "Employee must be offboarded before deletion.",
+            )
 
         employee_id = employee.id
 

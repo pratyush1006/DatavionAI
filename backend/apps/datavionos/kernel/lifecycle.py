@@ -325,10 +325,7 @@ class KernelLifecycle:
         if self.state in allowed:
             return
 
-        allowed_values = ", ".join(
-            state.value
-            for state in allowed
-        )
+        allowed_values = ", ".join(state.value for state in allowed)
 
         raise StartupError(
             (
@@ -364,10 +361,7 @@ class KernelLifecycle:
     def __repr__(
         self,
     ) -> str:
-        return (
-            f"KernelLifecycle("
-            f"state={self.state.value})"
-        )
+        return f"KernelLifecycle(state={self.state.value})"
 
 
 __all__ = [

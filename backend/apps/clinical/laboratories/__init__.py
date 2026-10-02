@@ -1,3 +1,0 @@
-"""
-Laboratories application.
-"""

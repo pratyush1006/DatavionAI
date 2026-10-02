@@ -17,7 +17,12 @@ export function DeviceCenter() {
     }
   };
 
-  useEffect(() => { void refresh(); }, []);
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      void refresh();
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, []);
 
   const discover = async () => {
     try {

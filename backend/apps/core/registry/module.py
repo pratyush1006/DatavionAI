@@ -82,7 +82,4 @@ class ModuleDefinition:
 module_registry = Registry[ModuleDefinition]()
 
 
-__all__: tuple[str, ...] = (
-    "ModuleDefinition",
-    "module_registry",
-)
+__all__: tuple[str, ...] = ("ModuleDefinition",)

@@ -5,11 +5,11 @@ from .test_registry import (
     TestStorageRegistry,
 )
 from .test_service import (
-    TestStorageService,
+    StorageClientTests,
 )
 
 __all__ = (
     "TestLocalStorageBackend",
     "TestStorageRegistry",
-    "TestStorageService",
+    "StorageClientTests",
 )

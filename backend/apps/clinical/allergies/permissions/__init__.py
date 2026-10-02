@@ -1,7 +1,3 @@
-"""
-Allergy permission exports.
-"""
-
 from .allergy import (
     CanCreateAllergy,
     CanDeleteAllergy,
@@ -9,9 +5,9 @@ from .allergy import (
     CanViewAllergy,
 )
 
-__all__ = [
-    "CanCreateAllergy",
-    "CanDeleteAllergy",
-    "CanUpdateAllergy",
+__all__ = (
     "CanViewAllergy",
-]
+    "CanCreateAllergy",
+    "CanUpdateAllergy",
+    "CanDeleteAllergy",
+)

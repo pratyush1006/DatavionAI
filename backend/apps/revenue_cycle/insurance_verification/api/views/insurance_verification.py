@@ -24,14 +24,6 @@ from apps.revenue_cycle.insurance_verification.policies import (
     can_update,
     can_view,
 )
-from apps.revenue_cycle.insurance_verification.rbac import (
-    CanCreateInsuranceVerification,
-    CanDeleteInsuranceVerification,
-    CanRestoreInsuranceVerification,
-    CanTransitionInsuranceVerification,
-    CanUpdateInsuranceVerification,
-    CanViewInsuranceVerification,
-)
 from apps.revenue_cycle.insurance_verification.selectors import (
     get_verification,
     list_verifications,
@@ -82,6 +74,19 @@ def _context(request, operation: str) -> WorkflowContext:
     )
 
 
+def _permission_denied(action: str) -> Response:
+    """Build the same explicit denial response for each operation."""
+    return Response(
+        {
+            "detail": (
+                f"You do not have permission to {action} "
+                "insurance verification records."
+            )
+        },
+        status=status.HTTP_403_FORBIDDEN,
+    )
+
+
 class InsuranceVerificationListCreateAPIView(APIView):
     """List and create Insurance Verification records."""
 
@@ -92,12 +97,14 @@ class InsuranceVerificationListCreateAPIView(APIView):
 
         organization = _organization(request)
         if not can_view(user=request.user, organization_id=organization.pk):
-            CanViewInsuranceVerification().has_permission(request, self)
+            return _permission_denied("view")
         patient_id = request.query_params.get("patient_id")
+        request_reference = request.query_params.get("request_reference")
         queryset = list_verifications(
             tenant_id=_tenant(request),
             organization_id=organization.pk,
             patient_id=patient_id,
+            request_reference=request_reference,
         )
         return Response(InsuranceVerificationDetailSerializer(queryset, many=True).data)
 
@@ -106,7 +113,7 @@ class InsuranceVerificationListCreateAPIView(APIView):
 
         organization = _organization(request)
         if not can_create(user=request.user, organization_id=organization.pk):
-            CanCreateInsuranceVerification().has_permission(request, self)
+            return _permission_denied("create")
         serializer = InsuranceVerificationWriteSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         patient_id = serializer.validated_data.pop("patient_id", None)
@@ -146,7 +153,7 @@ class InsuranceVerificationDetailAPIView(APIView):
 
         organization = _organization(request)
         if not can_view(user=request.user, organization_id=organization.pk):
-            CanViewInsuranceVerification().has_permission(request, self)
+            return _permission_denied("view")
         verification = get_verification(
             tenant_id=_tenant(request),
             organization_id=organization.pk,
@@ -159,7 +166,7 @@ class InsuranceVerificationDetailAPIView(APIView):
 
         organization = _organization(request)
         if not can_update(user=request.user, organization_id=organization.pk):
-            CanUpdateInsuranceVerification().has_permission(request, self)
+            return _permission_denied("update")
         serializer = InsuranceVerificationWriteSerializer(
             data=request.data, partial=True
         )
@@ -181,7 +188,7 @@ class InsuranceVerificationDetailAPIView(APIView):
 
         organization = _organization(request)
         if not can_delete(user=request.user, organization_id=organization.pk):
-            CanDeleteInsuranceVerification().has_permission(request, self)
+            return _permission_denied("delete")
         result = InsuranceVerificationDeletionWorkflow(
             request=InsuranceVerificationDeleteRequest(
                 organization_id=organization.pk,
@@ -205,7 +212,7 @@ class InsuranceVerificationLifecycleAPIView(APIView):
 
         organization = _organization(request)
         if not can_transition(user=request.user, organization_id=organization.pk):
-            CanTransitionInsuranceVerification().has_permission(request, self)
+            return _permission_denied("change the lifecycle of")
         serializer = InsuranceVerificationLifecycleSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         result = InsuranceVerificationLifecycleWorkflow(
@@ -232,7 +239,7 @@ class InsuranceVerificationRestoreAPIView(APIView):
 
         organization = _organization(request)
         if not can_restore(user=request.user, organization_id=organization.pk):
-            CanRestoreInsuranceVerification().has_permission(request, self)
+            return _permission_denied("restore")
         try:
             result = InsuranceVerificationRestoreWorkflow(
                 request=InsuranceVerificationRestoreRequest(

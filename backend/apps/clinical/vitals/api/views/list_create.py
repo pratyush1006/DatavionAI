@@ -5,6 +5,7 @@ API views for listing and creating vitals.
 from __future__ import annotations
 
 from typing import Final
+from uuid import uuid4
 
 from django.db.models import QuerySet
 from drf_spectacular.utils import extend_schema
@@ -22,13 +23,27 @@ from apps.clinical.vitals.permissions import (
 )
 from apps.clinical.vitals.selectors import get_vitals
 from apps.clinical.vitals.services import create_vital
+from apps.clinical.vitals.workflows import VitalCreationRequest, VitalCreationWorkflow
 from apps.common.api.base_generics import BaseListCreateAPIView
+from apps.core.workflows import WorkflowContext
+from apps.platform.organizations.models import Organization
 
 VITAL_TAG: Final[tuple[str, ...]] = ("Vitals",)
 
 
 @extend_schema(tags=VITAL_TAG)
 class VitalListCreateAPIView(BaseListCreateAPIView):
+    def resolve_workflow_created_instance(self, workflow_result):
+        data = getattr(workflow_result, "data", None)
+        if hasattr(data, "pk"):
+            return data
+        if isinstance(data, dict):
+            instance = data.get("instance") or data.get("object")
+            if hasattr(instance, "pk"):
+                return instance
+        return super().resolve_workflow_created_instance(workflow_result)
+
+    create_workflow = VitalCreationWorkflow
     """
     List existing vitals or create a new vital record.
     """
@@ -93,3 +108,44 @@ class VitalListCreateAPIView(BaseListCreateAPIView):
 __all__ = [
     "VitalListCreateAPIView",
 ]
+
+
+def _vital_create_workflow_context(self):
+    user = self.request.user
+    tenant_id = getattr(user, "tenant_id", None)
+    organization_id = self.request.data.get("organization") or self.request.data.get(
+        "organization_id"
+    )
+    if tenant_id is None and organization_id:
+        tenant_id = (
+            Organization.objects.only("tenant_id").get(pk=organization_id).tenant_id
+        )
+    if tenant_id is None:
+        raise RuntimeError("Tenant context is required.")
+    return WorkflowContext(
+        tenant_id=tenant_id,
+        actor_id=user.id,
+        correlation_id=str(uuid4()),
+        request_id=str(uuid4()),
+        workflow_name="vital.create",
+    )
+
+
+VitalListCreateAPIView.get_workflow_context = _vital_create_workflow_context
+
+
+def _vital_build_workflow_request(self, validated_data):
+    organization = validated_data["organization"]
+    patient = validated_data["patient"]
+    provider = validated_data["provider"]
+    encounter = validated_data.get("encounter")
+    return VitalCreationRequest(
+        organization_id=organization.id,
+        patient_id=patient.id,
+        provider_id=provider.id,
+        encounter_id=getattr(encounter, "id", None),
+        data=dict(validated_data),
+    )
+
+
+VitalListCreateAPIView.build_workflow_request = _vital_build_workflow_request

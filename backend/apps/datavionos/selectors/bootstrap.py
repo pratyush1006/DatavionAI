@@ -63,9 +63,12 @@ from django.contrib.auth import get_user_model
 from apps.datavionos.resolvers.permissions import (
     permission_resolver,
 )
+from apps.organization.departments.models import DepartmentMember
 from apps.organization.employees.models import (
     Employee,
 )
+from apps.organization.employees.models.employee_assignment import EmployeeAssignment
+from apps.organization.teams.models import TeamMember
 from apps.platform.organizations.models import (
     Organization,
 )
@@ -111,6 +114,8 @@ class PlatformBootstrapContext:
 
     permissions: frozenset[str]
 
+    access_scope: dict[str, tuple[str, ...]]
+
 
 class PlatformBootstrapSelector:
     """
@@ -134,17 +139,33 @@ class PlatformBootstrapSelector:
 
         tenant_context = get_tenant_context()
 
-        tenant = (
-            tenant_context.tenant
-            if tenant_context
-            else None
-        )
+        tenant = tenant_context.tenant if tenant_context else None
 
-        tenant_membership = (
-            tenant_context.membership
-            if tenant_context
-            else None
-        )
+        tenant_membership = tenant_context.membership if tenant_context else None
+
+        # A first-time self-service signup has no browser tenant header or
+        # saved preference yet. Resolve the owner's active membership so the
+        # first dashboard bootstrap is scoped to the organization just
+        # provisioned, rather than returning an empty workspace.
+        if tenant is None:
+            tenant_membership = (
+                TenantMembership.objects.filter(
+                    user=user,
+                    status=TenantMembership.Status.ACTIVE,
+                )
+                .select_related("tenant")
+                .order_by("-is_owner", "created_at")
+                .first()
+            )
+            tenant = tenant_membership.tenant if tenant_membership is not None else None
+
+        # Platform operators are global users and may not have a tenant
+        # membership. Their selected organization is still a valid workspace
+        # choice, so use its tenant before resolving runtime context.
+        if tenant is None:
+            selected_organization = getattr(user, "organization", None)
+            if selected_organization is not None and selected_organization.is_active:
+                tenant = selected_organization.tenant
 
         employee = self._get_employee(
             user=user,
@@ -158,7 +179,7 @@ class PlatformBootstrapSelector:
         )
 
         subscription = self._get_subscription(
-            tenant=tenant,
+            organization=organization,
         )
 
         platform_roles = self._get_platform_roles(
@@ -176,6 +197,7 @@ class PlatformBootstrapSelector:
                 organization=organization,
             )
         )
+        access_scope = self._get_access_scope(user=user, employee=employee)
 
         return PlatformBootstrapContext(
             user=user,
@@ -187,7 +209,50 @@ class PlatformBootstrapSelector:
             platform_roles=platform_roles,
             organization_roles=organization_roles,
             permissions=permissions,
+            access_scope=access_scope,
         )
+
+    @staticmethod
+    def _get_access_scope(
+        *, user: User, employee: Employee | None
+    ) -> dict[str, tuple[str, ...]]:
+        """Resolve direct department and team scope for downstream consumers.
+
+        Roles grant capabilities; these memberships constrain the operational
+        context in which those capabilities are presented and enforced.
+        """
+        department_ids: set[str] = set()
+        team_ids: set[str] = set()
+        if employee is not None:
+            department_ids.update(
+                str(value)
+                for value in DepartmentMember.objects.filter(
+                    employee=employee, is_active=True
+                ).values_list("department_id", flat=True)
+            )
+            assignments = EmployeeAssignment.objects.filter(
+                employee=employee, is_current=True
+            )
+            department_ids.update(
+                str(value)
+                for value in assignments.values_list("department_id", flat=True)
+            )
+            team_ids.update(
+                str(value)
+                for value in assignments.exclude(team_id__isnull=True).values_list(
+                    "team_id", flat=True
+                )
+            )
+        team_ids.update(
+            str(value)
+            for value in TeamMember.objects.filter(
+                user=user, status="ACTIVE"
+            ).values_list("team_id", flat=True)
+        )
+        return {
+            "department_ids": tuple(sorted(department_ids)),
+            "team_ids": tuple(sorted(team_ids)),
+        }
 
     # ==================================================================
     # Employee
@@ -249,7 +314,8 @@ class PlatformBootstrapSelector:
         Resolution order:
 
         1. Employee organization
-        2. Active organization RBAC assignment
+        2. User's selected/default organization (platform operators)
+        3. Active organization RBAC assignment
 
         Employee organization is authoritative when an employee
         exists for the current tenant.
@@ -260,6 +326,17 @@ class PlatformBootstrapSelector:
 
         if tenant is None:
             return None
+
+        # Platform administrators have a global UserRole and often do not
+        # have a tenant-specific OrganizationRole.  Preserve the selected
+        # organization context when it belongs to the resolved tenant so the
+        # platform control plane can load its entitled module runtime.
+        selected_organization = getattr(user, "organization", None)
+        if (
+            selected_organization is not None
+            and selected_organization.tenant_id == tenant.id
+        ):
+            return selected_organization
 
         return (
             Organization.objects.filter(
@@ -278,7 +355,7 @@ class PlatformBootstrapSelector:
     @staticmethod
     def _get_subscription(
         *,
-        tenant: Tenant | None,
+        organization: Organization | None,
     ) -> object | None:
         """
         Resolve the tenant subscription reference.
@@ -289,12 +366,12 @@ class PlatformBootstrapSelector:
         EntitlementResolver owns entitlement resolution.
         """
 
-        if tenant is None:
+        if organization is None:
             return None
 
         return getattr(
-            tenant,
-            "subscription",
+            organization,
+            "saas_subscription",
             None,
         )
 

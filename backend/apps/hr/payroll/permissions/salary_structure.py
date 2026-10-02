@@ -4,22 +4,22 @@ Salary structure permission classes.
 
 from __future__ import annotations
 
-from apps.common.permissions.base import DatavionPermission
+from apps.hr.permissions import HrPermission
 
 
-class CanViewSalaryStructure(DatavionPermission):
+class CanViewSalaryStructure(HrPermission):
     permission_code = "payroll.view"
 
 
-class CanCreateSalaryStructure(DatavionPermission):
+class CanCreateSalaryStructure(HrPermission):
     permission_code = "payroll.create"
 
 
-class CanUpdateSalaryStructure(DatavionPermission):
+class CanUpdateSalaryStructure(HrPermission):
     permission_code = "payroll.update"
 
 
-class CanDeleteSalaryStructure(DatavionPermission):
+class CanDeleteSalaryStructure(HrPermission):
     permission_code = "payroll.delete"
 
 

@@ -1,131 +1,43 @@
-"""
-Appointment constants.
-"""
+"""Constants for Clinical Appointments."""
 
 from __future__ import annotations
 
 from django.db import models
 
 
-class AppointmentStatus(
-    models.TextChoices,
-):
-    """
-    Appointment lifecycle status.
-    """
+class AppointmentType(models.TextChoices):
+    """Supported appointment types."""
 
-    SCHEDULED = (
-        "scheduled",
-        "Scheduled",
-    )
-
-    CONFIRMED = (
-        "confirmed",
-        "Confirmed",
-    )
-
-    CHECKED_IN = (
-        "checked_in",
-        "Checked In",
-    )
-
-    IN_PROGRESS = (
-        "in_progress",
-        "In Progress",
-    )
-
-    COMPLETED = (
-        "completed",
-        "Completed",
-    )
-
-    CANCELLED = (
-        "cancelled",
-        "Cancelled",
-    )
-
-    NO_SHOW = (
-        "no_show",
-        "No Show",
-    )
+    IN_PERSON = "in_person", "In Person"
+    VIRTUAL = "virtual", "Virtual"
+    FOLLOW_UP = "follow_up", "Follow Up"
+    CONSULTATION = "consultation", "Consultation"
+    PROCEDURE = "procedure", "Procedure"
+    EMERGENCY = "emergency", "Emergency"
 
 
-class AppointmentType(
-    models.TextChoices,
-):
-    """
-    Appointment types.
-    """
+class AppointmentStatus(models.TextChoices):
+    """Supported appointment lifecycle states."""
 
-    CONSULTATION = (
-        "consultation",
-        "Consultation",
-    )
-
-    FOLLOW_UP = (
-        "follow_up",
-        "Follow-up",
-    )
-
-    EMERGENCY = (
-        "emergency",
-        "Emergency",
-    )
-
-    SURGERY = (
-        "surgery",
-        "Surgery",
-    )
-
-    PROCEDURE = (
-        "procedure",
-        "Procedure",
-    )
-
-    TELECONSULTATION = (
-        "teleconsultation",
-        "Teleconsultation",
-    )
+    SCHEDULED = "scheduled", "Scheduled"
+    CONFIRMED = "confirmed", "Confirmed"
+    CHECKED_IN = "checked_in", "Checked In"
+    IN_PROGRESS = "in_progress", "In Progress"
+    COMPLETED = "completed", "Completed"
+    CANCELLED = "cancelled", "Cancelled"
+    NO_SHOW = "no_show", "No Show"
 
 
-class AppointmentPriority(
-    models.TextChoices,
-):
-    """
-    Appointment priority.
-    """
+class AppointmentPriority(models.TextChoices):
+    """Supported appointment priorities."""
 
-    LOW = (
-        "low",
-        "Low",
-    )
-
-    NORMAL = (
-        "normal",
-        "Normal",
-    )
-
-    HIGH = (
-        "high",
-        "High",
-    )
-
-    URGENT = (
-        "urgent",
-        "Urgent",
-    )
+    ROUTINE = "routine", "Routine"
+    URGENT = "urgent", "Urgent"
+    EMERGENCY = "emergency", "Emergency"
 
 
-DEFAULT_APPOINTMENT_STATUS = AppointmentStatus.SCHEDULED
-
-
-DEFAULT_APPOINTMENT_PRIORITY = AppointmentPriority.NORMAL
-
-
-__all__ = [
+__all__ = (
     "AppointmentPriority",
     "AppointmentStatus",
     "AppointmentType",
-    "DEFAULT_APPOINTMENT_PRIORITY",
-    "DEFAULT_APPOINTMENT_STATUS",
-]
+)

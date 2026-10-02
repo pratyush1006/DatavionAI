@@ -1,21 +1,20 @@
 """
-DatavionOS SaaS Billing API URLs.
+Canonical DatavionOS SaaS Billing API routes.
 
-Routes:
-
-- Billing Account
-- Plan
-- Subscription
-- Invoice
-- Payment
-- Usage
+API exposure layer only.
+Business logic remains in canonical view modules.
 """
 
 from __future__ import annotations
 
 from django.urls import path
 
-from apps.platform.saas_billing.api.views import (
+from apps.platform.saas_billing.api.razorpay import (
+    RazorpayVerifyAPIView,
+    RazorpayWebhookAPIView,
+)
+
+from .views import (
     BillingAccountDetailAPIView,
     BillingAccountUpdateAPIView,
     BillingAutoChargeAPIView,
@@ -43,48 +42,40 @@ from apps.platform.saas_billing.api.views import (
     SubscriptionCreateAPIView,
     SubscriptionDetailAPIView,
     SubscriptionRenewAPIView,
+    SubscriptionRuntimeAPIView,
     UsageChargeAPIView,
     UsageCollectAPIView,
     UsageEvaluateAPIView,
     UsageListAPIView,
 )
 
+app_name = "saas-billing-api"
+
 urlpatterns = [
-    # =========================================================================
-    # Billing Account
-    # =========================================================================
     path(
-        "account/",
+        "billing-account/",
         BillingAccountDetailAPIView.as_view(),
         name="billing-account-detail",
     ),
     path(
-        "account/update/",
+        "billing-account/update/",
         BillingAccountUpdateAPIView.as_view(),
         name="billing-account-update",
     ),
     path(
-        "account/payment-provider/",
+        "billing-account/auto-charge/",
+        BillingAutoChargeAPIView.as_view(),
+        name="billing-auto-charge",
+    ),
+    path(
+        "billing-account/payment-provider/",
         BillingPaymentProviderAPIView.as_view(),
         name="billing-payment-provider",
     ),
     path(
-        "account/auto-charge/",
-        BillingAutoChargeAPIView.as_view(),
-        name="billing-auto-charge",
-    ),
-    # =========================================================================
-    # Plans
-    # =========================================================================
-    path(
         "plans/",
         PlanListAPIView.as_view(),
         name="plan-list",
-    ),
-    path(
-        "plans/<uuid:pk>/",
-        PlanDetailAPIView.as_view(),
-        name="plan-detail",
     ),
     path(
         "plans/create/",
@@ -92,63 +83,57 @@ urlpatterns = [
         name="plan-create",
     ),
     path(
-        "plans/<uuid:pk>/update/",
-        PlanUpdateAPIView.as_view(),
-        name="plan-update",
+        "plans/<uuid:plan_id>/",
+        PlanDetailAPIView.as_view(),
+        name="plan-detail",
     ),
     path(
-        "plans/<uuid:pk>/activate/",
+        "plans/<uuid:plan_id>/activate/",
         PlanActivateAPIView.as_view(),
         name="plan-activate",
     ),
     path(
-        "plans/<uuid:pk>/deactivate/",
+        "plans/<uuid:plan_id>/deactivate/",
         PlanDeactivateAPIView.as_view(),
         name="plan-deactivate",
     ),
     path(
-        "plans/<uuid:pk>/archive/",
+        "plans/<uuid:plan_id>/archive/",
         PlanArchiveAPIView.as_view(),
         name="plan-archive",
     ),
-    # =========================================================================
-    # Subscription
-    # =========================================================================
     path(
-        "subscription/",
+        "subscriptions/<uuid:subscription_id>/",
         SubscriptionDetailAPIView.as_view(),
         name="subscription-detail",
     ),
     path(
-        "subscription/create/",
+        "subscriptions/create/",
         SubscriptionCreateAPIView.as_view(),
         name="subscription-create",
     ),
     path(
-        "subscription/activate/",
+        "subscriptions/<uuid:subscription_id>/activate/",
         SubscriptionActivateAPIView.as_view(),
         name="subscription-activate",
     ),
     path(
-        "subscription/renew/",
+        "subscriptions/<uuid:subscription_id>/renew/",
         SubscriptionRenewAPIView.as_view(),
         name="subscription-renew",
     ),
     path(
-        "subscription/cancel/",
+        "subscriptions/<uuid:subscription_id>/cancel/",
         SubscriptionCancelAPIView.as_view(),
         name="subscription-cancel",
     ),
-    # =========================================================================
-    # Invoice
-    # =========================================================================
     path(
         "invoices/",
         InvoiceListAPIView.as_view(),
         name="invoice-list",
     ),
     path(
-        "invoices/<uuid:pk>/",
+        "invoices/<uuid:invoice_id>/",
         InvoiceDetailAPIView.as_view(),
         name="invoice-detail",
     ),
@@ -158,51 +143,45 @@ urlpatterns = [
         name="invoice-generate",
     ),
     path(
-        "invoices/<uuid:pk>/issue/",
+        "invoices/<uuid:invoice_id>/issue/",
         InvoiceIssueAPIView.as_view(),
         name="invoice-issue",
     ),
     path(
-        "invoices/<uuid:pk>/finalize/",
+        "invoices/<uuid:invoice_id>/finalize/",
         InvoiceFinalizeAPIView.as_view(),
         name="invoice-finalize",
     ),
     path(
-        "invoices/<uuid:pk>/cancel/",
+        "invoices/<uuid:invoice_id>/cancel/",
         InvoiceCancelAPIView.as_view(),
         name="invoice-cancel",
     ),
-    # =========================================================================
-    # Payment
-    # =========================================================================
     path(
         "payments/",
         PaymentListAPIView.as_view(),
         name="payment-list",
     ),
     path(
-        "payments/<uuid:pk>/",
+        "payments/<uuid:payment_id>/",
         PaymentDetailAPIView.as_view(),
         name="payment-detail",
     ),
     path(
-        "payments/process/",
+        "payments/<uuid:payment_id>/process/",
         PaymentProcessAPIView.as_view(),
         name="payment-process",
     ),
     path(
-        "payments/<uuid:pk>/reconcile/",
+        "payments/<uuid:payment_id>/reconcile/",
         PaymentReconcileAPIView.as_view(),
         name="payment-reconcile",
     ),
     path(
-        "payments/<uuid:pk>/refund/",
+        "payments/<uuid:payment_id>/refund/",
         PaymentRefundAPIView.as_view(),
         name="payment-refund",
     ),
-    # =========================================================================
-    # Usage
-    # =========================================================================
     path(
         "usage/",
         UsageListAPIView.as_view(),
@@ -214,13 +193,23 @@ urlpatterns = [
         name="usage-collect",
     ),
     path(
-        "usage/<uuid:pk>/evaluate/",
+        "usage/evaluate/",
         UsageEvaluateAPIView.as_view(),
         name="usage-evaluate",
     ),
     path(
-        "usage/<uuid:pk>/charge/",
+        "usage/charge/",
         UsageChargeAPIView.as_view(),
         name="usage-charge",
+    ),
+    path("plans/<uuid:plan_id>/update/", PlanUpdateAPIView.as_view()),
+    path(
+        "subscription/runtime/",
+        SubscriptionRuntimeAPIView.as_view(),
+        name="subscription-runtime",
+    ),
+    path("razorpay/verify/", RazorpayVerifyAPIView.as_view(), name="razorpay-verify"),
+    path(
+        "razorpay/webhook/", RazorpayWebhookAPIView.as_view(), name="razorpay-webhook"
     ),
 ]

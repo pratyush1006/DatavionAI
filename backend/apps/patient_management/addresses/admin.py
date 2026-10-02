@@ -1,6 +1,4 @@
-"""
-Admin configuration for patient addresses.
-"""
+"""Patient Address admin."""
 
 from __future__ import annotations
 
@@ -11,42 +9,31 @@ from apps.patient_management.addresses.models import Address
 
 @admin.register(Address)
 class AddressAdmin(admin.ModelAdmin):
-    """Admin for Address."""
-
     list_display = (
-        "line_1",
-        "city",
-        "state",
-        "country",
-        "address_type",
+        "id",
+        "organization",
         "patient",
-        "status",
-        "is_primary",
-    )
-
-    list_filter = (
         "address_type",
         "address_use",
         "status",
-        "source",
         "is_primary",
+        "is_verified",
     )
-
+    list_filter = ("address_type", "address_use", "status", "is_primary", "is_verified")
     search_fields = (
-        "line_1",
-        "city",
-        "state",
+        "address_line_1",
+        "city_name",
+        "region_name",
+        "country_name",
         "postal_code",
-        "patient__first_name",
-        "patient__last_name",
+        "formatted_address",
     )
-
     autocomplete_fields = (
+        "tenant",
         "organization",
         "patient",
-    )
-
-    list_select_related = (
-        "organization",
-        "patient",
+        "country",
+        "region",
+        "city",
+        "verified_by",
     )

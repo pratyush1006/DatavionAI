@@ -10,9 +10,9 @@ from django.db.models import QuerySet
 from drf_spectacular.utils import extend_schema
 from rest_framework.permissions import IsAuthenticated
 
-from apps.common.api.base_generics import (
-    BaseListCreateAPIView,
-    BaseRetrieveUpdateDestroyAPIView,
+from apps.hr.api import (
+    HrListCreateAPIView,
+    HrRetrieveUpdateDestroyAPIView,
 )
 from apps.hr.shifts.api.serializers import (
     ShiftCreateSerializer,
@@ -34,7 +34,7 @@ SHIFTS_TAG: Final[tuple[str, ...]] = ("Shifts",)
 
 
 @extend_schema(tags=SHIFTS_TAG)
-class ShiftListCreateAPIView(BaseListCreateAPIView):
+class ShiftListCreateAPIView(HrListCreateAPIView):
     """
     List existing shifts or create a new one.
     """
@@ -69,7 +69,7 @@ class ShiftListCreateAPIView(BaseListCreateAPIView):
 
 @extend_schema(tags=SHIFTS_TAG)
 class ShiftRetrieveUpdateDestroyAPIView(
-    BaseRetrieveUpdateDestroyAPIView,
+    HrRetrieveUpdateDestroyAPIView,
 ):
     """
     Retrieve, update or delete a shift.

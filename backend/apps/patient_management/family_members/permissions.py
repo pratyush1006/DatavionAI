@@ -10,6 +10,15 @@ from __future__ import annotations
 from apps.platform.rbac.permissions import RBACPermissionBase
 
 
+class FamilyMemberPermission:
+    """Stable permission codes used by RBAC seeders and integrations."""
+
+    CREATE = "patient_management.family_members.create"
+    UPDATE = "patient_management.family_members.update"
+    DELETE = "patient_management.family_members.delete"
+    VIEW = "patient_management.family_members.view"
+
+
 class CanViewFamilyMember(RBACPermissionBase):
     permission_code = "family_members.view"
     message = "You do not have permission to view patient family members."
@@ -66,6 +75,7 @@ class CanImportFamilyMembers(RBACPermissionBase):
 
 
 __all__ = (
+    "FamilyMemberPermission",
     "CanViewFamilyMember",
     "CanCreateFamilyMember",
     "CanUpdateFamilyMember",

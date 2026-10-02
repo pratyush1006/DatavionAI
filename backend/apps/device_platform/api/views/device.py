@@ -72,9 +72,11 @@ class DeviceListCreateAPIView(APIView):
         except DjangoValidationError as exc:
             return Response(
                 {
-                    "detail": exc.message_dict
-                    if hasattr(exc, "message_dict")
-                    else exc.messages
+                    "detail": (
+                        exc.message_dict
+                        if hasattr(exc, "message_dict")
+                        else exc.messages
+                    )
                 },
                 status=400,
             )
@@ -89,9 +91,12 @@ class DeviceDetailAPIView(APIView):
         if error:
             return None, error
         try:
-            return DeviceSelector.get(
-                device_id=device_id, organization_id=organization.pk
-            ), None
+            return (
+                DeviceSelector.get(
+                    device_id=device_id, organization_id=organization.pk
+                ),
+                None,
+            )
         except Device.DoesNotExist:
             return None, Response({"detail": "Device not found."}, status=404)
 

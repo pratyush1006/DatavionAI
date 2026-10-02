@@ -20,6 +20,8 @@ from abc import (
 from apps.common.storage.backend import (
     StorageBackend,
 )
+from apps.common.storage.models import StoredFile
+from apps.common.storage.types import FileContent, StoragePath
 
 
 class BaseStorageBackend(
@@ -35,11 +37,11 @@ class BaseStorageBackend(
     @abstractmethod
     def upload(
         self,
+        path: StoragePath,
+        content: FileContent,
         *,
-        file,
-        storage_key: str,
-        content_type: str,
-    ):
+        overwrite: bool = False,
+    ) -> StoredFile:
         """
         Upload file.
 
@@ -52,9 +54,8 @@ class BaseStorageBackend(
     @abstractmethod
     def download(
         self,
-        *,
-        storage_key: str,
-    ):
+        path: StoragePath,
+    ) -> bytes:
         """
         Download file.
         """
@@ -64,9 +65,8 @@ class BaseStorageBackend(
     @abstractmethod
     def delete(
         self,
-        *,
-        storage_key: str,
-    ) -> None:
+        path: StoragePath,
+    ) -> bool:
         """
         Delete file.
         """
@@ -76,8 +76,7 @@ class BaseStorageBackend(
     @abstractmethod
     def exists(
         self,
-        *,
-        storage_key: str,
+        path: StoragePath,
     ) -> bool:
         """
         Check file existence.
@@ -88,8 +87,8 @@ class BaseStorageBackend(
     @abstractmethod
     def get_url(
         self,
+        path: StoragePath,
         *,
-        storage_key: str,
         expires_in: int | None = None,
     ) -> str:
         """
@@ -98,6 +97,15 @@ class BaseStorageBackend(
         Private storage may generate
         signed URLs.
         """
+
+        raise NotImplementedError
+
+    @abstractmethod
+    def size(
+        self,
+        path: StoragePath,
+    ) -> int:
+        """Return file size in bytes."""
 
         raise NotImplementedError
 

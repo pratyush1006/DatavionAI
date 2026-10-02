@@ -19,10 +19,10 @@ class LeaveBalanceBaseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = LeaveBalance
-        fields = ()
+        fields: tuple[str, ...] = ()
 
     def get_employee_name(self, obj: LeaveBalance) -> str:
-        return obj.employee.full_name
+        return str(obj.employee.full_name)
 
 
 class LeaveBalanceListSerializer(LeaveBalanceBaseSerializer):
@@ -47,7 +47,7 @@ class LeaveBalanceDetailSerializer(LeaveBalanceBaseSerializer):
         read_only=True,
     )
 
-    employee_id = serializers.IntegerField(
+    employee_id = serializers.UUIDField(
         source="employee.id",
         read_only=True,
     )

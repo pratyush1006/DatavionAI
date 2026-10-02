@@ -11,6 +11,7 @@ provider-independent.
 from __future__ import annotations
 
 from hashlib import sha256
+from typing import Any
 
 from apps.common.storage.exceptions import (
     StorageConnectionError,
@@ -44,7 +45,7 @@ class GCSStorageBackend(
         self,
         *,
         bucket_name: str,
-        client: object,
+        client: Any,
     ) -> None:
         """
         Initialize GCS storage.
@@ -115,7 +116,7 @@ class GCSStorageBackend(
                     path,
                 )
 
-            return blob.download_as_bytes()
+            return bytes(blob.download_as_bytes())
 
         except StorageNotFoundError:
             raise
@@ -163,7 +164,7 @@ class GCSStorageBackend(
                 path,
             )
 
-            return blob.exists()
+            return bool(blob.exists())
 
         except Exception:
             return False
@@ -183,8 +184,10 @@ class GCSStorageBackend(
                 path,
             )
 
-            return blob.generate_signed_url(
-                expiration=expires_in or 3600,
+            return str(
+                blob.generate_signed_url(
+                    expiration=expires_in or 3600,
+                )
             )
 
         except Exception as exc:

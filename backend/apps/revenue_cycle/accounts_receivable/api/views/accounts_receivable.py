@@ -12,10 +12,17 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.common.api.openapi import extend_schema
+
 from ...policies import ARPolicy
 from ...selectors import ARSelector
 from ...workflows import ARWorkflow
-from ..serializers import ARAccountSerializer, ARTransactionSerializer
+from ..serializers import (
+    ARAccountHoldSerializer,
+    ARAccountSerializer,
+    ARAccountWriteOffSerializer,
+    ARTransactionSerializer,
+)
 
 
 def _context(request):
@@ -33,6 +40,7 @@ class ARAccountListAPIView(APIView):
 
     permission_classes = (IsAuthenticated,)
 
+    @extend_schema(responses=ARAccountSerializer(many=True))
     def get(self, request):
         """Return organization-scoped AR accounts."""
 
@@ -48,6 +56,7 @@ class ARTransactionListCreateAPIView(APIView):
 
     permission_classes = (IsAuthenticated,)
 
+    @extend_schema(responses=ARTransactionSerializer(many=True))
     def get(self, request, account_id: UUID):
         """Return transactions for one organization-scoped account."""
 
@@ -64,6 +73,10 @@ class ARTransactionListCreateAPIView(APIView):
         )
         return Response(ARTransactionSerializer(queryset, many=True).data)
 
+    @extend_schema(
+        request=ARTransactionSerializer,
+        responses={status.HTTP_201_CREATED: ARTransactionSerializer},
+    )
     def post(self, request, account_id: UUID):
         """Post a new AR transaction through the workflow layer."""
 
@@ -116,6 +129,7 @@ class ARTransactionReverseAPIView(APIView):
 
     permission_classes = (IsAuthenticated,)
 
+    @extend_schema(responses=ARTransactionSerializer)
     def post(self, request, transaction_id: UUID):
         """Reverse an AR transaction through the workflow layer."""
 
@@ -144,6 +158,10 @@ class ARAccountHoldAPIView(APIView):
 
     permission_classes = (IsAuthenticated,)
 
+    @extend_schema(
+        request=ARAccountHoldSerializer,
+        responses=ARAccountSerializer,
+    )
     def post(self, request, account_id: UUID):
         """Place the account on hold through the workflow layer."""
 
@@ -174,6 +192,7 @@ class ARAccountHoldReleaseAPIView(APIView):
 
     permission_classes = (IsAuthenticated,)
 
+    @extend_schema(responses=ARAccountSerializer)
     def post(self, request, account_id: UUID):
         """Release the account hold through the workflow layer."""
 
@@ -202,6 +221,10 @@ class ARAccountWriteOffAPIView(APIView):
 
     permission_classes = (IsAuthenticated,)
 
+    @extend_schema(
+        request=ARAccountWriteOffSerializer,
+        responses={status.HTTP_201_CREATED: ARTransactionSerializer},
+    )
     def post(self, request, account_id: UUID):
         """Write off the account balance through the workflow layer."""
 

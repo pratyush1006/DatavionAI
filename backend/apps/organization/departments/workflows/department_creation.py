@@ -158,11 +158,13 @@ class DepartmentCreationWorkflow(
                 "organization": organization,
                 "name": self._request.name,
                 "code": self._request.code,
-                "description": self._request.description,
+                # Django's ``blank=True`` fields are not nullable in the
+                # database.  Normalize omitted API values before persistence.
+                "description": self._request.description or "",
                 "department_type": self._request.department_type,
-                "phone": self._request.phone,
-                "email": self._request.email,
-                "location": self._request.location,
+                "phone": self._request.phone or "",
+                "email": self._request.email or "",
+                "location": self._request.location or "",
             },
         )
 

@@ -18,8 +18,7 @@ def register_datavionos_modules() -> None:
     discovered = discover_modules()
     registered = {module.identifier for module in module_registry.all()}
     pending = tuple(
-        module for module in discovered
-        if module.identifier not in registered
+        module for module in discovered if module.identifier not in registered
     )
     if pending:
         module_registry.register_modules(pending)

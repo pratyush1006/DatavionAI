@@ -4,6 +4,8 @@ DatavionOS Search Exceptions.
 
 from __future__ import annotations
 
+from rest_framework.exceptions import APIException
+
 
 class SearchError(Exception):
     """
@@ -17,10 +19,12 @@ class SearchProviderError(SearchError):
     """
 
 
-class SearchProviderNotFoundError(SearchError):
-    """
-    Provider unavailable.
-    """
+class SearchProviderNotFoundError(APIException):
+    """Raised when no working search backend is enabled for this deployment."""
+
+    status_code = 503
+    default_code = "search_provider_unavailable"
+    default_detail = "Search is unavailable because no backend is configured."
 
 
 __all__ = (

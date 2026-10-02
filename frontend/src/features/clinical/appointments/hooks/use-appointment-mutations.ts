@@ -8,6 +8,8 @@ import {
 import {
   appointmentKeys,
   appointmentMutations,
+  checkInAppointment,
+  markAppointmentNoShow,
 } from "../api";
 
 export function useCreateAppointmentMutation() {
@@ -44,6 +46,46 @@ export function useUpdateAppointmentMutation() {
           appointmentKeys.detail(
             variables.id,
           ),
+      });
+    },
+  });
+}
+
+export function useRescheduleAppointmentMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    ...appointmentMutations.reschedule(),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: appointmentKeys.lists(),
+      });
+      queryClient.invalidateQueries({
+        queryKey: appointmentKeys.detail(variables.id),
+      });
+    },
+  });
+}
+
+export function useCheckInAppointmentMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: checkInAppointment,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: appointmentKeys.lists(),
+      });
+    },
+  });
+}
+
+export function useNoShowAppointmentMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: markAppointmentNoShow,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: appointmentKeys.lists(),
       });
     },
   });

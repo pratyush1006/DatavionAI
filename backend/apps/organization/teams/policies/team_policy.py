@@ -39,7 +39,7 @@ class TeamPolicy:
         Ensure team belongs to organization.
         """
 
-        return team.organization_id == organization.id
+        return bool(team.organization_id == organization.id)
 
     @staticmethod
     def validate_department_assignment(
@@ -52,7 +52,7 @@ class TeamPolicy:
         to the same organization as team.
         """
 
-        return team.organization_id == department.organization_id
+        return bool(team.organization_id == department.organization_id)
 
     @staticmethod
     def can_delete(

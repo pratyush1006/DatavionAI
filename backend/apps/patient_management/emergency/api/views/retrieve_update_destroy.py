@@ -6,6 +6,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.common.api.openapi import extend_schema
 from apps.core.workflows import WorkflowContext
 from apps.patient_management.emergency.api.serializers import (
     EmergencyDetailSerializer,
@@ -24,6 +25,7 @@ from apps.patient_management.emergency.workflows import (
 class EmergencyRetrieveUpdateDestroyView(APIView):
     """Expose organization-scoped emergency detail operations."""
 
+    @extend_schema(responses=EmergencyDetailSerializer)
     def get(self, request, emergency_id):
         """Return one emergency contact."""
 
@@ -45,6 +47,10 @@ class EmergencyRetrieveUpdateDestroyView(APIView):
             EmergencyDetailSerializer(record).data,
         )
 
+    @extend_schema(
+        request=EmergencyUpdateSerializer,
+        responses=EmergencyDetailSerializer,
+    )
     def patch(self, request, emergency_id):
         """Update an emergency contact through its workflow."""
 
@@ -80,6 +86,7 @@ class EmergencyRetrieveUpdateDestroyView(APIView):
             EmergencyDetailSerializer(result.value).data,
         )
 
+    @extend_schema(responses=EmergencyDetailSerializer)
     def delete(self, request, emergency_id):
         """Soft-delete an emergency contact through its workflow."""
 

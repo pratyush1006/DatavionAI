@@ -113,7 +113,7 @@ class ProviderWorkflowTestCase(
                 if permission_code == "*":
                     continue
 
-                module, action = permission_code.split(".")
+                module, action = permission_code.split(".", 1)
 
                 permission, _ = Permission.objects.get_or_create(
                     code=permission_code,

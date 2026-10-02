@@ -7,7 +7,7 @@ from __future__ import annotations
 from typing import Final
 
 from drf_spectacular.utils import extend_schema
-from rest_framework import status
+from rest_framework import serializers, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -52,6 +52,8 @@ class PerformanceReviewSubmitAPIView(
     Submit a draft performance review.
     """
 
+    serializer_class = serializers.Serializer
+
     permission_classes = (IsAuthenticated, CanUpdatePerformanceReview)
 
     def post(self, request: Request, performance_review_id) -> Response:
@@ -75,6 +77,8 @@ class PerformanceReviewAcknowledgeAPIView(
     """
     Acknowledge a submitted performance review.
     """
+
+    serializer_class = serializers.Serializer
 
     permission_classes = (IsAuthenticated, CanUpdatePerformanceReview)
 
@@ -107,6 +111,8 @@ class PerformanceReviewCompleteAPIView(
     """
     Mark an acknowledged performance review as completed.
     """
+
+    serializer_class = serializers.Serializer
 
     permission_classes = (IsAuthenticated, CanUpdatePerformanceReview)
 

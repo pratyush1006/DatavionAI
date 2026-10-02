@@ -11,6 +11,7 @@ Responsibilities:
 - Manage invoice lifecycle
 - Handle payment readiness
 - Support subscription and usage billing
+- Trigger Enterprise Finance settlement after payment
 
 Architecture:
 
@@ -24,7 +25,9 @@ Invoice Model
       |
 Payment
       |
-Accounting
+Enterprise Finance
+      |
+Journal Entry / Ledger / Audit
 """
 
 from __future__ import annotations
@@ -37,6 +40,9 @@ from django.utils import timezone
 from apps.platform.saas_billing.models import (
     Invoice,
     Subscription,
+)
+from apps.platform.saas_billing.services.enterprise_finance_integration import (
+    settle_saas_invoice_in_finance,
 )
 
 
@@ -89,7 +95,7 @@ class InvoiceService:
                 Invoice.Status.DRAFT,
                 Invoice.Status.ISSUED,
             ],
-            billing_period_start=(subscription.current_period_start),
+            billing_period_start=subscription.current_period_start,
         ).first()
 
         if existing:
@@ -99,44 +105,34 @@ class InvoiceService:
 
         subtotal = plan.price
 
-        tax_amount = Decimal(
-            "0",
-        )
+        tax_amount = Decimal("0")
 
         total_amount = subtotal + tax_amount
 
         return Invoice.objects.create(
-            tenant=(subscription.tenant),
-            organization=(subscription.organization),
+            tenant=subscription.tenant,
+            organization=subscription.organization,
             subscription=subscription,
-            invoice_number=(InvoiceService.generate_invoice_number()),
-            invoice_type=(Invoice.InvoiceType.SUBSCRIPTION),
-            status=(Invoice.Status.DRAFT),
-            billing_period_start=(subscription.current_period_start),
-            billing_period_end=(subscription.current_period_end),
+            invoice_number=InvoiceService.generate_invoice_number(),
+            invoice_type=Invoice.InvoiceType.SUBSCRIPTION,
+            status=Invoice.Status.DRAFT,
+            billing_period_start=subscription.current_period_start,
+            billing_period_end=subscription.current_period_end,
             subtotal=subtotal,
             tax_amount=tax_amount,
-            discount_amount=Decimal(
-                "0",
-            ),
+            discount_amount=Decimal("0"),
             total_amount=total_amount,
-            currency=(plan.currency),
+            currency=plan.currency,
             invoice_data={
                 "type": "subscription",
                 "plan": {
-                    "id": str(
-                        plan.id,
-                    ),
+                    "id": str(plan.id),
                     "name": plan.name,
                     "code": plan.code,
-                    "price": str(
-                        plan.price,
-                    ),
+                    "price": str(plan.price),
                 },
                 "subscription": {
-                    "id": str(
-                        subscription.id,
-                    ),
+                    "id": str(subscription.id),
                 },
             },
         )
@@ -155,7 +151,6 @@ class InvoiceService:
             return invoice
 
         invoice.status = Invoice.Status.ISSUED
-
         invoice.issued_at = timezone.now()
 
         invoice.save(
@@ -198,6 +193,25 @@ class InvoiceService:
     ) -> Invoice:
         """
         Mark invoice fully paid.
+
+        Runtime flow:
+
+            SaaS Invoice
+                |
+                v
+            mark_paid()
+                |
+                v
+            invoice.save()
+                |
+                v
+            Enterprise Finance settlement
+                |
+                v
+            Journal Entry / Ledger / Audit
+
+        The finance settlement is intentionally invoked only after
+        the SaaS invoice has been persisted as PAID.
         """
 
         invoice.status = Invoice.Status.PAID
@@ -219,6 +233,10 @@ class InvoiceService:
             ],
         )
 
+        settle_saas_invoice_in_finance(
+            invoice=invoice,
+        )
+
         return invoice
 
     @staticmethod
@@ -236,7 +254,6 @@ class InvoiceService:
 
         if invoice.paid_amount >= invoice.total_amount:
             invoice.status = Invoice.Status.PAID
-
             invoice.paid_at = timezone.now()
 
         else:

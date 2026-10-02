@@ -52,7 +52,7 @@ class PatientCommunication(BaseModel):
     failed_reason = models.TextField(blank=True)
     metadata = models.JSONField(default=dict, blank=True)
     created_by = models.ForeignKey(
-        "users.User",
+        "accounts.User",
         null=True,
         blank=True,
         on_delete=models.SET_NULL,

@@ -13,7 +13,7 @@ from apps.platform.organizations.api.organization_module.serializers import (
     OrganizationModuleDetailSerializer,
     OrganizationModuleListSerializer,
 )
-from apps.platform.organizations.permissions.organization_module import (
+from apps.platform.organizations.permissions.module import (
     CanCreateOrganizationModule,
     CanViewOrganizationModule,
 )

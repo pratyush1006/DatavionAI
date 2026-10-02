@@ -12,7 +12,7 @@ from drf_spectacular.utils import (
     extend_schema,
 )
 from rest_framework.exceptions import ValidationError
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny
 
 from apps.common.api.base_generics import BaseGenericAPIView
 from apps.platform.geography.api.geography.serializers import (
@@ -25,7 +25,7 @@ GEOGRAPHY_TAG: Final[tuple[str, ...]] = ("Geography",)
 
 @extend_schema(
     tags=GEOGRAPHY_TAG,
-    parameters=(
+    parameters=[
         OpenApiParameter(
             name="country",
             type=OpenApiTypes.UUID,
@@ -33,7 +33,7 @@ GEOGRAPHY_TAG: Final[tuple[str, ...]] = ("Geography",)
             required=True,
             description="Country UUID.",
         ),
-    ),
+    ],
 )
 class RegionListAPIView(
     BaseGenericAPIView,
@@ -42,7 +42,7 @@ class RegionListAPIView(
     Return active administrative regions for a country.
     """
 
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (AllowAny,)
 
     serializer_class = AdministrativeRegionSerializer
 

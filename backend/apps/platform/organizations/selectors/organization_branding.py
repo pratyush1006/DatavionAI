@@ -110,6 +110,13 @@ def get_branding_by_domain(
     )
 
 
+def get_organization_branding_by_custom_domain(
+    custom_domain: str,
+) -> OrganizationBranding:
+    """Compatibility alias with an explicit domain-oriented name."""
+    return get_branding_by_domain(custom_domain)
+
+
 def branding_exists(
     organization: Organization | Any,
 ) -> bool:
@@ -130,5 +137,6 @@ __all__: tuple[str, ...] = (
     "get_organization_branding",
     "get_organization_branding_by_organization",
     "get_organization_branding_by_id",
+    "get_organization_branding_by_custom_domain",
     "get_organization_brandings",
 )

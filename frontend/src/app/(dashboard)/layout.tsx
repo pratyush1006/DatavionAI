@@ -36,8 +36,9 @@ import {
 } from "next/navigation";
 
 import {
-  AppShell,
-} from "@/components/layout/app-shell";
+  DashboardShell,
+} from "@/components/datavionos/dashboard-shell";
+
 
 import {
   useAuth,
@@ -144,8 +145,8 @@ export default function DashboardLayout({
    * =========================================================================== */
 
   return (
-    <AppShell>
+    <DashboardShell>
       {children}
-    </AppShell>
+    </DashboardShell>
   );
 }

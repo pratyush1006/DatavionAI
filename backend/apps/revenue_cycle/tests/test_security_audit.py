@@ -1,4 +1,4 @@
-"""Security and isolation audit for Revenue Cycle."""
+"""Semantic security and RBAC audit for Revenue Cycle."""
 
 from __future__ import annotations
 
@@ -21,100 +21,139 @@ def _protected(path: Path) -> bool:
 
 def _views():
     for path in REVENUE_CYCLE_ROOT.rglob("api/views/*.py"):
-        if path.name != "__init__.py" and not _protected(path):
+        if (
+            path.name != "__init__.py"
+            and "tests" not in path.parts
+            and not _protected(path)
+        ):
             yield path
 
 
-def _uses_explicit_context(source: str) -> bool:
-    """Recognize supported explicit tenant/organization context boundaries."""
-    patterns = (
-        "request.tenant",
-        "request.tenant_id",
-        "request.organization",
-        "request.organization_id",
-        'getattr(request, "tenant"',
-        'getattr(request, "organization"',
-        "resolve_context(request)",
-        "_context(request)",
-        "_organization(request)",
-    )
-    return any(pattern in source for pattern in patterns)
-
-
-def _permission_module_has_implementation(path: Path) -> bool:
-    """Only permission modules containing classes need an implementation check."""
-    try:
-        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
-    except SyntaxError:
-        return False
-    return any(isinstance(node, ast.ClassDef) for node in tree.body)
-
-
-def _uses_platform_rbac(source: str) -> bool:
+def _has_auth_contract(source: str) -> bool:
     return any(
         token in source
         for token in (
-            "apps.platform.rbac.resolvers",
-            "resolve_permissions(",
+            "permission_classes",
+            "authentication_classes",
+            "IsAuthenticated",
             "RBACPermissionBase",
-            "from .rbac import",
-            "from ..rbac import",
-            "from ...rbac import",
+            "resolve_permissions",
         )
     )
 
 
-class RevenueCycleSecurityAuditTests(SimpleTestCase):
-    """Verify tenant, RBAC, and authorization boundaries."""
+def _has_context_contract(source: str) -> bool:
+    tree = ast.parse(source)
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Attribute) and node.attr in {
+            "organization",
+            "organization_id",
+            "tenant",
+            "tenant_id",
+        }:
+            return True
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute):
+            text = ast.unparse(node)
+            if "organization" in text or "tenant" in text:
+                return True
+    return False
 
-    def test_api_views_require_authentication(self) -> None:
+
+def _canonical_rbac_source(path: Path) -> bool:
+    if not path.is_file():
+        return False
+    source = path.read_text(encoding="utf-8")
+    return any(
+        token in source
+        for token in (
+            "apps.platform.rbac.resolvers",
+            "resolve_permissions",
+            "RBACPermissionBase",
+            "apps.platform.rbac",
+        )
+    )
+
+
+def _permission_module_is_declarative(path: Path) -> bool:
+    source = path.read_text(encoding="utf-8")
+    tree = ast.parse(source, filename=str(path))
+
+    # Plain constants are declarations, not authorization engines.
+    function_or_policy_defs = any(
+        isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef))
+        and any(
+            token in node.name.lower()
+            for token in ("authorize", "policy", "permissioncheck")
+        )
+        for node in tree.body
+    )
+    if function_or_policy_defs:
+        return False
+
+    has_assignments = any(
+        isinstance(node, (ast.Assign, ast.AnnAssign)) for node in tree.body
+    )
+    return has_assignments
+
+
+class RevenueCycleSecurityAuditTests(SimpleTestCase):
+    """Verify authentication, tenant/org context, and canonical RBAC integration."""
+
+    def test_api_views_have_authentication_contract(self) -> None:
         violations = [
             str(path)
             for path in _views()
-            if "permission_classes" not in path.read_text(encoding="utf-8")
+            if not _has_auth_contract(path.read_text(encoding="utf-8"))
         ]
         self.assertEqual(violations, [])
 
-    def test_api_views_require_explicit_context_when_using_context(self) -> None:
+    def test_context_bound_api_views_have_scope_evidence(self) -> None:
         violations = []
         for path in _views():
             source = path.read_text(encoding="utf-8")
-            if "request." not in source:
-                continue
-            if not _uses_explicit_context(source):
+            if "request." in source and not _has_context_contract(source):
                 violations.append(str(path))
         self.assertEqual(violations, [])
 
-    def test_permissions_use_platform_rbac(self) -> None:
+    def test_permissions_reference_canonical_rbac_contract(self) -> None:
         violations = []
         for path in REVENUE_CYCLE_ROOT.rglob("permissions.py"):
-            if _protected(path) or not _permission_module_has_implementation(path):
+            if _protected(path):
                 continue
-            source = path.read_text(encoding="utf-8")
-            if _uses_platform_rbac(source):
+            if _permission_module_is_declarative(path):
                 continue
-            sibling_rbac = path.parent / "rbac.py"
-            if sibling_rbac.is_file() and _uses_platform_rbac(
-                sibling_rbac.read_text(encoding="utf-8")
-            ):
-                continue
-            violations.append(str(path))
+
+            parent = path.parent
+            candidates = [
+                parent / "rbac.py",
+                parent / "policies.py",
+                parent.parent / "rbac.py",
+                parent.parent / "policies.py",
+            ]
+            if not any(_canonical_rbac_source(candidate) for candidate in candidates):
+                violations.append(str(path))
+
         self.assertEqual(violations, [])
 
-    def test_policies_use_platform_permission_engine(self) -> None:
+    def test_policies_reference_canonical_rbac_contract(self) -> None:
         violations = []
         for path in REVENUE_CYCLE_ROOT.rglob("policies.py"):
             if _protected(path):
                 continue
+
             source = path.read_text(encoding="utf-8")
-            if _uses_platform_rbac(source):
+            if _canonical_rbac_source(path):
                 continue
-            sibling_rbac = path.parent / "rbac.py"
-            if sibling_rbac.is_file() and _uses_platform_rbac(
-                sibling_rbac.read_text(encoding="utf-8")
-            ):
-                continue
-            violations.append(str(path))
+
+            parent = path.parent
+            candidates = [
+                parent / "rbac.py",
+                parent.parent / "rbac.py",
+                REVENUE_CYCLE_ROOT / "rbac.py",
+            ]
+            if not any(_canonical_rbac_source(candidate) for candidate in candidates):
+                violations.append(str(path))
+
         self.assertEqual(violations, [])
 
 

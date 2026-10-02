@@ -14,8 +14,11 @@ Supports:
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from types import MappingProxyType
-from typing import Final
+from typing import Final, TypeVar
+
+from apps.common.search.exceptions import SearchProviderNotFoundError
 
 from .base import (
     BaseVectorBackend,
@@ -25,6 +28,8 @@ _VECTOR_PROVIDERS: dict[
     str,
     type[BaseVectorBackend],
 ] = {}
+
+VectorBackendType = TypeVar("VectorBackendType", bound=BaseVectorBackend)
 
 
 VECTOR_PROVIDERS: Final = MappingProxyType(
@@ -59,7 +64,9 @@ def get_vector_provider(
         return _VECTOR_PROVIDERS[name]
 
     except KeyError as exc:
-        raise LookupError(f"Unknown vector provider '{name}'.") from exc
+        raise SearchProviderNotFoundError(
+            f"Vector provider '{name}' is not configured for this deployment."
+        ) from exc
 
 
 def has_vector_provider(
@@ -86,14 +93,14 @@ def list_vector_providers() -> tuple[str, ...]:
 
 def vector_provider(
     name: str,
-):
+) -> Callable[[type[VectorBackendType]], type[VectorBackendType]]:
     """
     Decorator for backend registration.
     """
 
     def decorator(
-        cls: type[BaseVectorBackend],
-    ):
+        cls: type[VectorBackendType],
+    ) -> type[VectorBackendType]:
         register_vector_provider(
             name,
             cls,

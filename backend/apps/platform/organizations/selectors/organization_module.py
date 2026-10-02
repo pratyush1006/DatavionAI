@@ -43,9 +43,13 @@ def get_modules(
             organization=organization,
         )
 
-    if is_enabled is not None:
+    if is_enabled is True:
         queryset = queryset.filter(
-            is_enabled=is_enabled,
+            status=OrganizationModule.Status.ENABLED,
+        )
+    elif is_enabled is False:
+        queryset = queryset.filter(
+            status=OrganizationModule.Status.DISABLED,
         )
 
     return queryset

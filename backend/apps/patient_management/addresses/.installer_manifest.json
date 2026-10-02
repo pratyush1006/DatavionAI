@@ -1,0 +1,14 @@
+{
+  "installer": "installer_patient_management_addresses_rebuild_v1_0_0.py",
+  "bounded_context": "apps.patient_management.addresses",
+  "django_migration_owner": "patient_management",
+  "tenant_dependency": "tenancy.Tenant",
+  "organization_dependency": "organizations.Organization",
+  "patient_dependency": "patient_core.Patient",
+  "geography_dependencies": ["geography.Country", "geography.AdministrativeRegion", "geography.City"],
+  "geography_owner": "apps.platform.geography",
+  "geocoding_owner": "apps.platform.geography",
+  "provider": "GeoPy/Nominatim behind Platform Geography",
+  "family_members": "protected",
+  "migration_policy": "forward-only; existing migrations never edited or deleted"
+}

@@ -62,3 +62,29 @@ __all__ = [
     "delete_vital",
     "update_vital",
 ]
+
+
+def delete_vital(
+    instance,
+    *,
+    organization,
+    actor=None,
+    request_user=None,
+    performed_by=None,
+    user=None,
+    **kwargs,
+):
+    if getattr(instance, "organization_id", None) != getattr(organization, "id", None):
+        raise ValueError("Vital does not belong to the organization.")
+    resolved_actor = actor or request_user or performed_by or user
+    user_id = (
+        getattr(resolved_actor, "id", None) if resolved_actor is not None else None
+    )
+    delete_method = getattr(instance, "delete", None)
+    if not callable(delete_method):
+        raise RuntimeError("Vital model does not expose a delete operation.")
+    try:
+        delete_method(user_id=user_id)
+    except TypeError:
+        delete_method()
+    return instance

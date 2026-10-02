@@ -16,6 +16,13 @@ Supports:
 - Dental Clinics
 - Physiotherapy Centers
 - Healthcare Enterprises
+
+Currency ownership:
+    Currency is a shared financial primitive owned by
+    apps.common.finance.currency.
+
+SaaS Billing consumes that primitive but does not define
+its own currency implementation.
 """
 
 from __future__ import annotations
@@ -23,9 +30,40 @@ from __future__ import annotations
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from apps.common.finance.currency import DEFAULT_CURRENCY, Currency
 from apps.core.models import BaseModel
 from apps.platform.saas_billing.managers.plan import (
     PlanManager,
+)
+
+# Keep the historical SaaS Billing display labels and historical
+# migration serialization order while sourcing the currency codes
+# from the canonical shared finance primitive.
+#
+# IMPORTANT:
+# The order here intentionally matches 0001_initial.py:
+# USD, INR, EUR, GBP.
+#
+# Do not replace this with iteration over SUPPORTED_CURRENCIES,
+# because the canonical shared primitive intentionally has its
+# own domain-neutral ordering.
+CURRENCY_CHOICES = (
+    (
+        Currency.USD,
+        _("US Dollar"),
+    ),
+    (
+        Currency.INR,
+        _("Indian Rupee"),
+    ),
+    (
+        Currency.EUR,
+        _("Euro"),
+    ),
+    (
+        Currency.GBP,
+        _("British Pound"),
+    ),
 )
 
 
@@ -58,26 +96,11 @@ class Plan(BaseModel):
             _("Yearly"),
         )
 
-    class Currency(models.TextChoices):
-        USD = (
-            "USD",
-            _("US Dollar"),
-        )
-
-        INR = (
-            "INR",
-            _("Indian Rupee"),
-        )
-
-        EUR = (
-            "EUR",
-            _("Euro"),
-        )
-
-        GBP = (
-            "GBP",
-            _("British Pound"),
-        )
+    # Backward-compatible model-level alias.
+    #
+    # Currency ownership remains in:
+    # apps.common.finance.currency.Currency
+    Currency = Currency
 
     class PlanType(models.TextChoices):
         STARTER = (
@@ -204,8 +227,8 @@ class Plan(BaseModel):
 
     currency = models.CharField(
         max_length=10,
-        choices=Currency.choices,
-        default=Currency.INR,
+        choices=CURRENCY_CHOICES,
+        default=DEFAULT_CURRENCY,
     )
 
     billing_cycle = models.CharField(
@@ -451,7 +474,6 @@ class Plan(BaseModel):
     def __str__(
         self,
     ) -> str:
-
         return self.name
 
 

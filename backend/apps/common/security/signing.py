@@ -6,7 +6,6 @@ Provides reusable cryptographic signing and verification helpers.
 
 from __future__ import annotations
 
-import hashlib
 import hmac
 
 from apps.common.security.constants import (
@@ -80,7 +79,7 @@ def verify_signature(
 
 def _resolve_algorithm(
     algorithm: str,
-):
+) -> str:
     """
     Resolve signing algorithm.
     """
@@ -88,7 +87,7 @@ def _resolve_algorithm(
     normalized = algorithm.upper()
 
     if normalized == "HMAC-SHA256":
-        return hashlib.sha256
+        return "sha256"
 
     raise SigningError(
         f"Unsupported signing algorithm: {algorithm}",

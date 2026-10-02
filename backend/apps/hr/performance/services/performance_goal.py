@@ -5,12 +5,13 @@ Business services for performance goals.
 from __future__ import annotations
 
 from collections.abc import Mapping
+from typing import Any, cast
 
 from django.db import transaction
 
 from apps.hr.performance.models import PerformanceGoal
 
-type PerformanceGoalData = Mapping[str, object]
+type PerformanceGoalData = Mapping[str, Any]
 
 
 @transaction.atomic
@@ -22,7 +23,7 @@ def create_performance_goal(
     Create a new performance goal.
     """
 
-    return PerformanceGoal.objects.create(**validated_data)
+    return cast(PerformanceGoal, PerformanceGoal.objects.create(**validated_data))
 
 
 @transaction.atomic

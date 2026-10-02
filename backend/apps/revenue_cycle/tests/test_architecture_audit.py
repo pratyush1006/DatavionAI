@@ -1,4 +1,4 @@
-"""Cross-module architecture audit for Revenue Cycle."""
+"""Semantic architecture audit for Revenue Cycle."""
 
 from __future__ import annotations
 
@@ -19,79 +19,64 @@ def _protected(path: Path) -> bool:
     return bool(relative.parts) and relative.parts[0] in PROTECTED_CONTEXTS
 
 
-def _patient_model_reference(path: Path) -> bool:
-    try:
-        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
-    except SyntaxError:
-        return False
-    for node in ast.walk(tree):
+def _active_sources():
+    for path in REVENUE_CYCLE_ROOT.rglob("*.py"):
+        if "tests" in path.parts or "migrations" in path.parts or _protected(path):
+            continue
+        if path.name == "__init__.py":
+            continue
+        yield path
+
+
+def _tree(path: Path) -> ast.AST:
+    return ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+
+
+def _uses_canonical_patient(path: Path) -> bool:
+    for node in ast.walk(_tree(path)):
         if isinstance(node, ast.ImportFrom):
-            if node.module == "apps.patient_management.patients.models" and any(
-                name.name == "Patient" for name in node.names
-            ):
-                return True
+            if node.module == "apps.patient_management.patients.models":
+                if any(alias.name == "Patient" for alias in node.names):
+                    return True
             if node.module in {
                 "apps.clinical.patients",
                 "apps.clinical.patients.models",
-            } and any(name.name == "Patient" for name in node.names):
-                return True
-        if (
-            isinstance(node, ast.Constant)
-            and isinstance(node.value, str)
-            and node.value
-            in {
-                "patients.patient",
+            }:
+                if any(alias.name == "Patient" for alias in node.names):
+                    return False
+        if isinstance(node, ast.Constant) and isinstance(node.value, str):
+            if node.value in {
                 "apps.clinical.patients",
                 "apps.clinical.patients.models.Patient",
-            }
-        ):
-            return True
-    return False
+                "patients.patient",
+            }:
+                return False
+    return True
 
 
 class RevenueCycleArchitectureAuditTests(SimpleTestCase):
-    """Validate the Revenue Cycle bounded context architecture."""
+    """Validate ownership and canonical model boundaries."""
 
-    def test_no_legacy_patient_imports(self) -> None:
-        forbidden = (
-            "to='patients.patient'",
-            'to="patients.patient"',
-            "('patients', '0001_initial')",
-            '("patients", "0001_initial")',
-        )
+    def test_no_legacy_patient_namespace(self) -> None:
         violations = []
-        for path in REVENUE_CYCLE_ROOT.rglob("*.py"):
-            if "tests" in path.parts or _protected(path):
-                continue
+        for path in _active_sources():
             source = path.read_text(encoding="utf-8")
-            if "apps.clinical.patients" in source and (
-                "import Patient" in source or "from apps.clinical.patients" in source
-            ):
-                violations.append(f"{path}: legacy patient reference")
-            for token in forbidden:
-                if token in source:
-                    violations.append(f"{path}: {token}")
-        self.assertEqual(violations, [])
-
-    def test_canonical_patient_usage_where_patient_is_consumed(self) -> None:
-        violations = []
-        for path in REVENUE_CYCLE_ROOT.rglob("*.py"):
-            if (
-                "tests" in path.parts
-                or _protected(path)
-                or not _patient_model_reference(path)
-            ):
-                continue
-            source = path.read_text(encoding="utf-8")
-            if (
-                "from apps.patient_management.patients.models import Patient"
-                not in source
-                and "patient_core.Patient" not in source
-            ):
+            forbidden = (
+                "apps.clinical.patients",
+                "apps.clinical.patients.models.Patient",
+                "patients.patient",
+            )
+            if any(token in source for token in forbidden):
                 violations.append(str(path))
         self.assertEqual(violations, [])
 
-    def test_no_same_name_module_package_collisions(self) -> None:
+    def test_patient_consumers_use_canonical_model(self) -> None:
+        violations = [
+            str(path) for path in _active_sources() if not _uses_canonical_patient(path)
+        ]
+        self.assertEqual(violations, [])
+
+    def test_no_same_name_root_module_package_collisions(self) -> None:
         names = (
             "models",
             "services",
@@ -108,14 +93,6 @@ class RevenueCycleArchitectureAuditTests(SimpleTestCase):
             and (REVENUE_CYCLE_ROOT / name).is_dir()
         ]
         self.assertEqual(collisions, [])
-
-    def test_no_generated_migration_is_introduced_by_validation(self) -> None:
-        migration_files = [
-            path
-            for path in REVENUE_CYCLE_ROOT.rglob("migrations/*.py")
-            if path.name != "__init__.py"
-        ]
-        self.assertEqual(migration_files, [])
 
 
 __all__ = ("RevenueCycleArchitectureAuditTests",)

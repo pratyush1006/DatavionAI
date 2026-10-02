@@ -158,6 +158,7 @@ class EmployeeAssignmentWorkflow(
         )
         from apps.organization.teams.models import (
             Team,
+            TeamDepartmentAssignment,
         )
         from apps.platform.accounts.models import (
             User,
@@ -192,8 +193,16 @@ class EmployeeAssignmentWorkflow(
         if self._request.team_id:
             team = Team.objects.get(
                 id=self._request.team_id,
-                department_id=department.id,
+                organization_id=employee.organization_id,
             )
+            if not TeamDepartmentAssignment.objects.filter(
+                team=team,
+                department=department,
+                is_active=True,
+            ).exists():
+                raise ValueError(
+                    "The selected team is not assigned to the selected department."
+                )
 
         supervisor = None
 

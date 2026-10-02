@@ -27,6 +27,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from datetime import date
 from typing import Any
+from uuid import uuid4
 
 from django.db import transaction
 
@@ -110,6 +111,20 @@ class PatientService:
     # ------------------------------------------------------------------
 
     @staticmethod
+    def _next_mrn(*, organization: Any) -> str:
+        """Generate an organization-scoped MRN without client input."""
+
+        for _ in range(10):
+            mrn = f"MRN-{uuid4().hex[:16].upper()}"
+            if not Patient.objects.filter(
+                organization=organization,
+                mrn=mrn,
+            ).exists():
+                return mrn
+
+        raise RuntimeError("Unable to allocate a unique medical record number.")
+
+    @staticmethod
     @transaction.atomic
     def create(
         *,
@@ -121,6 +136,14 @@ class PatientService:
         """
 
         data = dict(validated_data)
+        organization = data.get("organization")
+        if organization is None:
+            raise ValueError("organization is required to create a patient.")
+
+        if not str(data.get("mrn") or "").strip():
+            data["mrn"] = PatientService._next_mrn(
+                organization=organization,
+            )
 
         patient = Patient(
             **data,

@@ -94,7 +94,7 @@ class RegistrationDeletionWorkflow(
                 "patient",
                 "verified_by",
             ).get(
-                uuid=self._request.registration_id,
+                id=self._request.registration_id,
                 organization_id=organization.pk,
             )
 
@@ -105,14 +105,13 @@ class RegistrationDeletionWorkflow(
 
         if not self._policy.can_delete(
             actor=actor,
-            organization=organization,
             registration=registration,
         ):
             raise PermissionError(
                 "You do not have permission to delete this patient registration."
             )
 
-        registration_id = registration.uuid
+        registration_id = registration.id
         patient_id = registration.patient_id
         organization_id = registration.organization_id
         registration_number = registration.registration_number

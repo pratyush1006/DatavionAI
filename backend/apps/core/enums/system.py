@@ -1,58 +1,27 @@
-"""
-Tenant enumerations for the DatavionOS platform.
-
-Defines tenant lifecycle and healthcare organization
-types used across the multi-tenant SaaS platform.
-"""
+"""System-level enumerations for the DatavionOS platform."""
 
 from __future__ import annotations
 
 from enum import StrEnum
 
+from .tenant import TenantStatus, TenantType
 
-class TenantStatus(StrEnum):
-    """
-    Tenant lifecycle status.
-    """
 
-    PENDING = "pending"
+class DeploymentMode(StrEnum):
+    """Supported application deployment environments."""
 
-    ONBOARDING = "onboarding"
+    DEVELOPMENT = "development"
+    TESTING = "testing"
+    STAGING = "staging"
+    PRODUCTION = "production"
 
-    TRIAL = "trial"
+
+class ServiceStatus(StrEnum):
+    """Lifecycle states for registered platform services."""
 
     ACTIVE = "active"
-
     INACTIVE = "inactive"
-
-    SUSPENDED = "suspended"
-
-    EXPIRED = "expired"
-
-    CANCELLED = "cancelled"
-
-    ARCHIVED = "archived"
+    DEPRECATED = "deprecated"
 
 
-class TenantType(StrEnum):
-    """
-    Supported healthcare tenant types.
-    """
-
-    CLINIC = "clinic"
-
-    HOSPITAL = "hospital"
-
-    DIAGNOSTIC_CENTER = "diagnostic_center"
-
-    LABORATORY = "laboratory"
-
-    PHARMACY = "pharmacy"
-
-    ORGANIZATION = "organization"
-
-
-__all__ = [
-    "TenantStatus",
-    "TenantType",
-]
+__all__ = ["DeploymentMode", "ServiceStatus", "TenantStatus", "TenantType"]

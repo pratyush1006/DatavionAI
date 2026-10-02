@@ -59,9 +59,9 @@ class BaseWorkflowAPIView(BaseGenericAPIView):
 
     workflow_service: ClassVar[WorkflowService | None] = None
 
-    lookup_url_kwarg: ClassVar[str] = "uuid"
+    lookup_url_kwarg: str = "uuid"
 
-    serializer_class: ClassVar[type[Serializer]]
+    serializer_class: type[Serializer]
 
     def get_object(
         self,

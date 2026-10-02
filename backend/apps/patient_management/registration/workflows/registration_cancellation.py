@@ -101,7 +101,7 @@ class RegistrationCancellationWorkflow(
                 "patient",
                 "verified_by",
             ).get(
-                uuid=self._request.registration_id,
+                id=self._request.registration_id,
                 organization_id=organization.pk,
             )
 
@@ -112,7 +112,6 @@ class RegistrationCancellationWorkflow(
 
         if not self._policy.can_cancel(
             actor=actor,
-            organization=organization,
             registration=registration,
         ):
             raise PermissionError(
@@ -129,7 +128,7 @@ class RegistrationCancellationWorkflow(
         event = RegistrationCancelledEvent(
             tenant_id=context.tenant_id,
             actor_id=actor.pk,
-            registration_id=cancelled_registration.uuid,
+            registration_id=cancelled_registration.id,
             patient_id=cancelled_registration.patient_id,
             organization_id=cancelled_registration.organization_id,
             registration_number=cancelled_registration.registration_number,
@@ -142,7 +141,7 @@ class RegistrationCancellationWorkflow(
         return WorkflowResult.ok(
             context=context,
             data=RegistrationCancellationData(
-                registration_id=cancelled_registration.uuid,
+                registration_id=cancelled_registration.id,
                 cancelled=cancelled_registration.is_cancelled,
                 event_id=event.event_id,
             ),

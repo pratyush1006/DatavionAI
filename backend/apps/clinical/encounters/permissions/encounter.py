@@ -1,47 +1,16 @@
-"""
-Encounter permission classes.
-"""
-
-from __future__ import annotations
-
-from apps.common.permissions.base import BasePermission
+from apps.platform.rbac.resolvers import resolve_permissions
 
 
-class CanViewEncounter(BasePermission):
-    """
-    Permission required to view encounters.
-    """
+class EncounterPermission:
+    CREATE = "encounter.create"
+    VIEW = "encounter.view"
+    UPDATE = "encounter.update"
+    DELETE = "encounter.delete"
+    TRANSITION = "encounter.transition"
 
-    permission_code = "encounter.view"
-
-
-class CanCreateEncounter(BasePermission):
-    """
-    Permission required to create encounters.
-    """
-
-    permission_code = "encounter.create"
-
-
-class CanUpdateEncounter(BasePermission):
-    """
-    Permission required to update encounters.
-    """
-
-    permission_code = "encounter.update"
-
-
-class CanDeleteEncounter(BasePermission):
-    """
-    Permission required to delete encounters.
-    """
-
-    permission_code = "encounter.delete"
-
-
-__all__ = [
-    "CanCreateEncounter",
-    "CanDeleteEncounter",
-    "CanUpdateEncounter",
-    "CanViewEncounter",
-]
+    @staticmethod
+    def has(*, user, permission, organization):
+        return permission in resolve_permissions(
+            user=user,
+            organization=organization,
+        )

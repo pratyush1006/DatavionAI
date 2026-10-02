@@ -15,10 +15,10 @@ class LeaveRequestBaseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = LeaveRequest
-        fields = ()
+        fields: tuple[str, ...] = ()
 
     def get_employee_name(self, obj: LeaveRequest) -> str:
-        return obj.employee.full_name
+        return str(obj.employee.full_name)
 
 
 class LeaveRequestListSerializer(LeaveRequestBaseSerializer):
@@ -43,7 +43,7 @@ class LeaveRequestDetailSerializer(LeaveRequestBaseSerializer):
         read_only=True,
     )
 
-    organization_id = serializers.IntegerField(
+    organization_id = serializers.UUIDField(
         source="organization.id",
         read_only=True,
     )
@@ -53,7 +53,7 @@ class LeaveRequestDetailSerializer(LeaveRequestBaseSerializer):
         read_only=True,
     )
 
-    employee_id = serializers.IntegerField(
+    employee_id = serializers.UUIDField(
         source="employee.id",
         read_only=True,
     )
@@ -70,7 +70,7 @@ class LeaveRequestDetailSerializer(LeaveRequestBaseSerializer):
 
     approver = serializers.SerializerMethodField()
 
-    approver_id = serializers.IntegerField(
+    approver_id = serializers.UUIDField(
         source="approver.id",
         read_only=True,
     )

@@ -96,7 +96,7 @@ class RegistrationCompletionWorkflow(
                 "patient",
                 "verified_by",
             ).get(
-                uuid=self._request.registration_id,
+                id=self._request.registration_id,
                 organization_id=organization.pk,
             )
 
@@ -107,7 +107,6 @@ class RegistrationCompletionWorkflow(
 
         if not self._policy.can_complete(
             actor=actor,
-            organization=organization,
             registration=registration,
         ):
             raise PermissionError(
@@ -122,7 +121,7 @@ class RegistrationCompletionWorkflow(
         event = RegistrationCompletedEvent(
             tenant_id=context.tenant_id,
             actor_id=actor.pk,
-            registration_id=completed_registration.uuid,
+            registration_id=completed_registration.id,
             patient_id=completed_registration.patient_id,
             organization_id=completed_registration.organization_id,
             registration_number=completed_registration.registration_number,
@@ -139,7 +138,7 @@ class RegistrationCompletionWorkflow(
         return WorkflowResult.ok(
             context=context,
             data=RegistrationCompletionData(
-                registration_id=completed_registration.uuid,
+                registration_id=completed_registration.id,
                 completed=completed_registration.is_completed,
                 completed_at=completed_registration.completed_at,
                 event_id=event.event_id,

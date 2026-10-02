@@ -243,6 +243,8 @@ export function ForgotPasswordPage() {
           values.otp.trim(),
         new_password:
           values.new_password,
+        confirm_password:
+          values.confirm_password,
       });
 
       setResetSuccess(

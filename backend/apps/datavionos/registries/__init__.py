@@ -26,7 +26,6 @@ __all__ = [
     "BaseRegistry",
     "Registry",
     "ModuleRegistry",
-    "module_registry",
     "CapabilityRegistry",
     "ServiceRegistry",
     "PluginRegistry",

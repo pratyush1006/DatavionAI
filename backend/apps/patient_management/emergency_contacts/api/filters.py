@@ -6,13 +6,13 @@ from __future__ import annotations
 
 import django_filters
 
-from ...constants import (
+from ..constants import (
     EmergencyContactAvailability,
     EmergencyContactRelationship,
     EmergencyContactStatus,
     PreferredContactMethod,
 )
-from ...models import EmergencyContact
+from ..models import EmergencyContact
 
 
 class EmergencyContactFilter(

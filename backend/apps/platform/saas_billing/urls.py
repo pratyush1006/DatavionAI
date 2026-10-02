@@ -1,19 +1,12 @@
 """
-DatavionOS SaaS Billing URLs.
-
-Module URL entry point.
-
-Routes:
-
-- API
-- Future web/admin routes
+Canonical SaaS Billing URL configuration.
 """
 
 from __future__ import annotations
 
 from django.urls import include, path
 
-app_name = "saas_billing"
+app_name = "saas-billing"
 
 
 urlpatterns = [

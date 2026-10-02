@@ -8,6 +8,8 @@ package instead of implementation modules.
 
 from __future__ import annotations
 
+from apps.common.logging.handlers import WindowsSafeRotatingFileHandler
+
 from .audit import (
     AUDIT_LOGGER_NAME,
     DEFAULT_AUDIT_MESSAGE,

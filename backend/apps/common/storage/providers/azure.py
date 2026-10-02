@@ -10,6 +10,7 @@ keeping the storage kernel provider-independent.
 from __future__ import annotations
 
 from hashlib import sha256
+from typing import Any
 
 from apps.common.storage.exceptions import (
     StorageConnectionError,
@@ -43,7 +44,7 @@ class AzureBlobStorageBackend(
         self,
         *,
         container_name: str,
-        client: object,
+        client: Any,
     ) -> None:
         """
         Initialize Azure Blob storage.
@@ -103,7 +104,7 @@ class AzureBlobStorageBackend(
                 blob=path,
             )
 
-            return blob.download_blob().readall()
+            return bytes(blob.download_blob().readall())
 
         except Exception as exc:
             raise StorageDownloadError(
@@ -145,7 +146,7 @@ class AzureBlobStorageBackend(
                 blob=path,
             )
 
-            return blob.exists()
+            return bool(blob.exists())
 
         except Exception:
             return False
@@ -170,7 +171,7 @@ class AzureBlobStorageBackend(
                 blob=path,
             )
 
-            return blob.url
+            return str(blob.url)
 
         except Exception as exc:
             raise StorageConnectionError(

@@ -69,6 +69,20 @@ class PermissionModule(
         "Teams",
     )
 
+    HR = ("hr", "Human Resources")
+    ATTENDANCE = ("attendance", "Attendance")
+    LEAVE = ("leave", "Leave")
+    SHIFTS = ("shifts", "Shifts")
+    HOLIDAYS = ("holidays", "Holidays")
+    ONBOARDING = ("onboarding", "Onboarding")
+    PAYROLL = ("payroll", "Payroll")
+    PERFORMANCE = ("performance", "Performance")
+    RECRUITMENT = ("recruitment", "Recruitment")
+
+    HOSPITAL_OPERATIONS = ("hospital_operations", "Hospital Operations")
+
+    DEVICES = ("devices", "Connected Devices")
+
     # ==========================================================
     # Clinical Modules
     # ==========================================================
@@ -118,10 +132,18 @@ class PermissionModule(
         "Vitals",
     )
 
+    NURSING = ("nursing", "Nursing")
+
     PHARMACY = (
         "pharmacy",
         "Pharmacy",
     )
+
+    IMAGING = ("imaging", "Imaging")
+
+    NOTES = ("notes", "Clinical Notes")
+
+    TRANSCRIPTION = ("transcription", "Transcription")
 
     # ==========================================================
     # Enterprise Modules
@@ -130,6 +152,11 @@ class PermissionModule(
     BILLING = (
         "billing",
         "Billing",
+    )
+
+    INSURANCE = (
+        "insurance",
+        "Insurance",
     )
 
     INVENTORY = (
@@ -152,10 +179,7 @@ class PermissionModule(
         "Reports",
     )
 
-    DASHBOARD = (
-        "dashboard",
-        "Dashboard",
-    )
+    DASHBOARD = ("Dashboard",)
 
     SETTINGS = (
         "settings",
@@ -461,6 +485,11 @@ class SystemRole(
         "platform_admin",
         "Platform Administrator",
     )
+    PLATFORM_OWNER = ("platform_owner", "Platform Owner")
+    PLATFORM_OPERATIONS = ("platform_operations", "Platform Operations")
+    PLATFORM_SECURITY = ("platform_security", "Platform Security")
+    PLATFORM_SUPPORT = ("platform_support", "Platform Support")
+    PLATFORM_FINANCE = ("platform_finance", "Platform Finance")
 
     ORGANIZATION_OWNER = (
         "organization_owner",
@@ -471,6 +500,7 @@ class SystemRole(
         "organization_admin",
         "Organization Administrator",
     )
+    ORGANIZATION_MANAGER = ("organization_manager", "Organization Manager")
 
     DOCTOR = (
         "doctor",
@@ -486,6 +516,8 @@ class SystemRole(
         "nurse",
         "Nurse",
     )
+    THERAPIST = ("therapist", "Therapist")
+    CLINICAL_MANAGER = ("clinical_manager", "Clinical Manager")
 
     LABORATORY_MANAGER = (
         "laboratory_manager",
@@ -501,6 +533,28 @@ class SystemRole(
         "pharmacist",
         "Pharmacist",
     )
+    PHARMACY_MANAGER = ("pharmacy_manager", "Pharmacy Manager")
+    INVENTORY_MANAGER = ("inventory_manager", "Inventory Manager")
+
+    BILLING_OFFICER = (
+        "billing_officer",
+        "Billing Officer",
+    )
+
+    HR_MANAGER = (
+        "hr_manager",
+        "HR Manager",
+    )
+    HR_EXECUTIVE = ("hr_executive", "HR Executive")
+    ACCOUNTANT = ("accountant", "Accountant")
+    FINANCE_MANAGER = ("finance_manager", "Finance Manager")
+    FRONT_DESK_MANAGER = ("front_desk_manager", "Front Desk Manager")
+    IMAGING_TECHNICIAN = ("imaging_technician", "Imaging Technician")
+    RADIOLOGIST = ("radiologist", "Radiologist")
+    IMAGING_MANAGER = ("imaging_manager", "Imaging Manager")
+    DEPARTMENT_MANAGER = ("department_manager", "Department Manager")
+    TEAM_LEAD = ("team_lead", "Team Lead")
+    TELEMEDICINE_DOCTOR = ("telemedicine_doctor", "Telemedicine Doctor")
 
     RECEPTIONIST = (
         "receptionist",
@@ -511,6 +565,8 @@ class SystemRole(
         "patient",
         "Patient",
     )
+    FAMILY_CAREGIVER = ("family_caregiver", "Family Member / Caregiver")
+    SUPPORT_AGENT = ("support_agent", "Support Agent")
 
     AI_AGENT = (
         "ai_agent",

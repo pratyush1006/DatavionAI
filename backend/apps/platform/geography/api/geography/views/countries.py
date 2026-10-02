@@ -7,7 +7,7 @@ from __future__ import annotations
 from typing import Final
 
 from drf_spectacular.utils import extend_schema
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny
 
 from apps.common.api.base_generics import BaseGenericAPIView
 from apps.platform.geography.api.geography.serializers import (
@@ -31,7 +31,7 @@ class CountryListAPIView(
     scoped.
     """
 
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (AllowAny,)
 
     serializer_class = CountrySerializer
 

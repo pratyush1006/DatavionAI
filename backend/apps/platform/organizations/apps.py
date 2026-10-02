@@ -43,3 +43,7 @@ class OrganizationsConfig(
         )
 
         register_organization_workflows()
+
+        from apps.platform.organizations import (
+            finance_provisioning_signals,  # noqa: F401
+        )

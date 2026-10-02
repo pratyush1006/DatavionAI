@@ -1,22 +1,16 @@
-"""
-Application configuration for the AI app.
-"""
+"""Django application configuration for the AI platform."""
+
+from __future__ import annotations
 
 from django.apps import AppConfig
 
 
 class AIConfig(AppConfig):
-    """
-    Configuration for the AI application.
-    """
+    """Canonical AI platform application."""
 
     default_auto_field = "django.db.models.BigAutoField"
-
     name = "apps.ai"
+    verbose_name = "DatavionAI AI Platform"
 
-    verbose_name = "AI"
 
-
-__all__ = [
-    "AIConfig",
-]
+__all__ = ("AIConfig",)

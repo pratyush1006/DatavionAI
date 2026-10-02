@@ -34,6 +34,7 @@ import {
  */
 type OrganizationListDto = {
   id: string;
+  name: string;
   display_name: string;
   code: string;
   category: string;
@@ -81,6 +82,17 @@ type OrganizationListResponse =
 type OrganizationDetailResponse =
   OrganizationDetailDto;
 
+export type OrganizationCatalogOption = {
+  readonly value: string;
+  readonly label: string;
+};
+
+type OrganizationCatalogDto = {
+  id: string;
+  name: string;
+  code: string;
+};
+
 function mapOrganizationListItem(
   dto: OrganizationListDto,
 ): OrganizationListItem {
@@ -88,7 +100,7 @@ function mapOrganizationListItem(
     id: dto.id,
 
     displayName:
-      dto.display_name,
+      dto.display_name || dto.name,
 
     code:
       dto.code,
@@ -237,6 +249,16 @@ async function fetchOrganization(
   );
 }
 
+async function fetchCatalog(
+  endpoint: string,
+): Promise<OrganizationCatalogOption[]> {
+  const response = await apiClient.get<OrganizationCatalogDto[]>(endpoint);
+  return response.data.map((item) => ({
+    value: item.code || item.id,
+    label: item.name,
+  }));
+}
+
 export const organizationQueries = {
   all: () =>
     queryOptions({
@@ -262,4 +284,22 @@ export const organizationQueries = {
         enabled &&
         id.trim().length > 0,
     }),
+
+  categories: () => queryOptions({
+    queryKey: [...organizationKeys.catalogs(), "categories"],
+    queryFn: () => fetchCatalog(organizationEndpoints.catalogs.categories),
+    staleTime: 15 * 60_000,
+  }),
+
+  types: () => queryOptions({
+    queryKey: [...organizationKeys.catalogs(), "types"],
+    queryFn: () => fetchCatalog(organizationEndpoints.catalogs.types),
+    staleTime: 15 * 60_000,
+  }),
+
+  sizes: () => queryOptions({
+    queryKey: [...organizationKeys.catalogs(), "sizes"],
+    queryFn: () => fetchCatalog(organizationEndpoints.catalogs.sizes),
+    staleTime: 15 * 60_000,
+  }),
 } as const;

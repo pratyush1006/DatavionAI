@@ -15,7 +15,6 @@ import {
 } from "@/components/common/page";
 
 import {
-  CreateEmployeeDialog,
   EmployeeOnboardingDialog,
 } from "../components/dialogs";
 
@@ -40,7 +39,6 @@ export function EmployeesPage() {
       actions={
         <div className="flex items-center gap-2">
           <EmployeeOnboardingDialog />
-          <CreateEmployeeDialog />
         </div>
       }
     >

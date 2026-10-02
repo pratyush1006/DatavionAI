@@ -6,6 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.common.api.openapi import extend_schema
 from apps.patient_management.communication.api.serializers.detail import (
     CommunicationDetailSerializer,
 )
@@ -41,6 +42,7 @@ class CommunicationRetrieveUpdateDestroyView(APIView):
             raise PermissionError("No organization tenant is available.")
         return role.organization.tenant_id
 
+    @extend_schema(responses=CommunicationDetailSerializer)
     def get(self, request, communication_id):
         """Return one communication."""
         communication = get_communication(
@@ -48,6 +50,10 @@ class CommunicationRetrieveUpdateDestroyView(APIView):
         )
         return Response(CommunicationDetailSerializer(communication).data)
 
+    @extend_schema(
+        request=CommunicationUpdateSerializer,
+        responses=CommunicationDetailSerializer,
+    )
     def put(self, request, communication_id):
         """Update one communication through its workflow."""
         communication = get_communication(
@@ -67,6 +73,10 @@ class CommunicationRetrieveUpdateDestroyView(APIView):
             CommunicationDetailSerializer(result.data["communication_updated"]).data
         )
 
+    @extend_schema(
+        request=CommunicationUpdateSerializer,
+        responses=CommunicationDetailSerializer,
+    )
     def patch(self, request, communication_id):
         """Partially update one communication."""
         communication = get_communication(
@@ -88,6 +98,7 @@ class CommunicationRetrieveUpdateDestroyView(APIView):
             CommunicationDetailSerializer(result.data["communication_updated"]).data
         )
 
+    @extend_schema(responses=CommunicationDetailSerializer)
     def delete(self, request, communication_id):
         """Soft-delete one communication."""
         result = CommunicationDeletionWorkflow(

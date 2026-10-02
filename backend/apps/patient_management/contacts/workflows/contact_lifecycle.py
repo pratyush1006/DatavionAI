@@ -93,13 +93,14 @@ def _get_contact(
     contact_id: UUID,
     tenant_id: UUID,
 ) -> Contact:
-    return Contact.objects.select_related(
+    contact: Contact = Contact.objects.select_related(
         "organization",
         "patient",
     ).get(
         pk=contact_id,
         organization__tenant_id=tenant_id,
     )
+    return contact
 
 
 class ContactActivationWorkflow(
@@ -169,12 +170,15 @@ class ContactActivationWorkflow(
                 code="contact_unchanged",
             )
 
+        patient_id: UUID = updated.patient.pk
+        organization_id: UUID = updated.organization.pk
+
         event = ContactStatusChangedEvent(
             tenant_id=context.tenant_id,
             actor_id=context.actor_id,
             contact_id=updated.id,
-            patient_id=updated.patient_id,
-            organization_id=updated.organization_id,
+            patient_id=patient_id,
+            organization_id=organization_id,
             previous_status=previous_status,
             new_status=updated.status,
         )
@@ -250,12 +254,15 @@ class ContactDeactivationWorkflow(
             performed_by=actor,
         )
 
+        patient_id: UUID = updated.patient.pk
+        organization_id: UUID = updated.organization.pk
+
         status_event = ContactStatusChangedEvent(
             tenant_id=context.tenant_id,
             actor_id=context.actor_id,
             contact_id=updated.id,
-            patient_id=updated.patient_id,
-            organization_id=updated.organization_id,
+            patient_id=patient_id,
+            organization_id=organization_id,
             previous_status=previous_status,
             new_status=updated.status,
         )
@@ -269,8 +276,8 @@ class ContactDeactivationWorkflow(
                 tenant_id=context.tenant_id,
                 actor_id=context.actor_id,
                 contact_id=updated.id,
-                patient_id=updated.patient_id,
-                organization_id=updated.organization_id,
+                patient_id=patient_id,
+                organization_id=organization_id,
                 contact_type=updated.contact_type,
                 previous_primary=True,
                 new_primary=False,
@@ -347,12 +354,15 @@ class ContactPrimaryWorkflow(
             performed_by=actor,
         )
 
+        patient_id: UUID = updated.patient.pk
+        organization_id: UUID = updated.organization.pk
+
         if previous_primary:
             return WorkflowResult.ok(
                 context=context,
                 data=ContactPrimaryData(
                     contact_id=updated.id,
-                    patient_id=updated.patient_id,
+                    patient_id=patient_id,
                     contact_type=updated.contact_type,
                     is_primary=True,
                     event_id=None,
@@ -365,8 +375,8 @@ class ContactPrimaryWorkflow(
             tenant_id=context.tenant_id,
             actor_id=context.actor_id,
             contact_id=updated.id,
-            patient_id=updated.patient_id,
-            organization_id=updated.organization_id,
+            patient_id=patient_id,
+            organization_id=organization_id,
             contact_type=updated.contact_type,
             previous_primary=False,
             new_primary=True,
@@ -378,7 +388,7 @@ class ContactPrimaryWorkflow(
             context=context,
             data=ContactPrimaryData(
                 contact_id=updated.id,
-                patient_id=updated.patient_id,
+                patient_id=patient_id,
                 contact_type=updated.contact_type,
                 is_primary=True,
                 event_id=event.event_id,

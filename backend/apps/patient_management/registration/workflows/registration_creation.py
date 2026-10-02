@@ -103,7 +103,7 @@ class RegistrationCreationWorkflow(
                 tenant_id=context.tenant_id,
             )
 
-            patient = Patient.objects.get(
+            patient: Patient = Patient.objects.get(  # type: ignore[misc]
                 pk=self._request.patient_id,
                 organization_id=organization.pk,
             )
@@ -133,7 +133,7 @@ class RegistrationCreationWorkflow(
         event = RegistrationCreatedEvent(
             tenant_id=context.tenant_id,
             actor_id=actor.pk,
-            registration_id=registration.uuid,
+            registration_id=registration.id,
             patient_id=registration.patient_id,
             organization_id=registration.organization_id,
             registration_number=registration.registration_number,
@@ -146,7 +146,7 @@ class RegistrationCreationWorkflow(
         return WorkflowResult.ok(
             context=context,
             data=RegistrationCreationData(
-                registration_id=registration.uuid,
+                registration_id=registration.id,
                 created=True,
                 event_id=event.event_id,
             ),

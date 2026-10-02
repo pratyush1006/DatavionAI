@@ -13,8 +13,16 @@ from apps.patient_management.portal.api.views import (
     PatientPortalAccountListCreateAPIView,
     PatientPortalAccountRestoreAPIView,
 )
+from apps.patient_management.portal.api.views.dashboard import (
+    PatientSelfDashboardAPIView,
+)
 
 urlpatterns = [
+    path(
+        "me/dashboard/",
+        PatientSelfDashboardAPIView.as_view(),
+        name="patient-portal-dashboard",
+    ),
     path(
         "",
         PatientPortalAccountListCreateAPIView.as_view(),

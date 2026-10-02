@@ -19,10 +19,10 @@ class SalaryStructureBaseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SalaryStructure
-        fields = ()
+        fields: tuple[str, ...] = ()
 
     def get_employee_name(self, obj: SalaryStructure) -> str:
-        return obj.employee.full_name
+        return str(obj.employee.full_name)
 
 
 class SalaryStructureListSerializer(SalaryStructureBaseSerializer):
@@ -42,7 +42,7 @@ class SalaryStructureDetailSerializer(SalaryStructureBaseSerializer):
         read_only=True,
     )
 
-    organization_id = serializers.IntegerField(
+    organization_id = serializers.UUIDField(
         source="organization.id",
         read_only=True,
     )
@@ -52,7 +52,7 @@ class SalaryStructureDetailSerializer(SalaryStructureBaseSerializer):
         read_only=True,
     )
 
-    employee_id = serializers.IntegerField(
+    employee_id = serializers.UUIDField(
         source="employee.id",
         read_only=True,
     )

@@ -96,7 +96,7 @@ class RegistrationVerificationWorkflow(
                 "patient",
                 "verified_by",
             ).get(
-                uuid=self._request.registration_id,
+                id=self._request.registration_id,
                 organization_id=organization.pk,
             )
 
@@ -107,7 +107,6 @@ class RegistrationVerificationWorkflow(
 
         if not self._policy.can_verify(
             actor=actor,
-            organization=organization,
             registration=registration,
         ):
             raise PermissionError(
@@ -122,7 +121,7 @@ class RegistrationVerificationWorkflow(
         event = RegistrationVerifiedEvent(
             tenant_id=context.tenant_id,
             actor_id=actor.pk,
-            registration_id=verified_registration.uuid,
+            registration_id=verified_registration.id,
             patient_id=verified_registration.patient_id,
             organization_id=verified_registration.organization_id,
             registration_number=verified_registration.registration_number,
@@ -140,7 +139,7 @@ class RegistrationVerificationWorkflow(
         return WorkflowResult.ok(
             context=context,
             data=RegistrationVerificationData(
-                registration_id=verified_registration.uuid,
+                registration_id=verified_registration.id,
                 verified=verified_registration.verified,
                 verified_at=verified_registration.verified_at,
                 event_id=event.event_id,

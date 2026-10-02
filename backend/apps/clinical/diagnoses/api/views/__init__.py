@@ -1,13 +1,3 @@
-"""
-Diagnosis API views.
-"""
+from .diagnosis import DiagnosisDetailAPIView, DiagnosisListCreateAPIView
 
-from .list_create import DiagnosisListCreateAPIView
-from .retrieve_update_destroy import (
-    DiagnosisRetrieveUpdateDestroyAPIView,
-)
-
-__all__ = [
-    "DiagnosisListCreateAPIView",
-    "DiagnosisRetrieveUpdateDestroyAPIView",
-]
+__all__ = ("DiagnosisListCreateAPIView", "DiagnosisDetailAPIView")

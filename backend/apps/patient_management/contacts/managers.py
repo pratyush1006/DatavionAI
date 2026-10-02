@@ -91,9 +91,8 @@ class ContactQuerySet(models.QuerySet):
         )
 
 
-ContactManager = models.Manager.from_queryset(
-    ContactQuerySet,
-)
+class ContactManager(models.Manager.from_queryset(ContactQuerySet)):
+    """Concrete migration-serializable manager class."""
 
 
 __all__ = (

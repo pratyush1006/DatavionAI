@@ -18,13 +18,22 @@ class RevenueAnalyticsEvent(DomainEvent):
         aggregate_id: UUID,
         payload: dict[str, Any],
     ) -> None:
-        """Initialize an analytics event."""
-
+        """Initialize an analytics event against the canonical DomainEvent contract."""
         super().__init__(
-            event_type=event_type,
-            aggregate_id=aggregate_id,
-            payload=payload,
+            metadata={
+                "event_type": event_type,
+                "aggregate_id": str(aggregate_id),
+                "payload": payload,
+            }
         )
+        object.__setattr__(self, "_business_event_type", event_type)
+        object.__setattr__(self, "aggregate_id", aggregate_id)
+        object.__setattr__(self, "payload", payload)
+
+    @property
+    def event_type(self) -> str:
+        """Return the business event type supplied by the publisher."""
+        return self._business_event_type
 
 
 def publish_revenue_analytics_event(

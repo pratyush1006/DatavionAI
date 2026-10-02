@@ -167,8 +167,9 @@ class TeamCreationWorkflow(
                 "organization": organization,
                 "name": self._request.name,
                 "code": self._request.code,
-                "description": self._request.description,
-                "team_type": self._request.team_type,
+                # These model fields accept blank text but are not nullable.
+                "description": self._request.description or "",
+                "team_type": self._request.team_type or "",
             },
         )
 

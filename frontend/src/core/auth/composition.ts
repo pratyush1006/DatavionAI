@@ -166,6 +166,16 @@ function createTenantProvider(
     };
 }
 
+function createOrganizationProvider(
+    userStorage: UserStorage,
+) {
+    return {
+        getOrganizationId(): string | null {
+            return userStorage.getOrganizationId();
+        },
+    };
+}
+
 /* =============================================================================
  * Composition
  * =============================================================================
@@ -235,6 +245,11 @@ export function createAuthRuntime(
             userStorage,
         );
 
+    const organizationProvider =
+        createOrganizationProvider(
+            userStorage,
+        );
+
     /* -------------------------------------------------------------------------
      * API Runtime Dependencies
      * -------------------------------------------------------------------------
@@ -279,6 +294,7 @@ export function createAuthRuntime(
     api.setRuntime({
         tokenProvider,
         tenantProvider,
+        organizationProvider,
     });
 
     /* -------------------------------------------------------------------------

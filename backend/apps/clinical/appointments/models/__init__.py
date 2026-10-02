@@ -1,9 +1,5 @@
-"""
-Appointment model exports.
-"""
+"""Clinical Appointment domain models."""
 
-from .appointment import Appointment
+from apps.clinical.appointments.models.appointment import Appointment
 
-__all__ = [
-    "Appointment",
-]
+__all__ = ("Appointment",)

@@ -315,11 +315,9 @@ def create_employee(
         validated_data=data,
     )
 
-    employee = Employee.objects.create(
+    return Employee.objects.create(
         **data,
     )
-
-    return employee
 
 
 # ==============================================================================

@@ -4,6 +4,8 @@ Patient Registration model.
 
 from __future__ import annotations
 
+from uuid import UUID
+
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -38,6 +40,10 @@ class PatientRegistration(BaseModel):
     """
 
     objects = PatientRegistrationManager()
+
+    id: UUID
+    organization_id: UUID
+    patient_id: UUID
 
     organization = models.ForeignKey(
         Organization,

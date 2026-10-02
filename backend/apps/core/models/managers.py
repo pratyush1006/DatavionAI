@@ -7,7 +7,7 @@ the DatavionOS platform.
 
 from __future__ import annotations
 
-from typing import TypeVar
+from typing import TypeVar, cast
 
 from django.db import models
 
@@ -66,7 +66,10 @@ class ActiveManager(
         Return active records only.
         """
 
-        return super().get_queryset().active()
+        return cast(
+            ActiveQuerySet[ModelType],
+            cast(ActiveQuerySet[ModelType], super().get_queryset()).active(),
+        )
 
 
 class SoftDeleteManager(
@@ -87,7 +90,10 @@ class SoftDeleteManager(
         Return alive records only.
         """
 
-        return super().get_queryset().alive()
+        return cast(
+            SoftDeleteQuerySet[ModelType],
+            cast(SoftDeleteQuerySet[ModelType], super().get_queryset()).alive(),
+        )
 
 
 class AllObjectsManager(
@@ -118,7 +124,10 @@ class DeletedObjectsManager(
         Return deleted records only.
         """
 
-        return super().get_queryset().deleted()
+        return cast(
+            SoftDeleteQuerySet[ModelType],
+            cast(SoftDeleteQuerySet[ModelType], super().get_queryset()).deleted(),
+        )
 
 
 __all__: tuple[str, ...] = (

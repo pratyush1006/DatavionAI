@@ -28,6 +28,8 @@ import {
   useMemo,
 } from "react";
 
+import { useQuery } from "@tanstack/react-query";
+
 import {
   useForm,
 } from "react-hook-form";
@@ -46,6 +48,8 @@ import {
   organizationSchema,
   type OrganizationFormValues,
 } from "../../domain";
+
+import { organizationQueries } from "../../api";
 
 import {
   AddressInformation,
@@ -124,6 +128,10 @@ export function OrganizationForm({
       mode: "onBlur",
     });
 
+  const categoriesQuery = useQuery(organizationQueries.categories());
+  const typesQuery = useQuery(organizationQueries.types());
+  const sizesQuery = useQuery(organizationQueries.sizes());
+
   const firstError =
     Object.values(
       form.formState.errors,
@@ -156,6 +164,9 @@ export function OrganizationForm({
         <GeneralInformation
           form={form}
           isEdit={isEdit}
+          categoryOptions={categoriesQuery.data}
+          organizationTypeOptions={typesQuery.data}
+          sizeOptions={sizesQuery.data}
         />
 
         <ContactInformation

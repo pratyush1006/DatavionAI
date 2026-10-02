@@ -1,0 +1,14 @@
+{
+  "installer": "installer_organization_registration_runtime_integration.py",
+  "success": false,
+  "free_trial_days": 5,
+  "protected_before": {
+    "family": "88f41be73a15ae6c1d432fc68f47171db2065006344b43ededa7f7692b843052",
+    "migrations": "c3982f15ee5481081e49b779e1eab57aae4d7187ebb1c1a57d9686c376f40415"
+  },
+  "protected_after": {
+    "family": "88f41be73a15ae6c1d432fc68f47171db2065006344b43ededa7f7692b843052",
+    "migrations": "c3982f15ee5481081e49b779e1eab57aae4d7187ebb1c1a57d9686c376f40415"
+  },
+  "timestamp": "2026-09-22T19:37:12.567141"
+}

@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "@/core/api/config";
 /**
  * =============================================================================
  * DatavionOS
@@ -48,7 +49,7 @@ export const AUTH_ROUTES = Object.freeze({
  *
  * Current API base:
  *
- *     http://127.0.0.1:8000/api
+ *     ${API_BASE_URL}
  *
  * Therefore:
  *
@@ -56,7 +57,7 @@ export const AUTH_ROUTES = Object.freeze({
  *
  * resolves to:
  *
- *     http://127.0.0.1:8000/api/auth/login/
+ *     ${API_BASE_URL}/auth/login/
  *
  * IMPORTANT
  * ---------

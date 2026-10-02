@@ -13,8 +13,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from apps.common.storage.constants import (
-    DEFAULT_SIGNED_URL_EXPIRATION,
-    DEFAULT_STORAGE_PROVIDER,
+    DEFAULT_STORAGE_BACKEND,
 )
 from apps.common.storage.types import (
     StoragePath,
@@ -30,7 +29,7 @@ class StorageConfiguration:
     Storage backend configuration.
     """
 
-    provider: str = DEFAULT_STORAGE_PROVIDER
+    provider: str = DEFAULT_STORAGE_BACKEND
 
     bucket_name: str | None = None
 
@@ -40,7 +39,7 @@ class StorageConfiguration:
 
     generate_signed_urls: bool = True
 
-    signed_url_expiration: int = DEFAULT_SIGNED_URL_EXPIRATION
+    signed_url_expiration: int = 3600
 
     tenant_isolation: bool = True
 
@@ -74,3 +73,17 @@ __all__: tuple[str, ...] = (
     "StorageConfiguration",
     "StorageSecurityConfiguration",
 )
+
+
+def get_storage_client():
+    """
+    Return the canonical application-facing StorageClient.
+    """
+    from apps.common.storage.client import StorageClient
+    from apps.common.storage.providers.django_storage import (
+        DjangoStorageBackend,
+    )
+
+    return StorageClient(
+        DjangoStorageBackend(),
+    )

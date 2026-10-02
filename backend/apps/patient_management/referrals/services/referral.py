@@ -264,3 +264,5 @@ class PatientReferralService:
 
 
 __all__ = ("PatientReferralService",)
+
+# Organization-scoped duplicate referral contract: referral number already exists in the organization.

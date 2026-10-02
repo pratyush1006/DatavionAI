@@ -10,8 +10,8 @@ from django.db.models import QuerySet
 from drf_spectacular.utils import extend_schema
 from rest_framework.permissions import IsAuthenticated
 
-from apps.common.api.base_generics import (
-    BaseListCreateAPIView,
+from apps.hr.api import (
+    HrListCreateAPIView,
 )
 from apps.hr.attendance.api.serializers import (
     AttendanceRecordCreateSerializer,
@@ -35,7 +35,7 @@ ATTENDANCE_TAG: Final[tuple[str, ...]] = ("Attendance",)
 
 @extend_schema(tags=ATTENDANCE_TAG)
 class AttendanceRecordListCreateAPIView(
-    BaseListCreateAPIView,
+    HrListCreateAPIView,
 ):
     """
     List existing attendance records or create a new one.

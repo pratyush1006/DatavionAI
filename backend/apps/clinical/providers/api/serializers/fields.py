@@ -16,6 +16,7 @@ LIST_FIELDS = (
     "provider_number",
     "employee",
     "provider_type",
+    "consultation_fee",
     "status",
     "is_accepting_patients",
 )
@@ -38,6 +39,7 @@ WRITE_FIELDS = (
     "provider_number",
     "provider_type",
     "years_of_experience",
+    "consultation_fee",
     "is_accepting_patients",
     "bio",
 )
@@ -47,6 +49,7 @@ UPDATE_FIELDS = (
     "provider_number",
     "provider_type",
     "years_of_experience",
+    "consultation_fee",
     "is_accepting_patients",
     "bio",
 )

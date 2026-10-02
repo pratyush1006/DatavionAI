@@ -16,7 +16,7 @@ from apps.platform.organizations.api.organization_feature.serializers import (
     OrganizationFeatureDetailSerializer,
     OrganizationFeatureUpdateSerializer,
 )
-from apps.platform.organizations.permissions.organization_feature import (
+from apps.platform.organizations.permissions.feature import (
     CanDeleteOrganizationFeature,
     CanUpdateOrganizationFeature,
     CanViewOrganizationFeature,

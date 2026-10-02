@@ -155,6 +155,8 @@ class OAuthService:
                 ip_address=ip_address,
                 device=device,
                 location=location,
+                latitude=getattr(location, "latitude", None),
+                longitude=getattr(location, "longitude", None),
             ),
         )
 

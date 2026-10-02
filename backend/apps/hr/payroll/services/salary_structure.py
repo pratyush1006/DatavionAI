@@ -5,13 +5,14 @@ Business services for salary structures.
 from __future__ import annotations
 
 from collections.abc import Mapping
+from typing import Any, cast
 
 from django.core.exceptions import ValidationError
 from django.db import transaction
 
 from apps.hr.payroll.models import SalaryStructure
 
-type SalaryStructureData = Mapping[str, object]
+type SalaryStructureData = Mapping[str, Any]
 
 
 def _validate_salary_structure_data(
@@ -78,7 +79,7 @@ def create_salary_structure(
 
     _validate_salary_structure_data(validated_data=validated_data)
 
-    return SalaryStructure.objects.create(**validated_data)
+    return cast(SalaryStructure, SalaryStructure.objects.create(**validated_data))
 
 
 @transaction.atomic

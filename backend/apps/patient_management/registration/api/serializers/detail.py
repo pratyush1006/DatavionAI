@@ -22,7 +22,7 @@ class PatientRegistrationDetailSerializer(
     """
 
     patient_uuid = serializers.UUIDField(
-        source="patient.uuid",
+        source="patient.id",
         read_only=True,
     )
 
@@ -37,7 +37,7 @@ class PatientRegistrationDetailSerializer(
     )
 
     organization_uuid = serializers.UUIDField(
-        source="organization.uuid",
+        source="organization.id",
         read_only=True,
     )
 
@@ -47,22 +47,18 @@ class PatientRegistrationDetailSerializer(
     )
 
     verified_by_uuid = serializers.UUIDField(
-        source="verified_by.uuid",
+        source="verified_by.id",
         read_only=True,
         allow_null=True,
     )
 
-    verified_by_name = serializers.CharField(
-        source="verified_by.full_name",
-        read_only=True,
-        allow_null=True,
-    )
+    verified_by_name = serializers.SerializerMethodField()
 
     class Meta:
         model = PatientRegistration
 
         fields = (
-            "uuid",
+            "id",
             "organization_uuid",
             "organization_name",
             "patient_uuid",
@@ -90,6 +86,19 @@ class PatientRegistrationDetailSerializer(
         )
 
         read_only_fields = fields
+
+    def get_verified_by_name(self, obj):
+        """
+        Return the verifier's human-readable name when available.
+        """
+        user = obj.verified_by
+
+        if user is None:
+            return None
+
+        full_name = (f"{user.first_name} {user.last_name}").strip()
+
+        return full_name or user.email or user.username
 
 
 __all__ = ("PatientRegistrationDetailSerializer",)

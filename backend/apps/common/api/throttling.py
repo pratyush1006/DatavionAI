@@ -26,7 +26,7 @@ class DatavionAnonRateThrottle(AnonRateThrottle):
     Anonymous request throttle.
     """
 
-    scope: Final[str] = "anonymous"
+    scope = "anonymous"
 
 
 class DatavionUserRateThrottle(UserRateThrottle):
@@ -34,7 +34,7 @@ class DatavionUserRateThrottle(UserRateThrottle):
     Authenticated user throttle.
     """
 
-    scope: Final[str] = "user"
+    scope = "user"
 
 
 class DatavionScopedRateThrottle(ScopedRateThrottle):
@@ -57,7 +57,7 @@ class DatavionAIRateThrottle(ScopedRateThrottle):
     - Agent execution
     """
 
-    scope: Final[str] = "ai"
+    scope = "ai"
 
 
 class DatavionExportRateThrottle(ScopedRateThrottle):
@@ -71,7 +71,7 @@ class DatavionExportRateThrottle(ScopedRateThrottle):
     - Analytics extraction
     """
 
-    scope: Final[str] = "export"
+    scope = "export"
 
 
 class DatavionTenantRateThrottle(ScopedRateThrottle):
@@ -85,7 +85,7 @@ class DatavionTenantRateThrottle(ScopedRateThrottle):
     specific tenant policy is required.
     """
 
-    scope: Final[str] = "tenant"
+    scope = "tenant"
 
 
 __all__: Final[tuple[str, ...]] = (

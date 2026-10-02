@@ -26,6 +26,7 @@ class PriorAuthorizationCreateRequest:
     patient_id: UUID
     payer_id: str
     member_id: str
+    procedure_code: str
     request_reference: str
     idempotency_key: str
     data: dict[str, Any] = field(default_factory=dict)
@@ -91,6 +92,7 @@ class PriorAuthorizationCreationWorkflow(BaseWorkflow):
         verification = PriorAuthorizationService.create(
             organization_id=request.organization_id,
             patient_id=request.patient_id,
+            procedure_code=request.procedure_code,
             request_reference=request.request_reference,
             idempotency_key=request.idempotency_key,
             payer_id=request.payer_id,
@@ -124,7 +126,7 @@ class PriorAuthorizationUpdateWorkflow(BaseWorkflow):
         verification = PriorAuthorizationService.update(
             tenant_id=request.tenant_id,
             organization_id=request.organization_id,
-            verification_id=request.verification_id,
+            authorization_id=request.verification_id,
             data=request.data,
         )
         publish_after_commit(
@@ -154,7 +156,7 @@ class PriorAuthorizationDeletionWorkflow(BaseWorkflow):
         verification = PriorAuthorizationService.soft_delete(
             tenant_id=request.tenant_id,
             organization_id=request.organization_id,
-            verification_id=request.verification_id,
+            authorization_id=request.verification_id,
             deleted_by_id=request.deleted_by_id,
         )
         publish_after_commit(
@@ -184,7 +186,7 @@ class PriorAuthorizationRestoreWorkflow(BaseWorkflow):
         verification = PriorAuthorizationService.restore(
             tenant_id=request.tenant_id,
             organization_id=request.organization_id,
-            verification_id=request.verification_id,
+            authorization_id=request.verification_id,
         )
         publish_after_commit(
             PriorAuthorizationRestoredEvent(
@@ -213,7 +215,7 @@ class PriorAuthorizationLifecycleWorkflow(BaseWorkflow):
         verification = PriorAuthorizationService.transition(
             tenant_id=request.tenant_id,
             organization_id=request.organization_id,
-            verification_id=request.verification_id,
+            authorization_id=request.verification_id,
             target_status=request.target_status,
             actor_id=request.actor_id,
             outcome=request.outcome,

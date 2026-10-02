@@ -1,15 +1,5 @@
-"""
-Notes services package.
+from .finalization import finalize_signed_note
+from .idempotency import get_or_create
+from .outbox import enqueue_event
 
-Exposes the public service classes used to manage clinical notes and
-note templates.
-"""
-
-from __future__ import annotations
-
-from .note import NoteService, TemplateService
-
-__all__ = [
-    "NoteService",
-    "TemplateService",
-]
+__all__ = ["get_or_create", "enqueue_event", "finalize_signed_note"]

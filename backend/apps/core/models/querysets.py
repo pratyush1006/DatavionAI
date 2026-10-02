@@ -8,7 +8,7 @@ the DatavionOS platform.
 from __future__ import annotations
 
 from collections.abc import Iterator
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import TypeVar
 
 from django.db import models, transaction
@@ -48,7 +48,7 @@ class BaseQuerySet(
         *,
         days: int,
     ):
-        since = timezone.now() - timezone.timedelta(
+        since = timezone.now() - timedelta(
             days=days,
         )
 

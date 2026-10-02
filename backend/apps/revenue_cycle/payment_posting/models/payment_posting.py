@@ -28,7 +28,7 @@ class PaymentPosting(BaseModel):
         related_name="revenue_cycle_payment_postings",
     )
     invoice = models.ForeignKey(
-        "billing.Invoice",
+        "revenue_cycle_billing.HealthcareInvoice",
         on_delete=models.PROTECT,
         related_name="revenue_cycle_payment_postings",
         null=True,

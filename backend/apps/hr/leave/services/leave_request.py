@@ -5,6 +5,7 @@ Business services for leave requests.
 from __future__ import annotations
 
 from collections.abc import Mapping
+from typing import Any, cast
 
 from django.core.exceptions import ValidationError
 from django.db import transaction
@@ -13,7 +14,7 @@ from django.utils import timezone
 from apps.hr.leave.constants import LeaveRequestStatus
 from apps.hr.leave.models import LeaveBalance, LeaveRequest
 
-type LeaveRequestData = Mapping[str, object]
+type LeaveRequestData = Mapping[str, Any]
 
 
 def _validate_leave_request_data(
@@ -50,6 +51,12 @@ def _validate_leave_request_data(
         instance.end_date if instance else None,
     )
 
+    number_of_days = validated_data.get(
+        "number_of_days", instance.number_of_days if instance else None
+    )
+    if number_of_days is not None and number_of_days <= 0:
+        raise ValidationError("Number of leave days must be greater than zero.")
+
     if employee and organization and employee.organization_id != organization.id:
         raise ValidationError(
             "Employee must belong to the selected organization.",
@@ -79,8 +86,11 @@ def create_leave_request(
         validated_data=validated_data,
     )
 
-    return LeaveRequest.objects.create(
-        **validated_data,
+    return cast(
+        LeaveRequest,
+        LeaveRequest.objects.create(
+            **validated_data,
+        ),
     )
 
 
@@ -139,13 +149,14 @@ def decide_leave_request(
     zero allocation if it does not yet exist.
     """
 
+    instance = LeaveRequest.objects.select_for_update().get(pk=instance.pk)
     if instance.status != LeaveRequestStatus.PENDING:
         raise ValidationError(
             "Only pending leave requests can be approved or rejected.",
         )
 
     if approve:
-        balance, _ = LeaveBalance.objects.get_or_create(
+        balance, _ = LeaveBalance.objects.select_for_update().get_or_create(
             employee=instance.employee,
             leave_type=instance.leave_type,
             year=instance.start_date.year,
@@ -191,15 +202,20 @@ def cancel_leave_request(
     had already been approved.
     """
 
+    instance = LeaveRequest.objects.select_for_update().get(pk=instance.pk)
     if instance.status == LeaveRequestStatus.CANCELLED:
         return instance
 
     if instance.status == LeaveRequestStatus.APPROVED:
-        balance = LeaveBalance.objects.filter(
-            employee=instance.employee,
-            leave_type=instance.leave_type,
-            year=instance.start_date.year,
-        ).first()
+        balance = (
+            LeaveBalance.objects.select_for_update()
+            .filter(
+                employee=instance.employee,
+                leave_type=instance.leave_type,
+                year=instance.start_date.year,
+            )
+            .first()
+        )
 
         if balance is not None:
             balance.used_days = max(
@@ -234,6 +250,9 @@ def delete_leave_request(
     Delete a leave request.
     """
 
+    instance = LeaveRequest.objects.select_for_update().get(pk=instance.pk)
+    if instance.status == LeaveRequestStatus.APPROVED:
+        instance = cancel_leave_request(instance=instance)
     instance.delete()
 
 

@@ -29,6 +29,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from collections.abc import Callable
+from typing import TypeVar, cast
 
 from .base import DomainEvent
 
@@ -36,6 +37,8 @@ EventHandler = Callable[
     [DomainEvent],
     None,
 ]
+
+EventType = TypeVar("EventType", bound=DomainEvent)
 
 
 class EventDispatcher:
@@ -60,8 +63,8 @@ class EventDispatcher:
     @classmethod
     def register(
         cls,
-        event_type: type[DomainEvent],
-        handler: EventHandler,
+        event_type: type[EventType],
+        handler: Callable[[EventType], None],
     ) -> None:
         """
         Register event handler.
@@ -71,9 +74,7 @@ class EventDispatcher:
         """
 
         if handler not in cls._handlers[event_type]:
-            cls._handlers[event_type].append(
-                handler,
-            )
+            cls._handlers[event_type].append(cast(EventHandler, handler))
 
     @classmethod
     def dispatch(

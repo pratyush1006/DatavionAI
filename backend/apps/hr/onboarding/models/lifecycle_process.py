@@ -90,7 +90,7 @@ class LifecycleProcess(TimeStampedModel):
             ],
         ).count()
 
-        return round((done / total) * 100)
+        return int(round((done / total) * 100))
 
     def __str__(
         self,

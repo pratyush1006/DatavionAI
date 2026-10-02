@@ -18,8 +18,8 @@ from apps.clinical.prescriptions.constants import (
 )
 from apps.clinical.providers.models import Provider
 from apps.core.models import (
-    BaseManager,
     BaseModel,
+    SoftDeleteManager,
 )
 from apps.patient_management.patients.models import Patient
 from apps.platform.organizations.models import Organization
@@ -30,7 +30,7 @@ class Prescription(BaseModel):
     Represents a medication prescription issued during an encounter.
     """
 
-    objects = BaseManager()
+    objects = SoftDeleteManager()
 
     organization = models.ForeignKey(
         Organization,
@@ -79,6 +79,16 @@ class Prescription(BaseModel):
         default=DEFAULT_PRESCRIPTION_STATUS,
         db_index=True,
         help_text="Prescription status.",
+    )
+
+    is_verified = models.BooleanField(default=False, db_index=True)
+    verified_at = models.DateTimeField(null=True, blank=True)
+    verified_by = models.ForeignKey(
+        "accounts.User",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="verified_prescriptions",
     )
 
     dosage = models.DecimalField(
@@ -216,7 +226,7 @@ class Prescription(BaseModel):
         Return a readable title.
         """
 
-        return f"{self.medication.title} | {self.patient.full_name}"
+        return f"{self.medication.display_name} | {self.patient.full_name}"
 
     def __str__(
         self,

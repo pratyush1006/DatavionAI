@@ -4,11 +4,10 @@ Organization role detail serializer.
 
 from __future__ import annotations
 
-from rest_framework import serializers
-
 from apps.platform.rbac.models import (
     OrganizationRole,
 )
+from rest_framework import serializers
 
 
 class OrganizationRoleDetailSerializer(
@@ -31,8 +30,6 @@ class OrganizationRoleDetailSerializer(
             "is_active",
             "created_at",
             "updated_at",
-            "is_deleted",
-            "deleted_at",
         )
 
 

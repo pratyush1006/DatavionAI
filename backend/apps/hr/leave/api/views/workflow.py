@@ -7,7 +7,7 @@ from __future__ import annotations
 from typing import Final
 
 from drf_spectacular.utils import extend_schema
-from rest_framework import status
+from rest_framework import serializers, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -48,6 +48,8 @@ class LeaveRequestApproveAPIView(BaseLeaveRequestWorkflowAPIView):
     Approve a pending leave request.
     """
 
+    serializer_class = serializers.Serializer
+
     permission_classes = (IsAuthenticated, CanApproveLeaveRequest)
 
     def post(self, request: Request, leave_request_id) -> Response:
@@ -83,6 +85,8 @@ class LeaveRequestRejectAPIView(BaseLeaveRequestWorkflowAPIView):
     Reject a pending leave request.
     """
 
+    serializer_class = serializers.Serializer
+
     permission_classes = (IsAuthenticated, CanApproveLeaveRequest)
 
     def post(self, request: Request, leave_request_id) -> Response:
@@ -114,6 +118,8 @@ class LeaveRequestCancelAPIView(BaseLeaveRequestWorkflowAPIView):
     """
     Cancel a leave request.
     """
+
+    serializer_class = serializers.Serializer
 
     permission_classes = (IsAuthenticated, CanApproveLeaveRequest)
 

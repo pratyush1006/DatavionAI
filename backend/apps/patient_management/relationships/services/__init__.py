@@ -17,3 +17,8 @@ __all__ = (
     "restore_patient_relationship",
     "update_patient_relationship",
 )
+from .relationship import (
+    set_primary_patient_relationship,
+    terminate_patient_relationship,
+    verify_patient_relationship,
+)

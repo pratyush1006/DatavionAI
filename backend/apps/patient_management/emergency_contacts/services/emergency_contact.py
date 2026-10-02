@@ -15,11 +15,12 @@ HTTP concerns belong to the API layer.
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import Any
+from typing import Any, cast
 from uuid import UUID, uuid4
 
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, transaction
+from django.db.models import Manager
 from django.utils import timezone
 
 from apps.patient_management.emergency_contacts.constants import (
@@ -130,7 +131,7 @@ class EmergencyContactService:
         patient: Patient,
         organization_id: UUID,
     ) -> None:
-        if patient.organization_id != organization_id:
+        if cast(Any, patient).organization_id != organization_id:
             raise ValidationError(
                 {"patient": ("Patient does not belong to the selected organization.")}
             )
@@ -207,8 +208,15 @@ class EmergencyContactService:
     def _lock_patient(
         patient_id: UUID,
     ) -> Patient:
-        return Patient.objects.select_for_update().get(
-            pk=patient_id,
+        return (
+            cast(
+                Manager[Patient],
+                Patient._default_manager,
+            )
+            .select_for_update()
+            .get(
+                pk=patient_id,
+            )
         )
 
     @staticmethod

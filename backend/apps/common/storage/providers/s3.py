@@ -13,6 +13,7 @@ credentials through environment variables or secret management.
 from __future__ import annotations
 
 from hashlib import sha256
+from typing import Any
 
 from apps.common.storage.exceptions import (
     StorageConnectionError,
@@ -46,7 +47,7 @@ class S3StorageBackend(
         self,
         *,
         bucket_name: str,
-        client: object,
+        client: Any,
     ) -> None:
         """
         Initialize S3 storage.
@@ -109,7 +110,7 @@ class S3StorageBackend(
                 Key=path,
             )
 
-            return response["Body"].read()
+            return bytes(response["Body"].read())
 
         except Exception as exc:
             raise StorageDownloadError(
@@ -167,13 +168,15 @@ class S3StorageBackend(
         """
 
         try:
-            return self.client.generate_presigned_url(
-                "get_object",
-                Params={
-                    "Bucket": self.bucket_name,
-                    "Key": path,
-                },
-                ExpiresIn=expires_in or 3600,
+            return str(
+                self.client.generate_presigned_url(
+                    "get_object",
+                    Params={
+                        "Bucket": self.bucket_name,
+                        "Key": path,
+                    },
+                    ExpiresIn=expires_in or 3600,
+                )
             )
 
         except Exception as exc:

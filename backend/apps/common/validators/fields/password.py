@@ -10,7 +10,7 @@ application registry population.
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, cast
 
 from django.core.exceptions import ValidationError
 
@@ -49,7 +49,7 @@ def validate_password_strength(
     try:
         django_validate_password(
             password=password,
-            user=user,
+            user=cast(Any, user),
         )
     except ValidationError as exc:
         messages = exc.messages or [DEFAULT_PASSWORD_MESSAGE]

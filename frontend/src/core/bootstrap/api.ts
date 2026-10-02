@@ -104,7 +104,16 @@ export async function fetchPlatformBootstrap(): Promise<PlatformBootstrap> {
       PLATFORM_BOOTSTRAP_ENDPOINT,
     );
 
-  return response.data;
+  const bootstrap = response.data;
+  // Auth identity responses may omit scope IDs. Install the backend-resolved
+  // context before consumers start organization-scoped queries.
+  apiClient.setOrganizationProvider({
+    getOrganizationId: () => bootstrap.organization?.id ?? bootstrap.access_context.organization_id ?? null,
+  });
+  apiClient.setTenantProvider({
+    getTenantId: () => bootstrap.tenant?.id ?? null,
+  });
+  return bootstrap;
 }
 
 /* =============================================================================

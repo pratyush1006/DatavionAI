@@ -136,9 +136,18 @@ class PaymentService:
             ],
         )
 
-        PaymentService._sync_invoice(
+        invoice = PaymentService._sync_invoice(
             payment=payment,
         )
+
+        # A fully paid subscription invoice is the only authoritative signal
+        # that may activate a payment-pending subscription.
+        if invoice.status == Invoice.Status.PAID:
+            from apps.platform.saas_billing.services.subscription_service import (
+                SubscriptionService,
+            )
+
+            SubscriptionService.activate(subscription=invoice.subscription)
 
         return payment
 

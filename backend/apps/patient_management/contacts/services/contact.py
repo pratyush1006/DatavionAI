@@ -231,8 +231,36 @@ class ContactService:
     # =========================================================================
 
     @staticmethod
-    @transaction.atomic
     def create(
+        *,
+        organization=None,
+        patient=None,
+        performed_by=None,
+        validated_data=None,
+        **kwargs,
+    ):
+        """Accept both workflow and direct-service Contacts create contracts."""
+        payload = dict(validated_data or {})
+        if kwargs:
+            payload.update(kwargs)
+        if organization is not None:
+            payload["organization"] = organization
+            organization_id = getattr(organization, "pk", organization)
+            if organization_id is not None:
+                payload["organization_id"] = organization_id
+        if patient is not None:
+            payload["patient"] = patient
+            patient_id = getattr(patient, "pk", patient)
+            if patient_id is not None:
+                payload["patient_id"] = patient_id
+        return ContactService._create_validated_data(
+            validated_data=payload,
+            performed_by=performed_by,
+        )
+
+    @staticmethod
+    @transaction.atomic
+    def _create_validated_data(
         *,
         validated_data: Mapping[str, Any],
         performed_by: User | None = None,
@@ -244,7 +272,12 @@ class ContactService:
         the workflow before entering the service.
         """
         ContactService._validate_mutable_fields(
-            validated_data,
+            {
+                key: value
+                for key, value in validated_data.items()
+                if key
+                not in {"organization", "organization_id", "patient", "patient_id"}
+            },
         )
 
         data = ContactService._normalize_data(

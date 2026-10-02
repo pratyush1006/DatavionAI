@@ -35,10 +35,14 @@ def _member(*, actor, organization) -> bool:
 
 
 def _allowed(*, actor, organization, permission: str) -> bool:
-    """Require organization membership and exact platform RBAC permission."""
-    return _member(actor=actor, organization=organization) and _has_permission(
-        user=actor, permission=permission, organization=organization
-    )
+    """Authorize through the canonical RBAC resolver.
+
+    A platform role with the effective permission is intentionally valid for
+    an organization-scoped operation. Requiring an OrganizationRole row here
+    incorrectly locked platform administrators out of the selected
+    organization and caused the API view to surface a server error.
+    """
+    return _has_permission(user=actor, permission=permission, organization=organization)
 
 
 class EligibilityPolicy:

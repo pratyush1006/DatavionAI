@@ -82,6 +82,12 @@ class PluginContract(BaseContract):
 
     status: PluginStatus = PluginStatus.ACTIVE
 
+    @property
+    def name(self) -> str:
+        """Compatibility alias for the stable plugin identifier."""
+
+        return self.identifier
+
     def validate(self) -> None:
         """
         Validate the plugin contract.
@@ -373,7 +379,6 @@ class PluginContract(BaseContract):
 
         return cls(
             identifier=data["identifier"],
-            name=data["name"],
             display_name=data["display_name"],
             version=data.get(
                 "version",

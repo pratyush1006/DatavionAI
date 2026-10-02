@@ -18,7 +18,7 @@ import csv
 import io
 import json
 from collections.abc import Mapping, Sequence
-from typing import TypeAlias
+from typing import Any, TypeAlias
 
 from rest_framework.renderers import BaseRenderer, JSONRenderer
 
@@ -76,7 +76,7 @@ class DatavionCSVRenderer(BaseRenderer):
         self,
         data: object,
         accepted_media_type: str | None = None,
-        renderer_context: dict[str, object] | None = None,
+        renderer_context: Mapping[str, object] | None = None,
     ) -> bytes:
         del accepted_media_type, renderer_context
 
@@ -91,29 +91,29 @@ class DatavionCSVRenderer(BaseRenderer):
             if not rows:
                 return b""
 
-            writer = csv.DictWriter(
+            writer: Any = csv.DictWriter(
                 output,
-                fieldnames=list(rows[0].keys()),
+                fieldnames=[str(key) for key in rows[0].keys()],
             )
 
             writer.writeheader()
 
             for row in rows:
                 writer.writerow(
-                    {key: _csv_value(value) for key, value in row.items()},
+                    {str(key): _csv_value(value) for key, value in row.items()},
                 )
 
         elif isinstance(data, Mapping):
-            writer = csv.writer(output)
+            csv_writer = csv.writer(output)
 
-            writer.writerow(data.keys())
-            writer.writerow(
+            csv_writer.writerow(list(data.keys()))
+            csv_writer.writerow(
                 [_csv_value(value) for value in data.values()],
             )
 
         else:
-            writer = csv.writer(output)
-            writer.writerow([_csv_value(data)])
+            csv_writer = csv.writer(output)
+            csv_writer.writerow([_csv_value(data)])
 
         return output.getvalue().encode(_ENCODING)
 
@@ -136,7 +136,7 @@ class DatavionFHIRRenderer(BaseRenderer):
         self,
         data: JSONValue,
         accepted_media_type: str | None = None,
-        renderer_context: dict[str, object] | None = None,
+        renderer_context: Mapping[str, object] | None = None,
     ) -> bytes:
         del accepted_media_type, renderer_context
         return _json_bytes(data)
@@ -160,7 +160,7 @@ class DatavionHL7Renderer(BaseRenderer):
         self,
         data: str | JSONValue,
         accepted_media_type: str | None = None,
-        renderer_context: dict[str, object] | None = None,
+        renderer_context: Mapping[str, object] | None = None,
     ) -> bytes:
         del accepted_media_type, renderer_context
 
@@ -190,7 +190,7 @@ class DatavionAIResponseRenderer(BaseRenderer):
         self,
         data: JSONValue,
         accepted_media_type: str | None = None,
-        renderer_context: dict[str, object] | None = None,
+        renderer_context: Mapping[str, object] | None = None,
     ) -> bytes:
         del accepted_media_type, renderer_context
 

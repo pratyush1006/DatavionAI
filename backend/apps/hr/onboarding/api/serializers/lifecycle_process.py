@@ -19,10 +19,10 @@ class LifecycleProcessBaseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = LifecycleProcess
-        fields = ()
+        fields: tuple[str, ...] = ()
 
     def get_employee_name(self, obj: LifecycleProcess) -> str:
-        return obj.employee.full_name
+        return str(obj.employee.full_name)
 
 
 class LifecycleProcessListSerializer(LifecycleProcessBaseSerializer):
@@ -42,7 +42,7 @@ class LifecycleProcessDetailSerializer(LifecycleProcessBaseSerializer):
         read_only=True,
     )
 
-    organization_id = serializers.IntegerField(
+    organization_id = serializers.UUIDField(
         source="organization.id",
         read_only=True,
     )
@@ -52,14 +52,14 @@ class LifecycleProcessDetailSerializer(LifecycleProcessBaseSerializer):
         read_only=True,
     )
 
-    employee_id = serializers.IntegerField(
+    employee_id = serializers.UUIDField(
         source="employee.id",
         read_only=True,
     )
 
     initiated_by = serializers.SerializerMethodField()
 
-    initiated_by_id = serializers.IntegerField(
+    initiated_by_id = serializers.UUIDField(
         source="initiated_by.id",
         read_only=True,
     )

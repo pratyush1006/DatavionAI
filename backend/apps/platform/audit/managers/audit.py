@@ -4,15 +4,23 @@ Audit manager.
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from django.db import models
 
 from apps.platform.audit.querysets import AuditQuerySet
 
+if TYPE_CHECKING:
+    pass
+
+
+AuditManagerBase = models.Manager.from_queryset(
+    AuditQuerySet,
+)
+
 
 class AuditManager(
-    models.Manager.from_queryset(
-        AuditQuerySet,
-    ),
+    AuditManagerBase["AuditLog"],
 ):
     """
     Manager for AuditLog.

@@ -4,22 +4,22 @@ Attendance permission classes.
 
 from __future__ import annotations
 
-from apps.common.permissions.base import DatavionPermission
+from apps.hr.permissions import HrPermission
 
 
-class CanViewAttendance(DatavionPermission):
+class CanViewAttendance(HrPermission):
     permission_code = "attendance.view"
 
 
-class CanCreateAttendance(DatavionPermission):
+class CanCreateAttendance(HrPermission):
     permission_code = "attendance.create"
 
 
-class CanUpdateAttendance(DatavionPermission):
+class CanUpdateAttendance(HrPermission):
     permission_code = "attendance.update"
 
 
-class CanDeleteAttendance(DatavionPermission):
+class CanDeleteAttendance(HrPermission):
     permission_code = "attendance.delete"
 
 

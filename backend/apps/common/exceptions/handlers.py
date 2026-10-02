@@ -20,8 +20,10 @@ from http import HTTPStatus
 from typing import Final
 
 from django.conf import settings
+from django.core.exceptions import ValidationError as DjangoValidationError
 from django.utils import timezone
 from rest_framework import status
+from rest_framework.exceptions import ValidationError as APIValidationError
 from rest_framework.response import Response
 from rest_framework.views import exception_handler
 
@@ -150,6 +152,10 @@ def datavion_exception_handler(
     Enterprise DRF exception handler.
     """
 
+    if isinstance(exc, DjangoValidationError):
+        exc = APIValidationError(
+            exc.message_dict if hasattr(exc, "message_dict") else exc.messages
+        )
     response = exception_handler(
         exc,
         context,
@@ -158,6 +164,31 @@ def datavion_exception_handler(
     request = context.get(
         "request",
     )
+
+    # Several long-lived domain modules use built-in exceptions at their
+    # authorization and input-validation boundaries. Never expose those as a
+    # 500: normalize them until each module has migrated to DRF exceptions.
+    if isinstance(exc, PermissionError):
+        return Response(
+            _payload(
+                code=ErrorCode.FORBIDDEN,
+                message=get_error_message(ErrorCode.FORBIDDEN),
+                detail={"detail": str(exc)},
+                meta=_meta(request),
+            ),
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+    if isinstance(exc, ValueError):
+        return Response(
+            _payload(
+                code=ErrorCode.BAD_REQUEST,
+                message=get_error_message(ErrorCode.BAD_REQUEST),
+                detail={"detail": str(exc)},
+                meta=_meta(request),
+            ),
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
     #
     # Datavion custom exceptions

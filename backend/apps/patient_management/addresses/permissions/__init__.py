@@ -1,25 +1,7 @@
-"""
-Patient Address API permissions.
-"""
+"""Address permissions."""
 
-from apps.patient_management.addresses.permissions.address import (
-    CanActivateAddress,
-    CanCreateAddress,
-    CanDeactivateAddress,
-    CanDeleteAddress,
-    CanSetPrimaryAddress,
-    CanUpdateAddress,
-    CanVerifyAddress,
-    CanViewAddress,
-)
+from __future__ import annotations
 
-__all__ = (
-    "CanActivateAddress",
-    "CanCreateAddress",
-    "CanDeactivateAddress",
-    "CanDeleteAddress",
-    "CanSetPrimaryAddress",
-    "CanUpdateAddress",
-    "CanVerifyAddress",
-    "CanViewAddress",
-)
+from .address import AddressPermission
+
+__all__ = ("AddressPermission",)

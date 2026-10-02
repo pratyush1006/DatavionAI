@@ -4,30 +4,30 @@ Payslip permission classes.
 
 from __future__ import annotations
 
-from apps.common.permissions.base import DatavionPermission
+from apps.hr.permissions import HrPermission
 
 
-class CanViewPayslip(DatavionPermission):
+class CanViewPayslip(HrPermission):
     permission_code = "payroll.view"
 
 
-class CanCreatePayslip(DatavionPermission):
+class CanCreatePayslip(HrPermission):
     permission_code = "payroll.create"
 
 
-class CanUpdatePayslip(DatavionPermission):
+class CanUpdatePayslip(HrPermission):
     permission_code = "payroll.update"
 
 
-class CanDeletePayslip(DatavionPermission):
+class CanDeletePayslip(HrPermission):
     permission_code = "payroll.delete"
 
 
-class CanProcessPayslip(DatavionPermission):
+class CanProcessPayslip(HrPermission):
     permission_code = "payroll.verify"
 
 
-class CanReleasePayslip(DatavionPermission):
+class CanReleasePayslip(HrPermission):
     permission_code = "payroll.release"
 
 

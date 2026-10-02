@@ -22,8 +22,10 @@ from .hybrid import (
     hybrid_search_engine,
 )
 from .results import (
+    SearchResponse,
     search_result_normalizer,
 )
+from .types import SearchRequest
 from .vector import (
     vector_search_service,
 )
@@ -40,24 +42,33 @@ class SearchService:
         query: str,
         mode: str = "hybrid",
         provider: str = "pgvector",
-        embedding_provider: str = "local",
+        embedding_provider: str = "openai",
         tenant_id: str | None = None,
         organization_id: str | None = None,
         patient_id: str | None = None,
         top_k: int = 10,
         filters: dict[str, Any] | None = None,
-    ):
+    ) -> SearchResponse:
         """
         Execute enterprise search.
         """
 
         if mode == "keyword":
-            result = search_engine.search(
+            request = SearchRequest(
                 query=query,
+                tenant_id=tenant_id,
+                organization_id=organization_id,
+                patient_id=patient_id,
+                filters=filters,
+                page_size=top_k,
+            )
+            keyword_result = search_engine.search(
+                request,
+                provider="postgres",
             )
 
             return search_result_normalizer.normalize(
-                items=[],
+                items=keyword_result.items,
                 provider="postgres",
                 mode="keyword",
                 metadata={

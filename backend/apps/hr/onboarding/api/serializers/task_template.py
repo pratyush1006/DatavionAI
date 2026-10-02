@@ -12,7 +12,7 @@ from .fields import (
 class LifecycleTaskTemplateBaseSerializer(serializers.ModelSerializer):
     class Meta:
         model = LifecycleTaskTemplate
-        fields = ()
+        fields: tuple[str, ...] = ()
 
 
 class LifecycleTaskTemplateListSerializer(
@@ -31,7 +31,7 @@ class LifecycleTaskTemplateDetailSerializer(
         read_only=True,
     )
 
-    organization_id = serializers.IntegerField(
+    organization_id = serializers.UUIDField(
         source="organization.id",
         read_only=True,
     )

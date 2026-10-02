@@ -12,7 +12,7 @@ from .fields import (
 class PerformanceReviewCycleBaseSerializer(serializers.ModelSerializer):
     class Meta:
         model = PerformanceReviewCycle
-        fields = ()
+        fields: tuple[str, ...] = ()
 
 
 class PerformanceReviewCycleListSerializer(
@@ -31,7 +31,7 @@ class PerformanceReviewCycleDetailSerializer(
         read_only=True,
     )
 
-    organization_id = serializers.IntegerField(
+    organization_id = serializers.UUIDField(
         source="organization.id",
         read_only=True,
     )

@@ -64,7 +64,7 @@ class DatavionException(Exception):
         Serialize exception.
         """
 
-        payload = {
+        payload: dict[str, Any] = {
             "code": self.code.value,
             "message": self.message,
         }
@@ -83,42 +83,66 @@ class DatavionException(Exception):
 ###############################################################################
 
 
+@dataclass(kw_only=True)
 class ClientException(DatavionException):
     """
     Base client exception.
     """
 
-    status_code = HTTPStatus.BAD_REQUEST
+    status_code: int = HTTPStatus.BAD_REQUEST
 
 
+@dataclass(kw_only=True, init=False)
 class ValidationException(ClientException):
-    code = ErrorCode.VALIDATION_ERROR
+    code: ErrorCode = ErrorCode.VALIDATION_ERROR
 
-    status_code = HTTPStatus.BAD_REQUEST
+    status_code: int = HTTPStatus.BAD_REQUEST
+
+    def __init__(
+        self,
+        message: str | None = None,
+        *,
+        code: ErrorCode = ErrorCode.VALIDATION_ERROR,
+        status_code: int = HTTPStatus.BAD_REQUEST,
+        detail: Any = None,
+        extra: dict[str, Any] | None = None,
+    ) -> None:
+        """Accept a positional message as well as the shared keyword contract."""
+        super().__init__(
+            code=code,
+            message=message,
+            status_code=status_code,
+            detail=detail,
+            extra=extra or {},
+        )
 
 
+@dataclass(kw_only=True)
 class AuthenticationException(ClientException):
-    code = ErrorCode.UNAUTHENTICATED
+    code: ErrorCode = ErrorCode.UNAUTHENTICATED
 
-    status_code = HTTPStatus.UNAUTHORIZED
+    status_code: int = HTTPStatus.UNAUTHORIZED
 
 
+@dataclass(kw_only=True)
 class AuthorizationException(ClientException):
-    code = ErrorCode.PERMISSION_DENIED
+    code: ErrorCode = ErrorCode.PERMISSION_DENIED
 
-    status_code = HTTPStatus.FORBIDDEN
+    status_code: int = HTTPStatus.FORBIDDEN
 
 
+@dataclass(kw_only=True)
 class ResourceNotFoundException(ClientException):
-    code = ErrorCode.RESOURCE_NOT_FOUND
+    code: ErrorCode = ErrorCode.RESOURCE_NOT_FOUND
 
-    status_code = HTTPStatus.NOT_FOUND
+    status_code: int = HTTPStatus.NOT_FOUND
 
 
+@dataclass(kw_only=True)
 class ResourceConflictException(ClientException):
-    code = ErrorCode.RESOURCE_CONFLICT
+    code: ErrorCode = ErrorCode.RESOURCE_CONFLICT
 
-    status_code = HTTPStatus.CONFLICT
+    status_code: int = HTTPStatus.CONFLICT
 
 
 ###############################################################################
@@ -126,38 +150,45 @@ class ResourceConflictException(ClientException):
 ###############################################################################
 
 
+@dataclass(kw_only=True)
 class ServerException(DatavionException):
     """
     Base server exception.
     """
 
-    code = ErrorCode.INTERNAL_SERVER_ERROR
+    code: ErrorCode = ErrorCode.INTERNAL_SERVER_ERROR
 
-    status_code = HTTPStatus.INTERNAL_SERVER_ERROR
+    status_code: int = HTTPStatus.INTERNAL_SERVER_ERROR
 
 
+@dataclass(kw_only=True)
 class DatabaseException(ServerException):
-    code = ErrorCode.DATABASE_ERROR
+    code: ErrorCode = ErrorCode.DATABASE_ERROR
 
 
+@dataclass(kw_only=True)
 class CacheException(ServerException):
-    code = ErrorCode.CACHE_ERROR
+    code: ErrorCode = ErrorCode.CACHE_ERROR
 
 
+@dataclass(kw_only=True)
 class IntegrationException(ServerException):
-    code = ErrorCode.INTEGRATION_ERROR
+    code: ErrorCode = ErrorCode.INTEGRATION_ERROR
 
 
+@dataclass(kw_only=True)
 class ConfigurationException(ServerException):
-    code = ErrorCode.CONFIGURATION_ERROR
+    code: ErrorCode = ErrorCode.CONFIGURATION_ERROR
 
 
+@dataclass(kw_only=True)
 class WorkflowException(ServerException):
-    code = ErrorCode.WORKFLOW_ERROR
+    code: ErrorCode = ErrorCode.WORKFLOW_ERROR
 
 
+@dataclass(kw_only=True)
 class AuditException(ServerException):
-    code = ErrorCode.AUDIT_ERROR
+    code: ErrorCode = ErrorCode.AUDIT_ERROR
 
 
 __all__ = (

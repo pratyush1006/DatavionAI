@@ -256,9 +256,10 @@ class PluginRegistry(
             name,
         )
 
-        plugin.enabled = True
-
-        return plugin
+        return self.replace(
+            key=name,
+            value=plugin.with_enabled(True),
+        )
 
     def disable_plugin(
         self,
@@ -271,9 +272,10 @@ class PluginRegistry(
             name,
         )
 
-        plugin.enabled = False
-
-        return plugin
+        return self.replace(
+            key=name,
+            value=plugin.with_enabled(False),
+        )
 
     def install_plugin(
         self,
@@ -286,9 +288,10 @@ class PluginRegistry(
             name,
         )
 
-        plugin.installed = True
-
-        return plugin
+        return self.replace(
+            key=name,
+            value=plugin.with_installed(True),
+        )
 
     def uninstall_plugin(
         self,
@@ -301,9 +304,10 @@ class PluginRegistry(
             name,
         )
 
-        plugin.installed = False
-
-        return plugin
+        return self.replace(
+            key=name,
+            value=plugin.with_installed(False),
+        )
 
     # ------------------------------------------------------------------
     # Export

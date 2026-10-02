@@ -32,6 +32,7 @@ Platform Bootstrap
 from __future__ import annotations
 
 from datetime import timedelta
+from decimal import Decimal
 
 from django.db import transaction
 from django.utils import timezone
@@ -132,8 +133,18 @@ class SubscriptionService:
 
         now = timezone.now()
 
-        trial_end = now + timedelta(
-            days=plan.trial_days,
+        is_free_plan = Decimal(str(plan.price or 0)) <= Decimal("0")
+        # A paid plan must never silently become a trial merely because its
+        # catalog record carries trial_days.  Paid access is activated only by
+        # the payment lifecycle; free plans may use an explicit trial window.
+        has_trial = is_free_plan and plan.trial_days > 0
+        trial_end = now + timedelta(days=plan.trial_days) if has_trial else None
+        status = (
+            Subscription.Status.TRIAL
+            if has_trial
+            else Subscription.Status.ACTIVE
+            if is_free_plan
+            else Subscription.Status.PAST_DUE
         )
 
         snapshot = SubscriptionService._build_plan_snapshot(
@@ -144,9 +155,10 @@ class SubscriptionService:
             tenant=(organization.tenant),
             organization=organization,
             plan=plan,
-            status=(Subscription.Status.TRIAL),
-            trial_start=now,
+            status=status,
+            trial_start=now if has_trial else None,
             trial_end=trial_end,
+            started_at=now if status == Subscription.Status.ACTIVE else None,
             current_period_start=now,
             current_period_end=trial_end,
             plan_snapshot=snapshot,

@@ -1,17 +1,4 @@
-"""
-Encounter permission exports.
-"""
+from .api import EncounterAPIPermission
+from .encounter import EncounterPermission
 
-from .encounter import (
-    CanCreateEncounter,
-    CanDeleteEncounter,
-    CanUpdateEncounter,
-    CanViewEncounter,
-)
-
-__all__ = [
-    "CanCreateEncounter",
-    "CanDeleteEncounter",
-    "CanUpdateEncounter",
-    "CanViewEncounter",
-]
+__all__ = ("EncounterAPIPermission", "EncounterPermission")

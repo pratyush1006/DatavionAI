@@ -26,6 +26,9 @@ class PrescriptionBaseSerializer(serializers.ModelSerializer):
             "medication",
             "prescription_number",
             "status",
+            "is_verified",
+            "verified_at",
+            "verified_by",
             "dosage",
             "dosage_unit",
             "frequency",
@@ -40,6 +43,9 @@ class PrescriptionBaseSerializer(serializers.ModelSerializer):
             "is_active",
             "created_at",
             "updated_at",
+            "is_verified",
+            "verified_at",
+            "verified_by",
         )
 
         read_only_fields = (

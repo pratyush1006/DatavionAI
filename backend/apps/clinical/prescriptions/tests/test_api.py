@@ -44,7 +44,6 @@ class PrescriptionAPITestCase(BaseAPITestCase):
             organization=self.organization,
             employee=self.employee,
             provider_number="PRV000001",
-            license_number="LIC000001",
             provider_type=ProviderType.PHYSICIAN,
         )
 

@@ -10,9 +10,9 @@ from django.db.models import QuerySet
 from drf_spectacular.utils import extend_schema
 from rest_framework.permissions import IsAuthenticated
 
-from apps.common.api.base_generics import (
-    BaseListCreateAPIView,
-    BaseRetrieveUpdateDestroyAPIView,
+from apps.hr.api import (
+    HrListCreateAPIView,
+    HrRetrieveUpdateDestroyAPIView,
 )
 from apps.hr.leave.api.serializers import (
     LeaveBalanceCreateSerializer,
@@ -41,7 +41,7 @@ LEAVE_TAG: Final[tuple[str, ...]] = ("Leave",)
 
 
 @extend_schema(tags=LEAVE_TAG)
-class LeaveBalanceListCreateAPIView(BaseListCreateAPIView):
+class LeaveBalanceListCreateAPIView(HrListCreateAPIView):
     """
     List existing leave balances or create a new one.
     """
@@ -79,7 +79,7 @@ class LeaveBalanceListCreateAPIView(BaseListCreateAPIView):
 
 @extend_schema(tags=LEAVE_TAG)
 class LeaveBalanceRetrieveUpdateDestroyAPIView(
-    BaseRetrieveUpdateDestroyAPIView,
+    HrRetrieveUpdateDestroyAPIView,
 ):
     """
     Retrieve, update or delete a leave balance.

@@ -19,7 +19,7 @@ from apps.platform.organizations.api.organization_settings.serializers import (
 from apps.platform.organizations.models import (
     OrganizationSettings,
 )
-from apps.platform.organizations.permissions.organization_settings import (
+from apps.platform.organizations.permissions.settings import (
     CanDeleteOrganizationSettings,
     CanUpdateOrganizationSettings,
     CanViewOrganizationSettings,

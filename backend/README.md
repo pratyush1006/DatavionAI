@@ -3,7 +3,7 @@
 > **Enterprise AI-Powered Healthcare Revenue Cycle Management Platform**
 
 ![Python](https://img.shields.io/badge/Python-3.12-blue)
-![Django](https://img.shields.io/badge/Django-5.2-green)
+![Django](https://img.shields.io/badge/Django-6.0.6-green)
 ![DRF](https://img.shields.io/badge/Django%20REST%20Framework-API-red)
 ![License](https://img.shields.io/badge/License-Proprietary-lightgrey)
 
@@ -293,7 +293,7 @@ source venv/bin/activate
 # Install Dependencies
 
 ```bash
-pip install -r requirements/dev.txt
+pip install -r requirements/development.txt
 ```
 
 ---
@@ -352,6 +352,12 @@ python manage.py createsuperuser
 python manage.py runserver
 ```
 
+The Celery application is `config.celery:app` in this backend. Start a worker in
+another process with `make worker`; start the scheduler with `make beat` when
+periodic tasks are enabled. Configure `REDIS_URL` or both `CELERY_BROKER_URL`
+and `CELERY_RESULT_BACKEND` for deployments. Local Redis defaults are only
+provided when `DEBUG` is enabled.
+
 ---
 
 # Repository Commands
@@ -372,6 +378,8 @@ Examples
 
 ```bash
 make run
+make worker
+make beat
 make test
 make lint
 make format

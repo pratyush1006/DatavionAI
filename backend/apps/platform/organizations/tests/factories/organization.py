@@ -4,8 +4,6 @@ Organization test factories.
 
 from __future__ import annotations
 
-import uuid
-
 import factory
 
 from apps.platform.organizations.constants import (
@@ -14,23 +12,38 @@ from apps.platform.organizations.constants import (
     OrganizationStatus,
     OrganizationType,
 )
-from apps.platform.organizations.models import (
-    Organization,
-)
+from apps.platform.organizations.models import Organization
+from apps.platform.tenancy.tests.factories import TenantFactory
 
 
 class OrganizationFactory(
     factory.django.DjangoModelFactory,
 ):
     """
-    Factory for Organization model.
+    Factory for the canonical Organization model.
+
+    Organizations are tenant-owned entities, so every generated
+    organization receives a real canonical Tenant unless the caller
+    explicitly supplies one.
     """
 
     class Meta:
         model = Organization
 
-    unique = factory.LazyFunction(
-        lambda: uuid.uuid4().hex[:8].upper(),
+    class Params:
+        """
+        Non-model factory parameters.
+
+        ``unique`` exists only inside Factory Boy and is never passed
+        to the Organization model.
+        """
+
+        unique = factory.Sequence(
+            lambda n: f"{n:08d}",
+        )
+
+    tenant = factory.SubFactory(
+        TenantFactory,
     )
 
     name = factory.LazyAttribute(
@@ -96,7 +109,7 @@ def create_organization(
     **kwargs,
 ) -> Organization:
     """
-    Create organization for tests.
+    Create an organization for tests.
     """
 
     return OrganizationFactory(
@@ -104,7 +117,7 @@ def create_organization(
     )
 
 
-__all__ = [
+__all__ = (
     "OrganizationFactory",
     "create_organization",
-]
+)

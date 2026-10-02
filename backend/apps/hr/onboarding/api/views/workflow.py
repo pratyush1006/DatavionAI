@@ -7,7 +7,7 @@ from __future__ import annotations
 from typing import Final
 
 from drf_spectacular.utils import extend_schema
-from rest_framework import status
+from rest_framework import serializers, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -47,6 +47,8 @@ class LifecycleProcessCompleteAPIView(
     must already be completed or skipped.
     """
 
+    serializer_class = serializers.Serializer
+
     permission_classes = (IsAuthenticated, CanUpdateLifecycleProcess)
 
     def post(self, request: Request, lifecycle_process_id) -> Response:
@@ -67,6 +69,8 @@ class LifecycleProcessCancelAPIView(
     """
     Cancel an in-progress lifecycle process.
     """
+
+    serializer_class = serializers.Serializer
 
     permission_classes = (IsAuthenticated, CanUpdateLifecycleProcess)
 

@@ -4,6 +4,7 @@ Push notification provider.
 
 from __future__ import annotations
 
+from apps.common.notifications.exceptions import NotificationConfigurationError
 from apps.platform.notifications.models import Notification
 
 from .base import BaseNotificationProvider
@@ -25,6 +26,6 @@ class PushProvider(
         Send push notification.
         """
 
-        raise NotImplementedError(
-            "Push notification provider not implemented.",
+        raise NotificationConfigurationError(
+            "Push delivery is disabled until a concrete service adapter is configured."
         )

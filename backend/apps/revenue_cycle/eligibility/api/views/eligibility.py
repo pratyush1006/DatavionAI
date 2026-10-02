@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from rest_framework import status
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -43,16 +45,16 @@ def _organization(request):
     organization = getattr(request, "organization", None)
     tenant = getattr(request, "tenant", None)
     if organization is None or tenant is None:
-        raise PermissionError("Explicit tenant and organization context is required.")
+        raise PermissionDenied("An active tenant and organization are required.")
     if organization.tenant_id != tenant.pk:
-        raise PermissionError("Organization does not belong to the active tenant.")
+        raise PermissionDenied("Organization does not belong to the active tenant.")
     return organization
 
 
 def _context(request, name):
     """Build a workflow context from explicit request tenant context."""
     if getattr(request, "tenant", None) is None:
-        raise PermissionError("Explicit tenant context is required.")
+        raise PermissionDenied("An active tenant is required.")
     return WorkflowContext.create(
         tenant_id=request.tenant.pk, actor_id=request.user.pk, workflow_name=name
     )
@@ -69,7 +71,10 @@ class EligibilityListCreateAPIView(APIView):
         if not EligibilityPolicy.can_list(
             actor=request.user, organization=organization
         ):
-            raise PermissionError("You cannot list eligibility records.")
+            return Response(
+                {"detail": "You do not have permission to list eligibility records."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
         return Response(
             EligibilityListSerializer(
                 list_eligibility(

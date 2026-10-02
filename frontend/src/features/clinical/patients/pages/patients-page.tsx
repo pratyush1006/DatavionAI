@@ -83,15 +83,6 @@ import {
  */
 
 const schema = z.object({
-  organization: z.string().uuid(
-    "Enter the organization UUID.",
-  ),
-
-  mrn: z.string().trim().min(
-    1,
-    "MRN is required.",
-  ),
-
   firstName: z.string().trim().min(
     1,
     "First name is required.",
@@ -153,8 +144,6 @@ const schema = z.object({
  */
 
 const defaults: PatientFormValues = {
-  organization: "",
-  mrn: "",
   firstName: "",
   middleName: "",
   lastName: "",
@@ -187,12 +176,6 @@ function valuesFor(
   }
 
   return {
-    organization:
-      patient.organization,
-
-    mrn:
-      patient.mrn,
-
     firstName:
       patient.firstName,
 
@@ -305,14 +288,6 @@ function PatientForm({
     ]
   > = [
     [
-      "organization",
-      "Organization UUID",
-    ],
-    [
-      "mrn",
-      "Medical record number",
-    ],
-    [
       "firstName",
       "First name",
     ],
@@ -420,6 +395,12 @@ function PatientForm({
         handleSubmit,
       )}
     >
+      {!patient ? (
+        <div className="md:col-span-2 rounded-md border border-primary/20 bg-primary/5 p-3 text-sm text-muted-foreground">
+          The active workspace sets the organization automatically. A medical
+          record number is generated securely when the patient is created.
+        </div>
+      ) : null}
       {fields.map(
         ([
           name,

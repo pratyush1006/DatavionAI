@@ -80,6 +80,7 @@ import {
 import {
   useAuth,
 } from "@/core/auth";
+import { apiClient } from "@/core/api";
 
 import {
   platformBootstrapQuery,
@@ -215,6 +216,8 @@ export function BootstrapProvider({
       queryKey:
         BOOTSTRAP_QUERY_KEY,
     });
+    apiClient.setOrganizationProvider({ getOrganizationId: () => null });
+    apiClient.setTenantProvider({ getTenantId: () => null });
   }, [
     isInitialized,
     isAuthenticated,

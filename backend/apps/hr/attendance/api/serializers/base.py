@@ -8,10 +8,10 @@ class AttendanceRecordBaseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = AttendanceRecord
-        fields = ()
+        fields: tuple[str, ...] = ()
 
     def get_employee_name(
         self,
         obj: AttendanceRecord,
     ) -> str:
-        return obj.employee.full_name
+        return str(obj.employee.full_name)

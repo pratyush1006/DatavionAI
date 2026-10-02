@@ -12,24 +12,7 @@ app_name = "patient_management"
 
 
 urlpatterns = [
-    path(
-        "patients/",
-        include(
-            "apps.patient_management.patients.urls",
-        ),
-    ),
-    path(
-        "profiles/",
-        include(
-            "apps.patient_management.profile.urls",
-        ),
-    ),
-    path(
-        "identifiers/",
-        include(
-            "apps.patient_management.identifiers.urls",
-        ),
-    ),
+    path("", include("apps.patient_management.api.urls")),
 ]
 
 

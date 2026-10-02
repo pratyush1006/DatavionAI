@@ -10,9 +10,9 @@ from django.db.models import QuerySet
 from drf_spectacular.utils import extend_schema
 from rest_framework.permissions import IsAuthenticated
 
-from apps.common.api.base_generics import (
-    BaseListCreateAPIView,
-    BaseRetrieveUpdateDestroyAPIView,
+from apps.hr.api import (
+    HrListCreateAPIView,
+    HrRetrieveUpdateDestroyAPIView,
 )
 from apps.hr.onboarding.api.serializers import (
     LifecycleProcessCreateSerializer,
@@ -41,7 +41,7 @@ ONBOARDING_TAG: Final[tuple[str, ...]] = ("Onboarding",)
 
 
 @extend_schema(tags=ONBOARDING_TAG)
-class LifecycleProcessListCreateAPIView(BaseListCreateAPIView):
+class LifecycleProcessListCreateAPIView(HrListCreateAPIView):
     """
     List existing lifecycle processes or start a new one.
     """
@@ -81,7 +81,7 @@ class LifecycleProcessListCreateAPIView(BaseListCreateAPIView):
 
 @extend_schema(tags=ONBOARDING_TAG)
 class LifecycleProcessRetrieveUpdateDestroyAPIView(
-    BaseRetrieveUpdateDestroyAPIView,
+    HrRetrieveUpdateDestroyAPIView,
 ):
     """
     Retrieve, update or delete a lifecycle process.

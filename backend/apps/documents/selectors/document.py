@@ -1,133 +1,51 @@
-"""
-Document selectors.
-
-Read-only query operations for
-Document Management bounded context.
-
-Responsibilities
-----------------
-- Tenant scoped queries
-- Organization scoped queries
-- Optimized document retrieval
-
-Non-responsibilities
---------------------
-- Business rules
-- State changes
-- Workflow execution
-- Permission decisions
-
-Those belong to:
-- services
-- workflows
-- permissions
-"""
+"""Tenant-safe Document selectors."""
 
 from __future__ import annotations
 
 from uuid import UUID
 
-from django.db.models import (
-    QuerySet,
-)
+from django.db.models import QuerySet
 
-from apps.documents.models import (
-    Document,
-)
+from apps.documents.models import Document
+
+
+def _base_queryset() -> QuerySet[Document]:
+    return Document.objects.select_related("tenant", "organization").prefetch_related(
+        "versions", "access_entries"
+    )
 
 
 def get_documents(
-    *,
-    tenant_id: UUID | None = None,
-    organization_id: UUID | None = None,
+    *, tenant_id: UUID | None = None, organization_id: UUID | None = None
 ) -> QuerySet[Document]:
-    """
-    Return documents filtered by ownership context.
-
-    Supports:
-
-    - Tenant isolation
-    - Organization isolation
-    - Multi-tenant SaaS queries
-    """
-
-    queryset = Document.objects.select_related(
-        "tenant",
-        "organization",
-    ).prefetch_related(
-        "versions",
-        "access_entries",
-    )
-
+    queryset = _base_queryset()
     if tenant_id is not None:
-        queryset = queryset.filter(
-            tenant_id=tenant_id,
-        )
-
+        queryset = queryset.filter(tenant_id=tenant_id)
     if organization_id is not None:
-        queryset = queryset.filter(
-            organization_id=organization_id,
-        )
-
+        queryset = queryset.filter(organization_id=organization_id)
     return queryset
 
 
-def get_document_by_id(
-    *,
-    document_id: UUID,
-) -> Document:
-    """
-    Retrieve single document by id.
-    """
-
-    return (
-        Document.objects.select_related(
-            "tenant",
-            "organization",
-        )
-        .prefetch_related(
-            "versions",
-            "access_entries",
-        )
-        .get(
-            id=document_id,
-        )
-    )
+def get_document_by_id(*, document_id: UUID) -> Document:
+    return _base_queryset().get(id=document_id)
 
 
-def get_document_versions(
-    *,
-    document_id: UUID,
-):
-    """
-    Return document versions.
-    """
-
-    document = get_document_by_id(
-        document_id=document_id,
-    )
-
-    return document.versions.all()
+def get_document_by_id_for_tenant(*, document_id: UUID, tenant_id: UUID) -> Document:
+    return _base_queryset().get(id=document_id, tenant_id=tenant_id)
 
 
-def get_document_access_entries(
-    *,
-    document_id: UUID,
-):
-    """
-    Return document access entries.
-    """
+def get_document_versions(*, document_id: UUID):
+    return get_document_by_id(document_id=document_id).versions.all()
 
-    document = get_document_by_id(
-        document_id=document_id,
-    )
 
-    return document.access_entries.all()
+def get_document_access_entries(*, document_id: UUID):
+    return get_document_by_id(document_id=document_id).access_entries.all()
 
 
 __all__ = (
     "get_documents",
     "get_document_by_id",
+    "get_document_by_id_for_tenant",
     "get_document_versions",
     "get_document_access_entries",
 )

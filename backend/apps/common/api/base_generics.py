@@ -20,20 +20,24 @@ Provides enterprise API foundations:
 
 from __future__ import annotations
 
-from collections.abc import Callable
-from typing import Any, ClassVar, Final
+from collections.abc import Callable, Sequence
+from typing import Any, ClassVar, Final, cast
 
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import AnonymousUser
 from rest_framework.exceptions import PermissionDenied
+from rest_framework.filters import BaseFilterBackend
 from rest_framework.generics import (
     GenericAPIView,
     ListCreateAPIView,
     RetrieveUpdateDestroyAPIView,
 )
+from rest_framework.pagination import BasePagination
 from rest_framework.permissions import BasePermission
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.serializers import Serializer
+from rest_framework.views import APIView
 
 from apps.common.api.filters import (
     DatavionFilterBackend,
@@ -77,17 +81,9 @@ class BaseAPIViewMixin:
     Common defaults shared by all DatavionOS API views.
     """
 
-    permission_classes: ClassVar[tuple[type[BasePermission], ...]] = (
-        IsAuthenticatedAndActive,
-    )
+    kwargs: dict[str, Any]
 
-    pagination_class: ClassVar[type[DatavionPagination]] = DatavionPagination
-
-    filter_backends: ClassVar[tuple[type[Any], ...]] = (
-        DatavionFilterBackend,
-        DatavionSearchFilter,
-        DatavionOrderingFilter,
-    )
+    pagination_class: ClassVar[type[BasePagination] | None] = DatavionPagination
 
     permission_classes_map: ClassVar[
         dict[
@@ -108,6 +104,11 @@ class BaseAPIViewMixin:
 
     selector: ClassVar[Callable[..., Any] | None] = None
 
+    def _get_request(self) -> Request:
+        """Return the request attached by Django REST Framework."""
+
+        return cast(Request, self.request)
+
     @property
     def current_user(
         self,
@@ -117,7 +118,7 @@ class BaseAPIViewMixin:
         """
 
         return getattr(
-            self.request,
+            self._get_request(),
             "user",
             AnonymousUser(),
         )
@@ -125,13 +126,13 @@ class BaseAPIViewMixin:
     @property
     def current_tenant(
         self,
-    ):
+    ) -> Any:
         """
         Return current tenant context.
         """
 
         return getattr(
-            self.request,
+            self._get_request(),
             "tenant",
             None,
         )
@@ -139,13 +140,13 @@ class BaseAPIViewMixin:
     @property
     def current_organization(
         self,
-    ):
+    ) -> Any:
         """
         Return current organization context.
         """
 
         return getattr(
-            self.request,
+            self._get_request(),
             "organization",
             None,
         )
@@ -157,36 +158,14 @@ class BaseAPIViewMixin:
         Return permission instances.
         """
 
+        method = self._get_request().method
+
         permission_classes = self.permission_classes_map.get(
-            self.request.method,
-            self.permission_classes,
+            method or HTTP_GET,
+            getattr(self, "permission_classes", ()),
         )
 
         return [permission() for permission in permission_classes]
-
-    def check_object_permissions(
-        self,
-        obj: Any,
-    ) -> None:
-        """
-        Execute object-level permissions.
-        """
-
-        for permission in self.get_permissions():
-            if hasattr(
-                permission,
-                "has_object_permission",
-            ):
-                allowed = permission.has_object_permission(
-                    self.request,
-                    self,
-                    obj,
-                )
-
-                if not allowed:
-                    raise PermissionDenied(
-                        detail=("You do not have permission to access this resource."),
-                    )
 
     def _get_action_serializer(
         self,
@@ -195,7 +174,7 @@ class BaseAPIViewMixin:
         Resolve serializer based on HTTP action.
         """
 
-        method = self.request.method
+        method = self._get_request().method
 
         if method == HTTP_GET:
             lookup = getattr(
@@ -234,9 +213,11 @@ class BaseAPIViewMixin:
         if not self.serializer_classes:
             return None
 
+        method = self._get_request().method or HTTP_GET
+
         return (
             self.serializer_classes.get(
-                self.request.method,
+                method,
             )
             or self.serializer_classes.get(
                 HTTP_GET,
@@ -275,7 +256,10 @@ class BaseAPIViewMixin:
         if serializer is not None:
             return serializer
 
-        return super().get_serializer_class()
+        return cast(
+            type[Serializer],
+            cast(Any, super()).get_serializer_class(),
+        )
 
 
 class BaseGenericAPIView(
@@ -285,6 +269,41 @@ class BaseGenericAPIView(
     """
     Base class shared by all generic views.
     """
+
+    permission_classes: Sequence[type[BasePermission]] = (IsAuthenticatedAndActive,)
+
+    filter_backends: Sequence[type[BaseFilterBackend]] = (
+        DatavionFilterBackend,
+        DatavionSearchFilter,
+        DatavionOrderingFilter,
+    )
+
+    def check_object_permissions(
+        self,
+        request: Request | Any,
+        obj: Any | None = None,
+    ) -> None:
+        """Execute object-level permissions."""
+
+        if obj is None:
+            obj = request
+            request = self.request
+
+        for permission in self.get_permissions():
+            if hasattr(
+                permission,
+                "has_object_permission",
+            ):
+                allowed = permission.has_object_permission(
+                    request,
+                    cast(APIView, self),
+                    obj,
+                )
+
+                if not allowed:
+                    raise PermissionDenied(
+                        detail=("You do not have permission to access this resource."),
+                    )
 
     def success_response(
         self,
@@ -387,7 +406,7 @@ class BaseRetrieveUpdateDestroyAPIView(
 
     def get_object(
         self,
-    ):
+    ) -> Any:
         """
         Return the requested object and enforce object-level
         permissions.
@@ -396,6 +415,7 @@ class BaseRetrieveUpdateDestroyAPIView(
         obj = super().get_object()
 
         self.check_object_permissions(
+            self.request,
             obj,
         )
 
@@ -403,7 +423,7 @@ class BaseRetrieveUpdateDestroyAPIView(
 
     def retrieve(
         self,
-        request,
+        request: Request,
         *args: Any,
         **kwargs: Any,
     ) -> Response:

@@ -64,9 +64,9 @@ class PatientCreationRequest:
     """
 
     organization_id: UUID
-    mrn: str
     first_name: str
     last_name: str
+    mrn: str | None = None
     middle_name: str | None = None
     preferred_name: str | None = None
     date_of_birth: date | None = None
@@ -191,7 +191,7 @@ class PatientCreationWorkflow(
         patient = PatientService.create(
             validated_data={
                 "organization": organization,
-                "mrn": self._request.mrn,
+                "mrn": self._request.mrn or "",
                 "first_name": self._request.first_name,
                 "middle_name": self._request.middle_name,
                 "last_name": self._request.last_name,
@@ -208,7 +208,7 @@ class PatientCreationWorkflow(
                 "country": self._request.country,
                 "postal_code": self._request.postal_code,
             },
-            actor=actor,
+            performed_by=actor,
         )
 
         event = PatientCreatedEvent(

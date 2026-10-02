@@ -10,9 +10,9 @@ from django.db.models import QuerySet
 from drf_spectacular.utils import extend_schema
 from rest_framework.permissions import IsAuthenticated
 
-from apps.common.api.base_generics import (
-    BaseListCreateAPIView,
-    BaseRetrieveUpdateDestroyAPIView,
+from apps.hr.api import (
+    HrListCreateAPIView,
+    HrRetrieveUpdateDestroyAPIView,
 )
 from apps.hr.leave.api.serializers import (
     LeaveTypeCreateSerializer,
@@ -41,7 +41,7 @@ LEAVE_TAG: Final[tuple[str, ...]] = ("Leave",)
 
 
 @extend_schema(tags=LEAVE_TAG)
-class LeaveTypeListCreateAPIView(BaseListCreateAPIView):
+class LeaveTypeListCreateAPIView(HrListCreateAPIView):
     """
     List existing leave types or create a new one.
     """
@@ -76,7 +76,7 @@ class LeaveTypeListCreateAPIView(BaseListCreateAPIView):
 
 @extend_schema(tags=LEAVE_TAG)
 class LeaveTypeRetrieveUpdateDestroyAPIView(
-    BaseRetrieveUpdateDestroyAPIView,
+    HrRetrieveUpdateDestroyAPIView,
 ):
     """
     Retrieve, update or delete a leave type.

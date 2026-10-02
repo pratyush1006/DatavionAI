@@ -22,10 +22,11 @@ class ContactFactory(factory.django.DjangoModelFactory):
         model = Contact
 
     organization = factory.SubFactory(
-        "apps.organizations.tests.factories.OrganizationFactory",
+        "apps.platform.organizations.tests.factories.OrganizationFactory",
     )
     patient = factory.SubFactory(
-        "apps.patient_management.tests.factories.PatientFactory",
+        "apps.patient_management.patients.tests.factories.PatientFactory",
+        organization=factory.SelfAttribute("..organization"),
     )
 
     contact_type = ContactType.MOBILE

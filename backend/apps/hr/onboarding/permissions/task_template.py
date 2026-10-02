@@ -4,22 +4,22 @@ Lifecycle task template permission classes.
 
 from __future__ import annotations
 
-from apps.common.permissions.base import DatavionPermission
+from apps.hr.permissions import HrPermission
 
 
-class CanViewTaskTemplate(DatavionPermission):
+class CanViewTaskTemplate(HrPermission):
     permission_code = "onboarding.view"
 
 
-class CanCreateTaskTemplate(DatavionPermission):
+class CanCreateTaskTemplate(HrPermission):
     permission_code = "onboarding.create"
 
 
-class CanUpdateTaskTemplate(DatavionPermission):
+class CanUpdateTaskTemplate(HrPermission):
     permission_code = "onboarding.update"
 
 
-class CanDeleteTaskTemplate(DatavionPermission):
+class CanDeleteTaskTemplate(HrPermission):
     permission_code = "onboarding.delete"
 
 

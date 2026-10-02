@@ -4,11 +4,6 @@ API view for retrieving, updating and deleting permissions.
 
 from __future__ import annotations
 
-from typing import Final
-
-from drf_spectacular.utils import extend_schema
-from rest_framework.permissions import IsAuthenticated
-
 from apps.common.api.base_generics import (
     BaseRetrieveUpdateDestroyAPIView,
 )
@@ -29,12 +24,12 @@ from apps.platform.rbac.services import (
     delete_permission,
     update_permission,
 )
-
-PERMISSION_TAG: Final = ("Permissions",)
+from drf_spectacular.utils import extend_schema
+from rest_framework.permissions import IsAuthenticated
 
 
 @extend_schema(
-    tags=[PERMISSION_TAG],
+    tags=["Permissions"],
 )
 class PermissionRetrieveUpdateDestroyAPIView(
     BaseRetrieveUpdateDestroyAPIView,

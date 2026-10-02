@@ -4,6 +4,7 @@ WhatsApp provider.
 
 from __future__ import annotations
 
+from apps.common.notifications.exceptions import NotificationConfigurationError
 from apps.platform.notifications.models import Notification
 
 from .base import BaseNotificationProvider
@@ -25,6 +26,6 @@ class WhatsAppProvider(
         Send WhatsApp notification.
         """
 
-        raise NotImplementedError(
-            "WhatsApp provider not implemented.",
+        raise NotificationConfigurationError(
+            "WhatsApp delivery is disabled until a concrete gateway adapter is configured."
         )

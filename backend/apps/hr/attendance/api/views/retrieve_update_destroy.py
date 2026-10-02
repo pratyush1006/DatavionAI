@@ -9,8 +9,8 @@ from typing import Final
 from drf_spectacular.utils import extend_schema
 from rest_framework.permissions import IsAuthenticated
 
-from apps.common.api.base_generics import (
-    BaseRetrieveUpdateDestroyAPIView,
+from apps.hr.api import (
+    HrRetrieveUpdateDestroyAPIView,
 )
 from apps.hr.attendance.api.serializers import (
     AttendanceRecordDetailSerializer,
@@ -34,7 +34,7 @@ ATTENDANCE_TAG: Final[tuple[str, ...]] = ("Attendance",)
 
 @extend_schema(tags=ATTENDANCE_TAG)
 class AttendanceRecordRetrieveUpdateDestroyAPIView(
-    BaseRetrieveUpdateDestroyAPIView,
+    HrRetrieveUpdateDestroyAPIView,
 ):
     """
     Retrieve, update or delete an attendance record.

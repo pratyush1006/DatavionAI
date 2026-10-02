@@ -1,0 +1,18 @@
+{
+  "name": "DatavionOS Patient Portal",
+  "short_name": "Datavion Patient",
+  "description": "Secure access to your patient dashboard and saved offline overview.",
+  "start_url": "/patient/dashboard",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f8f9fa",
+  "theme_color": "#0d6efd",
+  "icons": [
+    {
+      "src": "/patient-portal-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

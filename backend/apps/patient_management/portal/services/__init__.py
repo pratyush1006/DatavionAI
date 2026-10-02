@@ -9,3 +9,7 @@ from apps.patient_management.portal.services.portal import (
 )
 
 __all__ = ("PatientPortalAccountService",)
+
+from apps.patient_management.portal.workflows.invitation import (
+    PatientPortalInvitationWorkflow,
+)

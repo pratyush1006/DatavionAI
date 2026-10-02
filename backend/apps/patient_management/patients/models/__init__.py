@@ -15,3 +15,6 @@ __all__ = [
     "PatientAuditAction",
     "PatientAuditLog",
 ]
+
+# Canonical public module identity for the Patient aggregate.
+Patient.__module__ = "apps.patient_management.patients.models"

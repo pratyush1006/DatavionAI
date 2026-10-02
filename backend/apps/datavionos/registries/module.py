@@ -185,11 +185,7 @@ class ModuleRegistry(
         It only evaluates the module's canonical ``enabled`` property.
         """
 
-        return tuple(
-            module
-            for module in self.values()
-            if module.enabled
-        )
+        return tuple(module for module in self.values() if module.enabled)
 
     def available_modules(
         self,
@@ -205,11 +201,7 @@ class ModuleRegistry(
         of duplicating lifecycle logic.
         """
 
-        return tuple(
-            module
-            for module in self.values()
-            if module.is_available
-        )
+        return tuple(module for module in self.values() if module.is_available)
 
     def active_modules(
         self,
@@ -218,11 +210,7 @@ class ModuleRegistry(
         Return modules whose lifecycle status is ACTIVE.
         """
 
-        return tuple(
-            module
-            for module in self.values()
-            if module.is_active
-        )
+        return tuple(module for module in self.values() if module.is_active)
 
     def disabled_modules(
         self,
@@ -231,11 +219,7 @@ class ModuleRegistry(
         Return modules that are not enabled.
         """
 
-        return tuple(
-            module
-            for module in self.values()
-            if not module.enabled
-        )
+        return tuple(module for module in self.values() if not module.enabled)
 
     # ==================================================================
     # Categorization
@@ -286,9 +270,7 @@ class ModuleRegistry(
         """
 
         return tuple(
-            module
-            for module in self.available_modules()
-            if module.has_navigation
+            module for module in self.available_modules() if module.has_navigation
         )
 
     def dependency_order(
@@ -343,16 +325,11 @@ class ModuleRegistry(
         """
 
         return tuple(
-            module
-            for module in self.available_modules()
-            if module.has_dashboard
+            module for module in self.available_modules() if module.has_dashboard
         )
 
 
 module_registry = ModuleRegistry()
 
 
-__all__ = (
-    "ModuleRegistry",
-    "module_registry",
-)
+__all__ = ("ModuleRegistry",)

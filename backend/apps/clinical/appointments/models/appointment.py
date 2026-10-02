@@ -1,224 +1,199 @@
-"""
-Appointment model.
-"""
+"""Canonical Clinical Appointment model."""
 
 from __future__ import annotations
 
+from datetime import timedelta
+from decimal import ROUND_HALF_UP, Decimal
+
+from django.core.exceptions import ValidationError
 from django.db import models
+from django.utils import timezone
 
 from apps.clinical.appointments.constants import (
-    DEFAULT_APPOINTMENT_PRIORITY,
-    DEFAULT_APPOINTMENT_STATUS,
     AppointmentPriority,
     AppointmentStatus,
     AppointmentType,
 )
 from apps.clinical.providers.models import Provider
-from apps.core.models import (
-    BaseManager,
-    BaseModel,
-)
+from apps.core.models import BaseModel
 from apps.patient_management.patients.models import Patient
 from apps.platform.organizations.models import Organization
 
 
 class Appointment(BaseModel):
-    """
-    Represents a patient appointment.
-    """
-
-    objects = BaseManager()
+    """Store an organization-scoped clinical appointment."""
 
     organization = models.ForeignKey(
         Organization,
         on_delete=models.CASCADE,
-        related_name="appointments",
-        help_text="Organization that owns this appointment.",
+        related_name="clinical_appointments",
     )
-
     patient = models.ForeignKey(
         Patient,
-        on_delete=models.CASCADE,
-        related_name="appointments",
-        help_text="Patient for the appointment.",
+        on_delete=models.PROTECT,
+        related_name="clinical_appointments",
     )
-
     provider = models.ForeignKey(
         Provider,
-        on_delete=models.CASCADE,
-        related_name="appointments",
-        help_text="Healthcare provider assigned to the appointment.",
+        on_delete=models.PROTECT,
+        related_name="clinical_appointments",
     )
-
     appointment_number = models.CharField(
-        max_length=30,
-        help_text="Unique appointment number.",
+        max_length=64,
+        unique=True,
     )
-
+    client_booking_key = models.CharField(max_length=128, blank=True, default="")
+    booking_request_fingerprint = models.CharField(
+        max_length=64, blank=True, default=""
+    )
     appointment_type = models.CharField(
-        max_length=30,
+        max_length=32,
         choices=AppointmentType.choices,
-        help_text="Appointment type.",
+        default=AppointmentType.IN_PERSON,
     )
-
     status = models.CharField(
-        max_length=20,
+        max_length=32,
         choices=AppointmentStatus.choices,
-        default=DEFAULT_APPOINTMENT_STATUS,
+        default=AppointmentStatus.SCHEDULED,
         db_index=True,
-        help_text="Appointment status.",
     )
-
     priority = models.CharField(
-        max_length=20,
+        max_length=32,
         choices=AppointmentPriority.choices,
-        default=DEFAULT_APPOINTMENT_PRIORITY,
-        help_text="Appointment priority.",
+        default=AppointmentPriority.ROUTINE,
+        db_index=True,
     )
-
-    scheduled_start = models.DateTimeField(
-        help_text="Scheduled appointment start.",
+    scheduled_start = models.DateTimeField(db_index=True)
+    scheduled_end = models.DateTimeField(db_index=True)
+    duration_minutes = models.PositiveIntegerField(default=30)
+    reschedule_count = models.PositiveSmallIntegerField(default=0)
+    consultation_fee = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=Decimal("0.00"),
     )
-
-    scheduled_end = models.DateTimeField(
-        help_text="Scheduled appointment end.",
-    )
-
-    duration_minutes = models.PositiveIntegerField(
-        default=30,
-        help_text="Appointment duration in minutes.",
-    )
-
-    reason = models.CharField(
-        max_length=255,
-        blank=True,
-        help_text="Reason for appointment.",
-    )
-
-    notes = models.TextField(
-        blank=True,
-        help_text="Additional appointment notes.",
-    )
-
-    check_in_at = models.DateTimeField(
-        null=True,
-        blank=True,
-        help_text="Patient check-in time.",
-    )
-
-    check_out_at = models.DateTimeField(
-        null=True,
-        blank=True,
-        help_text="Patient check-out time.",
-    )
-
-    cancellation_reason = models.TextField(
-        blank=True,
-        help_text="Reason for cancellation.",
-    )
-
-    is_virtual = models.BooleanField(
-        default=False,
-        help_text="Whether this is a virtual appointment.",
-    )
-
-    meeting_url = models.URLField(
-        blank=True,
-        help_text="Virtual meeting URL.",
-    )
+    deposit_invoice_id = models.UUIDField(null=True, blank=True)
+    final_invoice_id = models.UUIDField(null=True, blank=True)
+    deposit_paid = models.BooleanField(default=False)
+    tracking_token_hash = models.CharField(max_length=64, blank=True, default="")
+    reason = models.TextField(blank=True, default="")
+    notes = models.TextField(blank=True, default="")
+    check_in_at = models.DateTimeField(null=True, blank=True)
+    check_out_at = models.DateTimeField(null=True, blank=True)
+    cancellation_reason = models.TextField(blank=True, default="")
+    is_virtual = models.BooleanField(default=False)
+    meeting_url = models.URLField(blank=True, default="")
 
     class Meta:
-        db_table = "appointments"
+        """Define database indexes and constraints."""
 
-        verbose_name = "Appointment"
-
-        verbose_name_plural = "Appointments"
-
-        ordering = ("-scheduled_start",)
-
-        indexes = [
-            models.Index(
-                fields=[
-                    "appointment_number",
-                ],
-            ),
-            models.Index(
-                fields=[
-                    "organization",
-                ],
-            ),
-            models.Index(
-                fields=[
-                    "scheduled_start",
-                ],
-            ),
-            models.Index(
-                fields=[
-                    "status",
-                ],
-            ),
-            models.Index(
-                fields=[
-                    "patient",
-                ],
-            ),
-            models.Index(
-                fields=[
-                    "provider",
-                ],
-            ),
-            models.Index(
-                fields=[
-                    "provider",
-                    "scheduled_start",
-                ],
-            ),
-            models.Index(
-                fields=[
-                    "patient",
-                    "scheduled_start",
-                ],
-            ),
-        ]
-
-        constraints = [
+        ordering = ("scheduled_start", "appointment_number")
+        constraints = (
             models.UniqueConstraint(
-                fields=[
-                    "organization",
-                    "appointment_number",
-                ],
-                name="unique_appointment_number_per_organization",
+                fields=("organization", "client_booking_key"),
+                condition=~models.Q(client_booking_key=""),
+                name="appt_org_client_booking_key_uniq",
             ),
-        ]
+            models.CheckConstraint(
+                condition=models.Q(
+                    scheduled_end__gt=models.F("scheduled_start"),
+                ),
+                name="appointment_end_after_start",
+            ),
+            models.CheckConstraint(
+                condition=models.Q(duration_minutes__gt=0),
+                name="appointment_duration_positive",
+            ),
+        )
+        indexes = (
+            models.Index(
+                fields=("organization", "scheduled_start"),
+                name="appt_org_start_idx",
+            ),
+            models.Index(
+                fields=("provider", "scheduled_start"),
+                name="appt_provider_start_idx",
+            ),
+            models.Index(
+                fields=("patient", "scheduled_start"),
+                name="appt_patient_start_idx",
+            ),
+        )
+
+    def clean(self) -> None:
+        """Validate appointment invariants."""
+
+        errors = {}
+
+        if self.scheduled_end <= self.scheduled_start:
+            errors["scheduled_end"] = "Appointment end time must be after start time."
+
+        duration = int(
+            (self.scheduled_end - self.scheduled_start).total_seconds() // 60
+        )
+
+        if duration <= 0:
+            errors["duration_minutes"] = (
+                "Appointment duration must be greater than zero."
+            )
+
+        if self.is_virtual and not self.meeting_url:
+            errors["meeting_url"] = "Meeting URL is required for virtual appointments."
+
+        if (
+            self.status == AppointmentStatus.CANCELLED
+            and not self.cancellation_reason.strip()
+        ):
+            errors["cancellation_reason"] = "Cancellation reason is required."
+
+        self.duration_minutes = max(duration, 1)
+
+        if errors:
+            raise ValidationError(errors)
 
     @property
-    def title(
-        self,
-    ) -> str:
-        """
-        Return appointment title.
-        """
+    def is_terminal(self) -> bool:
+        """Return whether the appointment is in a terminal state."""
 
-        return (
-            f"{self.appointment_number} | "
-            f"{self.patient.full_name} | "
-            f"{self.provider.employee.full_name}"
+        return self.status in {
+            AppointmentStatus.COMPLETED,
+            AppointmentStatus.CANCELLED,
+            AppointmentStatus.NO_SHOW,
+        }
+
+    @property
+    def deposit_amount(self) -> Decimal:
+        """Return the 50% booking deposit rounded to currency precision."""
+
+        return (self.consultation_fee / Decimal("2")).quantize(
+            Decimal("0.01"),
+            rounding=ROUND_HALF_UP,
         )
 
-    def __str__(
-        self,
-    ) -> str:
-        """
-        Return appointment display string.
-        """
+    @property
+    def tracking_token(self) -> str:
+        """Return the one-time plaintext tracking token for a new booking."""
+
+        return getattr(self, "_tracking_token", "")
+
+    @tracking_token.setter
+    def tracking_token(self, value: str) -> None:
+        self._tracking_token = value
+
+    @property
+    def can_reschedule(self) -> bool:
+        """Return whether rescheduling remains inside policy limits."""
 
         return (
-            f"{self.appointment_number} | "
-            f"{self.patient.full_name} | "
-            f"{self.provider.employee.full_name}"
+            not self.is_terminal
+            and self.reschedule_count == 0
+            and timezone.now() < self.scheduled_start - timedelta(hours=6)
         )
 
+    def __str__(self) -> str:
+        """Return the appointment number."""
 
-__all__ = [
-    "Appointment",
-]
+        return self.appointment_number
+
+
+__all__ = ("Appointment",)

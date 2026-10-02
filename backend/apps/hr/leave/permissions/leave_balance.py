@@ -4,22 +4,22 @@ Leave balance permission classes.
 
 from __future__ import annotations
 
-from apps.common.permissions.base import DatavionPermission
+from apps.hr.permissions import HrPermission
 
 
-class CanViewLeaveBalance(DatavionPermission):
+class CanViewLeaveBalance(HrPermission):
     permission_code = "leave.view"
 
 
-class CanCreateLeaveBalance(DatavionPermission):
+class CanCreateLeaveBalance(HrPermission):
     permission_code = "leave.create"
 
 
-class CanUpdateLeaveBalance(DatavionPermission):
+class CanUpdateLeaveBalance(HrPermission):
     permission_code = "leave.update"
 
 
-class CanDeleteLeaveBalance(DatavionPermission):
+class CanDeleteLeaveBalance(HrPermission):
     permission_code = "leave.delete"
 
 

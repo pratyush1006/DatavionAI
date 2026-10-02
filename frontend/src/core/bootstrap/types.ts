@@ -53,6 +53,9 @@ export interface BootstrapUser {
   readonly last_name?: string;
 
   readonly full_name?: string;
+
+  /** Backend-authoritative platform-wide administrator flag. */
+  readonly is_platform_admin?: boolean;
 }
 
 /* =============================================================================
@@ -79,6 +82,12 @@ export interface BootstrapOrganization {
   readonly id: UUID;
 
   readonly name: string;
+
+  readonly category?: string;
+
+  readonly organization_type?: string;
+
+  readonly size?: string;
 }
 
 /* =============================================================================
@@ -232,6 +241,17 @@ export interface BootstrapSubscription {
   readonly plan: BootstrapSubscriptionPlan;
 }
 
+/**
+ * Backend-resolved context for organization, department and team scope.
+ * It drives presentation only; server endpoints remain authoritative.
+ */
+export interface BootstrapAccessContext {
+  readonly organization_id: UUID | null;
+  readonly department_ids: readonly UUID[];
+  readonly team_ids: readonly UUID[];
+  readonly subscription_active: boolean;
+}
+
 /* =============================================================================
  * Platform Bootstrap Payload
  * =============================================================================
@@ -263,6 +283,8 @@ export interface PlatformBootstrap {
   readonly employee:
     | BootstrapEmployee
     | null;
+
+  readonly access_context: BootstrapAccessContext;
 
   /**
    * Platform-level roles.

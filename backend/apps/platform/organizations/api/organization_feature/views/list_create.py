@@ -21,7 +21,7 @@ from apps.platform.organizations.api.organization_feature.serializers import (
 from apps.platform.organizations.models import (
     OrganizationFeature,
 )
-from apps.platform.organizations.permissions.organization_feature import (
+from apps.platform.organizations.permissions.feature import (
     CanCreateOrganizationFeature,
     CanViewOrganizationFeature,
 )

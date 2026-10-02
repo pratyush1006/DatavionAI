@@ -12,7 +12,7 @@ from .fields import (
 class LeaveTypeBaseSerializer(serializers.ModelSerializer):
     class Meta:
         model = LeaveType
-        fields = ()
+        fields: tuple[str, ...] = ()
 
 
 class LeaveTypeListSerializer(LeaveTypeBaseSerializer):
@@ -27,7 +27,7 @@ class LeaveTypeDetailSerializer(LeaveTypeBaseSerializer):
         read_only=True,
     )
 
-    organization_id = serializers.IntegerField(
+    organization_id = serializers.UUIDField(
         source="organization.id",
         read_only=True,
     )

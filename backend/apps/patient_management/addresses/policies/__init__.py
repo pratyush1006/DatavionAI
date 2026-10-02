@@ -1,9 +1,7 @@
-"""
-Patient Address policies.
-"""
+"""Address policies."""
 
-from apps.patient_management.addresses.policies.address import (
-    AddressPolicy,
-)
+from __future__ import annotations
+
+from .address import AddressPolicy
 
 __all__ = ("AddressPolicy",)

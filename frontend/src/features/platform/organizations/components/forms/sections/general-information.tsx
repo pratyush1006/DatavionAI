@@ -298,6 +298,11 @@ export type GeneralInformationProps =
       UseFormReturn<OrganizationFormValues>;
 
     isEdit?: boolean;
+
+    /** Backend catalog values. Static choices are retained only as an outage fallback. */
+    categoryOptions?: SelectOption[];
+    organizationTypeOptions?: SelectOption[];
+    sizeOptions?: SelectOption[];
   }>;
 
 /* =============================================================================
@@ -308,7 +313,20 @@ export type GeneralInformationProps =
 export function GeneralInformation({
   form,
   isEdit = false,
+  categoryOptions,
+  organizationTypeOptions: backendOrganizationTypeOptions,
+  sizeOptions,
 }: GeneralInformationProps) {
+  const resolvedCategoryOptions = categoryOptions?.length
+    ? categoryOptions
+    : organizationCategoryOptions;
+  const resolvedOrganizationTypeOptions = backendOrganizationTypeOptions?.length
+    ? backendOrganizationTypeOptions
+    : organizationTypeOptions;
+  const resolvedSizeOptions = sizeOptions?.length
+    ? sizeOptions
+    : organizationSizeOptions;
+
   return (
     <FormSection
       title="General Information"
@@ -364,7 +382,7 @@ export function GeneralInformation({
           name="organizationType"
           label="Organization Type"
           placeholder="Select organization type"
-          options={organizationTypeOptions}
+          options={resolvedOrganizationTypeOptions}
           required
         />
 
@@ -373,7 +391,7 @@ export function GeneralInformation({
           name="category"
           label="Category"
           placeholder="Select category"
-          options={organizationCategoryOptions}
+          options={resolvedCategoryOptions}
           required
         />
 
@@ -382,7 +400,7 @@ export function GeneralInformation({
           name="size"
           label="Organization Size"
           placeholder="Select organization size"
-          options={organizationSizeOptions}
+          options={resolvedSizeOptions}
           required
         />
 

@@ -4,17 +4,25 @@ Organization role manager.
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from django.db import models
 
 from apps.platform.rbac.querysets import (
     OrganizationRoleQuerySet,
 )
 
+if TYPE_CHECKING:
+    pass
+
+
+OrganizationRoleManagerBase = models.Manager.from_queryset(
+    OrganizationRoleQuerySet,
+)
+
 
 class OrganizationRoleManager(
-    models.Manager.from_queryset(
-        OrganizationRoleQuerySet,
-    ),
+    OrganizationRoleManagerBase["OrganizationRole"],
 ):
     """
     Manager for OrganizationRole.

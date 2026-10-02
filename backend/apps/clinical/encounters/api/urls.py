@@ -1,25 +1,17 @@
-"""
-Encounter API URLs.
-"""
-
 from django.urls import path
 
-from apps.clinical.encounters.api.views import (
+from .views import (
+    EncounterDetailAPIView,
+    EncounterLifecycleAPIView,
     EncounterListCreateAPIView,
-    EncounterRetrieveUpdateDestroyAPIView,
 )
 
-app_name = "encounters"
-
 urlpatterns = [
+    path("", EncounterListCreateAPIView.as_view(), name="list-create"),
+    path("<uuid:encounter_id>/", EncounterDetailAPIView.as_view(), name="detail"),
     path(
-        "",
-        EncounterListCreateAPIView.as_view(),
-        name="list-create",
-    ),
-    path(
-        "<uuid:encounter_id>/",
-        EncounterRetrieveUpdateDestroyAPIView.as_view(),
-        name="detail",
+        "<uuid:encounter_id>/<str:action>/",
+        EncounterLifecycleAPIView.as_view(),
+        name="lifecycle",
     ),
 ]

@@ -68,6 +68,7 @@ class CommonConfig(AppConfig):
         # --------------------------------------------------------------
 
         from apps.common import events  # noqa: F401
+        from apps.common.api import authentication  # noqa: F401
 
         # --------------------------------------------------------------
         # Notification Framework Registration

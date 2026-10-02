@@ -49,7 +49,6 @@ __all__: tuple[str, ...] = (
     "RegistryNotFoundError",
     # Module Registry
     "ModuleDefinition",
-    "module_registry",
     # Feature Registry
     "FeatureDefinition",
     "feature_registry",

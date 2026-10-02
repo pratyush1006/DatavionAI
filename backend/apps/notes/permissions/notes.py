@@ -1,79 +1,39 @@
-"""
-Clinical Notes permission classes.
-"""
-
-from __future__ import annotations
-
-from apps.common.permissions.base import BasePermission
+from apps.platform.rbac.permissions.base import RBACPermissionBase
 
 
 class NotePermission:
-    """
-    Clinical note permission codes.
-    """
-
-    VIEW = "note.view"
-    CREATE = "note.create"
-    UPDATE = "note.update"
-    DELETE = "note.delete"
-    SIGN = "note.sign"
-    AMEND = "note.amend"
+    VIEW = "notes.view"
+    CREATE = "notes.create"
+    EDIT = "notes.update"
+    REVIEW = "notes.approve"
+    SIGN = "notes.sign"
+    AMEND = "notes.update"
+    CANCEL = "notes.cancel"
 
 
-class CanViewNote(BasePermission):
-    """
-    Permission required to view clinical notes.
-    """
-
+class CanViewNotes(RBACPermissionBase):
     permission_code = NotePermission.VIEW
 
 
-class CanCreateNote(BasePermission):
-    """
-    Permission required to create clinical notes.
-    """
-
+class CanCreateNotes(RBACPermissionBase):
     permission_code = NotePermission.CREATE
 
 
-class CanUpdateNote(BasePermission):
-    """
-    Permission required to update clinical notes.
-    """
-
-    permission_code = NotePermission.UPDATE
+class CanEditNotes(RBACPermissionBase):
+    permission_code = NotePermission.EDIT
 
 
-class CanDeleteNote(BasePermission):
-    """
-    Permission required to delete clinical notes.
-    """
-
-    permission_code = NotePermission.DELETE
+class CanReviewNotes(RBACPermissionBase):
+    permission_code = NotePermission.REVIEW
 
 
-class CanSignNote(BasePermission):
-    """
-    Permission required to sign clinical notes.
-    """
-
+class CanSignNotes(RBACPermissionBase):
     permission_code = NotePermission.SIGN
 
 
-class CanAmendNote(BasePermission):
-    """
-    Permission required to amend clinical notes.
-    """
-
+class CanAmendNotes(RBACPermissionBase):
     permission_code = NotePermission.AMEND
 
 
-__all__ = [
-    "NotePermission",
-    "CanAmendNote",
-    "CanCreateNote",
-    "CanDeleteNote",
-    "CanSignNote",
-    "CanUpdateNote",
-    "CanViewNote",
-]
+class CanCancelNotes(RBACPermissionBase):
+    permission_code = NotePermission.CANCEL

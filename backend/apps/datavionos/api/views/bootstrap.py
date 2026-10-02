@@ -64,6 +64,7 @@ from apps.datavionos.builders.bootstrap import (
 from apps.datavionos.selectors.bootstrap import (
     platform_bootstrap_selector,
 )
+from apps.platform.rbac.constants import SystemRole
 
 
 @extend_schema(
@@ -118,9 +119,17 @@ class PlatformBootstrapAPIView(
 
         result = PlatformBootstrapService().bootstrap(
             tenant=context.tenant,
+            user=request.user,
             organization=context.organization,
             permissions=set(
                 context.permissions,
+            ),
+            roles=set(context.platform_roles).union(context.organization_roles),
+            access_scope=context.access_scope,
+            is_platform_administrator=(
+                bool(getattr(request.user, "is_staff", False))
+                or SystemRole.PLATFORM_ADMIN.value in context.platform_roles
+                or SystemRole.PLATFORM_ADMIN.label in context.platform_roles
             ),
         )
 
@@ -128,11 +137,7 @@ class PlatformBootstrapAPIView(
         # Capabilities
         # ==============================================================
 
-        capabilities = (
-            result.capabilities
-            if result.capabilities is not None
-            else {}
-        )
+        capabilities = result.capabilities if result.capabilities is not None else {}
 
         # ==============================================================
         # Subscription
@@ -140,6 +145,7 @@ class PlatformBootstrapAPIView(
 
         subscription = self._resolve_subscription(
             capabilities,
+            fallback=getattr(context, "subscription", None),
         )
 
         # ==============================================================
@@ -148,30 +154,12 @@ class PlatformBootstrapAPIView(
 
         bootstrap = platform_bootstrap_builder.build(
             context=context,
-            modules=(
-                result.modules
-                if result.modules is not None
-                else []
-            ),
-            navigation=(
-                result.navigation
-                if result.navigation is not None
-                else []
-            ),
-            dashboard=(
-                result.dashboard
-                if result.dashboard is not None
-                else []
-            ),
-            branding=(
-                result.branding
-                if result.branding is not None
-                else {}
-            ),
+            modules=(result.modules if result.modules is not None else []),
+            navigation=(result.navigation if result.navigation is not None else []),
+            dashboard=(result.dashboard if result.dashboard is not None else []),
+            branding=(result.branding if result.branding is not None else {}),
             feature_flags=(
-                result.feature_flags
-                if result.feature_flags is not None
-                else {}
+                result.feature_flags if result.feature_flags is not None else {}
             ),
             subscription=subscription,
             preferences=None,
@@ -201,6 +189,7 @@ class PlatformBootstrapAPIView(
     @staticmethod
     def _resolve_subscription(
         capabilities: dict[str, Any],
+        fallback: Any | None = None,
     ) -> dict[str, Any] | None:
         """
         Extract the subscription payload from runtime capabilities.
@@ -217,25 +206,27 @@ class PlatformBootstrapAPIView(
             "capabilities",
         )
 
-        if not isinstance(
-            runtime_capabilities,
-            dict,
-        ):
+        if isinstance(runtime_capabilities, dict):
+            subscription = runtime_capabilities.get("subscription")
+            if isinstance(subscription, dict):
+                return subscription
+
+        if fallback is None:
             return None
 
-        subscription = runtime_capabilities.get(
-            "subscription",
-        )
-
-        if not isinstance(
-            subscription,
-            dict,
-        ):
+        plan = getattr(fallback, "plan", None)
+        if plan is None:
             return None
 
-        return subscription
+        return {
+            "status": getattr(fallback, "status", ""),
+            "auto_renew": bool(getattr(fallback, "auto_renew", False)),
+            "plan": {
+                "name": getattr(plan, "name", ""),
+                "code": getattr(plan, "code", ""),
+                "billing_cycle": getattr(plan, "billing_cycle", ""),
+            },
+        }
 
 
-__all__ = (
-    "PlatformBootstrapAPIView",
-)
+__all__ = ("PlatformBootstrapAPIView",)

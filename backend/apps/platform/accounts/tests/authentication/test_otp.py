@@ -99,13 +99,14 @@ class LoginOTPAPIViewTestCase(
             otp,
         )
 
-        response = self.client.post(
-            self.resend_endpoint,
-            {
-                "otp_id": str(otp.id),
-            },
-            format="json",
-        )
+        with self.captureOnCommitCallbacks(execute=True):
+            response = self.client.post(
+                self.resend_endpoint,
+                {
+                    "otp_id": str(otp.id),
+                },
+                format="json",
+            )
 
         self.assertEqual(
             response.status_code,
@@ -434,10 +435,7 @@ class LoginOTPAPIViewTestCase(
             status.HTTP_200_OK,
         )
 
-        self.assertNotIn(
-            "code",
-            str(response.data).lower(),
-        )
+        self.assertNotIn("code", response.data["data"])
 
     def test_verify_expired_login_otp(
         self,

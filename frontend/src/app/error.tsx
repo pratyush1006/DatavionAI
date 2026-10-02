@@ -2,9 +2,7 @@
 
 import { useEffect } from "react";
 
-import { Button } from "@/components/ui/button";
-
-export default function ErrorPage({
+export default function GlobalError({
   error,
   reset,
 }: Readonly<{
@@ -12,25 +10,22 @@ export default function ErrorPage({
   reset: () => void;
 }>) {
   useEffect(() => {
-    // Production telemetry is intentionally added at this boundary only.
-    console.error("Unhandled application error", error);
+    // Keep diagnostics in the browser console without exposing internals in UI.
+    console.error("DatavionOS route error", error);
   }, [error]);
 
   return (
-    <main className="flex min-h-screen items-center justify-center p-6">
-      <section className="max-w-md space-y-4 text-center">
-        <h1 className="text-2xl font-semibold">
-          Something went wrong
-        </h1>
-
-        <p className="text-sm text-muted-foreground">
-          Your data has not been changed. Please try again, or contact support
-          if the issue continues.
-        </p>
-
-        <Button onClick={reset}>
-          Try again
-        </Button>
+    <main className="min-vh-100 d-flex align-items-center justify-content-center bg-body-tertiary p-4">
+      <section className="card border-0 shadow-sm" style={{ maxWidth: 520 }}>
+        <div className="card-body p-4 p-md-5 text-center">
+          <h1 className="h3">We couldn&apos;t load this page</h1>
+          <p className="text-body-secondary mb-4">
+            Please retry. If this keeps happening, contact your organization administrator.
+          </p>
+          <button className="btn btn-primary" type="button" onClick={reset}>
+            Retry
+          </button>
+        </div>
       </section>
     </main>
   );

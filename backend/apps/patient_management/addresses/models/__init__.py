@@ -1,9 +1,7 @@
-"""
-Patient Address models.
-"""
+"""Patient Address models."""
 
-from apps.patient_management.addresses.models.address import (
-    Address,
-)
+from __future__ import annotations
+
+from .address import Address
 
 __all__ = ("Address",)

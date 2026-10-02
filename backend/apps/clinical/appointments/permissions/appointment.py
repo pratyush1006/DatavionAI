@@ -1,47 +1,35 @@
-"""
-Appointment permission classes.
-"""
+"""RBAC permissions for Clinical Appointments."""
 
 from __future__ import annotations
 
-from apps.common.permissions.base import BasePermission
+from apps.platform.rbac.resolvers import resolve_permissions
 
 
-class CanViewAppointment(BasePermission):
-    """
-    Permission required to view appointments.
-    """
+class AppointmentPermission:
+    """Resolve organization-scoped Appointment permissions."""
 
-    permission_code = "appointment.view"
+    code_prefix = "appointment"
 
+    @staticmethod
+    def has_permission(*, user, permission: str, organization=None) -> bool:
+        """Return whether the actor has the requested permission."""
 
-class CanCreateAppointment(BasePermission):
-    """
-    Permission required to create appointments.
-    """
-
-    permission_code = "appointment.create"
-
-
-class CanUpdateAppointment(BasePermission):
-    """
-    Permission required to update appointments.
-    """
-
-    permission_code = "appointment.update"
+        return permission in resolve_permissions(
+            user=user,
+            organization=organization,
+        )
 
 
-class CanDeleteAppointment(BasePermission):
-    """
-    Permission required to delete appointments.
-    """
+PERMISSION_CODES = (
+    "appointment.view",
+    "appointment.create",
+    "appointment.update",
+    "appointment.delete",
+    "appointment.transition",
+)
 
-    permission_code = "appointment.delete"
 
-
-__all__ = [
-    "CanCreateAppointment",
-    "CanDeleteAppointment",
-    "CanUpdateAppointment",
-    "CanViewAppointment",
-]
+__all__ = (
+    "AppointmentPermission",
+    "PERMISSION_CODES",
+)

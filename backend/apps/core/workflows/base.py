@@ -75,7 +75,7 @@ class BaseWorkflow[T](
     @property
     def payload(
         self,
-    ) -> Any | None:
+    ) -> Any:
         """
         Return workflow payload.
         """

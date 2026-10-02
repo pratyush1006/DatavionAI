@@ -1,15 +1,11 @@
-"""
-Encounter serializer exports.
-"""
+from .encounter import (
+    EncounterCreateSerializer,
+    EncounterSerializer,
+    EncounterUpdateSerializer,
+)
 
-from .create import EncounterCreateSerializer
-from .detail import EncounterDetailSerializer
-from .list import EncounterListSerializer
-from .update import EncounterUpdateSerializer
-
-__all__ = [
+__all__ = (
+    "EncounterSerializer",
     "EncounterCreateSerializer",
-    "EncounterDetailSerializer",
-    "EncounterListSerializer",
     "EncounterUpdateSerializer",
-]
+)

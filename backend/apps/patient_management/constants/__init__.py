@@ -87,3 +87,33 @@ __all__ = [
     "ReferralStatus",
     "RelationshipType",
 ]
+
+# Consolidated definitions from the former constants.py.
+"""Application-level constants for DatavionOS Patient Management."""
+
+PATIENT_MANAGEMENT_APP_LABEL = "patient_management"
+PATIENT_MANAGEMENT_IDENTIFIER = "patient-management"
+PATIENT_MANAGEMENT_DISPLAY_NAME = "Patient Management"
+
+PATIENT_MANAGEMENT_SUBMODULES = (
+    "registration",
+    "patients",
+    "profile",
+    "mpi",
+    "addresses",
+    "contacts",
+    "emergency",
+    "emergency_contacts",
+    "communication",
+    "consents",
+    "medical_history",
+    "relationships",
+    "family_members",
+    "referrals",
+    "patient_documents",
+    "portal",
+    "preferences",
+    "timeline",
+)
+
+PROTECTED_SUBMODULES = ("family_members",)

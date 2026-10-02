@@ -1,228 +1,88 @@
-"""
-Tests for medication API endpoints.
-"""
-
-from __future__ import annotations
-
-from django.urls import reverse
 from rest_framework import status
+from rest_framework.test import APIClient
 
-from apps.clinical.medications.constants import (
-    MedicationDosageForm,
-    MedicationRoute,
-)
+from apps.clinical.medications.constants import MedicationDosageForm, MedicationRoute
 from apps.clinical.medications.models import Medication
-from apps.common.tests.base import BaseAPITestCase
+from apps.common.tests.base import BaseTestCase
 
 
-class MedicationAPITestCase(BaseAPITestCase):
-    """
-    Test cases for medication API endpoints.
-    """
-
-    def setUp(
-        self,
-    ) -> None:
-        """
-        Set up test data.
-        """
-
+class MedicationAPITestCase(BaseTestCase):
+    def setUp(self):
         super().setUp()
-
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.admin)
+        self.list_url = "/api/medications/"
         self.medication = Medication.objects.create(
             organization=self.organization,
-            medication_code="MED000001",
+            medication_code="MED-API-001",
             generic_name="Paracetamol",
             brand_name="Crocin",
             strength="500",
             strength_unit="mg",
             dosage_form=MedicationDosageForm.TABLET,
             route=MedicationRoute.ORAL,
-            manufacturer="ABC Pharma",
-            description="Pain reliever and fever reducer.",
-            is_controlled=False,
         )
+        self.detail_url = f"/api/medications/{self.medication.id}/"
 
-        self.list_url = reverse(
-            "medications:list-create",
-        )
-
-        self.detail_url = reverse(
-            "medications:detail",
-            kwargs={
-                "medication_id": self.medication.id,
-            },
-        )
-
-    def test_list_medications(
-        self,
-    ) -> None:
-        """
-        List endpoint should return HTTP 200.
-        """
-
-        response = self.client.get(
-            self.list_url,
-        )
-
-        self.assertEqual(
-            response.status_code,
-            status.HTTP_200_OK,
-        )
-
-    def test_retrieve_medication(
-        self,
-    ) -> None:
-        """
-        Detail endpoint should return HTTP 200.
-        """
-
-        response = self.client.get(
-            self.detail_url,
-        )
-
-        self.assertEqual(
-            response.status_code,
-            status.HTTP_200_OK,
-        )
-
-    def test_create_medication(
-        self,
-    ) -> None:
-        """
-        Create endpoint should create a medication.
-        """
-
-        payload = {
-            "organization": str(self.organization.id),
-            "medication_code": "MED000002",
-            "generic_name": "Metformin",
-            "brand_name": "Glycomet",
-            "strength": "500",
+    def payload(self):
+        return {
+            "medication_code": "MED-API-002",
+            "generic_name": "Ibuprofen",
+            "brand_name": "Brufen",
+            "strength": "400",
             "strength_unit": "mg",
             "dosage_form": MedicationDosageForm.TABLET,
             "route": MedicationRoute.ORAL,
-            "manufacturer": "XYZ Pharma",
-            "description": "Antidiabetic medication.",
-            "is_controlled": False,
         }
 
-        response = self.client.post(
-            self.list_url,
-            payload,
-            format="json",
+    def test_list_medications(self):
+        response = self.client.get(self.list_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_create_medication(self):
+        response = self.client.post(self.list_url, self.payload(), format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(
+            Medication.objects.filter(
+                organization=self.organization,
+                medication_code="MED-API-002",
+            ).exists()
         )
 
-        self.assertEqual(
-            response.status_code,
-            status.HTTP_201_CREATED,
-        )
+    def test_create_medication_validation_error(self):
+        payload = self.payload()
+        payload["generic_name"] = ""
+        response = self.client.post(self.list_url, payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_create_medication_validation_error(
-        self,
-    ) -> None:
-        """
-        Invalid payload should return HTTP 400.
-        """
+    def test_retrieve_medication(self):
+        response = self.client.get(self.detail_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        response = self.client.post(
-            self.list_url,
-            {},
-            format="json",
-        )
+    def test_update_medication(self):
+        payload = self.payload()
+        payload["medication_code"] = self.medication.medication_code
+        response = self.client.put(self.detail_url, payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        self.assertEqual(
-            response.status_code,
-            status.HTTP_400_BAD_REQUEST,
-        )
-
-    def test_update_medication(
-        self,
-    ) -> None:
-        """
-        PUT endpoint should update the medication.
-        """
-
-        response = self.client.put(
-            self.detail_url,
-            {
-                "organization": str(self.organization.id),
-                "medication_code": "MED000001",
-                "generic_name": "Paracetamol",
-                "brand_name": "Dolo 650",
-                "strength": "650",
-                "strength_unit": "mg",
-                "dosage_form": MedicationDosageForm.TABLET,
-                "route": MedicationRoute.ORAL,
-                "manufacturer": "Micro Labs",
-                "description": "Updated medication.",
-                "is_controlled": False,
-            },
-            format="json",
-        )
-
-        self.assertEqual(
-            response.status_code,
-            status.HTTP_200_OK,
-        )
-
-    def test_partial_update_medication(
-        self,
-    ) -> None:
-        """
-        PATCH endpoint should update part of the medication.
-        """
-
+    def test_partial_update_medication(self):
         response = self.client.patch(
             self.detail_url,
-            {
-                "manufacturer": "Sun Pharma",
-            },
+            {"generic_name": "Acetaminophen"},
             format="json",
         )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        self.assertEqual(
-            response.status_code,
-            status.HTTP_200_OK,
-        )
+    def test_delete_medication(self):
+        response = self.client.delete(self.detail_url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.medication.refresh_from_db()
+        self.assertTrue(self.medication.is_deleted)
 
-    def test_delete_medication(
-        self,
-    ) -> None:
-        """
-        DELETE endpoint should remove the medication.
-        """
-
-        response = self.client.delete(
-            self.detail_url,
-        )
-
-        self.assertEqual(
-            response.status_code,
-            status.HTTP_204_NO_CONTENT,
-        )
-
-    def test_requires_authentication(
-        self,
-    ) -> None:
-        """
-        Endpoints should require authentication.
-        """
-
-        self.client.force_authenticate(
-            user=None,
-        )
-
-        response = self.client.get(
-            self.list_url,
-        )
-
+    def test_requires_authentication(self):
+        self.client.force_authenticate(user=None)
+        response = self.client.get(self.list_url)
         self.assertEqual(
             response.status_code,
             status.HTTP_401_UNAUTHORIZED,
         )
-
-
-__all__ = [
-    "MedicationAPITestCase",
-]

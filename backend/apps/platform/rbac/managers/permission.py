@@ -16,10 +16,13 @@ if TYPE_CHECKING:
     from apps.platform.rbac.models import Permission
 
 
+PermissionManagerBase = models.Manager.from_queryset(
+    PermissionQuerySet,
+)
+
+
 class PermissionManager(
-    models.Manager.from_queryset(
-        PermissionQuerySet,
-    ),
+    PermissionManagerBase["Permission"],
 ):
     """
     Custom manager for Permission.

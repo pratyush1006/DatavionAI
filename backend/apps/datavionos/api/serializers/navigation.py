@@ -53,6 +53,4 @@ class NavigationItemSerializer(
     )
 
 
-__all__ = (
-    "NavigationItemSerializer",
-)
+__all__ = ("NavigationItemSerializer",)

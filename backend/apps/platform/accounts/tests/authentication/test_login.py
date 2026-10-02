@@ -70,11 +70,12 @@ class LoginAPIViewTestCase(
         Correct credentials issue a login OTP challenge.
         """
 
-        response = self.client.post(
-            self.endpoint,
-            self.login_payload(),
-            format="json",
-        )
+        with self.captureOnCommitCallbacks(execute=True):
+            response = self.client.post(
+                self.endpoint,
+                self.login_payload(),
+                format="json",
+            )
 
         self.assertEqual(
             response.status_code,
@@ -250,7 +251,7 @@ class LoginAPIViewTestCase(
 
         self.assertEqual(
             response.data["error"]["message"],
-            "User account is inactive.",
+            "Invalid email or password.",
         )
 
         self.assertFalse(
@@ -331,11 +332,12 @@ class LoginAPIViewTestCase(
         Correct login OTP issues access and refresh tokens.
         """
 
-        response = self.client.post(
-            self.endpoint,
-            self.login_payload(),
-            format="json",
-        )
+        with self.captureOnCommitCallbacks(execute=True):
+            response = self.client.post(
+                self.endpoint,
+                self.login_payload(),
+                format="json",
+            )
 
         self.assertEqual(
             response.status_code,
@@ -492,6 +494,7 @@ class LoginAPIViewTestCase(
                 "success",
                 "message",
                 "data",
+                "meta",
             },
         )
 

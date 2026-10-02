@@ -144,12 +144,8 @@ class PatientIdentifierListCreateAPIView(
                 patient_id=patient_id,
             )
 
-        return (
-            PatientIdentifier.objects.filter(
-                organization_id=organization.pk,
-            )
-            .with_relations()
-            .ordered()
+        return PatientIdentifier.objects.filter(
+            organization_id=organization.pk,
         )
 
     def build_workflow_request(

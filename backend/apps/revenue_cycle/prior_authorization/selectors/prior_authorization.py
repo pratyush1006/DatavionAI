@@ -21,7 +21,7 @@ def list_verifications(
         PriorAuthorization.objects.select_related(
             "patient",
             "organization",
-            "verified_by",
+            "approved_by",
         )
         .filter(
             organization_id=organization_id,
@@ -45,7 +45,7 @@ def get_verification(
     return PriorAuthorization.objects.select_related(
         "patient",
         "organization",
-        "verified_by",
+        "approved_by",
     ).get(
         pk=verification_id,
         organization_id=organization_id,

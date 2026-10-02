@@ -4,17 +4,25 @@ Role hierarchy manager.
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from django.db import models
 
 from apps.platform.rbac.querysets import (
     RoleHierarchyQuerySet,
 )
 
+if TYPE_CHECKING:
+    pass
+
+
+RoleHierarchyManagerBase = models.Manager.from_queryset(
+    RoleHierarchyQuerySet,
+)
+
 
 class RoleHierarchyManager(
-    models.Manager.from_queryset(
-        RoleHierarchyQuerySet,
-    ),
+    RoleHierarchyManagerBase["RoleHierarchy"],
 ):
     """
     Manager for RoleHierarchy.

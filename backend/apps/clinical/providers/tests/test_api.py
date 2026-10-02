@@ -74,6 +74,7 @@ class ProviderAPITestCase(APITestCase):
             name="Test Clinic",
             slug="test-clinic",
         )
+        self.client.defaults["HTTP_X_ORGANIZATION_ID"] = str(self.organization.id)
 
         # =====================================================
         # User
@@ -249,7 +250,7 @@ class ProviderAPITestCase(APITestCase):
         )
 
         return Provider.objects.get(
-            id=response.data["id"],
+            id=response.data["data"]["id"],
         )
 
     # =========================================================

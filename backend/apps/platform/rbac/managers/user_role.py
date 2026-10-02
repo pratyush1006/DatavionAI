@@ -4,17 +4,25 @@ User role manager.
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from django.db import models
 
 from apps.platform.rbac.querysets import (
     UserRoleQuerySet,
 )
 
+if TYPE_CHECKING:
+    pass
+
+
+UserRoleManagerBase = models.Manager.from_queryset(
+    UserRoleQuerySet,
+)
+
 
 class UserRoleManager(
-    models.Manager.from_queryset(
-        UserRoleQuerySet,
-    ),
+    UserRoleManagerBase["UserRole"],
 ):
     """
     Custom manager for UserRole.

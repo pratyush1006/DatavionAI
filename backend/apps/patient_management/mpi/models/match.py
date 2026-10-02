@@ -66,7 +66,7 @@ class MPIMatchCandidate(BaseModel):
                 name="unique_mpi_candidate_pair",
             ),
             models.CheckConstraint(
-                check=~models.Q(left_record=models.F("right_record")),
+                condition=~models.Q(left_record=models.F("right_record")),
                 name="mpi_candidate_records_distinct",
             ),
         ]

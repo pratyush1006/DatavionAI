@@ -1,458 +1,203 @@
-"""
-Domain service for Patient Addresses.
-
-Responsibilities
-----------------
-- Normalization.
-- Domain validation.
-- Duplicate detection.
-- Primary-address invariant.
-- Lifecycle mutation.
-- Persistence.
-
-The service does not perform RBAC, HTTP handling, workflow orchestration,
-or domain-event publication.
-"""
+"""Transactional Patient Address services."""
 
 from __future__ import annotations
 
-from collections.abc import Mapping
-from typing import Any
-
-from django.core.exceptions import ValidationError
 from django.db import transaction
+from django.utils import timezone
 
-from apps.patient_management.addresses.constants import (
-    AddressStatus,
-)
+from apps.patient_management.addresses.constants import AddressSource, AddressStatus
 from apps.patient_management.addresses.exceptions import (
-    DuplicateAddressError,
-    InvalidAddressError,
+    AddressGeographyError,
+    AddressScopeError,
 )
 from apps.patient_management.addresses.models import Address
-from apps.patient_management.patients.models import Patient
-from apps.platform.accounts.models import User
-from apps.platform.organizations.models import Organization
+from apps.patient_management.addresses.services.geography import reverse_geocode
+
+
+def _scope(tenant, organization):
+    if organization.tenant_id != tenant.id:
+        raise AddressScopeError("Organization does not belong to tenant.")
+
+
+def _patient_scope(patient, organization):
+    if patient is not None and patient.organization_id != organization.id:
+        raise AddressScopeError("Patient does not belong to organization.")
+
+
+def _payload(result):
+    if isinstance(result, dict):
+        return result
+    data = getattr(result, "__dict__", None)
+    if isinstance(data, dict):
+        return data
+    raise AddressGeographyError(
+        "Platform Geography returned an unsupported reverse-geocoding result."
+    )
+
+
+def _resolve_geography(data):
+    """Resolve reverse-geocoding names/codes to canonical Geography records."""
+    from apps.platform.geography.models import AdministrativeRegion, City, Country
+
+    country_code = str(data.get("country_code") or "").strip().upper()
+    country_name = str(data.get("country") or data.get("country_name") or "").strip()
+    region_name = str(
+        data.get("region") or data.get("state") or data.get("region_name") or ""
+    ).strip()
+    city_name = str(data.get("city") or data.get("city_name") or "").strip()
+
+    country = None
+    if country_code:
+        country = Country.objects.filter(code__iexact=country_code).first()
+    if country is None and country_name:
+        country = Country.objects.filter(name__iexact=country_name).first()
+
+    region = None
+    if country is not None and region_name:
+        region = AdministrativeRegion.objects.filter(
+            country=country,
+            name__iexact=region_name,
+        ).first()
+
+    city = None
+    if country is not None and city_name:
+        city_qs = City.objects.filter(country=country, name__iexact=city_name)
+        if region is not None:
+            city = city_qs.filter(region=region).first()
+        if city is None:
+            city = city_qs.first()
+
+    return country, region, city
 
 
 class AddressService:
-    """
-    Write-side Patient Address domain service.
-    """
-
     @staticmethod
-    def _normalize(
-        data: Mapping[str, Any],
-    ) -> dict[str, Any]:
-        normalized = dict(data)
-
-        for field in (
-            "line_1",
-            "line_2",
-            "city",
-            "state",
-            "country",
-            "postal_code",
-        ):
-            value = normalized.get(field)
-
-            if isinstance(value, str):
-                normalized[field] = value.strip()
-
-        return normalized
-
-    @staticmethod
-    def _validate_required(
-        *,
-        data: Mapping[str, Any],
-    ) -> None:
-        required = (
-            "line_1",
-            "city",
-            "state",
-            "country",
-            "postal_code",
-        )
-
-        errors: dict[str, str] = {}
-
-        for field in required:
-            value = data.get(field)
-
-            if value is None or str(value).strip() == "":
-                errors[field] = "This field is required."
-
-        if errors:
-            raise ValidationError(errors)
-
-    @staticmethod
-    def _validate_organization_boundary(
-        *,
-        organization: Organization,
-        patient: Patient,
-    ) -> None:
-        if patient.organization_id != organization.pk:
-            raise ValidationError(
-                {
-                    "patient": (
-                        "The patient must belong to the selected organization."
-                    ),
-                },
-            )
-
-    @staticmethod
-    def _ensure_not_duplicate(
-        *,
-        organization: Organization,
-        patient: Patient,
-        data: Mapping[str, Any],
-        instance: Address | None = None,
-    ) -> None:
-        queryset = Address.objects.filter(
-            organization_id=organization.pk,
-            patient_id=patient.pk,
-            address_type=data.get("address_type"),
-            address_use=data.get("address_use"),
-            line_1=data.get("line_1"),
-            line_2=data.get(
-                "line_2",
-                "",
-            ),
-            city=data.get("city"),
-            state=data.get("state"),
-            country=data.get("country"),
-            postal_code=data.get("postal_code"),
-        )
-
-        if instance is not None:
-            queryset = queryset.exclude(
-                pk=instance.pk,
-            )
-
-        if queryset.exists():
-            raise DuplicateAddressError()
-
-    @staticmethod
-    def _clear_other_primary_addresses(
-        *,
-        patient: Patient,
-        address_type: str,
-        exclude_id: Any | None = None,
-    ) -> None:
-        queryset = Address.objects.filter(
-            patient_id=patient.pk,
-            address_type=address_type,
-            is_primary=True,
-        )
-
-        if exclude_id is not None:
-            queryset = queryset.exclude(
-                pk=exclude_id,
-            )
-
-        queryset.update(
-            is_primary=False,
-        )
-
-    @classmethod
     @transaction.atomic
-    def create(
-        cls,
-        *,
-        validated_data: Mapping[str, Any],
-        performed_by: User | None = None,
-    ) -> Address:
-        data = cls._normalize(
-            validated_data,
-        )
-
-        organization = data.get(
-            "organization",
-        )
-        patient = data.get(
-            "patient",
-        )
-
-        if not isinstance(
-            organization,
-            Organization,
-        ):
-            raise ValidationError(
-                {
-                    "organization": ("A valid organization is required."),
-                },
-            )
-
-        if not isinstance(
-            patient,
-            Patient,
-        ):
-            raise ValidationError(
-                {
-                    "patient": ("A valid patient is required."),
-                },
-            )
-
-        cls._validate_organization_boundary(
-            organization=organization,
-            patient=patient,
-        )
-
-        cls._validate_required(
-            data=data,
-        )
-
-        cls._ensure_not_duplicate(
-            organization=organization,
-            patient=patient,
-            data=data,
-        )
-
-        if data.get(
-            "is_primary",
-            False,
-        ):
-            cls._clear_other_primary_addresses(
-                patient=patient,
-                address_type=data["address_type"],
-            )
-
-        instance = Address.objects.create(
-            **data,
-        )
-
-        instance.full_clean()
-        instance.refresh_from_db()
-
-        return instance
-
-    @classmethod
-    @transaction.atomic
-    def update(
-        cls,
-        *,
-        instance: Address,
-        validated_data: Mapping[str, Any],
-        performed_by: User | None = None,
-    ) -> Address:
-        data = cls._normalize(
-            validated_data,
-        )
-
-        if not data:
-            return instance
-
-        forbidden_fields = {
-            "organization",
-            "patient",
-            "status",
-            "source",
-        }
-
-        forbidden = forbidden_fields.intersection(
-            data.keys(),
-        )
-
-        if forbidden:
-            raise InvalidAddressError(
-                (
-                    "These fields cannot be changed through the "
-                    "address update workflow: " + ", ".join(sorted(forbidden))
-                ),
-            )
-
-        candidate = {
-            "address_type": data.get(
-                "address_type",
-                instance.address_type,
-            ),
-            "address_use": data.get(
-                "address_use",
-                instance.address_use,
-            ),
-            "line_1": data.get(
-                "line_1",
-                instance.line_1,
-            ),
-            "line_2": data.get(
-                "line_2",
-                instance.line_2,
-            ),
-            "city": data.get(
-                "city",
-                instance.city,
-            ),
-            "state": data.get(
-                "state",
-                instance.state,
-            ),
-            "country": data.get(
-                "country",
-                instance.country,
-            ),
-            "postal_code": data.get(
-                "postal_code",
-                instance.postal_code,
-            ),
-        }
-
-        cls._validate_required(
-            data=candidate,
-        )
-
-        cls._ensure_not_duplicate(
-            organization=instance.organization,
-            patient=instance.patient,
-            data=candidate,
-            instance=instance,
-        )
-
-        previous_type = instance.address_type
-
-        for field, value in data.items():
-            setattr(
-                instance,
-                field,
-                value,
-            )
-
-        if instance.is_primary:
-            cls._clear_other_primary_addresses(
-                patient=instance.patient,
-                address_type=instance.address_type,
-                exclude_id=instance.pk,
-            )
-
-        elif previous_type != instance.address_type and instance.is_primary is False:
-            cls._clear_other_primary_addresses(
-                patient=instance.patient,
-                address_type=previous_type,
-            )
-
-        instance.full_clean()
-        instance.save()
-        instance.refresh_from_db()
-
-        return instance
-
-    @classmethod
-    @transaction.atomic
-    def verify(
-        cls,
-        *,
-        instance: Address,
-        performed_by: User | None = None,
-    ) -> Address:
-        if instance.status == AddressStatus.INACTIVE:
-            raise InvalidAddressError(
-                "An inactive address cannot be verified.",
-            )
-
-        if instance.status == AddressStatus.VERIFIED:
-            return instance
-
-        instance.status = AddressStatus.VERIFIED
-        instance.full_clean()
-        instance.save()
-        instance.refresh_from_db()
-
-        return instance
-
-    @classmethod
-    @transaction.atomic
-    def activate(
-        cls,
-        *,
-        instance: Address,
-        performed_by: User | None = None,
-    ) -> Address:
-        if instance.status in (
-            AddressStatus.ACTIVE,
-            AddressStatus.VERIFIED,
-        ):
-            return instance
-
-        instance.status = AddressStatus.ACTIVE
-        instance.full_clean()
-        instance.save()
-        instance.refresh_from_db()
-
-        return instance
-
-    @classmethod
-    @transaction.atomic
-    def deactivate(
-        cls,
-        *,
-        instance: Address,
-        performed_by: User | None = None,
-    ) -> Address:
-        if instance.status == AddressStatus.INACTIVE:
-            return instance
-
-        instance.status = AddressStatus.INACTIVE
-        instance.is_primary = False
-        instance.full_clean()
-        instance.save()
-        instance.refresh_from_db()
-
-        return instance
-
-    @classmethod
-    @transaction.atomic
-    def set_primary(
-        cls,
-        *,
-        instance: Address,
-        performed_by: User | None = None,
-    ) -> Address:
-        if instance.status not in (
-            AddressStatus.ACTIVE,
-            AddressStatus.VERIFIED,
-        ):
-            raise InvalidAddressError(
-                "Only active or verified addresses can be primary.",
-            )
-
-        cls._clear_other_primary_addresses(
-            patient=instance.patient,
-            address_type=instance.address_type,
-            exclude_id=instance.pk,
-        )
-
-        instance.is_primary = True
-        instance.full_clean()
-        instance.save()
-        instance.refresh_from_db()
-
-        return instance
+    def create(*, tenant, organization, patient=None, **data):
+        _scope(tenant, organization)
+        _patient_scope(patient, organization)
+        for key in ("tenant", "organization", "patient"):
+            data.pop(key, None)
+        obj = Address(tenant=tenant, organization=organization, patient=patient, **data)
+        obj.full_clean()
+        obj.save()
+        if obj.is_primary and obj.patient_id:
+            AddressService.set_primary(obj)
+        return obj
 
     @staticmethod
     @transaction.atomic
-    def delete(
-        *,
-        instance: Address,
-        performed_by: User | None = None,
-    ) -> None:
-        instance.delete()
+    def update(obj, *, tenant, organization, **data):
+        _scope(tenant, organization)
+        if obj.tenant_id != tenant.id or obj.organization_id != organization.id:
+            raise AddressScopeError("Address is outside the supplied scope.")
+        patient = data.get("patient", obj.patient)
+        _patient_scope(patient, organization)
+        data.pop("tenant", None)
+        data.pop("organization", None)
+        for key, value in data.items():
+            setattr(obj, key, value)
+        obj.full_clean()
+        obj.save()
+        if obj.is_primary and obj.patient_id:
+            AddressService.set_primary(obj)
+        return obj
 
+    @staticmethod
+    @transaction.atomic
+    def delete(obj):
+        obj.status = AddressStatus.INACTIVE
+        obj.save(update_fields=("status", "updated_at"))
+        return obj
 
-create_address = AddressService.create
-update_address = AddressService.update
-verify_address = AddressService.verify
-activate_address = AddressService.activate
-deactivate_address = AddressService.deactivate
-set_primary_address = AddressService.set_primary
-delete_address = AddressService.delete
+    @staticmethod
+    @transaction.atomic
+    def set_primary(obj):
+        if obj.patient_id:
+            Address.objects.filter(
+                tenant=obj.tenant,
+                organization=obj.organization,
+                patient=obj.patient,
+                is_primary=True,
+            ).exclude(pk=obj.pk).update(
+                is_primary=False,
+                updated_at=timezone.now(),
+            )
+        obj.is_primary = True
+        obj.save(update_fields=("is_primary", "updated_at"))
+        return obj
 
+    @staticmethod
+    @transaction.atomic
+    def verify(obj, *, actor=None, notes=""):
+        obj.status = AddressStatus.VERIFIED
+        obj.is_verified = True
+        obj.verification_notes = notes
+        obj.verified_at = timezone.now()
+        obj.verified_by = actor
+        obj.save(
+            update_fields=(
+                "status",
+                "is_verified",
+                "verification_notes",
+                "verified_at",
+                "verified_by",
+                "updated_at",
+            )
+        )
+        return obj
 
-__all__ = (
-    "AddressService",
-    "activate_address",
-    "create_address",
-    "deactivate_address",
-    "delete_address",
-    "set_primary_address",
-    "update_address",
-    "verify_address",
-)
+    @staticmethod
+    @transaction.atomic
+    def reverse_geocode(obj):
+        if obj.latitude is None or obj.longitude is None:
+            raise ValueError("Latitude and longitude are required.")
+
+        result = _payload(
+            reverse_geocode(
+                latitude=float(obj.latitude),
+                longitude=float(obj.longitude),
+            )
+        )
+
+        obj.formatted_address = (
+            result.get("formatted_address")
+            or result.get("display_name")
+            or obj.formatted_address
+        )
+        obj.city_name = result.get("city") or result.get("city_name") or obj.city_name
+        obj.region_name = (
+            result.get("region")
+            or result.get("state")
+            or result.get("region_name")
+            or obj.region_name
+        )
+        obj.country_name = (
+            result.get("country") or result.get("country_name") or obj.country_name
+        )
+        obj.country_code = str(
+            result.get("country_code") or obj.country_code or ""
+        ).upper()
+        obj.district = result.get("district") or result.get("county") or obj.district
+        obj.postal_code = (
+            result.get("postal_code") or result.get("postcode") or obj.postal_code
+        )
+        obj.geocoding_place_id = str(
+            result.get("place_id") or obj.geocoding_place_id or ""
+        )
+        obj.geocoding_raw = result
+
+        country, region, city = _resolve_geography(result)
+        if country is not None:
+            obj.country = country
+        if region is not None:
+            obj.region = region
+        if city is not None:
+            obj.city = city
+
+        obj.geocoded_at = timezone.now()
+        obj.source = AddressSource.GEOGRAPHY
+        obj.status = AddressStatus.VERIFIED
+        obj.is_verified = True
+        obj.save()
+        return obj

@@ -13,3 +13,11 @@ export function useAppointmentsQuery() {
     appointmentQueries.all(),
   );
 }
+
+export function useAppointmentPatientsQuery() {
+  return useQuery(appointmentQueries.patients());
+}
+
+export function useAppointmentProvidersQuery() {
+  return useQuery(appointmentQueries.providers());
+}

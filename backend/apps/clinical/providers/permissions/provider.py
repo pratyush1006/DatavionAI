@@ -1,138 +1,220 @@
-"""
-Provider RBAC permissions.
-
-Provider bounded context permission adapters.
-
-Uses DatavionOS centralized RBAC engine.
-
-Permission convention:
-
-    providers.<action>
-
-Examples:
-
-    providers.view
-    providers.create
-    providers.update
-    providers.verify
-    providers.activate
-    providers.deactivate
-    providers.assign
-"""
+"""Provider permission boundary using canonical RBAC resolution."""
 
 from __future__ import annotations
 
-from apps.platform.rbac.permissions.base import (
-    RBACPermissionBase,
-)
+from typing import Any
+
+from apps.platform.rbac.resolvers import resolve_permissions
 
 
-class CanViewProvider(
-    RBACPermissionBase,
-):
-    """
-    Allows viewing providers.
-    """
+class ProviderPermission:
+    """Stateless Provider permission checks."""
 
-    message = "You do not have permission to view providers."
+    @staticmethod
+    def _organization(*, organization: Any = None, provider: Any = None) -> Any:
+        if organization is not None:
+            return organization
+        if provider is not None:
+            return getattr(provider, "organization", None)
+        return None
 
-    permission_code = "providers.view"
+    @classmethod
+    def has_permission(
+        cls,
+        *,
+        user: Any,
+        permission: str,
+        organization: Any = None,
+        provider: Any = None,
+    ) -> bool:
+        organization = cls._organization(
+            organization=organization,
+            provider=provider,
+        )
+        return permission in resolve_permissions(
+            user=user,
+            organization=organization,
+        )
+
+    @classmethod
+    def can_view(
+        cls,
+        *,
+        user: Any,
+        organization: Any = None,
+        provider: Any = None,
+    ) -> bool:
+        return cls.has_permission(
+            user=user,
+            permission="providers.view",
+            organization=organization,
+            provider=provider,
+        )
+
+    @classmethod
+    def can_create(
+        cls,
+        *,
+        user: Any,
+        organization: Any = None,
+    ) -> bool:
+        return cls.has_permission(
+            user=user,
+            permission="providers.create",
+            organization=organization,
+        )
+
+    @classmethod
+    def can_update(
+        cls,
+        *,
+        user: Any,
+        organization: Any = None,
+        provider: Any = None,
+    ) -> bool:
+        return cls.has_permission(
+            user=user,
+            permission="providers.update",
+            organization=organization,
+            provider=provider,
+        )
+
+    @classmethod
+    def can_delete(
+        cls,
+        *,
+        user: Any,
+        organization: Any = None,
+        provider: Any = None,
+    ) -> bool:
+        return cls.has_permission(
+            user=user,
+            permission="providers.delete",
+            organization=organization,
+            provider=provider,
+        )
+
+    @classmethod
+    def can_activate(
+        cls,
+        *,
+        user: Any,
+        organization: Any = None,
+        provider: Any = None,
+    ) -> bool:
+        return cls.has_permission(
+            user=user,
+            permission="providers.activate",
+            organization=organization,
+            provider=provider,
+        )
+
+    @classmethod
+    def can_deactivate(
+        cls,
+        *,
+        user: Any,
+        organization: Any = None,
+        provider: Any = None,
+    ) -> bool:
+        return cls.has_permission(
+            user=user,
+            permission="providers.deactivate",
+            organization=organization,
+            provider=provider,
+        )
+
+    @classmethod
+    def can_verify(
+        cls,
+        *,
+        user: Any,
+        organization: Any = None,
+        provider: Any = None,
+    ) -> bool:
+        return cls.has_permission(
+            user=user,
+            permission="providers.verify",
+            organization=organization,
+            provider=provider,
+        )
+
+    @classmethod
+    def can_assign(
+        cls,
+        *,
+        user: Any,
+        organization: Any = None,
+        provider: Any = None,
+    ) -> bool:
+        return cls.has_permission(
+            user=user,
+            permission="providers.assign",
+            organization=organization,
+            provider=provider,
+        )
 
 
-class CanCreateProvider(
-    RBACPermissionBase,
-):
-    """
-    Allows creating providers.
-    """
-
-    message = "You do not have permission to create providers."
-
-    permission_code = "providers.create"
+__all__ = ("ProviderPermission",)
 
 
-class CanUpdateProvider(
-    RBACPermissionBase,
-):
-    """
-    Allows updating providers.
-    """
+class _ProviderDRFPermissionBase:
+    """Django REST Framework permission adapter for Provider RBAC."""
 
-    message = "You do not have permission to update providers."
+    permission_name = ""
 
-    permission_code = "providers.update"
-
-
-class CanVerifyProvider(
-    RBACPermissionBase,
-):
-    """
-    Allows verifying providers.
-
-    Used by:
-
-    - ProviderVerificationWorkflow
-    """
-
-    message = "You do not have permission to verify providers."
-
-    permission_code = "providers.verify"
+    def has_permission(self, request, view):
+        user = getattr(request, "user", None)
+        organization = getattr(request, "organization", None)
+        if organization is None:
+            organization = getattr(view, "organization", None)
+        return ProviderPermission.has_permission(
+            user=user,
+            permission=self.permission_name,
+            organization=organization,
+        )
 
 
-class CanActivateProvider(
-    RBACPermissionBase,
-):
-    """
-    Allows activating providers.
-
-    Used by:
-
-    - ProviderActivationWorkflow
-    """
-
-    message = "You do not have permission to activate providers."
-
-    permission_code = "providers.activate"
+class CanViewProvider(_ProviderDRFPermissionBase):
+    permission_name = "providers.view"
 
 
-class CanDeactivateProvider(
-    RBACPermissionBase,
-):
-    """
-    Allows deactivating providers.
-
-    Used by:
-
-    - ProviderDeactivationWorkflow
-    """
-
-    message = "You do not have permission to deactivate providers."
-
-    permission_code = "providers.deactivate"
+class CanCreateProvider(_ProviderDRFPermissionBase):
+    permission_name = "providers.create"
 
 
-class CanAssignProvider(
-    RBACPermissionBase,
-):
-    """
-    Allows assigning providers.
+class CanUpdateProvider(_ProviderDRFPermissionBase):
+    permission_name = "providers.update"
 
-    Used by:
 
-    - ProviderAssignmentWorkflow
-    """
+class CanDeleteProvider(_ProviderDRFPermissionBase):
+    permission_name = "providers.delete"
 
-    message = "You do not have permission to assign providers."
 
-    permission_code = "providers.assign"
+class CanActivateProvider(_ProviderDRFPermissionBase):
+    permission_name = "providers.activate"
+
+
+class CanDeactivateProvider(_ProviderDRFPermissionBase):
+    permission_name = "providers.deactivate"
+
+
+class CanVerifyProvider(_ProviderDRFPermissionBase):
+    permission_name = "providers.verify"
+
+
+class CanAssignProvider(_ProviderDRFPermissionBase):
+    permission_name = "providers.assign"
 
 
 __all__ = (
+    "ProviderPermission",
     "CanViewProvider",
     "CanCreateProvider",
     "CanUpdateProvider",
-    "CanVerifyProvider",
+    "CanDeleteProvider",
     "CanActivateProvider",
     "CanDeactivateProvider",
+    "CanVerifyProvider",
     "CanAssignProvider",
 )

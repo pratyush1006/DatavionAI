@@ -91,6 +91,11 @@ from apps.datavionos.registries.module import (
     module_registry,
 )
 
+# Every tenant needs these organization-management capabilities before any
+# clinical or commercial module can operate. They are platform fundamentals,
+# not optional paid-plan add-ons.
+CORE_ORGANIZATION_MODULES = frozenset({"departments", "employees", "teams"})
+
 
 class ModuleAvailabilitySelector:
     """
@@ -175,9 +180,12 @@ class ModuleAvailabilitySelector:
             ):
                 continue
 
-            if self._normalize_value(
-                module.identifier,
-            ) not in entitled_modules:
+            if (
+                self._normalize_value(
+                    module.identifier,
+                )
+                not in entitled_modules
+            ):
                 continue
 
             modules.append(
@@ -289,7 +297,7 @@ class ModuleAvailabilitySelector:
             )
             for module_identifier, enabled in modules.items()
             if bool(enabled)
-        }
+        } | CORE_ORGANIZATION_MODULES
 
     # ==================================================================
     # Tenant Eligibility
@@ -332,21 +340,26 @@ class ModuleAvailabilitySelector:
         if not allowed_types:
             return True
 
-        normalized_tenant_type = (
-            ModuleAvailabilitySelector._normalize_value(
-                tenant_type,
-            )
+        normalized_tenant_type = ModuleAvailabilitySelector._normalize_value(
+            tenant_type,
         )
 
         if not normalized_tenant_type:
             return False
 
-        return normalized_tenant_type in {
+        normalized_allowed_types = {
             ModuleAvailabilitySelector._normalize_value(
                 allowed_type,
             )
             for allowed_type in allowed_types
         }
+
+        if normalized_tenant_type == "pharmacy":
+            healthcare_equivalents = {"clinic", "hospital", "enterprise"}
+            if normalized_allowed_types & healthcare_equivalents:
+                return True
+
+        return normalized_tenant_type in normalized_allowed_types
 
     # ==================================================================
     # Normalization

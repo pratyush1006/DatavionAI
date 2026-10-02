@@ -17,12 +17,6 @@ class ContactDetailSerializer(serializers.ModelSerializer):
     """
 
     patient_id = serializers.UUIDField(
-        source="patient_id",
-        read_only=True,
-    )
-
-    organization_id = serializers.UUIDField(
-        source="organization_id",
         read_only=True,
     )
 

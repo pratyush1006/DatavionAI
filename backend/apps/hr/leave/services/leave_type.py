@@ -5,13 +5,14 @@ Business services for leave types.
 from __future__ import annotations
 
 from collections.abc import Mapping
+from typing import Any, cast
 
 from django.core.exceptions import ValidationError
 from django.db import transaction
 
 from apps.hr.leave.models import LeaveType
 
-type LeaveTypeData = Mapping[str, object]
+type LeaveTypeData = Mapping[str, Any]
 
 
 def _validate_leave_type_data(
@@ -62,8 +63,11 @@ def create_leave_type(
         validated_data=validated_data,
     )
 
-    return LeaveType.objects.create(
-        **validated_data,
+    return cast(
+        LeaveType,
+        LeaveType.objects.create(
+            **validated_data,
+        ),
     )
 
 

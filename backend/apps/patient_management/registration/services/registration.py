@@ -717,9 +717,7 @@ class PatientRegistrationService:
         highest_sequence = 0
 
         sequence_pattern = re.compile(
-            rf"^{re.escape(prefix)}-"
-            rf"{re.escape(organization_token)}-"
-            rf"(\d+)$",
+            rf"^{re.escape(prefix)}-{re.escape(organization_token)}-(\d+)$",
         )
 
         for registration_number in existing_numbers:

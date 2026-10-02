@@ -1,5 +1,4 @@
-"""
-Redis system checks for the DatavionOS platform.
+"""Redis system checks for the DatavionOS platform.
 
 Validates Redis configuration and connectivity.
 """
@@ -17,15 +16,21 @@ def redis_check(
 ):
     """
     Validate Redis configuration and availability.
+
+    The check validates the actual configured REDIS_URL.
+    It does not substitute another endpoint.
     """
 
     messages = []
 
-    redis_url = getattr(
-        settings,
-        "REDIS_URL",
-        None,
-    )
+    redis_url = str(
+        getattr(
+            settings,
+            "REDIS_URL",
+            "",
+        )
+        or ""
+    ).strip()
 
     if not redis_url:
         messages.append(
@@ -46,16 +51,23 @@ def redis_check(
 
         client = redis.Redis.from_url(
             redis_url,
-            socket_connect_timeout=2,
+            socket_connect_timeout=5,
+            socket_timeout=5,
         )
 
         client.ping()
+        client.close()
 
     except Exception as exc:
         messages.append(
             Error(
                 "Redis connection failed.",
-                hint=str(exc),
+                hint=(
+                    "The configured Redis endpoint did not "
+                    "respond within the canonical 5-second "
+                    "connection/read timeout. "
+                    f"{type(exc).__name__}: {exc}"
+                ),
                 id="datavion.E005",
             )
         )

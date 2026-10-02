@@ -4,6 +4,8 @@ Role permission manager.
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from apps.core.models import (
     SoftDeleteManager,
 )
@@ -11,11 +13,17 @@ from apps.platform.rbac.querysets import (
     RolePermissionQuerySet,
 )
 
+if TYPE_CHECKING:
+    pass
+
+
+RolePermissionManagerBase = SoftDeleteManager.from_queryset(
+    RolePermissionQuerySet,
+)
+
 
 class RolePermissionManager(
-    SoftDeleteManager.from_queryset(
-        RolePermissionQuerySet,
-    ),
+    RolePermissionManagerBase["RolePermission"],
 ):
     """
     Manager for RolePermission.

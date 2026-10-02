@@ -13,7 +13,7 @@ before object-level RBAC permissions are evaluated.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Final
+from typing import TYPE_CHECKING, Any, Final, cast
 
 from django.db.models import QuerySet
 from django.shortcuts import get_object_or_404
@@ -21,7 +21,7 @@ from django.shortcuts import get_object_or_404
 from apps.platform.organizations.models import Organization
 
 if TYPE_CHECKING:
-    from apps.tenants.models import Tenant
+    from apps.platform.tenancy.models.tenant import Tenant
 
 
 type OrganizationQuerySet = QuerySet[Organization]
@@ -68,8 +68,11 @@ def get_organizations(
             optimization method.
     """
 
-    queryset = Organization.objects.only(
-        *ORGANIZATION_LIST_FIELDS,
+    queryset = cast(
+        OrganizationQuerySet,
+        Organization.objects.only(
+            *ORGANIZATION_LIST_FIELDS,
+        ),
     )
 
     if tenant is not None:

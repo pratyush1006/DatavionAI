@@ -1,17 +1,3 @@
-"""
-Prescription permissions.
-"""
+from .permissions import has_permission
 
-from .prescription import (
-    CanCreatePrescription,
-    CanDeletePrescription,
-    CanUpdatePrescription,
-    CanViewPrescription,
-)
-
-__all__ = [
-    "CanCreatePrescription",
-    "CanDeletePrescription",
-    "CanUpdatePrescription",
-    "CanViewPrescription",
-]
+__all__ = ("has_permission",)

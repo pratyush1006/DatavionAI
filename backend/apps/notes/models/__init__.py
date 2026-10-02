@@ -1,11 +1,15 @@
-from apps.notes.models.note import (
-    ClinicalNote,
-)
-from apps.notes.models.template import (
-    NoteTemplate,
-)
+from .amendment import ClinicalNoteAmendment
+from .enterprise import NoteIdempotencyKey, NoteOutboxEvent, NoteTransition
+from .note import ClinicalNote
+from .template import ClinicalNoteTemplate
+from .version import ClinicalNoteVersion
 
 __all__ = [
     "ClinicalNote",
-    "NoteTemplate",
+    "ClinicalNoteVersion",
+    "ClinicalNoteAmendment",
+    "ClinicalNoteTemplate",
+    "NoteIdempotencyKey",
+    "NoteOutboxEvent",
+    "NoteTransition",
 ]

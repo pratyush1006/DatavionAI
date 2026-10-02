@@ -40,6 +40,7 @@ import {
 
 import type {
     ApiAuthenticationDependencies,
+    ApiOrganizationProvider,
     ApiRequestContext,
     ApiRequestIdProvider,
     ApiRuntimeDependencies,
@@ -66,6 +67,9 @@ const HEADER_REQUEST_ID =
 
 const HEADER_TENANT_ID =
     "X-Tenant-ID";
+
+const HEADER_ORGANIZATION_ID =
+    "X-Organization-ID";
 
 const CONTENT_TYPE_JSON =
     "application/json";
@@ -109,6 +113,7 @@ export type RequestInterceptorDependencies =
  * that need them independently.
  */
 export type {
+    ApiOrganizationProvider,
     ApiRequestIdProvider,
     ApiTenantProvider,
     ApiTokenProvider,
@@ -246,6 +251,21 @@ export function createRequestInterceptor(
                 headers.set(
                     HEADER_TENANT_ID,
                     tenantId,
+                );
+            }
+        }
+
+        if (
+            !requestConfig.skipOrganization &&
+            !requestConfig.skipTenant
+        ) {
+            const organizationId =
+                dependencies.organizationProvider.getOrganizationId();
+
+            if (organizationId) {
+                headers.set(
+                    HEADER_ORGANIZATION_ID,
+                    organizationId,
                 );
             }
         }

@@ -1,65 +1,15 @@
-"""
-Diagnosis constants.
-"""
-
-from __future__ import annotations
-
-from django.db.models import TextChoices
+from django.db import models
 
 
-class DiagnosisType(TextChoices):
-    """
-    Diagnosis type choices.
-    """
-
-    PRIMARY = (
-        "primary",
-        "Primary",
-    )
-
-    SECONDARY = (
-        "secondary",
-        "Secondary",
-    )
-
-    ADMITTING = (
-        "admitting",
-        "Admitting",
-    )
-
-    DISCHARGE = (
-        "discharge",
-        "Discharge",
-    )
-
-    FINAL = (
-        "final",
-        "Final",
-    )
+class DiagnosisType(models.TextChoices):
+    PRIMARY = "primary", "Primary"
+    SECONDARY = "secondary", "Secondary"
+    DIFFERENTIAL = "differential", "Differential"
+    HISTORICAL = "historical", "Historical"
 
 
-class DiagnosisStatus(TextChoices):
-    """
-    Diagnosis status choices.
-    """
-
-    ACTIVE = (
-        "active",
-        "Active",
-    )
-
-    RESOLVED = (
-        "resolved",
-        "Resolved",
-    )
-
-    INACTIVE = (
-        "inactive",
-        "Inactive",
-    )
-
-
-__all__ = [
-    "DiagnosisStatus",
-    "DiagnosisType",
-]
+class DiagnosisStatus(models.TextChoices):
+    ACTIVE = "active", "Active"
+    RESOLVED = "resolved", "Resolved"
+    INACTIVE = "inactive", "Inactive"
+    RULED_OUT = "ruled_out", "Ruled Out"

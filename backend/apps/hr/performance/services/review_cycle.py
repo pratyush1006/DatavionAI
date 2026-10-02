@@ -5,13 +5,14 @@ Business services for performance review cycles.
 from __future__ import annotations
 
 from collections.abc import Mapping
+from typing import Any, cast
 
 from django.core.exceptions import ValidationError
 from django.db import transaction
 
 from apps.hr.performance.models import PerformanceReviewCycle
 
-type ReviewCycleData = Mapping[str, object]
+type ReviewCycleData = Mapping[str, Any]
 
 
 def _validate_review_cycle_data(
@@ -73,7 +74,9 @@ def create_review_cycle(
 
     _validate_review_cycle_data(validated_data=validated_data)
 
-    return PerformanceReviewCycle.objects.create(**validated_data)
+    return cast(
+        PerformanceReviewCycle, PerformanceReviewCycle.objects.create(**validated_data)
+    )
 
 
 @transaction.atomic

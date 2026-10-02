@@ -7,6 +7,7 @@ the DatavionAI platform.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass, field, replace
 from datetime import UTC, datetime
 from typing import Any, TypeVar
@@ -244,7 +245,7 @@ class WorkflowResult[T]:
 
     def map(
         self,
-        mapper: callable[[T], U],
+        mapper: Callable[[T], U],
     ) -> WorkflowResult[U]:
         """
         Transform the workflow data while preserving the workflow
@@ -310,7 +311,7 @@ class WorkflowResult[T]:
         auditing, and diagnostics.
         """
 
-        if hasattr(self.data, "to_dict"):
+        if self.data is not None and hasattr(self.data, "to_dict"):
             payload = self.data.to_dict()
         elif hasattr(self.data, "__dict__"):
             payload = vars(self.data)
