@@ -24,6 +24,7 @@ Django==6.0.6
 django-celery-beat==2.9.0
 django-cors-headers==4.9.0
 django-filter==25.2
+phonenumbers==9.0.40
 django-stubs==6.0.9
 django-stubs-ext==6.0.9
 django-timezone-field==7.2.2
@@ -36,11 +37,11 @@ executing==2.2.1
 factory_boy==3.3.3
 Faker==40.28.1
 filelock==3.29.4
-gunicorn==26.0.0
-h11==0.16.0
+h11==0.14.0
 identify==2.6.19
 inflection==0.5.1
 iniconfig==2.3.0
+geopy==2.5.0
 ipython==9.14.1
 ipython_pygments_lexers==1.1.1
 isort==8.0.1
@@ -48,7 +49,7 @@ jedi==0.20.0
 jsonschema==4.26.0
 jsonschema-specifications==2025.9.1
 kombu==5.6.2
-librt==0.12.0
+librt==0.13.0
 markdown-it-py==4.2.0
 matplotlib-inline==0.2.2
 mdurl==0.1.2
@@ -81,6 +82,7 @@ PyYAML==6.0.3
 redis==8.0.1
 referencing==0.37.0
 rich==15.0.0
+phonenumbers==9.0.40
 rpds-py==2026.6.3
 ruff==0.15.19
 sentry-sdk==2.64.0
@@ -101,3 +103,4 @@ virtualenv==21.5.1
 wcwidth==0.8.2
 whitenoise==6.12.0
 cryptography>=44.0.0,<47.0.0
+httpx>=0.23.0,<0.24.0

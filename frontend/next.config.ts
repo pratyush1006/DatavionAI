@@ -1,8 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  output: "standalone",
+
   poweredByHeader: false,
   productionBrowserSourceMaps: false,
+
   async headers() {
     return [
       {
@@ -22,7 +25,8 @@ const nextConfig: NextConfig = {
           },
           {
             key: "Permissions-Policy",
-            value: "camera=(), microphone=(), geolocation=(self), payment=(), usb=()",
+            value:
+              "camera=(), microphone=(), geolocation=(self), payment=(), usb=()",
           },
         ],
       },

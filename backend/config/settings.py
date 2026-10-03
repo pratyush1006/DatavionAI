@@ -18,39 +18,75 @@ from config.logging import LOGGING as DJANGO_LOGGING
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+
 # ------------------------------------------------------------------------------
 # DatavionAI Central Runtime Configuration
 # ------------------------------------------------------------------------------
-# python-decouple is the canonical environment/.env reader for this project.
 
+# python-decouple is the canonical environment/.env reader for this project.
 REDIS_URL = config("REDIS_URL", default="")
 
 AI_PROVIDER = config("AI_PROVIDER", default="").strip().lower()
+
 AI_DEFAULT_MODEL = config(
     "AI_DEFAULT_MODEL",
     default="gpt-4o-mini",
 ).strip()
+
 AI_MODEL = config(
     "AI_MODEL",
     default=AI_DEFAULT_MODEL,
 ).strip()
+
 AI_EMBEDDING_PROVIDER = (
     config("AI_EMBEDDING_PROVIDER", default=AI_PROVIDER).strip().lower()
 )
+
 AI_EMBEDDING_MODEL = config(
     "AI_EMBEDDING_MODEL",
     default="text-embedding-3-small",
 ).strip()
-AI_ALLOW_MOCK_PROVIDER = config("AI_ALLOW_MOCK_PROVIDER", default=False, cast=bool)
-AI_PROVIDER_TIMEOUT_SECONDS = config(
-    "AI_PROVIDER_TIMEOUT_SECONDS", default=30, cast=int
+
+AI_ALLOW_MOCK_PROVIDER = config(
+    "AI_ALLOW_MOCK_PROVIDER",
+    default=False,
+    cast=bool,
 )
-AI_PROVIDER_RETRY_COUNT = config("AI_PROVIDER_RETRY_COUNT", default=2, cast=int)
-AI_MAX_TOKENS = config("AI_MAX_TOKENS", default=2048, cast=int)
-AI_MAX_PROMPT_LENGTH = config("AI_MAX_PROMPT_LENGTH", default=100000, cast=int)
-AI_RATE_LIMIT_REQUESTS = config("AI_RATE_LIMIT_REQUESTS", default=60, cast=int)
+
+AI_PROVIDER_TIMEOUT_SECONDS = config(
+    "AI_PROVIDER_TIMEOUT_SECONDS",
+    default=30,
+    cast=int,
+)
+
+AI_PROVIDER_RETRY_COUNT = config(
+    "AI_PROVIDER_RETRY_COUNT",
+    default=2,
+    cast=int,
+)
+
+AI_MAX_TOKENS = config(
+    "AI_MAX_TOKENS",
+    default=2048,
+    cast=int,
+)
+
+AI_MAX_PROMPT_LENGTH = config(
+    "AI_MAX_PROMPT_LENGTH",
+    default=100000,
+    cast=int,
+)
+
+AI_RATE_LIMIT_REQUESTS = config(
+    "AI_RATE_LIMIT_REQUESTS",
+    default=60,
+    cast=int,
+)
+
 AI_RATE_LIMIT_WINDOW_SECONDS = config(
-    "AI_RATE_LIMIT_WINDOW_SECONDS", default=60, cast=int
+    "AI_RATE_LIMIT_WINDOW_SECONDS",
+    default=60,
+    cast=int,
 )
 
 OPENAI_API_KEY = config("OPENAI_API_KEY", default="")
@@ -59,9 +95,11 @@ GEMINI_API_KEY = config("GEMINI_API_KEY", default="")
 GOOGLE_API_KEY = config("GOOGLE_API_KEY", default="")
 ANTHROPIC_API_KEY = config("ANTHROPIC_API_KEY", default="")
 
+
 # ------------------------------------------------------------------------------
 # Security
 # ------------------------------------------------------------------------------
+
 SECRET_KEY = config(
     "SECRET_KEY",
     default="django-insecure-local-development-key",
@@ -74,9 +112,20 @@ def _parse_debug(value: str | bool) -> bool:
         return value
 
     normalized = value.strip().lower()
+
     if normalized in {"1", "true", "yes", "on", "development", "dev"}:
         return True
-    if normalized in {"", "0", "false", "no", "off", "production", "prod", "release"}:
+
+    if normalized in {
+        "",
+        "0",
+        "false",
+        "no",
+        "off",
+        "production",
+        "prod",
+        "release",
+    }:
         return False
 
     raise ValueError(
@@ -96,6 +145,7 @@ ALLOWED_HOSTS = config(
     default="localhost,127.0.0.1",
     cast=lambda value: [host.strip() for host in value.split(",")],
 )
+
 
 # ------------------------------------------------------------------------------
 # Applications
@@ -178,6 +228,7 @@ INSTALLED_APPS = [
     "apps.billing.finance",
 ]
 
+
 # ------------------------------------------------------------------------------
 # Middleware
 # ------------------------------------------------------------------------------
@@ -200,7 +251,9 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
+
 ROOT_URLCONF = "config.urls"
+
 
 # ------------------------------------------------------------------------------
 # Templates
@@ -221,7 +274,9 @@ TEMPLATES = [
     },
 ]
 
+
 WSGI_APPLICATION = "config.wsgi.application"
+
 
 # ------------------------------------------------------------------------------
 # Database
@@ -231,8 +286,16 @@ if config("DATABASE_ENGINE", default="postgresql").strip().lower() == "sqlite":
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
-            "NAME": config("DATABASE_NAME", default=str(BASE_DIR / "db.sqlite3")),
-            "TEST": {"NAME": config("TEST_DATABASE_NAME", default=None)},
+            "NAME": config(
+                "DATABASE_NAME",
+                default=str(BASE_DIR / "db.sqlite3"),
+            ),
+            "TEST": {
+                "NAME": config(
+                    "TEST_DATABASE_NAME",
+                    default=None,
+                ),
+            },
         }
     }
 else:
@@ -248,27 +311,33 @@ else:
             "CONN_HEALTH_CHECKS": True,
         }
     }
+
+
 # ------------------------------------------------------------------------------
 # Password Validation
 # ------------------------------------------------------------------------------
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+        "NAME": (
+            "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
+        ),
     },
     {
-        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+        "NAME": ("django.contrib.auth.password_validation.MinimumLengthValidator"),
         "OPTIONS": {
             "min_length": 12,
         },
     },
     {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
+        "NAME": ("django.contrib.auth.password_validation.CommonPasswordValidator"),
     },
     {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
+        "NAME": ("django.contrib.auth.password_validation.NumericPasswordValidator"),
     },
 ]
+
+
 # ------------------------------------------------------------------------------
 # Email
 # ------------------------------------------------------------------------------
@@ -323,6 +392,7 @@ SERVER_EMAIL = config(
 
 EMAIL_TIMEOUT = 30
 
+
 # ------------------------------------------------------------------------------
 # Cache
 # ------------------------------------------------------------------------------
@@ -342,17 +412,16 @@ else:
         },
     }
 
+
 # ------------------------------------------------------------------------------
 # Internationalization
 # ------------------------------------------------------------------------------
 
 LANGUAGE_CODE = "en-us"
-
 TIME_ZONE = "Asia/Kolkata"
-
 USE_I18N = True
-
 USE_TZ = True
+
 
 # ------------------------------------------------------------------------------
 # Custom User
@@ -368,26 +437,27 @@ AUTH_USER_MODEL = "accounts.User"
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
 ]
+
+
 # ------------------------------------------------------------------------------
 # Login
 # ------------------------------------------------------------------------------
 
 LOGIN_URL = "/api/auth/login/"
-
 LOGIN_REDIRECT_URL = "/"
-
 LOGOUT_REDIRECT_URL = "/"
+
+
 # ------------------------------------------------------------------------------
 # Static Files
 # ------------------------------------------------------------------------------
 
 STATIC_URL = "static/"
-
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 MEDIA_URL = "/media/"
-
 MEDIA_ROOT = BASE_DIR / "media"
+
 
 # ==============================================================================
 # Application
@@ -395,15 +465,17 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 APP_NAME = "Datavion AI"
 APP_VERSION = "1.0.0"
+
 APP_ENVIRONMENT = config(
     "APP_ENVIRONMENT",
     default="development",
 )
+
 DEFAULT_PAGE_SIZE = 20
-
 MAX_PAGE_SIZE = 100
-
 DEFAULT_TIMEZONE = "Asia/Kolkata"
+
+
 # ------------------------------------------------------------------------------
 # Django REST Framework
 # ------------------------------------------------------------------------------
@@ -425,7 +497,7 @@ REST_FRAMEWORK = {
     "DEFAULT_FILTER_BACKENDS": [
         "django_filters.rest_framework.DjangoFilterBackend",
     ],
-    "DEFAULT_PAGINATION_CLASS": "apps.common.api.pagination.DatavionPagination",
+    "DEFAULT_PAGINATION_CLASS": ("apps.common.api.pagination.DatavionPagination"),
     "PAGE_SIZE": DEFAULT_PAGE_SIZE,
     # Enterprise exception handler
     "EXCEPTION_HANDLER": ("apps.common.exceptions.handlers.datavion_exception_handler"),
@@ -454,18 +526,21 @@ REST_FRAMEWORK = {
         else {}
     ),
 }
+
+
 # ------------------------------------------------------------------------------
 # CORS
 # ------------------------------------------------------------------------------
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-    "http://localhost:3001",
-    "http://127.0.0.1:3001",
-    "http://localhost:3005",
-    "http://127.0.0.1:3005",
+    origin.strip()
+    for origin in config(
+        "CORS_ALLOWED_ORIGINS",
+        default="http://localhost:3000,http://127.0.0.1:3000",
+    ).split(",")
+    if origin.strip()
 ]
+
 CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOW_HEADERS = [
@@ -476,14 +551,21 @@ CORS_ALLOW_HEADERS = [
     "idempotency-key",
 ]
 
+
+# ------------------------------------------------------------------------------
+# CSRF
+# ------------------------------------------------------------------------------
+
 CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-    "http://localhost:3001",
-    "http://127.0.0.1:3001",
-    "http://localhost:3005",
-    "http://127.0.0.1:3005",
+    origin.strip()
+    for origin in config(
+        "CSRF_TRUSTED_ORIGINS",
+        default="http://localhost:3000,http://127.0.0.1:3000",
+    ).split(",")
+    if origin.strip()
 ]
+
+
 # ------------------------------------------------------------------------------
 # JWT
 # ------------------------------------------------------------------------------
@@ -504,6 +586,7 @@ SIMPLE_JWT = {
     "JTI_CLAIM": "jti",
     "LEEWAY": 0,
 }
+
 
 # ------------------------------------------------------------------------------
 # Swagger / OpenAPI
@@ -546,31 +629,55 @@ CELERY_RESULT_SERIALIZER = "json"
 CELERY_TIMEZONE = TIME_ZONE
 CELERY_ENABLE_UTC = USE_TZ
 CELERY_TASK_TRACK_STARTED = True
+
 CELERY_TASK_SOFT_TIME_LIMIT = config(
-    "CELERY_TASK_SOFT_TIME_LIMIT", default=90, cast=int
+    "CELERY_TASK_SOFT_TIME_LIMIT",
+    default=90,
+    cast=int,
 )
-CELERY_TASK_TIME_LIMIT = config("CELERY_TASK_TIME_LIMIT", default=120, cast=int)
+
+CELERY_TASK_TIME_LIMIT = config(
+    "CELERY_TASK_TIME_LIMIT",
+    default=120,
+    cast=int,
+)
+
 CELERY_TASK_ALWAYS_EAGER = False
 CELERY_TASK_IGNORE_RESULT = False
-CELERY_TASK_ACKS_LATE = config("CELERY_TASK_ACKS_LATE", default=True, cast=bool)
+
+CELERY_TASK_ACKS_LATE = config(
+    "CELERY_TASK_ACKS_LATE",
+    default=True,
+    cast=bool,
+)
+
 CELERY_TASK_REJECT_ON_WORKER_LOST = config(
-    "CELERY_TASK_REJECT_ON_WORKER_LOST", default=True, cast=bool
+    "CELERY_TASK_REJECT_ON_WORKER_LOST",
+    default=True,
+    cast=bool,
 )
+
 CELERY_WORKER_MAX_TASKS_PER_CHILD = config(
-    "CELERY_WORKER_MAX_TASKS_PER_CHILD", default=1000, cast=int
+    "CELERY_WORKER_MAX_TASKS_PER_CHILD",
+    default=1000,
+    cast=int,
 )
+
 CELERY_WORKER_PREFETCH_MULTIPLIER = config(
-    "CELERY_WORKER_PREFETCH_MULTIPLIER", default=1, cast=int
+    "CELERY_WORKER_PREFETCH_MULTIPLIER",
+    default=1,
+    cast=int,
 )
 
 
-# -----------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Logging
-# -----------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 LOGGING = DJANGO_LOGGING
 
-# ----# ------------------------------------------------------------------------------
+
+# ------------------------------------------------------------------------------
 # Production Security
 # ------------------------------------------------------------------------------
 
@@ -580,6 +687,7 @@ if not DEBUG:
     X_FRAME_OPTIONS = "DENY"
 
     SECURE_REFERRER_POLICY = "same-origin"
+
     SESSION_COOKIE_AGE = 60 * 60 * 8
 
     SESSION_SAVE_EVERY_REQUEST = True
@@ -588,54 +696,87 @@ if not DEBUG:
 
     CSRF_COOKIE_SECURE = True
 
-    SECURE_SSL_REDIRECT = True
+    # HTTPS enforcement is controlled by the deployment environment.
+    # Keep this False until HTTPS/TLS is configured at the reverse proxy.
+    SECURE_SSL_REDIRECT = config(
+        "SECURE_SSL_REDIRECT",
+        default=False,
+        cast=bool,
+    )
 
+    # Django trusts the reverse proxy to tell it whether the original
+    # client request was HTTPS.
     SECURE_PROXY_SSL_HEADER = (
         "HTTP_X_FORWARDED_PROTO",
         "https",
     )
-    SECURE_HSTS_SECONDS = 31536000
 
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_SECONDS = config(
+        "SECURE_HSTS_SECONDS",
+        default=31536000,
+        cast=int,
+    )
 
-    SECURE_HSTS_PRELOAD = True
-# --------------------------------------------------------------------------
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = config(
+        "SECURE_HSTS_INCLUDE_SUBDOMAINS",
+        default=True,
+        cast=bool,
+    )
+
+    SECURE_HSTS_PRELOAD = config(
+        "SECURE_HSTS_PRELOAD",
+        default=True,
+        cast=bool,
+    )
+
+
+# ------------------------------------------------------------------------------
 # Default Primary Key
 # ------------------------------------------------------------------------------
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# DATAVIONOS FINANCE PRODUCTION HARDENING v1
-# Explicitly enabled by --production-certify; review reverse-proxy/TLS policy separately.
+
+# ------------------------------------------------------------------------------
+# DatavionOS Finance Production Hardening
+# ------------------------------------------------------------------------------
+
+# Explicitly enabled by --production-certify;
+# review reverse-proxy/TLS policy separately.
 DEBUG = False
+
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 
+
+# ------------------------------------------------------------------------------
+# Transcription
+# ------------------------------------------------------------------------------
 
 TRANSCRIPTION_STREAMING_PROVIDER = config(
     "TRANSCRIPTION_STREAMING_PROVIDER",
     default="",
 ).strip()
+
 TRANSCRIPTION_SPEECH_PROVIDER = config(
     "TRANSCRIPTION_SPEECH_PROVIDER",
     default="",
 ).strip()
+
 TRANSCRIPTION_NOTE_PROVIDER = config(
     "TRANSCRIPTION_NOTE_PROVIDER",
     default="",
 ).strip()
 
+
+# ------------------------------------------------------------------------------
+# ASGI / Channels
+# ------------------------------------------------------------------------------
+
 ASGI_APPLICATION = "config.asgi.application"
 
-CHANNEL_LAYERS = {"default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}}
-
-CACHES = {
+CHANNEL_LAYERS = {
     "default": {
-        "BACKEND": "django.core.cache.backends.redis.RedisCache",
-        "LOCATION": "redis://127.0.0.1:6379/0",
-        "OPTIONS": {
-            "socket_connect_timeout": 5,
-            "socket_timeout": 5,
-        },
-    },
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+    }
 }

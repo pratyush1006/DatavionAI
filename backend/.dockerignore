@@ -1,0 +1,52 @@
+# Python caches
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Test / lint / type-check caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Runtime files
+logs/
+*.log
+
+# Local development data
+media/
+staticfiles/
+
+# IDE
+.vscode/
+.idea/
+
+# Git
+.git/
+.gitignore
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project audit/report artifacts
+.datavionos_runtime_reports/
+.datavionos_saas_subscription_api_backup/
+datavionos_legacy_installer_archive/
+datavionos_backend_startup_schema_diagnostics/
+datavionos_frontend_e2e_alignment_repairs/
+datavionos_spectacular_serializer_source_contract_repairs/
+datavionos_spectacular_targeted_failure_repairs/
+
+# Generated reports
+*.json
+*.log
+
+# Temporary/archive directories
+off/
