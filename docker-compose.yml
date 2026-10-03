@@ -152,6 +152,8 @@ services:
     command:
       [
         "tunnel",
+        "--protocol",
+        "http2",
         "--no-autoupdate",
         "run",
         "--token",

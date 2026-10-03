@@ -146,6 +146,13 @@ ALLOWED_HOSTS = config(
     cast=lambda value: [host.strip() for host in value.split(",")],
 )
 
+RENDER_EXTERNAL_HOSTNAME = config(
+    "RENDER_EXTERNAL_HOSTNAME",
+    default="",
+).strip()
+
+if RENDER_EXTERNAL_HOSTNAME and RENDER_EXTERNAL_HOSTNAME not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
 # ------------------------------------------------------------------------------
 # Applications

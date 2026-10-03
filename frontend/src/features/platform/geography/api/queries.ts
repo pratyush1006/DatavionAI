@@ -4,13 +4,14 @@
  * File: src/features/platform/geography/api/queries.ts
  * =============================================================================
  *
- * Geography query definitions.
+ * Canonical Geography query definitions.
  *
  * Backend:
  *
- *   GET /api/geography/countries/
- *   GET /api/geography/regions/?country=<uuid>
- *   GET /api/geography/cities/?region=<uuid>
+ *   GET  /api/geography/countries/
+ *   GET  /api/geography/regions/?country=<uuid>
+ *   GET  /api/geography/cities/?region=<uuid>
+ *   POST /api/geography/current-location/
  *
  * Geography is global platform master data.
  *
@@ -34,8 +35,8 @@
  *
  * The ApiClient preserves `data` and `meta` on ApiSuccessResponse.
  *
- * This module transparently loads all pages because geography dropdowns
- * require complete collections for the selected scope.
+ * This module transparently loads all Geography pages because registration
+ * dropdowns require complete collections for the selected scope.
  * =============================================================================
  */
 
@@ -127,6 +128,57 @@ export interface GeographyCity {
   readonly timezone: string;
   readonly sortOrder: number;
   readonly isActive: boolean;
+}
+
+/* =============================================================================
+ * Current Location
+ * =============================================================================
+ *
+ * Backend response:
+ *
+ * {
+ *   latitude,
+ *   longitude,
+ *   accuracy_meters,
+ *   formatted_address,
+ *   country,
+ *   country_code,
+ *   state,
+ *   district,
+ *   city,
+ *   postal_code,
+ *   provider,
+ *   reference: {
+ *     country_id,
+ *     region_id,
+ *     city_id
+ *   }
+ * }
+ *
+ * The reference IDs are canonical Geography database IDs.
+ * Registration should prefer these IDs over fuzzy name matching.
+ * =============================================================================
+ */
+
+export interface GeographyCurrentLocationReference {
+  readonly country_id: string | null;
+  readonly region_id: string | null;
+  readonly city_id: string | null;
+}
+
+export interface GeographyCurrentLocation {
+  readonly latitude: number;
+  readonly longitude: number;
+  readonly accuracy_meters: number | null;
+  readonly formatted_address: string;
+  readonly country: string;
+  readonly country_code: string;
+  readonly state: string;
+  readonly district: string;
+  readonly city: string;
+  readonly postal_code: string;
+  readonly provider: string;
+  readonly reference: GeographyCurrentLocationReference;
 }
 
 /* =============================================================================
@@ -243,7 +295,7 @@ async function fetchPage<T>(
 }
 
 /**
- * Fetch every page belonging to a geography collection.
+ * Fetch every page belonging to a Geography collection.
  *
  * Pagination remains a backend responsibility.
  * Consumers receive one complete collection.
@@ -301,9 +353,14 @@ async function fetchAllPages<T>(
 /* =============================================================================
  * Countries
  * =============================================================================
+ *
+ * IMPORTANT:
+ * Exported because registration and other feature domains consume Geography
+ * through the canonical feature API.
+ * =============================================================================
  */
 
-async function fetchCountries(): Promise<
+export async function fetchCountries(): Promise<
   GeographyCountry[]
 > {
   const data =
@@ -313,9 +370,9 @@ async function fetchCountries(): Promise<
 
   /*
    * The backend Geography selector already restricts the default response
-   * to active records. Do not filter again here.
+   * to active records.
    *
-   * This keeps the frontend transport layer faithful to the backend contract.
+   * Do not filter again here.
    */
   return data.map(
     mapCountry,
@@ -327,20 +384,24 @@ async function fetchCountries(): Promise<
  * =============================================================================
  */
 
-async function fetchRegions(
+export async function fetchRegions(
   countryId: string,
 ): Promise<GeographyRegion[]> {
+  const normalizedCountryId =
+    countryId.trim();
+
+  if (!normalizedCountryId) {
+    return [];
+  }
+
   const data =
     await fetchAllPages<GeographyRegionDto>(
       geographyEndpoints.regions,
       {
-        country: countryId,
+        country: normalizedCountryId,
       },
     );
 
-  /*
-   * The backend already applies the active-record policy.
-   */
   return data.map(
     mapRegion,
   );
@@ -351,23 +412,70 @@ async function fetchRegions(
  * =============================================================================
  */
 
-async function fetchCities(
+export async function fetchCities(
   regionId: string,
 ): Promise<GeographyCity[]> {
+  const normalizedRegionId =
+    regionId.trim();
+
+  if (!normalizedRegionId) {
+    return [];
+  }
+
   const data =
     await fetchAllPages<GeographyCityDto>(
       geographyEndpoints.cities,
       {
-        region: regionId,
+        region: normalizedRegionId,
       },
     );
 
-  /*
-   * The backend already applies the active-record policy.
-   */
   return data.map(
     mapCity,
   );
+}
+
+/* =============================================================================
+ * Current Location
+ * =============================================================================
+ *
+ * Browser/device geolocation is intentionally obtained by the frontend.
+ *
+ * The frontend does NOT reverse-geocode coordinates itself.
+ *
+ * Flow:
+ *
+ * navigator.geolocation
+ *        ↓
+ * latitude / longitude / accuracy
+ *        ↓
+ * POST /api/geography/current-location/
+ *        ↓
+ * canonical Geography backend
+ *        ↓
+ * reference IDs + normalized location
+ *
+ * This preserves the Geography bounded-context boundary.
+ * =============================================================================
+ */
+
+export async function resolveCurrentLocation(
+  latitude: number,
+  longitude: number,
+  accuracyMeters?: number | null,
+): Promise<GeographyCurrentLocation> {
+  const response =
+    await apiClient.post<GeographyCurrentLocation>(
+      geographyEndpoints.currentLocation,
+      {
+        latitude,
+        longitude,
+        accuracy_meters:
+          accuracyMeters ?? null,
+      },
+    );
+
+  return response.data;
 }
 
 /* =============================================================================

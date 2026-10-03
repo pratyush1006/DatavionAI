@@ -7,13 +7,13 @@ import { useRouter } from "next/navigation";
 import {
   fetchOrganizationCatalog,
   type OrganizationCatalog,
-} from "@/lib/backend/onboarding";
+} from "@/features/platform/onboarding/api";
 import {
-  getCities,
-  getCountries,
-  getCurrentLocation,
-  getRegions,
-} from "@/lib/backend/geography";
+  fetchCities,
+  fetchCountries,
+  fetchRegions,
+  resolveCurrentLocation,
+} from "@/features/platform/geography/api";
 import {
   getSelfServicePlans,
   preflightSelfServiceSignup,
@@ -463,7 +463,7 @@ export function SelfServiceSignupWizard() {
       setLoadingCountries(true);
     });
 
-    getCountries()
+    fetchCountries()
       .then((countryResult) => {
         if (!mounted) return;
         setCountries(countryResult);
@@ -613,7 +613,7 @@ export function SelfServiceSignupWizard() {
     }
 
     try {
-      const items = await getRegions(countryId);
+      const items = await fetchRegions(countryId);
       setRegions(items.map((region) => ({ id: region.id, name: region.name })));
     } catch {
       setRegions([]);
@@ -627,7 +627,7 @@ export function SelfServiceSignupWizard() {
     }
 
     try {
-      const items = await getCities(regionId);
+      const items = await fetchCities(regionId);
       setCities(items.map((city) => ({ id: city.id, name: city.name, timezone: city.timezone })));
     } catch {
       setCities([]);
@@ -646,7 +646,7 @@ export function SelfServiceSignupWizard() {
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         try {
-          const location = await getCurrentLocation(
+          const location = await resolveCurrentLocation(
             position.coords.latitude,
             position.coords.longitude,
             position.coords.accuracy ?? null,
@@ -654,7 +654,7 @@ export function SelfServiceSignupWizard() {
 
           let nextCountries = countries;
           if (!nextCountries.length) {
-            nextCountries = await getCountries();
+            nextCountries = await fetchCountries();
             setCountries(nextCountries);
           }
 
@@ -671,13 +671,13 @@ export function SelfServiceSignupWizard() {
             city: location.city || form.city,
             address: location.formatted_address || form.address,
             postal_code: location.postal_code || form.postal_code,
-            timezone: location.timezone || form.timezone || "UTC",
+            timezone:  form.timezone || "UTC",
           };
 
           if (countryMatch) {
             nextForm.country_ref = countryMatch.id;
             nextForm.country = countryMatch.name;
-            const nextRegions = await getRegions(countryMatch.id);
+            const nextRegions = await fetchRegions(countryMatch.id);
             setRegions(nextRegions.map((region) => ({ id: region.id, name: region.name })));
 
             const regionMatch = nextRegions.find((region) => {
@@ -689,7 +689,7 @@ export function SelfServiceSignupWizard() {
             if (regionMatch) {
               nextForm.region_ref = regionMatch.id;
               nextForm.state = regionMatch.name;
-              const nextCities = await getCities(regionMatch.id);
+              const nextCities = await fetchCities(regionMatch.id);
               setCities(nextCities.map((city) => ({ id: city.id, name: city.name, timezone: city.timezone })));
 
               const cityMatch = nextCities.find((city) => {
